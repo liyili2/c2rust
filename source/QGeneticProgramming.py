@@ -1,5 +1,5 @@
-from quantumCode.AST_Scripts.XMLVisitor import XMLVisitor
-from quantumCode.simulator import Simulator, Coq_nval, CalInt
+from RustCode.AST_Scripts.XMLVisitor import XMLVisitor
+from RustCode.simulator import Simulator, Coq_nval, CalInt
 from repairCode.crossover import QCrossover
 from repairCode.mutation import QMutation
 from repairCode.patch import QPatch
@@ -9,10 +9,10 @@ from pyggi.base import AbstractProgram
 
 import unittest
 #from antlr4 import *
-from quantumCode.AST_Scripts.ExpListener import ExpListener
-from quantumCode.AST_Scripts.ExpLexer import ExpLexer
-from quantumCode.AST_Scripts.ExpParser import ExpParser
-from quantumCode.AST_Scripts.XMLVisitor import XMLVisitor
+from RustCode.AST_Scripts.ExpListener import ExpListener
+from RustCode.AST_Scripts.ExpLexer import ExpLexer
+from RustCode.AST_Scripts.ExpParser import ExpParser
+from RustCode.AST_Scripts.XMLVisitor import XMLVisitor
 
 from argparse import ArgumentParser
 import pytest
