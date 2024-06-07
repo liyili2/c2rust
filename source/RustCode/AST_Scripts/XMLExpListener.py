@@ -134,6 +134,15 @@ class XMLExpListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by XMLExpParser#binexp.
+    def enterBinexp(self, ctx:XMLExpParser.BinexpContext):
+        pass
+
+    # Exit a parse tree produced by XMLExpParser#binexp.
+    def exitBinexp(self, ctx:XMLExpParser.BinexpContext):
+        pass
+
+
     # Enter a parse tree produced by XMLExpParser#op.
     def enterOp(self, ctx:XMLExpParser.OpContext):
         pass

@@ -79,6 +79,11 @@ class XMLExpVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by XMLExpParser#binexp.
+    def visitBinexp(self, ctx:XMLExpParser.BinexpContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by XMLExpParser#op.
     def visitOp(self, ctx:XMLExpParser.OpContext):
         return self.visitChildren(ctx)

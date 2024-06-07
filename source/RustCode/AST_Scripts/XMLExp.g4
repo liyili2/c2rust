@@ -1,6 +1,6 @@
 grammar XMLExp;
 
-program: letstmt | exp | printstmt | blockstmt;
+program: letstmt | exp | printstmt | blockstmt | ifstmt | breakstmt | returnstmt | loopstmt | forstmt;
 
 blockstmt: '<' STMT 'type' '=' '\'' Block '\'' '>' (program +) '</' STMT '>' ;
 
@@ -24,17 +24,18 @@ idexp : '<' ID '>' Identifier '</' ID '>';
 
 stringval : '<' Value '>' StrLiteral '</' Value '>';
 
-vexp: idexp | '<' VEXP '>' numexp '</' VEXP '>'
-    | '<' VEXP '>' boolexp '</' VEXP '>' | '<' VEXP OP '=' '\'' op '\'' '>' vexp vexp '</' VEXP '>';
+vexp: idexp | numexp | boolexp | binexp | binexp;
 
-numexp: Number | Minus Number;
+numexp: '<' 'num' '>' (Number | Minus Number) '</' 'num' '>';
+
+binexp: '<' VEXP OP '=' '\'' op '\'' '>' vexp vexp '</' VEXP '>';
         
  // Lexical Specification of this Programming Language
  //  - lexical specification rules start with uppercase
 
 op: Plus | Minus | Times | Div | Mod | Exp | And | Less | Equal | Or | Range;
 
-boolexp: TrueLiteral | FalseLiteral;
+boolexp: '<' 'bool' '>' (TrueLiteral | FalseLiteral) '</' 'bool' '>' ;
 
  TrueLiteral : '#t' ;
  FalseLiteral : '#f' ;
