@@ -1,5 +1,7 @@
 from collections import ChainMap
 from types import NoneType
+
+from RustCode.AST_Scripts import ExpParser
 from XMLExpVisitor import XMLExpVisitor
 from XMLExpParser import XMLExpParser
 
@@ -49,15 +51,134 @@ class XMLPrinter(XMLExpVisitor):
         self.xml_output = ''
         self.indentation = 0
 
-    # should do nothing
-    def visitSkipexp(self, ctx: ExpParser.SkipexpContext):
-        self.xml_output += "  " * self.indentation + "<pexp gate = 'SKIP' "
-        x = ""f'{ctx.idexp().Identifier().getText()}\n'""
+    def visitProgram(self, ctx: ExpParser.ProgramContext):
+        ctx.accept(self) # This will automatically detect and find the corresponding context to call the visit func of
+
+    def visitBlockstmt(self, ctx: ExpParser.BlockstmtContext):
+        self.xml_output += "  " * self.indentation + "<stmt "
+        x = ""f'{ctx.Block().getText()}\n'""
+        y = M_find(x, self.tenv) # This may not be needed
+        self.xml_output += "type = \'"+str(y)+"\' >\n"
+        i = 0
+        while ctx.program(i) is not None:
+            ctx.program(i).accept(self)
+            i += 1
+        self.xml_output += "  " * self.indentation + "</stmt>\n"
+
+    def visitLetstmt(self, ctx: ExpParser.LetstmtContext):
+        self.xml_output += "  " * self.indentation + "<stmt "
+        x = ""f'{ctx.Let().getText()}\n'""
         y = M_find(x, self.tenv)
         self.xml_output += "type = \'"+str(y)+"\' >\n"
         ctx.idexp().accept(self)
+        ctx.exp().accept(self)
+        self.xml_output += "  " * self.indentation + "</stmt>\n"
+
+    def visitPrintstmt(self, ctx: ExpParser.PrintstmtContext):
+        self.xml_output += "  " * self.indentation + "<stmt "
+        x = ""f'{ctx.Print().getText()}\n'""
+        y = M_find(x, self.tenv)
+        self.xml_output += "type = \'"+str(y)+"\' >\n"
+        ctx.stringval().accept(self)
+        ctx.exp().accept(self)
+        self.xml_output += "  " * self.indentation + "</stmt>\n"
+
+    def visitIfstmt(self, ctx: ExpParser.IfstmtContext):
+        self.xml_output += "  " * self.indentation + "<stmt "
+        x = ""f'{ctx.IF().getText()}\n'""
+        y = M_find(x, self.tenv)
+        self.xml_output += "type = \'"+str(y)+"\' >\n"
         ctx.vexp().accept(self)
-        self.xml_output += "  " * self.indentation + "</pexp>\n"
+        ctx.blockstmt().accept(self)
+        ctx.blockstmt().accept(self)
+        self.xml_output += "  " * self.indentation + "</stmt>\n"
+
+    def visitBreakstmt(self, ctx: ExpParser.BreakstmtContext):
+        self.xml_output += "  " * self.indentation + "<stmt "
+        x = ""f'{ctx.Break().getText()}\n'""
+        y = M_find(x, self.tenv)
+        self.xml_output += "type = \'"+str(y)+"\' >\n"
+        if ctx.vexp() is not None:
+            ctx.vexp().accept(self)
+        self.xml_output += "  " * self.indentation + "</stmt>\n"
+
+    def visitReturnstmt(self, ctx: ExpParser.ReturnstmtContext):
+        self.xml_output += "  " * self.indentation + "<stmt "
+        x = ""f'{ctx.Return().getText()}\n'""
+        y = M_find(x, self.tenv)
+        self.xml_output += "type = \'"+str(y)+"\' >\n"
+        if ctx.vexp() is not None:
+            ctx.vexp().accept(self)
+        self.xml_output += "  " * self.indentation + "</stmt>\n"
+
+    def visitLoopstmt(self, ctx: ExpParser.LoopstmtContext):
+        self.xml_output += "  " * self.indentation + "<stmt "
+        x = ""f'{ctx.Loop().getText()}\n'""
+        y = M_find(x, self.tenv)
+        self.xml_output += "type = \'"+str(y)+"\' >\n"
+        ctx.blockstmt().accept(self)
+        self.xml_output += "  " * self.indentation + "</stmt>\n"
+
+    def visitForstmt(self, ctx: ExpParser.ForstmtContext):
+        self.xml_output += "  " * self.indentation + "<stmt "
+        x = ""f'{ctx.For().getText()}\n'""
+        y = M_find(x, self.tenv)
+        self.xml_output += "type = \'" + str(y) + "\' >\n"
+        ctx.idexp().accept(self)
+        ctx.vexp().accept(self)
+        ctx.blockstmt().accept(self)
+        self.xml_output += "  " * self.indentation + "</stmt>\n"
+
+    def visitExp(self, ctx: ExpParser.ExpContext):
+        ctx.vexp().accept(self)
+
+    def visitIdexp(self, ctx: ExpParser.IdexpContext):
+        self.xml_output += "  " * self.indentation + "<id>"
+        x = ""f'{ctx.Identifier().getText()}\n'""
+        y = M_find(x, self.tenv)
+        self.xml_output += " \'" + str(y) + "\' \n"
+        self.xml_output += "  " * self.indentation + "</id>\n"
+
+    def visitStringval(self, ctx: ExpParser.StringvalContext):
+        self.xml_output += "  " * self.indentation + "<value>"
+        x = ""f'{ctx.StrLiteral().getText()}\n'""
+        y = M_find(x, self.tenv)
+        self.xml_output += " \'" + str(y) + "\' \n"
+        self.xml_output += "  " * self.indentation + "</value>\n"
+
+    def visitVexp(self, ctx:XMLExpParser.VexpContext):
+        ctx.accept(self)
+
+    def visitNumexp(self, ctx:XMLExpParser.NumexpContext):
+        self.xml_output += "  " * self.indentation + "<num>"
+        neg = ""
+        if ctx.Minus() is not None:
+            neg += '-'
+        x = ""f'{ctx.Number().getText()}\n'""
+        y = M_find(x, self.tenv)
+        self.xml_output += " \'" + neg + str(y) + "\' \n"
+        self.xml_output += "  " * self.indentation + "</num>\n"
+
+    def visitBinexp(self, ctx:XMLExpParser.BinexpContext):
+        self.xml_output += "  " * self.indentation + "<vexp op = "
+        self.xml_output += ""f'{ctx.op().accept(self).getText()}>\n'""
+        ctx.vexp().accept(self)
+        ctx.vexp().accept(self)
+        self.xml_output += "  " * self.indentation + "</vexp>\n"
+
+    def visitBoolexp(self, ctx: ExpParser.BoolexpContext):
+        self.xml_output += "  " * self.indentation + "<bool>"
+        x = ""
+        if ctx.TrueLiteral() is not None:
+            x = ""f'{ctx.TrueLiteral().getText()}\n'""
+        else:
+            x = ""f'{ctx.FalseLiteral().getText()}\n'""
+        y = M_find(x, self.tenv)
+        self.xml_output += " \'" + str(y) + "\' \n"
+        self.xml_output += "  " * self.indentation + "</bool>\n"
+
+
+
 
     # X posi, changed the following for an example
     def visitXexp(self, ctx: ExpParser.XexpContext):
