@@ -46,15 +46,15 @@ def findVar(node: ExpParser.VexpContext):
 
 class XMLPrinter(XMLExpVisitor):
 
-    def __init__(self, tenv: ChainMap):
-        self.tenv = tenv
+    def __init__(self):
+        # self.tenv = tenv
         self.xml_output = ''
         self.indentation = 0
 
-    def visitProgram(self, ctx: ExpParser.ProgramContext):
+    def visitProgram(self, ctx: XMLExpParser.ProgramContext):
         ctx.accept(self) # This will automatically detect and find the corresponding context to call the visit func of
 
-    def visitBlockstmt(self, ctx: ExpParser.BlockstmtContext):
+    def visitBlockstmt(self, ctx: XMLExpParser.BlockstmtContext):
         self.xml_output += "  " * self.indentation + "<stmt type = block>"
         # x = ""f'{ctx.Block().getText()}\n'""
         # y = M_find(x, self.tenv) # This may not be needed
@@ -65,7 +65,7 @@ class XMLPrinter(XMLExpVisitor):
             i += 1
         self.xml_output += "  " * self.indentation + "</stmt>\n"
 
-    def visitLetstmt(self, ctx: ExpParser.LetstmtContext):
+    def visitLetstmt(self, ctx: XMLExpParser.LetstmtContext):
         self.xml_output += "  " * self.indentation + "<stmt type = let>"
         # x = ""f'{ctx.Let().getText()}\n'""
         # y = M_find(x, self.tenv)
@@ -74,7 +74,7 @@ class XMLPrinter(XMLExpVisitor):
         ctx.exp().accept(self)
         self.xml_output += "  " * self.indentation + "</stmt>\n"
 
-    def visitPrintstmt(self, ctx: ExpParser.PrintstmtContext):
+    def visitPrintstmt(self, ctx: XMLExpParser.PrintstmtContext):
         self.xml_output += "  " * self.indentation + "<stmt type = print>"
         # x = ""f'{ctx.Print().getText()}\n'""
         # y = M_find(x, self.tenv)
@@ -83,7 +83,7 @@ class XMLPrinter(XMLExpVisitor):
         ctx.exp().accept(self)
         self.xml_output += "  " * self.indentation + "</stmt>\n"
 
-    def visitIfstmt(self, ctx: ExpParser.IfstmtContext):
+    def visitIfstmt(self, ctx: XMLExpParser.IfstmtContext):
         self.xml_output += "  " * self.indentation + "<stmt type = if>"
         # x = ""f'{ctx.IF().getText()}\n'""
         # y = M_find(x, self.tenv)
@@ -93,7 +93,7 @@ class XMLPrinter(XMLExpVisitor):
         ctx.blockstmt().accept(self)
         self.xml_output += "  " * self.indentation + "</stmt>\n"
 
-    def visitBreakstmt(self, ctx: ExpParser.BreakstmtContext):
+    def visitBreakstmt(self, ctx: XMLExpParser.BreakstmtContext):
         self.xml_output += "  " * self.indentation + "<stmt type = break>"
         # x = ""f'{ctx.Break().getText()}\n'""
         # y = M_find(x, self.tenv)
@@ -102,7 +102,7 @@ class XMLPrinter(XMLExpVisitor):
             ctx.vexp().accept(self)
         self.xml_output += "  " * self.indentation + "</stmt>\n"
 
-    def visitReturnstmt(self, ctx: ExpParser.ReturnstmtContext):
+    def visitReturnstmt(self, ctx: XMLExpParser.ReturnstmtContext):
         self.xml_output += "  " * self.indentation + "<stmt type = return>"
         # x = ""f'{ctx.Return().getText()}\n'""
         # y = M_find(x, self.tenv)
@@ -111,7 +111,7 @@ class XMLPrinter(XMLExpVisitor):
             ctx.vexp().accept(self)
         self.xml_output += "  " * self.indentation + "</stmt>\n"
 
-    def visitLoopstmt(self, ctx: ExpParser.LoopstmtContext):
+    def visitLoopstmt(self, ctx: XMLExpParser.LoopstmtContext):
         self.xml_output += "  " * self.indentation + "<stmt type = loop>"
         # x = ""f'{ctx.Loop().getText()}\n'""
         # y = M_find(x, self.tenv)
@@ -119,7 +119,7 @@ class XMLPrinter(XMLExpVisitor):
         ctx.blockstmt().accept(self)
         self.xml_output += "  " * self.indentation + "</stmt>\n"
 
-    def visitForstmt(self, ctx: ExpParser.ForstmtContext):
+    def visitForstmt(self, ctx: XMLExpParser.ForstmtContext):
         self.xml_output += "  " * self.indentation + "<stmt type = for>"
         # x = ""f'{ctx.For().getText()}\n'""
         # y = M_find(x, self.tenv)
@@ -129,17 +129,17 @@ class XMLPrinter(XMLExpVisitor):
         ctx.blockstmt().accept(self)
         self.xml_output += "  " * self.indentation + "</stmt>\n"
 
-    def visitExp(self, ctx: ExpParser.ExpContext):
+    def visitExp(self, ctx: XMLExpParser.ExpContext):
         ctx.vexp().accept(self)
 
-    def visitIdexp(self, ctx: ExpParser.IdexpContext):
+    def visitIdexp(self, ctx: XMLExpParser.IdexpContext):
         self.xml_output += "  " * self.indentation + "<id>"
         # x = ""f'{ctx.Identifier().getText()}\n'""
         # y = M_find(x, self.tenv)
         self.xml_output += " \'" + ctx.Identifier().getText() + "\' \n"
         self.xml_output += "  " * self.indentation + "</id>\n"
 
-    def visitStringval(self, ctx: ExpParser.StringvalContext):
+    def visitStringval(self, ctx: XMLExpParser.StringvalContext):
         self.xml_output += "  " * self.indentation + "<value>"
         # x = ""f'{ctx.StrLiteral().getText()}\n'""
         # y = M_find(x, self.tenv)
@@ -166,7 +166,7 @@ class XMLPrinter(XMLExpVisitor):
         ctx.vexp().accept(self)
         self.xml_output += "  " * self.indentation + "</vexp>\n"
 
-    def visitBoolexp(self, ctx: ExpParser.BoolexpContext):
+    def visitBoolexp(self, ctx: XMLExpParser.BoolexpContext):
         self.xml_output += "  " * self.indentation + "<bool>"
         if ctx.TrueLiteral() is not None:
             x = ""f'{ctx.TrueLiteral().getText()}'""

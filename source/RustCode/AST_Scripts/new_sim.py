@@ -166,128 +166,55 @@ class Simulator(XMLExpVisitor):
                                                             pow(2, val.getNum())), val.getNum())})
 
     # should do nothing
-    def visitSkipexp(self, ctx: XMLExpParser.SkipexpContext):
+    def visitProgram(self, ctx: XMLExpParser.ProgramContext):
         return
 
-    # X posi, changed the following for an example
-    def visitXexp(self, ctx: XMLExpParser.XexpContext):
-        x = ctx.idexp().accept(self)
-        p = ctx.vexp().accept(self)  # this will pass the visitor to the child of ctx
-        exchange(self.st.get(x), p)
-        # print(M_find(x, self.st))
+    def visitBlockstmt(self, ctx: XMLExpParser.BlockstmtContext):
+        return
 
-    # we will first get the position in st and check if the state is 0 or 1,
-    # then decide if we go to recucively call ctx.exp
-    def visitCUexp(self, ctx: XMLExpParser.CuexpContext):
-        x = ctx.idexp().accept(self)
-        p = ctx.vexp().accept(self)  # this will pass the visitor to the child of ctx
-        if self.st.get(x).getBits()[p]:
-            ctx.program().accept(self)
-        else:
-            return  # do nothing
+    def visitLetstmt(self, ctx: XMLExpParser.LetstmtContext):
+        return
 
-    # my previous rz parsing is wrong
-    # it should be RZ q posi
-    def visitRzexp(self, ctx: XMLExpParser.RzexpContext):
-        q = int(ctx.vexp(0).accept(self))  # I guess then you need to define vexp
-        # we can first define the var and integer case
-        # I guess Identifier and int are all terminal
-        # does it means that we do not need to define anything?
-        x = ctx.idexp().accept(self)
-        p = ctx.vexp(1).accept(self)  # this will pass the visitor to the child of ctx
-        if q >= 0:
-            self.st.update({x: times_rotate(self.st.get(x), q, self.env.get(x))})
-        else:
-            self.st.update({x: times_r_rotate(self.st.get(x), abs(q), self.env.get(x))})
+    def visitPrintstmt(self, ctx: XMLExpParser.PrintstmtContext):
+        return
 
-    # SR n x, now variables are all string, are this OK?
-    def visitSrexp(self, ctx: XMLExpParser.SrexpContext):
-        n = int(ctx.vexp().accept(self))
-        x = ctx.idexp().accept(self)
-        if n >= 0:
-            self.sr_rotate(x, n)
-        else:
-            self.srr_rotate(x, abs(n))
+    def visitIfstmt(self, ctx: XMLExpParser.IfstmtContext):
+        return
 
-    def lshift(self, x, n):
-        if n == 0:
-            return
+    def visitBreakstmt(self, ctx: XMLExpParser.BreakstmtContext):
+        return
 
-        tmp = self.st.get(x).getBits()
-        tmpv = tmp[0]
-        for i in range(n - 1):
-            tmp[i] = tmp[i + 1]
-        tmp[n - 1] = tmpv
-        return self.st.update({x: Coq_nval(tmp, self.st.get(x).getPhase())})
+    def visitReturnstmt(self, ctx: XMLExpParser.ReturnstmtContext):
+        return
 
-    def visitLshiftexp(self, ctx: XMLExpParser.LshiftexpContext):
-        x = ctx.idexp().accept(self)
-        return self.lshift(x, self.env.get(x))
+    def visitLoopstmt(self, ctx: XMLExpParser.LoopstmtContext):
+        return
 
-    def rshift(self, x, n):
-        if n == 0:
-            return
+    def visitForstmt(self, ctx: XMLExpParser.ForstmtContext):
+        return
 
-        tmp = self.st.get(x)
-        tmpv = tmp[n - 1]
-        for i in range(n - 1, -1, -1):
-            tmp[i] = tmp[i - 1]
+    def visitExp(self, ctx: XMLExpParser.ExpContext):
+        ctx.vexp().accept(self)
+        return
 
-        tmp[0] = tmpv
-        self.st.update({x: Coq_nval(tmp, self.st.get(x).getPhase())})
+    def visitIdexp(self, ctx: XMLExpParser.IdexpContext):
+        return
 
-    def visitRshiftexp(self, ctx: XMLExpParser.RshiftexpContext):
-        x = ctx.idexp().accept(self)
-        return self.rshift(x, self.env.get(x))
+    def visitStringval(self, ctx: XMLExpParser.StringvalContext):
+        return
 
-    def reverse(self, x, n):
-        if n == 0:
-            return
+    def visitVexp(self, ctx:XMLExpParser.VexpContext):
+        ctx.accept(self)
+        return
 
-        size = n
-        tmp = self.st.get(x)
-        tmpa = []
-        for i in range(n):
-            tmpa.append(tmp[size - i])
-        self.st.update({x: Coq_nval(tmp, self.st.get(x).getPhase())})
+    def visitNumexp(self, ctx:XMLExpParser.NumexpContext):
+        return
 
-    def visitRevexp(self, ctx: XMLExpParser.RevexpContext):
-        x = ctx.idexp().accept(self)
-        return self.reverse(x, self.env.get(x))
+    def visitBinexp(self, ctx:XMLExpParser.BinexpContext):
+        return
 
-    def turn_qft(self, x, n):
-        val = self.st.get(x)
-        r1 = val.getPhase()
-        r2 = 0
-        if isinstance(val, Coq_nval):
-            for i in range(n):
-                r2 = (r2 + pow(2, i) * int(val.getBits()[i])) % pow(2, n)
-        self.st.update({x: Coq_qval(r1, r2, n)})
-
-    # actually, we need to change the QFT function
-    # the following QFT is only for full QFT, we did not have the case for AQFT
-    def visitQftexp(self, ctx: XMLExpParser.QftexpContext):
-        x = ctx.idexp().accept(self)
-        b = int(ctx.vexp().accept(self))
-        self.turn_qft(x, self.env.get(x) - b)
-
-    # TODO implement
-    def turn_rqft(self, x, n):
-        val = self.st.get(x)
-        if isinstance(val, Coq_qval):
-            tmp = val.getLocal()
-            tov = [False] * n
-            for i in range(n):
-                b = tmp % 2
-                tmp = tmp // 2
-                tov[i] = bool(b)
-            print(tov)
-            self.st.update({x: Coq_nval(tov, val.getPhase())})
-
-    def visitRqftexp(self, ctx: XMLExpParser.RqftexpContext):
-        x = ctx.idexp().accept(self)
-        b = int(ctx.vexp().accept(self))
-        self.turn_rqft(x, self.env.get(x) - b)
+    def visitBoolexp(self, ctx: XMLExpParser.BoolexpContext):
+        return
 
     def visit(self, ctx: ParserRuleContext):
         if ctx.getChildCount() > 0:

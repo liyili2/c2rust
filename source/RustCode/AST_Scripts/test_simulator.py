@@ -33,7 +33,10 @@ class Test_Simulator(object):
         t_stream = CommonTokenStream(lexer)
         parser = XMLExpParser(t_stream)
         tree = parser.program()
-        print(tree.toStringTree(recog=parser))
+        # for xml printer:
+        # XMLVisitor newprint = XMLVisitor()
+        # stringa = newprint.visitProgram(tree)
+        print(tree.toStringTree(recog=parser)) # for xml printer: XMLVisitor newprint = XMLVisitor()
 
         # the following shows an example of using 1 variable state. You can have a 10 variable state
         # see that a variable is a string.
