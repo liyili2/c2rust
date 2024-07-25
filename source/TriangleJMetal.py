@@ -13,9 +13,9 @@ from pyggi.algorithms import LocalSearch
 # For modified program + repair
 from repairCode.crossover import PyggiCrossover
 from repairCode.mutation import NullMutation
-from repairCode.patch import PyggiPatch
+from repairCode.cpatch import PyggiPatch
 from repairCode.operators import QGateReplacement, QGateInsertion, QGateDeletion
-from repairCode.program import MyLineProgram, MyTreeProgram, MyProgram
+from repairCode.cprogram import MyLineProgram, MyTreeProgram, MyProgram
 from jmetal.algorithm.singleobjective import GeneticAlgorithm
 from jmetal.operator import BinaryTournamentSelection
 from jmetal.util.termination_criterion import StoppingByQualityIndicator

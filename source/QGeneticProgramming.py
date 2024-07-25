@@ -2,7 +2,7 @@ from RustCode.AST_Scripts.XMLVisitor import XMLVisitor
 from RustCode.simulator import Simulator, Coq_nval, CalInt
 from repairCode.crossover import QCrossover
 from repairCode.mutation import QMutation
-from repairCode.patch import QPatch
+from repairCode.cpatch import QPatch
 from Source.repairCode.program import QProblem
 
 from pyggi.base import AbstractProgram

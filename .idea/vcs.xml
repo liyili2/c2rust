@@ -3,5 +3,18 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/external" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/external/examples/genann/repo" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/external/examples/grabc/repo" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/external/examples/libxml2/repo" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/external/examples/lil/repo" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/external/examples/snudown/repo" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/external/examples/snudown/repo/fuzzing/gumbo_snudown" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/external/examples/snudown/repo/fuzzing/gumbo_snudown/testdata" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/external/examples/snudown/repo/fuzzing/gumbo_snudown/third_party/gtest" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/external/examples/tinycc/repo" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/external/examples/tmux/repo" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/external/examples/urlparser/repo" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/external/examples/xzoom/repo" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/rsc-regexp" vcs="Git" />
   </component>
 </project>
