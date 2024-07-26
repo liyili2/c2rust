@@ -3,8 +3,10 @@
 from collections import ChainMap
 
 from antlr4 import InputStream, CommonTokenStream
-from RustCode.AST_Scripts.XMLVisitor import XMLVisitor
-from simulator import *
+
+from RustCode.AST_Scripts.XMLExpParser import XMLExpParser
+from RustCode.AST_Scripts.XMLPrinter import XMLPrinter
+#from simulator import *
 from XMLExpLexer import XMLExpLexer
 
 ####################
@@ -31,15 +33,19 @@ class Test_Simulator(object):
     def test_init(self):
         #
         str = " <STMT type = Block> <STMT type = Let> <ID> some_number </ID> <VEXP> 7 </VEXP> </STMT> <STMT type = Let> add_number <VEXP OP = Plus> <ID> some_number </ID> <VEXP> 3 </VEXP> </VEXP> </STMT> </STMT> "
+
         i_stream = InputStream(str)
         lexer = XMLExpLexer(i_stream)
         t_stream = CommonTokenStream(lexer)
         parser = XMLExpParser(t_stream)
         tree = parser.program()
         # for xml printer:
-        newprint = XMLVisitor()
+        newprint = XMLPrinter()
         stringa = newprint.visitProgram(tree)
+
         print(stringa) # for xml printer: XMLVisitor newprint = XMLVisitor()
+
+        # test things out to figure out why nothing is being printed
 
 
         # assert()
@@ -50,5 +56,9 @@ class Test_Simulator(object):
         #assert newState == state
 
 def test_trivial():
-    Test_Simulator()
+    print("Happy")
+    # Now, I need to create the object (Test_Simulator()), and call its function.
+    tester = Test_Simulator().test_init()
     # assert True
+
+test_trivial()

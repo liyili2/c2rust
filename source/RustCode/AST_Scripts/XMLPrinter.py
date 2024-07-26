@@ -1,7 +1,6 @@
 from collections import ChainMap
 from types import NoneType
 
-from RustCode.AST_Scripts import ExpParser
 from XMLExpVisitor import XMLExpVisitor
 from XMLExpParser import XMLExpParser
 
@@ -37,7 +36,7 @@ def M_find(k, M: ChainMap):
             return M_find(k, M)
 
 
-def findVar(node: ExpParser.VexpContext):
+def findVar(node: XMLExpParser.VexpContext):
     return node.Identifier().getText()
     # if isinstance(node, ExpParser.Number):
     #    return node.getText()
@@ -52,7 +51,28 @@ class XMLPrinter(XMLExpVisitor):
         self.indentation = 0
 
     def visitProgram(self, ctx: XMLExpParser.ProgramContext):
-        ctx.accept(self) # This will automatically detect and find the corresponding context to call the visit func of
+        # This doesn't automatically find the correct one to call, rather it creates an infinite loop
+        # I will likely just need to use a case analysis
+        if ctx.letstmt() is not None:
+            ctx.letstmt().accept(self)
+        elif ctx.exp() is not None:
+            ctx.exp().accept(self)
+        elif ctx.printstmt() is not None:
+            ctx.printstmt().accept(self)
+        elif ctx.blockstmt() is not None:
+            ctx.blockstmt().accept(self)
+        elif ctx.ifstmt() is not None:
+            ctx.ifstmt().accept(self)
+        elif ctx.breakstmt() is not None:
+            ctx.breakstmt().accept(self)
+        elif ctx.returnstmt() is not None:
+            ctx.returnstmt().accept(self)
+        elif ctx.loopstmt() is not None:
+            ctx.loopstmt().accept(self)
+        elif ctx.forstmt() is not None:
+            ctx.forstmt().accept(self)
+
+        # ctx.accept(self) # This will automatically detect and find the corresponding context to call the visit func of
 
     def visitBlockstmt(self, ctx: XMLExpParser.BlockstmtContext):
         self.xml_output += "  " * self.indentation + "<stmt type = block>"
