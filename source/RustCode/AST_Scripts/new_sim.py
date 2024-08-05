@@ -1,4 +1,5 @@
 from collections import ChainMap
+from collections import deque
 # from types import NoneType
 
 from antlr4 import ParserRuleContext
@@ -147,6 +148,7 @@ class Simulator(XMLExpVisitor):
     def __init__(self, st: dict):
         # need st --> state we are dealing with
         self.st = st
+        self.stack_bools = deque()
 
 
     def get_state(self):
@@ -166,12 +168,45 @@ class Simulator(XMLExpVisitor):
 
     # I need to write the function of these grammar now, not just print them out
 
-    # should do nothing
+    # this uses if statements to call the various visit functions
     def visitProgram(self, ctx: XMLExpParser.ProgramContext):
-        return
+        # I will need to modify this so that block can tell when certain things happen?
+        result = None
+        if ctx.letstmt() is not None:
+            result = ctx.letstmt().accept(self)
+        elif ctx.exp() is not None:
+            result = ctx.exp().accept(self)
+        elif ctx.printstmt() is not None:
+            result = ctx.printstmt().accept(self)
+        elif ctx.blockstmt() is not None:
+            result = ctx.blockstmt().accept(self)
+        elif ctx.ifstmt() is not None:
+            result = ctx.ifstmt().accept(self)
+        elif ctx.breakstmt() is not None:
+            result = ctx.breakstmt().accept(self)
+        elif ctx.returnstmt() is not None:
+            result = ctx.returnstmt().accept(self)
+        elif ctx.loopstmt() is not None:
+            result = ctx.loopstmt().accept(self)
+        elif ctx.forstmt() is not None:
+            result = ctx.forstmt().accept(self)
 
-    # should do nothing as well?
+        return result
+
+    # This is somewhat complicated to simulate
     def visitBlockstmt(self, ctx: XMLExpParser.BlockstmtContext):
+        # This just calls visit program multiple times, it won't return?
+        # only calls things? and break statement is where changes happen to loop, not block statement
+        # Maybe only return certain things, e.g., result of a break statement.
+        # This will need to be determined by the result of program, maybe something like, None is returned except
+        # for certain things by program?
+
+        i = 0
+        while ctx.program(i) is not None:
+            ctx.program(i).accept(self)
+            i += 1
+
+
         return
 
     # Let statement should assign something?
@@ -189,13 +224,25 @@ class Simulator(XMLExpVisitor):
         return
 
     def visitIfstmt(self, ctx: XMLExpParser.IfstmtContext):
-        return
+        if_result = ctx.vexp().accept(self)
+        result = None
+
+        if if_result:
+            result = ctx.blockstmt.accept(self)
+        else:
+            result = ctx.blockstmt.accept(self)
+
+
+        return result
 
     def visitBreakstmt(self, ctx: XMLExpParser.BreakstmtContext):
         # This will be more complicated due to the different types of loops
+        self.stack_bools.pop()
+        self.stack_bools.append(False)
+
         if ctx.vexp() is not None:
             return ctx.vexp().accept(self)
-        return
+        return None # maybe this is better to return?
 
     def visitReturnstmt(self, ctx: XMLExpParser.ReturnstmtContext):
         if ctx.vexp() is None:
@@ -205,8 +252,22 @@ class Simulator(XMLExpVisitor):
 
     def visitLoopstmt(self, ctx: XMLExpParser.LoopstmtContext):
         # This is the loop keyword. For this type of loop, break statement can return a value
+        # A loop statement contains a block statement, and if a break appears in the immediate block statement,
+        # this loop will end?
+        # The result of a loop comes only from the break statement.
+        self.stack_bools.append(True)
 
-        return
+        # now, the loop goes into the block
+        block_result = ctx.blockstmt().accept(self)
+
+        top = self.stack_bools.pop()
+        if not top:
+            return block_result # this means break statement was called and it is returned back?
+        else:
+            # call this function again?
+            self.visitLoopstmt(ctx) # is this correct?
+
+        return None
 
     def visitForstmt(self, ctx: XMLExpParser.ForstmtContext):
         # This is the traditional for loop
@@ -245,16 +306,40 @@ class Simulator(XMLExpVisitor):
         return number
 
     def visitBinexp(self, ctx:XMLExpParser.BinexpContext):
-        operator = ctx.OP()
+        operator = str(ctx.OP())
         # This will be very complicated.
         a = ctx.vexp().accept(self)
         b = ctx.vexp().accept(self)
         # range is more complicated due to there being an = operator. I can forget about this case for now.
+        # Now, I need to write out the cases for each operator.
+
 
         if operator == '+':
-            result = a + b
+            return a + b
+        elif operator == '-':
+            return a - b
+        elif operator == '*':
+            return a * b
+        elif operator == '/':
+            return a / b
+        elif operator == '%':
+            return a % b
+        elif operator == '^':
+            return pow(a, b)
+        elif operator == '&&':
+            return a and b
+        elif operator == '||':
+            return a or b
+        elif operator == '<':
+            return a < b
+        elif operator == '==':
+            return a == b
+        elif operator == '..':
+            result = range(a, b)
+            return result
 
-        return
+
+        return None
 
     def visitBoolexp(self, ctx: XMLExpParser.BoolexpContext):
         if ctx.TrueLiteral() is not None:
@@ -272,8 +357,8 @@ class Simulator(XMLExpVisitor):
         return ctx.Identifier().accept(self)
 
     # Visit a parse tree produced by XMLExpParser#vexp.
-    def visitVexp(self, ctx: XMLExpParser.VexpContext):
-        return ctx.numexp().accept(self)
+    # def visitVexp(self, ctx: XMLExpParser.VexpContext):
+    #     return ctx.numexp().accept(self)
 
     # the only thing that matters will be 48 and 47
     def visitTerminal(self, node):
