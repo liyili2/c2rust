@@ -8,6 +8,8 @@ blockstmt: '<' STMT 'type' '=' '\'' Block '\'' '>' program '</' STMT '>' ;
 
 letstmt : '<' STMT 'type' '=' '\'' Let '\'' ID '=' '\'' Identifier '\'' '>' exp '</' STMT '>' ;
 
+matchstmt: '<' STMT 'type' '=' '\'' Match '\'' '\'' Identifier '\'' '>' blockstmt '</' STMT '>';
+
 printstmt: '<' STMT 'type' '=' '\'' Print '\'' '>' stringval exp '</' STMT '>' ;
 
 ifstmt: '<' STMT 'type' '=' '\'' IF '\'' '>' vexp blockstmt blockstmt '</' STMT '>' ;
