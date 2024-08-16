@@ -1,6 +1,6 @@
-# Generated from XMLExp.g4 by ANTLR 4.13.1
+# Generated from XMLExp.g4 by ANTLR 4.7.2
 from antlr4 import *
-if "." in __name__:
+if __name__ is not None and "." in __name__:
     from .XMLExpParser import XMLExpParser
 else:
     from XMLExpParser import XMLExpParser
@@ -14,6 +14,15 @@ class XMLExpListener(ParseTreeListener):
 
     # Exit a parse tree produced by XMLExpParser#program.
     def exitProgram(self, ctx:XMLExpParser.ProgramContext):
+        pass
+
+
+    # Enter a parse tree produced by XMLExpParser#stmt.
+    def enterStmt(self, ctx:XMLExpParser.StmtContext):
+        pass
+
+    # Exit a parse tree produced by XMLExpParser#stmt.
+    def exitStmt(self, ctx:XMLExpParser.StmtContext):
         pass
 
 
@@ -98,30 +107,12 @@ class XMLExpListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by XMLExpParser#idexp.
-    def enterIdexp(self, ctx:XMLExpParser.IdexpContext):
-        pass
-
-    # Exit a parse tree produced by XMLExpParser#idexp.
-    def exitIdexp(self, ctx:XMLExpParser.IdexpContext):
-        pass
-
-
     # Enter a parse tree produced by XMLExpParser#stringval.
     def enterStringval(self, ctx:XMLExpParser.StringvalContext):
         pass
 
     # Exit a parse tree produced by XMLExpParser#stringval.
     def exitStringval(self, ctx:XMLExpParser.StringvalContext):
-        pass
-
-
-    # Enter a parse tree produced by XMLExpParser#vexp.
-    def enterVexp(self, ctx:XMLExpParser.VexpContext):
-        pass
-
-    # Exit a parse tree produced by XMLExpParser#vexp.
-    def exitVexp(self, ctx:XMLExpParser.VexpContext):
         pass
 
 
@@ -134,12 +125,30 @@ class XMLExpListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by XMLExpParser#binexp.
-    def enterBinexp(self, ctx:XMLExpParser.BinexpContext):
+    # Enter a parse tree produced by XMLExpParser#atype.
+    def enterAtype(self, ctx:XMLExpParser.AtypeContext):
         pass
 
-    # Exit a parse tree produced by XMLExpParser#binexp.
-    def exitBinexp(self, ctx:XMLExpParser.BinexpContext):
+    # Exit a parse tree produced by XMLExpParser#atype.
+    def exitAtype(self, ctx:XMLExpParser.AtypeContext):
+        pass
+
+
+    # Enter a parse tree produced by XMLExpParser#idexp.
+    def enterIdexp(self, ctx:XMLExpParser.IdexpContext):
+        pass
+
+    # Exit a parse tree produced by XMLExpParser#idexp.
+    def exitIdexp(self, ctx:XMLExpParser.IdexpContext):
+        pass
+
+
+    # Enter a parse tree produced by XMLExpParser#vexp.
+    def enterVexp(self, ctx:XMLExpParser.VexpContext):
+        pass
+
+    # Exit a parse tree produced by XMLExpParser#vexp.
+    def exitVexp(self, ctx:XMLExpParser.VexpContext):
         pass
 
 
@@ -152,14 +161,3 @@ class XMLExpListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by XMLExpParser#boolexp.
-    def enterBoolexp(self, ctx:XMLExpParser.BoolexpContext):
-        pass
-
-    # Exit a parse tree produced by XMLExpParser#boolexp.
-    def exitBoolexp(self, ctx:XMLExpParser.BoolexpContext):
-        pass
-
-
-
-del XMLExpParser

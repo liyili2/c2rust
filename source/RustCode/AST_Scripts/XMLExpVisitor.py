@@ -1,6 +1,6 @@
-# Generated from XMLExp.g4 by ANTLR 4.13.1
+# Generated from XMLExp.g4 by ANTLR 4.7.2
 from antlr4 import *
-if "." in __name__:
+if __name__ is not None and "." in __name__:
     from .XMLExpParser import XMLExpParser
 else:
     from XMLExpParser import XMLExpParser
@@ -11,6 +11,11 @@ class XMLExpVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by XMLExpParser#program.
     def visitProgram(self, ctx:XMLExpParser.ProgramContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by XMLExpParser#stmt.
+    def visitStmt(self, ctx:XMLExpParser.StmtContext):
         return self.visitChildren(ctx)
 
 
@@ -59,18 +64,8 @@ class XMLExpVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by XMLExpParser#idexp.
-    def visitIdexp(self, ctx:XMLExpParser.IdexpContext):
-        return self.visitChildren(ctx)
-
-
     # Visit a parse tree produced by XMLExpParser#stringval.
     def visitStringval(self, ctx:XMLExpParser.StringvalContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by XMLExpParser#vexp.
-    def visitVexp(self, ctx:XMLExpParser.VexpContext):
         return self.visitChildren(ctx)
 
 
@@ -79,18 +74,23 @@ class XMLExpVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by XMLExpParser#binexp.
-    def visitBinexp(self, ctx:XMLExpParser.BinexpContext):
+    # Visit a parse tree produced by XMLExpParser#atype.
+    def visitAtype(self, ctx:XMLExpParser.AtypeContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by XMLExpParser#idexp.
+    def visitIdexp(self, ctx:XMLExpParser.IdexpContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by XMLExpParser#vexp.
+    def visitVexp(self, ctx:XMLExpParser.VexpContext):
         return self.visitChildren(ctx)
 
 
     # Visit a parse tree produced by XMLExpParser#op.
     def visitOp(self, ctx:XMLExpParser.OpContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by XMLExpParser#boolexp.
-    def visitBoolexp(self, ctx:XMLExpParser.BoolexpContext):
         return self.visitChildren(ctx)
 
 

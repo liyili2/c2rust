@@ -1,10 +1,12 @@
 grammar XMLExp;
 
-program: letstmt | exp | printstmt | blockstmt | ifstmt | breakstmt | returnstmt | loopstmt | forstmt;
+program: stmt (stmt)*;
 
-blockstmt: '<' STMT 'type' '=' '\'' Block '\'' '>' (program +) '</' STMT '>' ;
+stmt: letstmt | exp | printstmt | blockstmt | ifstmt | breakstmt | returnstmt | loopstmt | forstmt;
 
-letstmt : '<' STMT 'type' '=' '\'' Let '\'' '>' idexp exp '</' STMT '>' ;
+blockstmt: '<' STMT 'type' '=' '\'' Block '\'' '>' program '</' STMT '>' ;
+
+letstmt : '<' STMT 'type' '=' '\'' Let '\'' ID '=' '\'' Identifier '\'' '>' exp '</' STMT '>' ;
 
 printstmt: '<' STMT 'type' '=' '\'' Print '\'' '>' stringval exp '</' STMT '>' ;
 
@@ -16,26 +18,28 @@ returnstmt: '<' STMT 'type' '=' '\'' Return '\'' '>' (vexp ?) '</' STMT '>' ;
 
 loopstmt: '<' STMT 'type' '=' '\'' Loop '\'' '>' blockstmt '</' STMT '>' ;
 
-forstmt: '<' STMT 'type' '=' '\'' For '\'' '>' idexp vexp blockstmt '</' STMT '>' ;
+forstmt: '<' STMT 'type' '=' '\'' For '\'' ID '=' '\'' Identifier '\'' '>' vexp blockstmt '</' STMT '>' ;
 
 exp: vexp ;
 
-idexp : '<' ID '>' Identifier '</' ID '>';
+stringval : '<' VEXP OP '=' '\'' String '\'' '>' StrLiteral '</' VEXP '>';
 
-stringval : '<' Value '>' StrLiteral '</' Value '>';
+numexp: Number | Minus Number;
 
-vexp: idexp | numexp | boolexp | binexp | binexp;
+atype: Int | Bool;
 
-numexp: '<' 'num' '>' (Number | Minus Number) '</' 'num' '>';
+idexp : '<' VEXP OP '=' '\'' ID '\'' ('type' '=' '\'' atype '\'')? '>' Identifier '</' VEXP '>' ;
 
-binexp: '<' VEXP OP '=' '\'' op '\'' '>' vexp vexp '</' VEXP '>';
+vexp: idexp
+    | stringval
+    | '<' VEXP OP '=' '\'' NUM '\'' '>' numexp '</' VEXP '>'
+    | '<' VEXP OP '=' '\'' Bool '\'' '>' (TrueLiteral | FalseLiteral) '</' VEXP '>'
+    | '<' VEXP OP '=' '\'' op '\'' '>' vexp vexp '</' VEXP '>';
         
  // Lexical Specification of this Programming Language
  //  - lexical specification rules start with uppercase
 
 op: Plus | Minus | Times | Div | Mod | Exp | And | Less | Equal | Or | Range;
-
-boolexp: '<' 'bool' '>' (TrueLiteral | FalseLiteral) '</' 'bool' '>' ;
 
  TrueLiteral : '#t' ;
  FalseLiteral : '#f' ;
@@ -91,13 +95,19 @@ boolexp: '<' 'bool' '>' (TrueLiteral | FalseLiteral) '</' 'bool' '>' ;
 
  Let : 'let';
 
+ Int : 'int';
+
+ Bool : 'bool';
+
  Value : 'value';
+
+ String : 'string';
 
  Print : 'print';
 
  Number : DIGIT+ ;
 
-
+ NUM: 'num';
 
  Identifier :   Letter LetterOrDigit*;
 
