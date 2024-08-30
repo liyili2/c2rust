@@ -4,8 +4,12 @@ from collections import deque
 
 from ProgramVisitor import *
 from XMLProgrammer import *
+from XMLExpParser import *
 
 NoneType = type(None)
+
+# I need to add Box maybe?
+# I also may need to add arrays
 
 class Simulator(ProgramVisitor):
     # x, y, z, env : ChainMap{ x: n, y : m, z : v} , n m v are nat numbers 100, 100, 100, eg {x : 128}
@@ -32,6 +36,10 @@ class Simulator(ProgramVisitor):
         x = ctx.idexp().ID() # make idexp return identifier
         y = ctx.exp().accept(self) # exp will return the value
         self.st.update({str(x) : y})
+        return
+
+    def visitMatch(self, ctx):
+
         return
 
     def visitPrint(self, ctx: XMLProgrammer.QXPrint):
@@ -111,7 +119,7 @@ class Simulator(ProgramVisitor):
     def visitBool(self, ctx: XMLProgrammer.QXBool):
         return ctx.bool()
 
-    def visitBinexp(self, ctx:XMLExpParser.BinexpContext):
+    def visitBinexp(self, ctx: XMLExpParser.BinexpContext):
         operator = str(ctx.OP())
         # This will be very complicated.
         a = ctx.vexp().accept(self)
