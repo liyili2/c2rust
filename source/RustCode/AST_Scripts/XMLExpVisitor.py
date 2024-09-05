@@ -29,6 +29,11 @@ class XMLExpVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by XMLExpParser#matchstmt.
+    def visitMatchstmt(self, ctx:XMLExpParser.MatchstmtContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by XMLExpParser#printstmt.
     def visitPrintstmt(self, ctx:XMLExpParser.PrintstmtContext):
         return self.visitChildren(ctx)

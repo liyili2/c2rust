@@ -44,6 +44,15 @@ class XMLExpListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by XMLExpParser#matchstmt.
+    def enterMatchstmt(self, ctx:XMLExpParser.MatchstmtContext):
+        pass
+
+    # Exit a parse tree produced by XMLExpParser#matchstmt.
+    def exitMatchstmt(self, ctx:XMLExpParser.MatchstmtContext):
+        pass
+
+
     # Enter a parse tree produced by XMLExpParser#printstmt.
     def enterPrintstmt(self, ctx:XMLExpParser.PrintstmtContext):
         pass
