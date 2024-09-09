@@ -1,0 +1,28 @@
+<function name="aggregate">
+    <parameters>
+        <param name="list" type="i32[]"/>
+    </parameters>
+    <variables>
+        <var name="len" expression="len(list)"/>
+        <var name="ret" type="i32[]" size="((len &gt;&gt; 1) + (len &amp; 0b1))" defaultValue="0"/>
+    </variables>
+    <logic>
+        <for from="0" to="len(list)">
+            <if condition="i % 2 == 1">
+                <assignment>
+                    <target>ret[i // 2]</target>
+                    <value>ret[i // 2] + list[i]</value>
+                </assignment>
+            </if>
+            <else>
+                <assignment>
+                    <target>ret[i // 2]</target>
+                    <value>list[i]</value>
+                </assignment>
+            </else>
+        </for>
+    </logic>
+    <return>ret</return>
+</function>
+
+

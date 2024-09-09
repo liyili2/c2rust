@@ -1,0 +1,30 @@
+<function name="aggregate">
+   
+    <parameters>
+        <parameter name="list" type="array of i32"/>
+    </parameters>
+    <body>
+        <variable name="len" type="usize">
+            <expression>len(list)</expression>
+        </variable>
+        <variable name="ret" type="array of i32">
+            <expression>vec![0; (len >> 1) + (len &amp; 0b0001)]</expression>
+        </variable>
+        <loop type="for" from="0" to="len">
+            <condition type="if" expression="i % 2 == 1">
+                <assignment target="ret[i / 2]">
+                    <expression>ret[i / 2] + list[i]</expression>
+                </assignment>
+            </condition>
+            <condition type="else">
+                <assignment target="ret[i / 2]">
+                    <expression>list[i]</expression>
+                </assignment>
+            </condition>
+        </loop>
+        <return>
+            <value>ret</value>
+        </return>
+    </body>
+</function>
+
