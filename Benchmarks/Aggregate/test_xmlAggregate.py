@@ -2,35 +2,16 @@ import xml.etree.ElementTree as ET
 import pytest
 import time
 
-# The XML string with properly escaped special characters
-xml_string = """
-<function name="aggregate">
-    <parameters>
-        <param name="lst" type="i32[]"/>
-    </parameters>
-    <variables>
-        <var name="length" expression="len(lst)"/>
-        <var name="ret" type="i32[]" size="((length &gt;&gt; 1) + (length &amp; 0b1))" defaultValue="0"/>
-    </variables>
-    <logic>
-        <for from="0" to="len(lst)">
-            <if condition="i % 2 == 1">
-                <assignment>
-                    <target>ret[i // 2]</target>
-                    <value>ret[i // 2] + lst[i]</value>
-                </assignment>
-            </if>
-            <else>
-                <assignment>
-                    <target>ret[i // 2]</target>
-                    <value>lst[i]</value>
-                </assignment>
-            </else>
-        </for>
-    </logic>
-    <return>ret</return>
-</function>
-"""
+
+# Function to read XML from a file
+def read_xml_from_file(file_path):
+    with open(file_path, 'r') as file:
+        return file.read()
+
+# Use the read_xml_from_file function to load the XML
+xml_file_path = "aggregate.xml"  # Path to your XML file
+xml_string = read_xml_from_file(xml_file_path)
+
 
 def parse_xml(xml_string):
     root = ET.fromstring(xml_string)
@@ -89,13 +70,60 @@ def aggregate_from_xml(lst):
     
     return local_vars[function_name](lst)
 
-def test_aggregate():
-    print("Running....")
+def test_aggregate_empty():
     assert aggregate_from_xml([]) == []
-    assert aggregate_from_xml([1, 2, 3, 4,5]) == [3, 7, 5]
-    assert aggregate_from_xml([-10, -20, 20-30, 40, 50]) == [30, 70, 50]
-    assert aggregate_from_xml([]) == []
+
+def test_aggregate_natnum():
+    assert aggregate_from_xml([1, 2, 3, 4, 5]) == [3, 7, 5]
+
+def test_aggregate_even_num():
+    assert aggregate_from_xml([1, 2, 3, 4]) == [3, 7]
+
+def test_aggregate_single_element():
     assert aggregate_from_xml([5]) == [5]
+
+def test_aggregate_all_same_elements():
+    assert aggregate_from_xml([2, 2, 2, 2]) == [4, 4]
+
+def test_aggregate_negative_numbers():
+    assert aggregate_from_xml([-1, -2, -3, -4]) == [-3, -7]
+
+def test_aggregate_mixed_pos_neg():
+    assert aggregate_from_xml([1, -2, 3, -4]) == [-1, -1]
+
+def test_aggregate_zeroes():
+    assert aggregate_from_xml([0, 0, 0, 0]) == [0, 0]
+
+def test_aggregate_large_numbers():
+    assert aggregate_from_xml([1000, 2000, 3000, 4000]) == [3000, 7000]
+
+def test_aggregate_mixed_data_types():
+    assert aggregate_from_xml([1.5, 2.5, 3.5, 4.5]) == [4.0, 8.0]
+
+def test_aggregate_alternating_pos_neg():
+    assert aggregate_from_xml([10, -10, 20, -20, 30]) == [0, 0, 30]
+
+def test_aggregate_max_integers():
+    assert aggregate_from_xml([2147483647, 2147483647, 2147483647, 2147483647]) == [4294967294, 4294967294]
+
+def test_aggregate_increasing_sequence():
+    assert aggregate_from_xml([1, 2, 3, 4, 5, 6]) == [3, 7, 11]
+
+def test_aggregate_decreasing_sequence():
+    assert aggregate_from_xml([6, 5, 4, 3, 2, 1]) == [11, 7, 3]
+
+def test_aggregate_single_pair():
+    assert aggregate_from_xml([7, 8]) == [15]
+
+def test_aggregate_large_sequential():
+    assert aggregate_from_xml(list(range(1, 101))) == [sum(pair) for pair in zip(range(1, 101, 2), range(2, 102, 2))]
+
+def test_aggregate_floating_point_precision():
+    assert aggregate_from_xml([0.1, 0.2, 0.3, 0.4]) == [0.3, 0.7]
+
+def test_aggregate_alternating_large_negatives():
+    assert aggregate_from_xml([1000, -100000, 2000, -200000]) == [-99000, -198000]
+
 
 @pytest.fixture(scope="session", autouse=True)
 def starter(request):
