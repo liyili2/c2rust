@@ -16,7 +16,7 @@ from repairCode.cproblem import CProblem
 from repairCode.mutation import PyGGiMutation
 from repairCode.crossover import PyGGiCrossover
 # Custom Operators
-from repairCode.operators import CGateReplacement, CGateInsertion, CGateDeletion
+#from repairCode.operators import CGateReplacement, CGateInsertion, CGateDeletion
 
 
 class MyXmlEngine(XmlEngine):
@@ -61,7 +61,7 @@ class StoppingByEvaluationORFitness(StoppingByEvaluations):
 
 def parser_generator():
     parser = argparse.ArgumentParser(description='PYGGI Bug Repair Example')
-    parser.add_argument('--project_path', type=str,   default='Benchmark/rz_adder')
+    parser.add_argument('--project_path', type=str,   default='Benchmarks/Aggregate')
     #parser.add_argument('--project_path', type=str,   default='Benchmark/vqo_small_circuit_ex')
     parser.add_argument('--algorithm',    type=str,   default='ga')
     parser.add_argument('--epoch',        type=int,   default=1,            help='total epoch(default: 1)')
@@ -82,8 +82,8 @@ if __name__ == "__main__":
     # Make a Program
     program = CProgram(args.project_path)
     program.operators = args.operators  # Need to parse args into a list
-    #program.operators = [StmtDeletion, StmtInsertion, StmtReplacement]
-    program.operators = [CGateInsertion]
+    program.operators = [StmtDeletion, StmtInsertion, StmtReplacement]
+    #program.operators = [CGateInsertion]
     program.tags = args.tags
     # Make a Problem
     problem = CProblem(program, number_of_variables=1)
