@@ -19,11 +19,24 @@ class Simulator(ProgramVisitor):
     # x --> v1 --> cal(v1) --> integer
     # Coq_nval(b,r) b == |0> | |1>, r == e^(2 pi i * 1 / n), r = 0 Coq_nval(b, 0)
     # x -> v1 ----> run simulator -----> v2 ---> calInt(v2,128) == (x + 2^10) % 2^128
-    def __init__(self, st: dict):
+    def __init__(self, memory: dict, stack):
         # need st --> state we are dealing with
-        self.st = st
+        self.memory = memory
+        self.stack = stack
         self.stack_bools = deque()
 
+#memory_life_time: variable -> position
+#memory : nat_number -> (offset -> value)
+#stack : variable -> value (nat_number, or some other stack value)
+#pointer a, a -> address_in_stack, address_in_stack -> memory_field,
+#memory_field == value, a is a pointer (associated with the number of data it allocated), memory_field = (value, number_of_fields)
+#value = list of_basic_data, number_field n, 0 -> value0 , 1 -> value1 , 2 -> value2, ...., *(a+i) --> memory_field_of_a with the offset_i
+
+# testing the simulator on real rust programs
+
+#--->  XML form of rust programs. how you can test on real rust?
+
+#Rust_parser -- P --> AST_P (visitor pattern) --> print out (form a string) the XML form (you can decide how to print out) --> our_parser_will_parse the XML_string to XML_Rust -> use simulator.
 
     def get_state(self):
         return self.st
