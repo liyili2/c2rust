@@ -19,14 +19,27 @@ class Simulator(ProgramVisitor):
     # x --> v1 --> cal(v1) --> integer
     # Coq_nval(b,r) b == |0> | |1>, r == e^(2 pi i * 1 / n), r = 0 Coq_nval(b, 0)
     # x -> v1 ----> run simulator -----> v2 ---> calInt(v2,128) == (x + 2^10) % 2^128
-    def __init__(self, st: dict):
+    def __init__(self, memory: dict, stack): # based on creating an abstract machine
         # need st --> state we are dealing with
-        self.st = st
+        self.memory = memory # maybe the memory has the offset
+        self.stack = stack
         self.stack_bools = deque()
+        # The goal is to enable all the examples (see slack): aggregate.rs, bst.rs, nfa.rs
+        # aggregate and bst have some stuff that are missing
+        # i may want to model lifetimes as well
+        # start with doing the memory for the simulator, and later try and implement the lifetime stuff from rust
 
+        # I should also research rust ast: https://doc.rust-lang.org/nightly/nightly-rustc/rustc_ast/ast/index.html
+        # parser -> parse xml into rust, then run the simulator
+        # Rust_parser -- P --> AST_P (visitor pattern) --> print out (form a string) the XML form
+        # (you can decide how to print out) --> our_parser_will_parse the XML_string to XML_Rust -> use simulator.
+
+        # I should do array, array length?, function, reference type, reference operator, make
+        # if left as separate thing, make let statement (maybe)
+        # it's fine to have both match and if left.
 
     def get_state(self):
-        return self.st
+        return self.memory
 
     # I need to write the function of these grammar now, not just print them out
 
@@ -39,7 +52,8 @@ class Simulator(ProgramVisitor):
         return
 
     def visitMatch(self, ctx):
-
+        # I will need to modify things even more or make an entirely new thing just for the match statement (due to
+        # the fact that its syntax is very different)
         return
 
     def visitPrint(self, ctx: XMLProgrammer.QXPrint):

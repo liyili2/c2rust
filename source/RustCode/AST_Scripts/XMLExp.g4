@@ -41,7 +41,7 @@ vexp: idexp
  // Lexical Specification of this Programming Language
  //  - lexical specification rules start with uppercase
 
-op: Plus | Minus | Times | Div | Mod | Exp | And | Less | Equal | Or | Range;
+op: Plus | Minus | Times | Div | Mod | Exp | And | Less | Equal | Or | Range | Reference;
 
  TrueLiteral : '#t' ;
  FalseLiteral : '#f' ;
