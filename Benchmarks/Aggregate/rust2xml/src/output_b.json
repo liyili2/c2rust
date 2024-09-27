@@ -1,0 +1,176 @@
+{
+  "root": {
+    "functions": [
+      {
+        "functionname": [
+          "aggregate"
+        ],
+        "parameters": [
+          {
+            "name": [
+              "list"
+            ],
+            "type": [
+              "&[i32]"
+            ]
+          }
+        ],
+        "return_type": [
+          "Vec<i32>"
+        ],
+        "body": [
+          {
+            "type": [
+              "VariableAssignment"
+            ],
+            "content": [
+              "let len = list . len () ;"
+            ]
+          },
+          {
+            "type": [
+              "VariableAssignment"
+            ],
+            "content": [
+              "let mut ret = vec ! [0 ; (len >> 1) + (len & 0b0001)] ;"
+            ]
+          },
+          {
+            "type": [
+              "Expression"
+            ],
+            "content": [
+              "for i in 0 .. len { if i % 2 == 1 { ret [i / 2] += list [i] ; } else { ret [i / 2] = list [i] ; } }"
+            ]
+          },
+          {
+            "type": [
+              "Expression"
+            ],
+            "content": [
+              "ret"
+            ]
+          }
+        ]
+      },
+      {
+        "functionname": [
+          "printall"
+        ],
+        "parameters": [
+          {
+            "name": [
+              "list"
+            ],
+            "type": [
+              "&[i32]"
+            ]
+          }
+        ],
+        "return_type": [
+          ""
+        ],
+        "body": [
+          {
+            "type": [
+              "Expression"
+            ],
+            "content": [
+              "print ! (\"[\")"
+            ]
+          },
+          {
+            "type": [
+              "Expression"
+            ],
+            "content": [
+              "for i in 0 .. list . len () { print ! (\"{}, \" , list [i]) ; }"
+            ]
+          },
+          {
+            "type": [
+              "Expression"
+            ],
+            "content": [
+              "println ! (\"]\")"
+            ]
+          }
+        ]
+      },
+      {
+        "functionname": [
+          "main"
+        ],
+        "return_type": [
+          ""
+        ],
+        "body": [
+          {
+            "type": [
+              "VariableAssignment"
+            ],
+            "content": [
+              "let test1 : [i32 ; 6] = [1 , 2 , 3 , 4 , 5 , 6] ;"
+            ]
+          },
+          {
+            "type": [
+              "VariableAssignment"
+            ],
+            "content": [
+              "let ret1 = aggregate (& test1) ;"
+            ]
+          },
+          {
+            "type": [
+              "Expression"
+            ],
+            "content": [
+              "printall (& test1)"
+            ]
+          },
+          {
+            "type": [
+              "Expression"
+            ],
+            "content": [
+              "printall (& ret1)"
+            ]
+          },
+          {
+            "type": [
+              "VariableAssignment"
+            ],
+            "content": [
+              "let test2 : [i32 ; 5] = [1 , 2 , 3 , 4 , 5] ;"
+            ]
+          },
+          {
+            "type": [
+              "VariableAssignment"
+            ],
+            "content": [
+              "let ret2 = aggregate (& test2) ;"
+            ]
+          },
+          {
+            "type": [
+              "Expression"
+            ],
+            "content": [
+              "printall (& test2)"
+            ]
+          },
+          {
+            "type": [
+              "Expression"
+            ],
+            "content": [
+              "printall (& ret2)"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,33 @@
+[package]
+name = "rust2xml"
+version = "0.1.0"
+edition = "2021"
+
+
+[dependencies]
+libc = "0.2"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+syn = { version = "1.0", features = ["full", "extra-traits"] }
+quote = "1.0"
+xmltree = "0.11.0"
+proc-macro2 = "1.0"
+xml2json-rs = "1.0"
+quick-xml="0.23"
+
+[[bin]]
+name = "rust2xml"
+path = "src/rust2xml.rs"
+
+
+
+[[bin]]
+name = "xml2json"
+path = "src/xml2json.rs"
+
+[[bin]]
+name = "json2rust"
+path = "src/json2rust.rs"
+
+
+
