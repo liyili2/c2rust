@@ -61,7 +61,7 @@ class StoppingByEvaluationORFitness(StoppingByEvaluations):
 
 def parser_generator():
     parser = argparse.ArgumentParser(description='PYGGI Bug Repair Example')
-    parser.add_argument('--project_path', type=str,   default='Benchmarks/Aggregate')
+    parser.add_argument('--project_path', type=str,   default='Benchmarks/Aggregate/rust2xml/src')
     #parser.add_argument('--project_path', type=str,   default='Benchmark/vqo_small_circuit_ex')
     parser.add_argument('--algorithm',    type=str,   default='ga')
     parser.add_argument('--epoch',        type=int,   default=1,            help='total epoch(default: 1)')
