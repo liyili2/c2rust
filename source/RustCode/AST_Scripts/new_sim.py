@@ -37,6 +37,7 @@ class Simulator(ProgramVisitor):
         # I should do array, array length?, function, reference type, reference operator, make
         # if left as separate thing, make let statement (maybe)
         # it's fine to have both match and if left.
+# xml generated code -> programmer
 #memory_life_time: variable -> position
 #memory : nat_number -> (offset -> value)
 #stack : variable -> value (nat_number, or some other stack value)

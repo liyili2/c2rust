@@ -14,6 +14,8 @@ printstmt: '<' STMT 'type' '=' '\'' Print '\'' '>' stringval exp '</' STMT '>' ;
 
 ifstmt: '<' STMT 'type' '=' '\'' IF '\'' '>' vexp blockstmt blockstmt '</' STMT '>' ;
 
+ifletstmt: '<' STMT 'type' '=' '\'' Iflet '\'' ID '=' '\'' Identifier '\'' '>' vexp blockstmt blockstmt '</' STMT '>' ;
+
 breakstmt: '<' STMT 'type' '=' '\'' Break '\'' '>' (vexp ?) '</' STMT '>' ;
 
 returnstmt: '<' STMT 'type' '=' '\'' Return '\'' '>' (vexp ?) '</' STMT '>' ;
@@ -21,6 +23,10 @@ returnstmt: '<' STMT 'type' '=' '\'' Return '\'' '>' (vexp ?) '</' STMT '>' ;
 loopstmt: '<' STMT 'type' '=' '\'' Loop '\'' '>' blockstmt '</' STMT '>' ;
 
 forstmt: '<' STMT 'type' '=' '\'' For '\'' ID '=' '\'' Identifier '\'' '>' vexp blockstmt '</' STMT '>' ;
+
+vectorstmt: '<' STMT 'type' '=' '\'' Vector '\'' '=' '\'' atype '\'' '>' (numexp+) | (stringval+) | () '</' STMT '>' ;
+
+functionstmt: '<' STMT 'type' '=' '\'' Function '\'' ID '=' '\'' Identifier '\'' '>' (idexp+) blockstmt '</' STMT '>' ;
 
 exp: vexp ;
 
@@ -37,11 +43,12 @@ vexp: idexp
     | '<' VEXP OP '=' '\'' NUM '\'' '>' numexp '</' VEXP '>'
     | '<' VEXP OP '=' '\'' Bool '\'' '>' (TrueLiteral | FalseLiteral) '</' VEXP '>'
     | '<' VEXP OP '=' '\'' op '\'' '>' vexp vexp '</' VEXP '>';
-        
+
+
  // Lexical Specification of this Programming Language
  //  - lexical specification rules start with uppercase
 
-op: Plus | Minus | Times | Div | Mod | Exp | And | Less | Equal | Or | Range | Reference;
+op: Plus | Minus | Times | Div | Mod | Exp | And | Less | Equal | Or | Range | Reference ;
 
  TrueLiteral : '#t' ;
  FalseLiteral : '#f' ;
@@ -73,6 +80,8 @@ op: Plus | Minus | Times | Div | Mod | Exp | And | Less | Equal | Or | Range | R
 
  Equal : '==';
 
+ Reference : '&';
+
  Type : 'type';
 
  STMT : 'stmt';
@@ -82,6 +91,8 @@ op: Plus | Minus | Times | Div | Mod | Exp | And | Less | Equal | Or | Range | R
  VEXP : 'vexp';
 
  IF : 'if';
+
+ Iflet: 'iflet';
 
  Block : 'block';
 
@@ -94,6 +105,10 @@ op: Plus | Minus | Times | Div | Mod | Exp | And | Less | Equal | Or | Range | R
  Loop : 'loop';
 
  For : 'for';
+
+ Vector : 'vec';
+
+ Function : 'fn';
 
  ID : 'id';
 
