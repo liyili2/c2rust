@@ -26,6 +26,8 @@ forstmt: '<' STMT 'type' '=' '\'' For '\'' ID '=' '\'' Identifier '\'' '>' vexp 
 
 vectorstmt: '<' STMT 'type' '=' '\'' Vector '\'' '=' '\'' atype '\'' '>' (numexp+) | (stringval+) | () '</' STMT '>' ;
 
+functionstmt: '<' STMT 'type' '=' '\'' Function '\'' ID '=' '\'' Identifier '\'' '>' (idexp+) blockstmt '</' STMT '>' ;
+
 exp: vexp ;
 
 stringval : '<' VEXP OP '=' '\'' String '\'' '>' StrLiteral '</' VEXP '>';
@@ -105,6 +107,8 @@ op: Plus | Minus | Times | Div | Mod | Exp | And | Less | Equal | Or | Range | R
  For : 'for';
 
  Vector : 'vec';
+
+ Function : 'fn';
 
  ID : 'id';
 
