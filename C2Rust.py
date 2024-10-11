@@ -11,10 +11,10 @@ from jmetal.algorithm.singleobjective import GeneticAlgorithm
 from jmetal.operator import BinaryTournamentSelection
 from jmetal.util.termination_criterion import StoppingByEvaluations
 # For modified program + repair
-from repairCode.cprogram import CProgram
-from repairCode.cproblem import CProblem
-from repairCode.mutation import PyGGiMutation
-from repairCode.crossover import PyGGiCrossover
+from source.repairCode.cprogram import CProgram
+from source.repairCode.cproblem import CProblem
+from source.repairCode.mutation import PyGGiMutation
+from source.repairCode.crossover import PyGGiCrossover
 # Custom Operators
 #from repairCode.operators import CGateReplacement, CGateInsertion, CGateDeletion
 
@@ -61,7 +61,7 @@ class StoppingByEvaluationORFitness(StoppingByEvaluations):
 
 def parser_generator():
     parser = argparse.ArgumentParser(description='PYGGI Bug Repair Example')
-    parser.add_argument('--project_path', type=str,   default='Benchmarks/Aggregate/rust2xml/src')
+    parser.add_argument('--project_path', type=str,   default='Benchmarks/Aggregate/rust2xml')
     #parser.add_argument('--project_path', type=str,   default='Benchmark/vqo_small_circuit_ex')
     parser.add_argument('--algorithm',    type=str,   default='ga')
     parser.add_argument('--epoch',        type=int,   default=1,            help='total epoch(default: 1)')
@@ -80,6 +80,7 @@ def parser_generator():
 if __name__ == "__main__":
     args = parser_generator()
     # Make a Program
+    print("projpath:",args.project_path)
     program = CProgram(args.project_path)
     program.operators = args.operators  # Need to parse args into a list
     program.operators = [StmtDeletion, StmtInsertion, StmtReplacement]
@@ -111,4 +112,4 @@ if __name__ == "__main__":
     print("======================RESULT======================")
     print(solution)
     print(solution.program)
-    #program.remove_tmp_variant()
+    program.remove_tmp_variant()
