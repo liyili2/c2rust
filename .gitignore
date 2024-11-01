@@ -49,3 +49,11 @@ source/RustCode/AST_Scripts/__pycache__/test_simulator.cpython-311.pyc
 source/RustCode/AST_Scripts/__pycache__/simulator.cpython-311.pyc
 source/RustCode/AST_Scripts/__pycache__/ExpVisitor.cpython-311.pyc
 source/RustCode/AST_Scripts/__pycache__/ExpParser.cpython-311.pyc
+
+# Ignore logs
+logs/
+
+# Ignore temp_variants and its subdirectories
+tmp_variants/
+
+*.pyc

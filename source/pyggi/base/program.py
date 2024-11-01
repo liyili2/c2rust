@@ -293,7 +293,7 @@ class AbstractProgram(ABC):
             start = time.time()
             stdout, stderr = sprocess.communicate(timeout=timeout)
             end = time.time()
-            return (sprocess.returncode, stdout.decode("ascii"), stderr.decode("ascii"), end-start)
+            return (sprocess.returncode, stdout.decode("utf-8"), stderr.decode("utf-8"), end-start)
         except subprocess.TimeoutExpired:
             if os.name == 'posix':
                 os.killpg(os.getpgid(sprocess.pid), signal.SIGKILL)
@@ -348,5 +348,14 @@ class AbstractProgram(ABC):
                 diffs += diff
             print("\n:::::::::::::::::::Original Xml:::::::::::::::::::::::",original_xml)
             print("\n:::::::::::::::::::Modified Xml:::::::::::::::::::::::",modified_xml)
+            i=0
+            output_path='/home/saitejavinash/Desktop/ProjectC2Rust/c2rust/Benchmarks/Aggregate/rust2xml/output.xml'
+            i= i+1
+            # Save the modified XML to the specified path
+            with open(output_path, 'w') as xml_file:
+                xml_file.write(modified_xml)
+
+            print(f"\nModified XML has been saved to {output_path}")
+
         return diffs
 

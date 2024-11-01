@@ -3,6 +3,7 @@
   "impl_blocks": [],
   "functions": [
     {
+      "visibility": "pub",
       "functionname": "aggregate",
       "parameters": [
         {
@@ -18,7 +19,11 @@
         },
         {
           "type": "VariableAssignment",
-          "content": "let mut ret = vec ! [0 ; (len >> 1) + (len & 0b0001)] ;"
+          "content": "let mut ret = vec ! [0 ; (len / 2)] ;"
+        },
+        {
+          "type": "VariableAssignment",
+          "content": "let mut j = 0 ;"
         },
         {
           "type": "Expression",
@@ -26,11 +31,12 @@
         },
         {
           "type": "Expression",
-          "content": "ret"
+          "content": "return ret"
         }
       ]
     },
     {
+      "visibility": "private",
       "functionname": "printall",
       "parameters": [
         {
@@ -55,6 +61,7 @@
       ]
     },
     {
+      "visibility": "private",
       "functionname": "main",
       "parameters": [],
       "return_type": "",

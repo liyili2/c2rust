@@ -74,7 +74,7 @@ def parser_generator():
     parser.add_argument('--operators',    type=str,   default='[]',         help='Operators (default: [])')
     parser.add_argument('--targetfitness', type=str,   default='0',         help='Target Fitness (default: 0)')
     return parser.parse_args()
-1
+
 
 
 if __name__ == "__main__":
@@ -87,6 +87,7 @@ if __name__ == "__main__":
     #program.operators = [CGateInsertion]
     program.tags = args.tags
     # Make a Problem
+
     problem = CProblem(program, number_of_variables=1)
     # Fault Localization (Future) / Check for correctness (Future)
 
@@ -106,7 +107,10 @@ if __name__ == "__main__":
         raise Exception('Invalid Algorithm')
     # Run the algorithm
     algorithm.run()
-    solution = algorithm.get_result()
+    #solution = algorithm.get_result()
+    # Access the best solution from the algorithm's solutions (if it exists)
+    solution = algorithm.solutions[0] if algorithm.solutions else None
+
     EditList = algorithm.solutions
     print("EditList\n" , EditList)
     print("======================RESULT======================")

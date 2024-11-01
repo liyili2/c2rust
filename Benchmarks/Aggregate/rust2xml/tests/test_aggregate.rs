@@ -4,15 +4,17 @@ use std::time::Instant;
 
 #[cfg(test)]
 mod tests {
-    use rust2xml::aggregate::aggregate;
+    use rust2xml::output_b::aggregate;
     use std::time::Instant;
     
     #[allow(dead_code)] // This will prevent the warning for unused code
     fn run_with_timer<F: FnOnce()>(test_fn: F, test_name: &str) {
         let start = Instant::now();
         test_fn();
-        let duration = start.elapsed();
-        println!("{} runtime: {:.2?}", test_name, duration);
+        // let duration = start.elapsed();
+        // println!("{} runtime: {:.2?}", test_name, duration);
+        let duration = start.elapsed().as_secs_f64();  // Get duration in seconds as a floating-point value
+    println!("{} runtime: {:.4} seconds", test_name, duration);
     }
 
     #[test]

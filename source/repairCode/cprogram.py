@@ -60,16 +60,18 @@ class CProgram(TreeProgram):
             runtime = m[0]
             failed_list = re.findall("([0-9]+) failed", stdout)
             if len(failed_list) > 0:
-                failed = int(failed_list[0])
+                #failed = int(failed_list[0])
+                failed = next((int(fail) for fail in failed_list if int(fail) != 0), 0)
             else:
                 failed = 0
             passed_list = re.findall("([0-9]+) passed", stdout)
             if len(passed_list) > 0:
-                passed = int(passed_list[0])
+                #passed = int(passed_list[0])
+                passed = next((int(passe) for passe in passed_list if int(passe) != 0), 0)
             else:
                 passed = 0
             total_tests = failed + passed
-
+            print("failed ::",failed)
             result.fitness = failed
             # result.fitness = passed / total_tests if total_tests > 0 else 0
             # print(f'Fitness: {result.fitness}')

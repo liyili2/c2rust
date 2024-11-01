@@ -3,8 +3,8 @@ use std::fs;
 use std::error::Error;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let input_xml_file = "output.xml";  
-    let output_json_file = "output_b.json";  
+    let input_xml_file = "src/output.xml";  
+    let output_json_file = "src/output_b.json";  
     
     // Read the XML file
     let xml_content = fs::read_to_string(input_xml_file)?;

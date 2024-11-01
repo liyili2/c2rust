@@ -52,17 +52,21 @@ class StmtInsertion(TreeEdit):
         self.target = target
         self.ingredient = ingredient
         self.direction = direction
+        print("StmntInst_init")
 
     def apply(self, program, new_contents, modification_points):
         engine = program.engines[self.target[0]]
+        print("StmntInst_apply")
         return engine.do_insert(program, self, new_contents, modification_points)
 
     @classmethod
     def create(cls, program, target_file=None, ingr_file=None, direction=None, method='random'):
         if target_file is None:
             target_file = program.random_file(AbstractTreeEngine)
+            print("StmntInst_create_targe")
         if ingr_file is None:
             ingr_file = program.random_file(engine=program.engines[target_file])
+            print("StmntInst_create_ingr")
         assert program.engines[target_file] == program.engines[ingr_file]
         if direction is None:
             direction = random.choice(['before', 'after'])

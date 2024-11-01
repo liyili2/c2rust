@@ -1,8 +1,10 @@
-fn aggregate(list: &[i32]) -> Vec<i32> {
+pub fn aggregate(list: &[i32]) -> Vec<i32> {
     let len = list . len () ;;
-    let mut ret = vec ! [0 ; (len >> 1) + (len & 0b0001)] ;;
+    //let mut ret = vec ! [0 ; (len )] ;;
+    let mut ret = vec![0; (len >> 1) + (len & 0b0001)];
+    let mut j = 0 ;;
     for i in 0 .. len { if i % 2 == 1 { ret [i / 2] += list [i] ; } else { ret [i / 2] = list [i] ; } };
-    ret
+    return ret;
 }
 
 fn printall(list: &[i32]) {

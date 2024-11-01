@@ -2,6 +2,9 @@
   "root": {
     "functions": [
       {
+        "visibility": [
+          "pub"
+        ],
         "functionname": [
           "aggregate"
         ],
@@ -32,7 +35,15 @@
               "VariableAssignment"
             ],
             "content": [
-              "let mut ret = vec ! [0 ; (len >> 1) + (len & 0b0001)] ;"
+              "let mut ret = vec ! [0 ; (len / 2)] ;"
+            ]
+          },
+          {
+            "type": [
+              "VariableAssignment"
+            ],
+            "content": [
+              "let mut j = 0 ;"
             ]
           },
           {
@@ -48,12 +59,15 @@
               "Expression"
             ],
             "content": [
-              "ret"
+              "return ret"
             ]
           }
         ]
       },
       {
+        "visibility": [
+          "private"
+        ],
         "functionname": [
           "printall"
         ],
@@ -98,6 +112,9 @@
         ]
       },
       {
+        "visibility": [
+          "private"
+        ],
         "functionname": [
           "main"
         ],
@@ -138,8 +155,8 @@
             ]
           },
           {
-            "type": [
-              "VariableAssignment"
+            "functionname": [
+              "aggregate"
             ],
             "content": [
               "let test2 : [i32 ; 5] = [1 , 2 , 3 , 4 , 5] ;"

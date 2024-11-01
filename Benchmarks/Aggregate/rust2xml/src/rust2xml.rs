@@ -27,6 +27,7 @@ struct SerializableParameter {
 // Struct to represent methods in an impl block, including their bodies
 #[derive(Serialize, Deserialize, Debug)]
 struct SerializableMethod {
+    visibility: String, 
     method_name: String,
     parameters: Vec<SerializableParameter>,
     return_type: String,
@@ -43,6 +44,7 @@ struct SerializableImpl {
 // Struct to represent a function (like `main`)
 #[derive(Serialize, Deserialize, Debug)]
 struct SerializableFunction {
+    visibility: String, 
     functionname: String,
     parameters: Vec<SerializableParameter>,
     return_type: String,
@@ -188,6 +190,16 @@ fn extract_return_type(output: &syn::ReturnType) -> String {
     }
 }
 
+fn extract_visibility(visibility: &syn::Visibility) -> String {
+    match visibility {
+        syn::Visibility::Public(_) => "pub".to_string(),
+        syn::Visibility::Crate(_) => "crate".to_string(),
+        syn::Visibility::Restricted(_) => "restricted".to_string(),
+        syn::Visibility::Inherited => "private".to_string(),
+    }
+}
+
+
 // Function to parse methods inside an impl block, including the method body
 fn parse_impl_block(item: &Item) -> Option<SerializableImpl> {
     if let Item::Impl(item_impl) = item {
@@ -203,8 +215,10 @@ fn parse_impl_block(item: &Item) -> Option<SerializableImpl> {
                     .collect();
                 let parameters = extract_parameters(&method.sig.inputs);
                 let return_type = extract_return_type(&method.sig.output);
+                let visibility = extract_visibility(&method.vis);
 
                 Some(SerializableMethod {
+                    visibility,
                     method_name: method.sig.ident.to_string(),
                     parameters,
                     return_type,
@@ -225,10 +239,9 @@ fn parse_impl_block(item: &Item) -> Option<SerializableImpl> {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let input_file_path = "aggregate.rs"; 
-    let output_json_file_path = "output.json";  
-    let input_json = "output.json";
-    let output_xml = "output.xml";
+    let input_file_path = "src/aggregate.rs"; 
+    let output_json_file_path = "src/output.json";  
+    let output_xml = "src/output.xml";
 
     let rust_code = fs::read_to_string(input_file_path)?;
 
@@ -253,8 +266,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .collect();
             let parameters = extract_parameters(&func.sig.inputs);
             let return_type = extract_return_type(&func.sig.output);
+            let visibility = extract_visibility(&func.vis);
 
             functions.push(SerializableFunction {
+                visibility,
                 functionname: func.sig.ident.to_string(),
                 parameters,
                 return_type,
@@ -271,18 +286,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     });
 
     // Write the output to a JSON file
-    fs::write(output_json_file_path, serde_json::to_string_pretty(&output)?)?;
+    let json_output = serde_json::to_string_pretty(&output)?;
+    fs::write(output_json_file_path, &json_output)?;
 
     println!("Parsed code has been saved to {}", output_json_file_path);
-
-    // Read the JSON content from the file
-    let json_content = fs::read_to_string(input_json)?;
 
     // Initialize the XML builder
     let mut xml_builder = XmlBuilder::default();
 
-    // Convert the JSON content to XML
-    let xml_content = xml_builder.build_from_json_string(&json_content)?;
+    // Convert the JSON content to XML directly from the variable
+    let xml_content = xml_builder.build_from_json_string(&json_output)?;
 
     // Write the XML content to the output file
     fs::write(output_xml, xml_content)?;
