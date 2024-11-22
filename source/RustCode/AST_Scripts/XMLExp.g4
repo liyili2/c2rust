@@ -6,7 +6,7 @@ stmt: letstmt | exp | printstmt | blockstmt | ifstmt | breakstmt | returnstmt | 
 
 blockstmt: '<' STMT 'type' '=' '\'' Block '\'' '>' program '</' STMT '>' ;
 
-letstmt : '<' STMT 'type' '=' '\'' Let '\'' (Mut ?) ID '=' '\'' Identifier '\'' '>' exp '</' STMT '>' ;
+letstmt : '<' STMT 'type' '=' '\'' Let '\'' (Mut ?) ID '=' '\'' Identifier '\'' (':' atype)? '>' exp '</' STMT '>' ;
 
 matchstmt: '<' STMT 'type' '=' '\'' Match '\'' '\'' Identifier '\'' '>' blockstmt '</' STMT '>';
 
