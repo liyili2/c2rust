@@ -17,14 +17,28 @@ class ProgramTransformer(XMLExpVisitor):
         i = 0
         tmp = []
         while ctx.stmt(i) is not None:
-            v = self.visitStmt(ctx.stmt(i))
+            v = self.visitFunctionstmt(ctx.functionstmt(i))
             tmp.append(v)
             i += 1
         return QXProgram(tmp)
 
+
+    def visitFunctionstmt(self, ctx:XMLExpParser.FunctionstmtContext):
+        i=0
+        x = ctx.ID()
+        tmp = []
+        while ctx.idexp(i) is not None:
+            v = ctx.idexp(i).accept(self)
+            tmp.append(v)
+            i += 1
+        exp = ctx.blockstmt().accept(self)
+        return QXFun(x,tmp,exp)
+
+
     def visitBlockstmt(self, ctx: XMLExpParser.BlockstmtContext):
         v = self.visitProgram(ctx.program())
         return QXBlock(v)
+
 
     def visitStmt(self, ctx: XMLExpParser.StmtContext):
         if ctx.letstmt() is not None:
@@ -116,6 +130,11 @@ class ProgramTransformer(XMLExpVisitor):
         else:
             return QXIDExp(x, None)
 
+
+    def visitExp(self, ctx: XMLExpParser.ExpContext):
+        return ctx.vexp().accept(self)
+
+
     # Visit a parse tree produced by XMLExpParser#vexp.
     def visitVexp(self, ctx: XMLExpParser.VexpContext):
         if ctx.idexp() is not None:
@@ -130,6 +149,9 @@ class ProgramTransformer(XMLExpVisitor):
             return QXBool(True)
         if ctx.FalseLiteral() is not None:
             return QXBool(False)
+        if ctx.vexp(1) is None:
+                v = self.visitVexp(ctx.vexp(0))
+                return QXRef(v)
         else:
             op = self.visitOp(ctx.op())
             v1 = self.visitVexp(ctx.vexp(0))

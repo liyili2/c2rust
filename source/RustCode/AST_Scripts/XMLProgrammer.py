@@ -19,6 +19,25 @@ class QXExp(QXTop):
     def accept(self, visitor: AbstractProgramVisitor):
         pass
 
+class QXFun(QXTop):
+    def __init__(self, id: str, args: [QXIDExp],  stmt: QXBlock):
+        self._id = id
+        self._args = args
+        self._stmt = stmt
+
+    def accept(self, visitor: AbstractProgramVisitor):
+        visitor.visitProgram(self)
+
+    def ID(self):
+        return self._id
+
+    def args(self, i : int = None):
+        return self._args[i]
+
+    def stmt(self):
+        return self._stmt
+
+
 class QXProgram(QXTop):
     def __init__(self, exps: [QXStmt]):
         self.exps = exps
@@ -68,9 +87,9 @@ class QXIDExp(QXVExp):
 
 
 class QXLet(QXStmt):
-    def __init__(self, id: str, p: QXExp):
+    def __init__(self, id: str, p: QXVexp):
         self.id = id
-        self.exp = p
+        self._vexp = p
 
     def accept(self, visitor: AbstractProgramVisitor):
         visitor.visitLet(self)
@@ -78,8 +97,8 @@ class QXLet(QXStmt):
     def ID(self):
         return self.id if isinstance(self.id, str) else self.id.getText()
 
-    def exp(self):
-        return self.exp
+    def vexp(self):
+        return self._vexp
 
 
 class QXPrint(QXStmt):
@@ -166,6 +185,17 @@ class QXFor(QXStmt):
 
     def block(self):
         return self.b
+
+
+class QXRef(QXVExp):
+    def __init__(self, v: QXVExp):
+        self._v = v
+
+    def accept(self, visitor: AbstractProgramVisitor):
+        visitor.visitBin(self)
+
+    def next(self):
+        return self._v
 
 
 class QXBin(QXVExp):

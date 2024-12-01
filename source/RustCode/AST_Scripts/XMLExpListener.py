@@ -1,6 +1,6 @@
-# Generated from XMLExp.g4 by ANTLR 4.13.2
+# Generated from XMLExp.g4 by ANTLR 4.9.2
 from antlr4 import *
-if "." in __name__:
+if __name__ is not None and "." in __name__:
     from .XMLExpParser import XMLExpParser
 else:
     from XMLExpParser import XMLExpParser
@@ -71,6 +71,15 @@ class XMLExpListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by XMLExpParser#ifletstmt.
+    def enterIfletstmt(self, ctx:XMLExpParser.IfletstmtContext):
+        pass
+
+    # Exit a parse tree produced by XMLExpParser#ifletstmt.
+    def exitIfletstmt(self, ctx:XMLExpParser.IfletstmtContext):
+        pass
+
+
     # Enter a parse tree produced by XMLExpParser#breakstmt.
     def enterBreakstmt(self, ctx:XMLExpParser.BreakstmtContext):
         pass
@@ -104,6 +113,24 @@ class XMLExpListener(ParseTreeListener):
 
     # Exit a parse tree produced by XMLExpParser#forstmt.
     def exitForstmt(self, ctx:XMLExpParser.ForstmtContext):
+        pass
+
+
+    # Enter a parse tree produced by XMLExpParser#vectorstmt.
+    def enterVectorstmt(self, ctx:XMLExpParser.VectorstmtContext):
+        pass
+
+    # Exit a parse tree produced by XMLExpParser#vectorstmt.
+    def exitVectorstmt(self, ctx:XMLExpParser.VectorstmtContext):
+        pass
+
+
+    # Enter a parse tree produced by XMLExpParser#functionstmt.
+    def enterFunctionstmt(self, ctx:XMLExpParser.FunctionstmtContext):
+        pass
+
+    # Exit a parse tree produced by XMLExpParser#functionstmt.
+    def exitFunctionstmt(self, ctx:XMLExpParser.FunctionstmtContext):
         pass
 
 
@@ -167,6 +194,15 @@ class XMLExpListener(ParseTreeListener):
 
     # Exit a parse tree produced by XMLExpParser#op.
     def exitOp(self, ctx:XMLExpParser.OpContext):
+        pass
+
+
+    # Enter a parse tree produced by XMLExpParser#sinop.
+    def enterSinop(self, ctx:XMLExpParser.SinopContext):
+        pass
+
+    # Exit a parse tree produced by XMLExpParser#sinop.
+    def exitSinop(self, ctx:XMLExpParser.SinopContext):
         pass
 
 

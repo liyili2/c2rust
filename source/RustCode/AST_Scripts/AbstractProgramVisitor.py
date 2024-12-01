@@ -16,6 +16,10 @@ class AbstractProgramVisitor(ABC):
         pass
 
     @abstractmethod
+    def visitFun(self, ctx):
+        pass
+
+    @abstractmethod
     def visitBlock(self, ctx):
         pass
 
@@ -49,6 +53,10 @@ class AbstractProgramVisitor(ABC):
 
     @abstractmethod
     def visitBin(self, ctx):
+        pass
+
+    @abstractmethod
+    def visitRef(self, ctx):
         pass
 
     @abstractmethod

@@ -49,9 +49,16 @@ class ProgramVisitor(AbstractProgramVisitor):
     # Visit a parse tree produced by XMLExpParser#program.
     def visitProgram(self, ctx: XMLProgrammer.QXProgram):
         i = 0
-        while ctx.exp(i) is not None:
-            ctx.exp(i).accept(self)
+        while ctx.stmt(i) is not None:
+            ctx.stmt(i).accept(self)
             i = i + 1
+
+    def visitFun(self, ctx: XMLProgrammer.QXFun):
+        i = 0
+        while ctx.args(i) is not None:
+            ctx.args(i).accept(self)
+            i = i + 1
+        ctx.stmt().accept(self)
 
     # Visit a parse tree produced by XMLExpParser#exp.
 
@@ -63,7 +70,7 @@ class ProgramVisitor(AbstractProgramVisitor):
         return ctx.exp().accept(self)
 
     def visitPrint(self, ctx: XMLProgrammer.QXPrint):
-        ctx.exp().accept(self)
+        return ctx.exp().accept(self)
 
     def visitBreak(self, ctx: XMLProgrammer.QXBreak):
         if ctx.vexp() is not None:
@@ -83,12 +90,16 @@ class ProgramVisitor(AbstractProgramVisitor):
 
     def visitFor(self, ctx: XMLProgrammer.QXFor):
         self.visit(ctx.vexp())
-        ctx.block().accept(self)
+        return ctx.block().accept(self)
 
     def visitBin(self, ctx: XMLProgrammer.QXBin):
         self.visit(ctx.vexp())
         ctx.left().accept(self)
         ctx.right().accept(self)
+
+
+    def visitRef(self, ctx: XMLProgrammer.QXRef):
+        ctx.next().accept(self)
 
     def visitIDExp(self, ctx: XMLProgrammer.QXIDExp):
         self.visit(ctx.type())

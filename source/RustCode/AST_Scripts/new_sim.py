@@ -60,7 +60,7 @@ class Simulator(ProgramVisitor):
     # For now, implement some of the expressions
     def visitLet(self, ctx: XMLProgrammer.QXLet):
         x = ctx.idexp().ID() # make idexp return identifier
-        y = ctx.exp().accept(self) # exp will return the value
+        y = ctx.vexp().accept(self) # exp will return the value
         self.st.update({str(x) : y})
         return
 

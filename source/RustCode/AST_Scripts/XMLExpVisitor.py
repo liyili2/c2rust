@@ -1,4 +1,4 @@
-# Generated from XMLExp.g4 by ANTLR 4.7.2
+# Generated from XMLExp.g4 by ANTLR 4.9.2
 from antlr4 import *
 if __name__ is not None and "." in __name__:
     from .XMLExpParser import XMLExpParser
@@ -44,6 +44,11 @@ class XMLExpVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by XMLExpParser#ifletstmt.
+    def visitIfletstmt(self, ctx:XMLExpParser.IfletstmtContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by XMLExpParser#breakstmt.
     def visitBreakstmt(self, ctx:XMLExpParser.BreakstmtContext):
         return self.visitChildren(ctx)
@@ -61,6 +66,16 @@ class XMLExpVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by XMLExpParser#forstmt.
     def visitForstmt(self, ctx:XMLExpParser.ForstmtContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by XMLExpParser#vectorstmt.
+    def visitVectorstmt(self, ctx:XMLExpParser.VectorstmtContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by XMLExpParser#functionstmt.
+    def visitFunctionstmt(self, ctx:XMLExpParser.FunctionstmtContext):
         return self.visitChildren(ctx)
 
 
@@ -96,6 +111,11 @@ class XMLExpVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by XMLExpParser#op.
     def visitOp(self, ctx:XMLExpParser.OpContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by XMLExpParser#sinop.
+    def visitSinop(self, ctx:XMLExpParser.SinopContext):
         return self.visitChildren(ctx)
 
 
