@@ -134,6 +134,15 @@ class XMLExpListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by XMLExpParser#parameters.
+    def enterParameters(self, ctx:XMLExpParser.ParametersContext):
+        pass
+
+    # Exit a parse tree produced by XMLExpParser#parameters.
+    def exitParameters(self, ctx:XMLExpParser.ParametersContext):
+        pass
+
+
     # Enter a parse tree produced by XMLExpParser#exp.
     def enterExp(self, ctx:XMLExpParser.ExpContext):
         pass
@@ -161,6 +170,15 @@ class XMLExpListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by XMLExpParser#arrayexp.
+    def enterArrayexp(self, ctx:XMLExpParser.ArrayexpContext):
+        pass
+
+    # Exit a parse tree produced by XMLExpParser#arrayexp.
+    def exitArrayexp(self, ctx:XMLExpParser.ArrayexpContext):
+        pass
+
+
     # Enter a parse tree produced by XMLExpParser#atype.
     def enterAtype(self, ctx:XMLExpParser.AtypeContext):
         pass
@@ -179,12 +197,39 @@ class XMLExpListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by XMLExpParser#funccallexp.
+    def enterFunccallexp(self, ctx:XMLExpParser.FunccallexpContext):
+        pass
+
+    # Exit a parse tree produced by XMLExpParser#funccallexp.
+    def exitFunccallexp(self, ctx:XMLExpParser.FunccallexpContext):
+        pass
+
+
+    # Enter a parse tree produced by XMLExpParser#macroexp.
+    def enterMacroexp(self, ctx:XMLExpParser.MacroexpContext):
+        pass
+
+    # Exit a parse tree produced by XMLExpParser#macroexp.
+    def exitMacroexp(self, ctx:XMLExpParser.MacroexpContext):
+        pass
+
+
     # Enter a parse tree produced by XMLExpParser#vexp.
     def enterVexp(self, ctx:XMLExpParser.VexpContext):
         pass
 
     # Exit a parse tree produced by XMLExpParser#vexp.
     def exitVexp(self, ctx:XMLExpParser.VexpContext):
+        pass
+
+
+    # Enter a parse tree produced by XMLExpParser#range_expr.
+    def enterRange_expr(self, ctx:XMLExpParser.Range_exprContext):
+        pass
+
+    # Exit a parse tree produced by XMLExpParser#range_expr.
+    def exitRange_expr(self, ctx:XMLExpParser.Range_exprContext):
         pass
 
 

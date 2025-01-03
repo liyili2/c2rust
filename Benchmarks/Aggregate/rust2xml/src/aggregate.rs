@@ -3,6 +3,7 @@
     // the size of the result array is not known until runtime
     // using vec is unavoidable
     let mut ret = vec![0; (len >> 1) + (len & 0b0001)];
+    //let mut ret = vec![0;(len/2)];
     //let mut ret = vec![0;(len )];
     let mut j=0;
 
@@ -22,7 +23,7 @@
 fn printall(list: &[i32]) {
     print!("[");
     for i in 0..list.len() {
-        print!("{}, ", list[i]);
+        print!("{}, ", list[i])
     }
     println!("]");
 }

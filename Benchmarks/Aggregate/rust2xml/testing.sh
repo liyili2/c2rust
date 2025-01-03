@@ -5,7 +5,7 @@
 pwd
 cargo test -- --nocapture
 
-cp output.xml src/output.xml
+#cp output.xml src/output.xml
 
-cargo run --bin xml2json
-cargo run --bin json2rust
+#cargo run --bin xml2json
+#cargo run --bin json2rust

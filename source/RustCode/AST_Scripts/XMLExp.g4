@@ -6,146 +6,157 @@ stmt: letstmt | exp | printstmt | blockstmt | ifstmt | breakstmt | returnstmt | 
 
 blockstmt: '<' STMT 'type' '=' '\'' Block '\'' '>' program '</' STMT '>' ;
 
-letstmt : '<' STMT 'type' '=' '\'' Let '\'' (Mut ?) ID '=' '\'' Identifier '\'' (':' atype)? '>' exp '</' STMT '>' ;
+letstmt : '<' STMT 'type' '=' '\'' Let '\'' (Mut ?)? ID '=' '\'' Identifier '\'' (':' atype)? '>' (exp | arrayexp) '</' STMT '>' ;
 
 matchstmt: '<' STMT 'type' '=' '\'' Match '\'' '\'' Identifier '\'' '>' blockstmt '</' STMT '>';
 
-printstmt: '<' STMT 'type' '=' '\'' Print '\'' '>' stringval exp '</' STMT '>' ;
+printstmt: '<' STMT 'type' '=' '\'' Print '\'' '>' stringval (exp?) '</' STMT '>' ;
 
 ifstmt: '<' STMT 'type' '=' '\'' IF '\'' '>' vexp blockstmt blockstmt '</' STMT '>' ;
 
 ifletstmt: '<' STMT 'type' '=' '\'' Iflet '\'' ID '=' '\'' Identifier '\'' '>' vexp blockstmt blockstmt '</' STMT '>' ;
 
-breakstmt: '<' STMT 'type' '=' '\'' Break '\'' '>' (vexp ?) '</' STMT '>' ;
+breakstmt: '<' STMT 'type' '=' '\'' Break '\'' '>' (vexp?) '</' STMT '>' ;
 
-returnstmt: '<' STMT 'type' '=' '\'' Return '\'' '>' (vexp ?) '</' STMT '>' ;
+returnstmt: '<' STMT 'type' '=' '\'' Return '\'' '>' (vexp | idexp)? '</' STMT '>' ;
 
 loopstmt: '<' STMT 'type' '=' '\'' Loop '\'' '>' blockstmt '</' STMT '>' ;
 
-forstmt: '<' STMT 'type' '=' '\'' For '\'' ID '=' '\'' Identifier '\'' '>' vexp blockstmt '</' STMT '>' ;
+forstmt: '<' STMT 'type' '=' '\'' For '\'' ID '=' '\'' Identifier '\'' '>' '<range>' range_expr '</range>' blockstmt '</' STMT '>' ;
 
-vectorstmt: '<' STMT 'type' '=' '\'' Vector '\'' '=' '\'' atype '\'' '>' (numexp+) | (stringval+) | () '</' STMT '>' ;
+vectorstmt: '<' STMT 'type' '=' '\'' Vector '\'' '=' '\'' atype '\'' '>' (numexp+ | stringval+ | ()) '</' STMT '>' ;
 
-functionstmt: '<' STMT 'type' '=' '\'' Function '\'' ID '=' '\'' Identifier '\'' '>' (idexp+) blockstmt '</' STMT '>' ;
+functionstmt: '<' STMT 'type' '=' '\'' Function '\'' ID '=' '\'' Identifier '\'' '>' parameters blockstmt '</' STMT '>' ;
 
-exp: vexp ;
+parameters: '<parameters>' (idexp (',' idexp)*)? '</parameters>' ;
 
-stringval : '<' VEXP OP '=' '\'' String '\'' '>' StrLiteral '</' VEXP '>';
+exp: vexp | funccallexp | macroexp;
 
-numexp: Number | Minus Number;
+stringval : '<' VEXP OP '=' '\'' String '\'' '>' (StrLiteral | Identifier) '</' VEXP '>';
+
+numexp: Number | Minus Number | HexLiteral | BinaryLiteral;
+
+arrayexp: '[' (numexp (',' numexp)*)? ']';
 
 atype: Int | Bool;
 
 idexp : '<' VEXP OP '=' '\'' ID '\'' ('type' '=' '\'' atype '\'')? '>' Identifier '</' VEXP '>' ;
+
+funccallexp: '<' VEXP OP '=' '\'' Call '\'' '>' Identifier '(' (vexp (',' vexp)*)? ')' '</' VEXP '>';
+
+macroexp: '<' VEXP OP '=' '\'' Macro '\'' '>' Identifier '(' (vexp (',' vexp)*)? ')' '</' VEXP '>';
 
 vexp: idexp
     | stringval
     | '<' VEXP OP '=' '\'' NUM '\'' '>' numexp '</' VEXP '>'
     | '<' VEXP OP '=' '\'' Bool '\'' '>' (TrueLiteral | FalseLiteral) '</' VEXP '>'
     | '<' VEXP OP '=' '\'' op '\'' '>' vexp vexp '</' VEXP '>'
-    | '<' VEXP OP '=' '\'' sinop '\'' '>' vexp '</' VEXP '>';
+    | '<' VEXP OP '=' '\'' sinop '\'' '>' vexp '</' VEXP '>'
+    | '<' VEXP OP '=' '\'' Index '\'' '>' vexp '[' vexp ']' '</' VEXP '>';
 
+range_expr: vexp '..' vexp;
 
- // Lexical Specification of this Programming Language
- //  - lexical specification rules start with uppercase
-
-op: Plus | Minus | Times | Div | Mod | Exp | And | Less | Equal | Or | Range ;
+// Lexical Specification of this Programming Language
+op: Plus | Minus | Times | Div | Mod | Exp | And | Less | Equal | Or | Range | '>>' | '<<' | '&';
 
 sinop : Reference;
 
- TrueLiteral : '#t' ;
- FalseLiteral : '#f' ;
- Dot : '.' ;
+TrueLiteral : '#t' ;
+FalseLiteral : '#f' ;
+Dot : '.' ;
 
- RQFT : 'RQFT' ;
+HexLiteral : '0x' [0-9a-fA-F]+ ;
+BinaryLiteral : '0b' [01]+ ;
 
- OP : 'op';
+RQFT : 'RQFT' ;
 
- Plus : '+';
+OP : 'op';
 
- Minus : '-';
+Plus : '+';
 
- Times : '*';
+Minus : '-';
 
- Div : '/';
+Times : '*';
 
- Mod : '%';
+Div : '/';
 
- Exp : '^';
+Mod : '%';
 
- And : '&&';
+Exp : '^';
 
- Or : '||';
+And : '&&';
 
- Less : '<';
+Or : '||';
 
- Range : '..';
+Less : '<';
 
- Equal : '==';
+Range : '..';
 
- Reference : '&';
+Equal : '==';
 
- Type : 'type';
+Reference : '&';
 
- STMT : 'stmt';
+Type : 'type';
 
- PEXP : 'pexp';
+STMT : 'stmt';
 
- VEXP : 'vexp';
+PEXP : 'pexp';
 
- IF : 'if';
+VEXP : 'vexp';
 
- Iflet: 'iflet';
+IF : 'if';
 
- Block : 'block';
+Iflet: 'iflet';
 
- Break : 'break';
+Block : 'block';
 
- Match : 'match';
+Break : 'break';
 
- Return : 'return';
+Match : 'match';
 
- Loop : 'loop';
+Return : 'return';
 
- For : 'for';
+Loop : 'loop';
 
- Vector : 'vec';
+For : 'for';
 
- Function : 'fn';
+Vector : 'vec';
 
- ID : 'id';
+Function : 'fn';
 
- Mut: 'mut';
+ID : 'id';
 
- Let : 'let';
+Mut: 'mut';
 
- Int : 'int';
+Let : 'let';
 
- Bool : 'bool';
+Int : 'int';
 
- Value : 'value';
+Bool : 'bool';
 
- String : 'string';
+Value : 'value';
 
- Print : 'print';
+String : 'string';
 
- Number : DIGIT+ ;
+Print : 'print';
 
- NUM: 'num';
+Number : DIGIT+ ;
 
- Identifier :   Letter LetterOrDigit*;
+NUM: 'num';
 
- Letter :   [a-zA-Z$_];
+Identifier :   Letter LetterOrDigit*;
 
- LetterOrDigit: [a-zA-Z0-9$_];
+Letter :   [a-zA-Z$_];
 
- fragment DIGIT: ('0'..'9');
+LetterOrDigit: [a-zA-Z0-9$_];
 
- fragment ESCQUOTE : '\\"';
- StrLiteral :   '"' ( ESCQUOTE | ~('\n'|'\r') )*? '"';
+fragment DIGIT: ('0'..'9');
 
- AT : '@';
- ELLIPSIS : '...';
- WS  :  [ \t\r\n\u000C]+ -> skip;
- Comment :   '/*' .*? '*/' -> skip;
- Line_Comment :   '//' ~[\r\n]* -> skip;
+fragment ESCQUOTE : '\\"';
+StrLiteral :   '"' ( ESCQUOTE | ~('\n'|'\r') )*? '"';
+
+AT : '@';
+ELLIPSIS : '...';
+WS  :  [ \t\r\n\u000C]+ -> skip;
+Comment :   '/*' .*? '*/' -> skip;
+Line_Comment :   '//' ~[\r\n]* -> skip;

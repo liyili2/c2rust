@@ -79,6 +79,11 @@ class XMLExpVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by XMLExpParser#parameters.
+    def visitParameters(self, ctx:XMLExpParser.ParametersContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by XMLExpParser#exp.
     def visitExp(self, ctx:XMLExpParser.ExpContext):
         return self.visitChildren(ctx)
@@ -94,6 +99,11 @@ class XMLExpVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by XMLExpParser#arrayexp.
+    def visitArrayexp(self, ctx:XMLExpParser.ArrayexpContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by XMLExpParser#atype.
     def visitAtype(self, ctx:XMLExpParser.AtypeContext):
         return self.visitChildren(ctx)
@@ -104,8 +114,23 @@ class XMLExpVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by XMLExpParser#funccallexp.
+    def visitFunccallexp(self, ctx:XMLExpParser.FunccallexpContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by XMLExpParser#macroexp.
+    def visitMacroexp(self, ctx:XMLExpParser.MacroexpContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by XMLExpParser#vexp.
     def visitVexp(self, ctx:XMLExpParser.VexpContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by XMLExpParser#range_expr.
+    def visitRange_expr(self, ctx:XMLExpParser.Range_exprContext):
         return self.visitChildren(ctx)
 
 

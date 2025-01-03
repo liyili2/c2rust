@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<program>
+    <functionstmt type="Function" ID="aggregate">
+        <parameters>
+            <parameter name="list" type="&amp;[i32]" />
+        </parameters>
+        <returntype>Vec&lt;i32&gt;</returntype>
+        <blockstmt type="Block">
+            <letstmt type="Let" ID="len">
+                <content>
+                    <vexp op="ID">list.len()</vexp>
+                </content>
+            </letstmt>
+            <letstmt type="Let" ID="ret" Mut="true">
+                <content>
+                    <vexp op="ID">vec![0; (len >> 1) + (len &amp; 0b0001)]</vexp>
+                </content>
+            </letstmt>
+            <letstmt type="Let" ID="j" Mut="true">
+                <content>
+                    <vexp op="NUM">0</vexp>
+                </content>
+            </letstmt>
+            <forstmt type="For" ID="i">
+                <range>
+                    <vexp op="Range">0..len</vexp>
+                </range>
+                <blockstmt type="Block">
+                    <ifstmt type="IF">
+                        <condition>
+                            <vexp op="op">i % 2 == 1</vexp>
+                        </condition>
+                        <blockstmt type="Block">
+                            <letstmt type="Let" ID="ret[i / 2]">
+                                <content>
+                                    <vexp op="op">ret[i / 2] += list[i]</vexp>
+                                </content>
+                            </letstmt>
+                        </blockstmt>
+                        <blockstmt type="Block">
+                            <letstmt type="Let" ID="ret[i / 2]">
+                                <content>
+                                    <vexp op="op">ret[i / 2] = list[i]</vexp>
+                                </content>
+                            </letstmt>
+                        </blockstmt>
+                    </ifstmt>
+                </blockstmt>
+            </forstmt>
+            <returnstmt type="Return">
+                <content>
+                    <vexp op="ID">ret</vexp>
+                </content>
+            </returnstmt>
+        </blockstmt>
+    </functionstmt>
+    <functionstmt type="Function" ID="printall">
+        <parameters>
+            <parameter name="list" type="&amp;[i32]" />
+        </parameters>
+        <returntype>void</returntype>
+        <blockstmt type="Block">
+            <printstmt type="Print">
+                <content>
+                    <stringval>
+                        <vexp op="String">"["</vexp>
+                    </stringval>
+                </content>
+            </printstmt>
+            <forstmt type="For" ID="i">
+                <range>
+                    <vexp op="Range">0..list.len()</vexp>
+                </range>
+                <blockstmt type="Block">
+                    <printstmt type="Print">
+                        <content>
+                            <stringval>
+                                <vexp op="String">"{}, "</vexp>
+                            </stringval>
+                            <vexp op="ID">list[i]</vexp>
+                        </content>
+                    </printstmt>
+                </blockstmt>
+            </forstmt>
+            <printstmt type="Print">
+                <content>
+                    <stringval>
+                        <vexp op="String">"]"</vexp>
+                    </stringval>
+                </content>
+            </printstmt>
+        </blockstmt>
+    </functionstmt>
+    <functionstmt type="Function" ID="main">
+        <blockstmt type="Block">
+            <letstmt type="Let" ID="test1">
+                <content>
+                    <vexp op="Array">[1, 2, 3, 4, 5, 6]</vexp>
+                </content>
+            </letstmt>
+            <letstmt type="Let" ID="ret1">
+                <content>
+                    <vexp op="Call">aggregate(&amp;test1)</vexp>
+                </content>
+            </letstmt>
+            <exp>
+                <vexp op="Call">printall(&amp;test1)</vexp>
+            </exp>
+            <exp>
+                <vexp op="Call">printall(&amp;ret1)</vexp>
+            </exp>
+            <letstmt type="Let" ID="test2">
+                <content>
+                    <vexp op="Array">[1, 2, 3, 4, 5]</vexp>
+                </content>
+            </letstmt>
+            <letstmt type="Let" ID="ret2">
+                <content>
+                    <vexp op="Call">aggregate(&amp;test2)</vexp>
+                </content>
+            </letstmt>
+            <exp>
+                <vexp op="Call">printall(&amp;test2)</vexp>
+            </exp>
+            <exp>
+                <vexp op="Call">printall(&amp;ret2)</vexp>
+            </exp>
+        </blockstmt>
+    </functionstmt>
+</program>

@@ -155,8 +155,8 @@
             ]
           },
           {
-            "functionname": [
-              "aggregate"
+            "type": [
+              "VariableAssignment"
             ],
             "content": [
               "let test2 : [i32 ; 5] = [1 , 2 , 3 , 4 , 5] ;"

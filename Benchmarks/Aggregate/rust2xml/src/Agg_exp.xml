@@ -1,0 +1,97 @@
+<stmt type='Function' id='aggregate'>
+    <parameters>
+        <vexp op='ID' type='int'>list</vexp>
+    </parameters>
+    <stmt type='Block'>
+        <stmt type='Let' id='len'>
+            <vexp op='Call'>list.len()</vexp>
+        </stmt>
+        <stmt type='Let' mut='true' id='ret'>
+            <macroexp op='Macro'>
+                vec![0; <vexp op='op'><vexp op='ID'>len</vexp> >> 1</vexp> + <vexp op='op'><vexp op='ID'>len</vexp> & 0b0001</vexp></macroexp>
+        </stmt>
+        <stmt type='Let' mut='true' id='j'>
+            <vexp op='NUM'>0</vexp>
+        </stmt>
+        <stmt type='For' id='i'>
+            <range>
+                <vexp op='NUM'>0</vexp>..<vexp op='ID'>len</vexp>
+            </range>
+            <stmt type='Block'>
+                <ifstmt>
+                    <vexp op='op'>
+                        <vexp op='ID'>i % 2</vexp> == <vexp op='NUM'>1</vexp>
+                    </vexp>
+                    <blockstmt>
+                        <stmt type='Assign'>
+                            <vexp op='op'><vexp op='ID'>ret[i / 2]</vexp> += <vexp op='ID'>list[i]</vexp></vexp>
+                        </stmt>
+                    </blockstmt>
+                    <blockstmt>
+                        <stmt type='Assign'>
+                            <vexp op='op'><vexp op='ID'>ret[i / 2]</vexp> = <vexp op='ID'>list[i]</vexp></vexp>
+                        </stmt>
+                    </blockstmt>
+                </ifstmt>
+            </stmt>
+        </stmt>
+        <stmt type='Return'>
+            <vexp op='ID'>ret</vexp>
+        </stmt>
+    </stmt>
+</stmt>
+
+<stmt type='Function' id='printall'>
+    <parameters>
+        <vexp op='ID' type='int'>list</vexp>
+    </parameters>
+    <stmt type='Block'>
+        <stmt type='Print'>
+            <vexp op='String'>"["</vexp>
+        </stmt>
+        <stmt type='For' id='i'>
+            <range>
+                <vexp op='NUM'>0</vexp>..<vexp op='Call'>list.len()</vexp>
+            </range>
+            <stmt type='Block'>
+                <stmt type='Print'>
+                    <vexp op='String'>"{},"</vexp>
+                    <vexp op='op'><vexp op='ID'>list[i]</vexp></vexp>
+                </stmt>
+            </stmt>
+        </stmt>
+        <stmt type='Print'>
+            <vexp op='String'>"]"</vexp>
+        </stmt>
+    </stmt>
+</stmt>
+
+<stmt type='Function' id='main'>
+    <parameters></parameters>
+    <stmt type='Block'>
+        <stmt type='Let' id='test1'>
+            <arrayexp>[1, 2, 3, 4, 5, 6]</arrayexp>
+        </stmt>
+        <stmt type='Let' id='ret1'>
+            <vexp op='Call'>aggregate(&test1)</vexp>
+        </stmt>
+        <stmt type='Call'>
+            <vexp op='Call'>printall(&test1)</vexp>
+        </stmt>
+        <stmt type='Call'>
+            <vexp op='Call'>printall(&ret1)</vexp>
+        </stmt>
+        <stmt type='Let' id='test2'>
+            <arrayexp>[1, 2, 3, 4, 5]</arrayexp>
+        </stmt>
+        <stmt type='Let' id='ret2'>
+            <vexp op='Call'>aggregate(&test2)</vexp>
+        </stmt>
+        <stmt type='Call'>
+            <vexp op='Call'>printall(&test2)</vexp>
+        </stmt>
+        <stmt type='Call'>
+            <vexp op='Call'>printall(&ret2)</vexp>
+        </stmt>
+    </stmt>
+</stmt>
