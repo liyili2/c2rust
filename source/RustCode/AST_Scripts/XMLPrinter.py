@@ -3,6 +3,9 @@ from types import NoneType
 
 from XMLExpVisitor import XMLExpVisitor
 from XMLExpParser import XMLExpParser
+from XMLProgrammer import *
+from ProgramVisitor import ProgramVisitor
+import XMLProgrammer
 
 
 def M_add(k, x, s: ChainMap):
@@ -43,176 +46,104 @@ def findVar(node: XMLExpParser.VexpContext):
     # return "None"
 
 
-class XMLPrinter(XMLExpVisitor):
+class XMLPrinter(ProgramVisitor):
 
     def __init__(self):
         # self.tenv = tenv
         self.xml_output = ''
         self.indentation = 0
 
-    def visitProgram(self, ctx: XMLExpParser.ProgramContext):
+    def visitProgram(self, ctx: XMLProgrammer.QXProgram):
         # This doesn't automatically find the correct one to call, rather it creates an infinite loop
         # I will likely just need to use a case analysis
-        if ctx.letstmt() is not None:
-            ctx.letstmt().accept(self)
-        elif ctx.exp() is not None:
-            ctx.exp().accept(self)
-        elif ctx.printstmt() is not None:
-            ctx.printstmt().accept(self)
-        elif ctx.blockstmt() is not None:
-            ctx.blockstmt().accept(self)
-        elif ctx.ifstmt() is not None:
-            ctx.ifstmt().accept(self)
-        elif ctx.breakstmt() is not None:
-            ctx.breakstmt().accept(self)
-        elif ctx.returnstmt() is not None:
-            ctx.returnstmt().accept(self)
-        elif ctx.loopstmt() is not None:
-            ctx.loopstmt().accept(self)
-        elif ctx.forstmt() is not None:
-            ctx.forstmt().accept(self)
+        re = ""
+        for i in range(len(ctx.stmt())):
+            elem = ctx.stmt(i)
+            re += elem.accept(self) + ";\n"
+        return re
 
         # ctx.accept(self) # This will automatically detect and find the corresponding context to call the visit func of
 
-    def visitBlockstmt(self, ctx: XMLExpParser.BlockstmtContext):
-        self.xml_output += "  " * self.indentation + "<stmt type = block>"
-        # x = ""f'{ctx.Block().getText()}\n'""
-        # y = M_find(x, self.tenv) # This may not be needed
-        # self.xml_output += "type = \'"+str(y)+"\' >\n"
-        i = 0
-        while ctx.program(i) is not None:
-            ctx.program(i).accept(self)
-            i += 1
-        self.xml_output += "  " * self.indentation + "</stmt>\n"
+    def visitFun(self, ctx: XMLProgrammer.QXFun):
+        re = ""
+        re += ctx.ID() + "("
+        for i in range(len(ctx.args())):
+            elem = ctx.args(i)
+            re += elem.accept(self)
+            if i != len(ctx.args()) - 1:
+                re += ", "
 
-    def visitLetstmt(self, ctx: XMLExpParser.LetstmtContext):
-        self.xml_output += "  " * self.indentation + "<stmt type = let>"
-        # x = ""f'{ctx.Let().getText()}\n'""
-        # y = M_find(x, self.tenv)
-        # self.xml_output += "type = \'"+str(y)+"\' >\n"
-        ctx.idexp().accept(self)
-        ctx.exp().accept(self)
-        self.xml_output += "  " * self.indentation + "</stmt>\n"
+        re += ")\n"
+        re += ctx.stmt().accept(self)
+        re += "\n"
+        return re
 
-    def visitPrintstmt(self, ctx: XMLExpParser.PrintstmtContext):
-        self.xml_output += "  " * self.indentation + "<stmt type = print>"
-        # x = ""f'{ctx.Print().getText()}\n'""
-        # y = M_find(x, self.tenv)
-        # self.xml_output += "type = \'"+str(y)+"\' >\n"
-        ctx.stringval().accept(self)
-        ctx.exp().accept(self)
-        self.xml_output += "  " * self.indentation + "</stmt>\n"
+    def visitBlock(self, ctx: XMLProgrammer.QXBlock):
+        re = "{\n"
+        re += ctx.program().accept(self)
+        re += "\n}"
+        return re
 
-    def visitIfstmt(self, ctx: XMLExpParser.IfstmtContext):
-        self.xml_output += "  " * self.indentation + "<stmt type = if>"
-        # x = ""f'{ctx.IF().getText()}\n'""
-        # y = M_find(x, self.tenv)
-        # self.xml_output += "type = \'"+str(y)+"\' >\n"
-        ctx.vexp().accept(self)
-        ctx.blockstmt().accept(self)
-        ctx.blockstmt().accept(self)
-        self.xml_output += "  " * self.indentation + "</stmt>\n"
+    def visitLet(self, ctx: XMLProgrammer.QXLet):
+        re = "let " + ctx.ID()
+        re += ctx.vexp().accept(self)
+        return re
 
-    def visitBreakstmt(self, ctx: XMLExpParser.BreakstmtContext):
-        self.xml_output += "  " * self.indentation + "<stmt type = break>"
-        # x = ""f'{ctx.Break().getText()}\n'""
-        # y = M_find(x, self.tenv)
-        # self.xml_output += "type = \'"+str(y)+"\' >\n"
-        if ctx.vexp() is not None:
-            ctx.vexp().accept(self)
-        self.xml_output += "  " * self.indentation + "</stmt>\n"
+    def visitPrint(self, ctx: XMLProgrammer.QXPrint):
+        re = "println("
+        re += ctx.str() + ", "
+        re += ctx.exp().accept(self)
+        re += ")"
+        return re
 
-    def visitReturnstmt(self, ctx: XMLExpParser.ReturnstmtContext):
-        self.xml_output += "  " * self.indentation + "<stmt type = return>"
-        # x = ""f'{ctx.Return().getText()}\n'""
-        # y = M_find(x, self.tenv)
-        # self.xml_output += "type = \'"+str(y)+"\' >\n"
-        if ctx.vexp() is not None:
-            ctx.vexp().accept(self)
-        self.xml_output += "  " * self.indentation + "</stmt>\n"
-
-    def visitLoopstmt(self, ctx: XMLExpParser.LoopstmtContext):
-        self.xml_output += "  " * self.indentation + "<stmt type = loop>"
-        # x = ""f'{ctx.Loop().getText()}\n'""
-        # y = M_find(x, self.tenv)
-        # self.xml_output += "type = \'"+str(y)+"\' >\n"
-        ctx.blockstmt().accept(self)
-        self.xml_output += "  " * self.indentation + "</stmt>\n"
-
-    def visitForstmt(self, ctx: XMLExpParser.ForstmtContext):
-        self.xml_output += "  " * self.indentation + "<stmt type = for>"
-        # x = ""f'{ctx.For().getText()}\n'""
-        # y = M_find(x, self.tenv)
-        # self.xml_output += "type = \'" + str(y) + "\' >\n"
-        ctx.idexp().accept(self)
-        ctx.vexp().accept(self)
-        ctx.blockstmt().accept(self)
-        self.xml_output += "  " * self.indentation + "</stmt>\n"
-
-    def visitExp(self, ctx: XMLExpParser.ExpContext):
-        ctx.vexp().accept(self)
-
-    def visitIdexp(self, ctx: XMLExpParser.IdexpContext):
-        self.xml_output += "  " * self.indentation + "<id>"
-        # x = ""f'{ctx.Identifier().getText()}\n'""
-        # y = M_find(x, self.tenv)
-        self.xml_output += " \'" + ctx.Identifier().getText() + "\' \n"
-        self.xml_output += "  " * self.indentation + "</id>\n"
-
-    def visitStringval(self, ctx: XMLExpParser.StringvalContext):
-        self.xml_output += "  " * self.indentation + "<value>"
-        # x = ""f'{ctx.StrLiteral().getText()}\n'""
-        # y = M_find(x, self.tenv)
-        self.xml_output += " \'" + ctx.StrLiteral().getText() + "\' \n"
-        self.xml_output += "  " * self.indentation + "</value>\n"
-
-    def visitVexp(self, ctx:XMLExpParser.VexpContext):
-        ctx.accept(self)
-
-    def visitNumexp(self, ctx:XMLExpParser.NumexpContext):
-        self.xml_output += "  " * self.indentation + "<num>"
-        neg = ""
-        if ctx.Minus() is not None:
-            neg += '-'
-        # x = ""f'{ctx.Number().getText()}\n'""
-        # y = M_find(x, self.tenv)
-        self.xml_output += " \'" + neg + ctx.Number().getText() + "\' \n"
-        self.xml_output += "  " * self.indentation + "</num>\n"
-
-    def visitBinexp(self, ctx:XMLExpParser.BinexpContext):
-        self.xml_output += "  " * self.indentation + "<vexp op = "
-        self.xml_output += ""f'{ctx.op().accept(self).getText()}>\n'""
-        ctx.vexp().accept(self)
-        ctx.vexp().accept(self)
-        self.xml_output += "  " * self.indentation + "</vexp>\n"
-
-    def visitBoolexp(self, ctx: XMLExpParser.BoolexpContext):
-        self.xml_output += "  " * self.indentation + "<bool>"
-        if ctx.TrueLiteral() is not None:
-            x = ""f'{ctx.TrueLiteral().getText()}'""
+    def visitBreak(self, ctx: XMLProgrammer.QXBreak):
+        if ctx.vexp() is None:
+            return "break"
         else:
-            x = ""f'{ctx.FalseLiteral().getText()}'""
-        # y = M_find(x, self.tenv)
-        self.xml_output += " \'" + x + "\' \n"
-        self.xml_output += "  " * self.indentation + "</bool>\n"
+            re =  "break" + ctx.vexp().accept(self)
+            return re
+
+    def visitIfStmt(self, ctx: XMLProgrammer.QXIf):
+        re = "if " + ctx.vexp().accept(self)
+        re += ctx.left().accept(self)
+        re += " else " + ctx.right().accept(self)
+        return re
+
+    def visitReturn(self, ctx: XMLProgrammer.QXReturn):
+        if ctx.vexp() is None:
+            return "return"
+        else:
+            re =  "return" + ctx.vexp().accept(self)
+            return re
+
+    def visitLoop(self, ctx: XMLProgrammer.QXLoop):
+        re = "loop "+ctx.block()
+        return re
+
+    def visitFor(self, ctx: XMLProgrammer.QXFor):
+        re = "for " + ctx.ID() + " in "
+        re += ctx.vexp().accept(self) + " "
+        re += ctx.block().accept(self)
+        return re
+
+    def visitBin(self, ctx: XMLProgrammer.QXBin):
+        re = "(" + ctx.left().accept(self)
+        re += " " + ctx.OP() + " "
+        re += ctx.right().accept(self) + ")"
+        return re
 
 
+    def visitRef(self, ctx: XMLProgrammer.QXRef):
+        re = "& "+ ctx.next().accept(self)
+        return re
 
-    # Old code
+    def visitIDExp(self, ctx: XMLProgrammer.QXIDExp):
+        re = ctx.ID() + " : " + ctx.type().accept(self)
+        return re
 
-    def visitTerminal(self, node):
-        # For leaf nodes
-        if node.getSymbol().type == XMLExpParser.Identifier:
-            self.xml_output += ""f'{node.getText()}\n'""
-        if node.getSymbol().type == XMLExpParser.Number:
-            self.xml_output += ""f'{node.getText()}\n'""
-        self.xml_output += ""
+    def visitNum(self, ctx: XMLProgrammer.QXNum):
+        return str(ctx.num())
 
-    # def visit(self, ctx):
-    #    if ctx.getChildCount() > 0:
-    #        self.visitChildren(ctx)
-    #    else:
-    #        self.visitTerminal(ctx)
+    def visitBoolType(self, ctx: XMLProgrammer.Bool):
+        return "bool"
 
-    def getXML(self):
-        return self.xml_output

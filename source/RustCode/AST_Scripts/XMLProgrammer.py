@@ -57,13 +57,13 @@ class QXType(QXTop):
 
 class QXBlock(QXStmt):
     def __init__(self, program: QXProgram):
-        self.program = program
+        self._program = program
 
     def accept(self, visitor: AbstractProgramVisitor):
         visitor.visitBlock(self)
 
     def program(self):
-        return self.program
+        return self._program
 
 
 class QXVExp(QXExp):
@@ -87,15 +87,15 @@ class QXIDExp(QXVExp):
 
 
 class QXLet(QXStmt):
-    def __init__(self, id: str, p: QXVexp):
-        self.id = id
+    def __init__(self, id: str, p: QXVExp):
+        self._id = id
         self._vexp = p
 
     def accept(self, visitor: AbstractProgramVisitor):
         visitor.visitLet(self)
 
     def ID(self):
-        return self.id if isinstance(self.id, str) else self.id.getText()
+        return self._id if isinstance(self._id, str) else self._id.getText()
 
     def vexp(self):
         return self._vexp
@@ -103,36 +103,36 @@ class QXLet(QXStmt):
 
 class QXPrint(QXStmt):
     def __init__(self, s: str, vs: QXExp):
-        self.s = s
-        self.vs = vs
+        self._s = s
+        self._vs = vs
 
     def accept(self, visitor: AbstractProgramVisitor):
         visitor.visitPrint(self)
 
     def str(self) -> str:
-        return self.s if isinstance(self.id, str) else self.s.getText()
+        return self._s if isinstance(self._s, str) else self._s.getText()
 
     def exp(self):
-        return self.vs
+        return self._vs
 
 
 class QXIf(QXStmt):
     def __init__(self, v: QXVExp, left: QXBlock, right: QXBlock):
-        self.v = v
-        self.left = left
-        self.right = right
+        self._v = v
+        self._left = left
+        self._right = right
 
     def accept(self, visitor: AbstractProgramVisitor):
         visitor.visitIfStmt(self)
 
     def vexp(self):
-        return self.v
+        return self._v
 
     def left(self):
-        return self.left
+        return self._left
 
     def right(self):
-        return self.right
+        return self._right
 
 
 class QXBreak(QXStmt):
@@ -159,13 +159,13 @@ class QXReturn(QXStmt):
 
 class QXLoop(QXStmt):
     def __init__(self, s: QXBlock):
-        self.s = s
+        self._s = s
 
     def accept(self, visitor: AbstractProgramVisitor):
         visitor.visitLoop(self)
 
     def block(self):
-        return self.s
+        return self._s
 
 
 class QXFor(QXStmt):
@@ -200,21 +200,21 @@ class QXRef(QXVExp):
 
 class QXBin(QXVExp):
     def __init__(self, op: str, v1: QXVExp, v2: QXVExp):
-        self.op = op
-        self.v1 = v1
-        self.v2 = v2
+        self._op = op
+        self._v1 = v1
+        self._v2 = v2
 
     def accept(self, visitor: AbstractProgramVisitor):
         visitor.visitBin(self)
 
     def OP(self):
-        return self.op
+        return self._op
 
     def left(self):
-        return self.v1
+        return self._v1
 
     def right(self):
-        return self.v2
+        return self._v2
 
 
 class QXString(QXVExp):
