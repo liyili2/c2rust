@@ -50,7 +50,7 @@ class ProgramVisitor(AbstractProgramVisitor):
     def visitProgram(self, ctx: XMLProgrammer.QXProgram):
         i = 0
         while ctx.stmt(i) is not None:
-            ctx.stmt(i).accept(self)
+            ctx.stmt(i).accept(self) # ===> self.visit(ctx.stmt(i))
             i = i + 1
 
     def visitFun(self, ctx: XMLProgrammer.QXFun):

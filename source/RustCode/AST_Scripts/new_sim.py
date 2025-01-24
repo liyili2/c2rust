@@ -64,10 +64,10 @@ class Simulator(ProgramVisitor):
         self.st.update({str(x) : y})
         return
 
-    def visitMatch(self, ctx):
+    #def visitMatch(self, ctx: XMLProgrammer.QXMatch):
         # I will need to modify things even more or make an entirely new thing just for the match statement (due to
         # the fact that its syntax is very different)
-        return
+    #    return
 
     def visitPrint(self, ctx: XMLProgrammer.QXPrint):
         # this prints the stringval, then does something with the exp?
