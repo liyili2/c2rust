@@ -1,6 +1,6 @@
 from types import NoneType
 
-from RustCode.AST_Scripts import AbstractProgramVisitor
+import AbstractProgramVisitor
 
 
 class QXTop:
@@ -19,27 +19,13 @@ class QXExp(QXTop):
     def accept(self, visitor: AbstractProgramVisitor):
         pass
 
-class QXFun(QXTop):
-    def __init__(self, id: str, args: [QXIDExp],  stmt: QXBlock):
-        self._id = id
-        self._args = args
-        self._stmt = stmt
+class QXType(QXTop):
 
     def accept(self, visitor: AbstractProgramVisitor):
-        visitor.visitProgram(self)
-
-    def ID(self):
-        return self._id
-
-    def args(self, i : int = None):
-        return self._args[i]
-
-    def stmt(self):
-        return self._stmt
-
+        pass
 
 class QXProgram(QXTop):
-    def __init__(self, exps: [QXStmt]):
+    def __init__(self, exps: list[QXStmt]):
         self.exps = exps
 
     def accept(self, visitor: AbstractProgramVisitor):
@@ -47,13 +33,6 @@ class QXProgram(QXTop):
 
     def stmt(self, i: int = None):
         return self.exps[i] if len(self.exps) > i else None
-
-
-class QXType(QXTop):
-
-    def accept(self, visitor: AbstractProgramVisitor):
-        pass
-
 
 class QXBlock(QXStmt):
     def __init__(self, program: QXProgram):
@@ -85,6 +64,37 @@ class QXIDExp(QXVExp):
     def type(self):
         return self.type
 
+class Range_expr(QXExp):
+    def __init__(self, v1: QXVExp, v2: QXVExp):
+        self.s = v1
+        self.e = v2
+    def accept(self, visitor: AbstractProgramVisitor):
+        visitor.visitRange_expr(self)
+
+    def start(self):
+        return self.s
+    def end(self):
+        return self.e
+
+class QXFun(QXStmt):
+    def __init__(self, id: str, args: list[QXIDExp],  stmt: QXBlock):
+        self._id = id
+        self._args = args
+        self._stmt = stmt
+
+    def accept(self, visitor: AbstractProgramVisitor):
+        visitor.visitFun(self)
+
+    def ID(self):
+        return self._id
+
+    def args(self, i : int = None):
+        return self._args[i]
+
+    def stmt(self):
+        return self._stmt
+
+
 
 class QXLet(QXStmt):
     def __init__(self, id: str, p: QXVExp):
@@ -102,7 +112,7 @@ class QXLet(QXStmt):
 
 
 class QXPrint(QXStmt):
-    def __init__(self, s: str, vs: QXExp):
+    def __init__(self, s: str, vs: QXExp=None):
         self._s = s
         self._vs = vs
 
@@ -169,9 +179,9 @@ class QXLoop(QXStmt):
 
 
 class QXFor(QXStmt):
-    def __init__(self, id: str, v: QXVExp, b:QXBlock):
+    def __init__(self, id: str, r: Range_expr, b:QXBlock):
         self.id = id
-        self.v = v
+        self.r = r
         self.b = b
 
     def accept(self, visitor: AbstractProgramVisitor):
@@ -180,8 +190,8 @@ class QXFor(QXStmt):
     def ID(self):
         return self.id
 
-    def vexp(self):
-        return self.v
+    def range(self):
+        return self.r
 
     def block(self):
         return self.b
@@ -192,7 +202,7 @@ class QXRef(QXVExp):
         self._v = v
 
     def accept(self, visitor: AbstractProgramVisitor):
-        visitor.visitBin(self)
+        visitor.visitRef(self) #Not exist
 
     def next(self):
         return self._v
@@ -205,7 +215,7 @@ class QXBin(QXVExp):
         self._v2 = v2
 
     def accept(self, visitor: AbstractProgramVisitor):
-        visitor.visitBin(self)
+        visitor.visitBin(self) #Not exist
 
     def OP(self):
         return self._op
@@ -247,6 +257,7 @@ class QXNum(QXVExp):
 
     def num(self):
         return self.v
+    
 
 class Bool(QXType):
     type = "Bool"
@@ -270,7 +281,7 @@ class Int(QXType):
 
 class Fun(QXType):
 
-    def __init__(self, args: [str], pre: dict, out: dict):
+    def __init__(self, args: list[str], pre: dict, out: dict):
         self.args = args
         self.pre = pre
         self.out = out

@@ -1,0 +1,23 @@
+<functionstmt type='fn' id='printall'>
+    <parameters>
+        <vexp op='id' type='int'>list</vexp>
+    </parameters>
+    <blockstmt type='block'>
+        <printstmt type='print'>
+            <vexp op='string'>"["</vexp>
+        </printstmt>
+        <forstmt type='for' id='i'>
+            <range> 
+                <vexp op='num'> 0 </vexp>..<vexp op='string'> "list.len()" </vexp>
+            </range>
+            <blockstmt type='block'>
+                <printstmt type='print'>
+                        <vexp op='string'>"{}"</vexp> <vexp op='string'>"list[i]"</vexp>
+                </printstmt>
+            </blockstmt>
+        </forstmt>
+        <printstmt type='print'>
+                 <vexp op='string'>"]"</vexp>
+        </printstmt>
+    </blockstmt>
+</functionstmt>

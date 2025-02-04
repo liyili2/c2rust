@@ -1,32 +1,32 @@
 grammar XMLExp;
 
-program: (functionstmt)+;
+program: stmt+;
 
-stmt: letstmt | exp | printstmt | blockstmt | ifstmt | breakstmt | returnstmt | loopstmt | forstmt | matchstmt;
+stmt: letstmt | exp | printstmt | blockstmt | ifstmt | breakstmt | returnstmt | loopstmt | forstmt | matchstmt | functionstmt;
 
-blockstmt: '<' STMT 'type' '=' '\'' Block '\'' '>' program '</' STMT '>' ;
+blockstmt: '<blockstmt' 'type' '=' '\'' Block '\'' '>' program '</blockstmt>' ;
 
-letstmt : '<' STMT 'type' '=' '\'' Let '\'' (Mut ?)? ID '=' '\'' Identifier '\'' (':' atype)? '>' (exp | arrayexp) '</' STMT '>' ;
+letstmt : '<letstmt' 'type' '=' '\'' Let '\'' (Mut ID)? '=' '\'' Identifier '\'' (':' atype)? '>' (exp | arrayexp) '</letstmt>' ;
 
-matchstmt: '<' STMT 'type' '=' '\'' Match '\'' '\'' Identifier '\'' '>' blockstmt '</' STMT '>';
+matchstmt: '<matchstmt' 'type' '=' '\'' Match '\'' '\'' Identifier '\'' '>' blockstmt '</matchstmt>';
 
-printstmt: '<' STMT 'type' '=' '\'' Print '\'' '>' stringval (exp?) '</' STMT '>' ;
+printstmt: '<printstmt' 'type' '=' '\'' Print '\'' '>' stringval (exp?) '</printstmt>' ;
 
-ifstmt: '<' STMT 'type' '=' '\'' IF '\'' '>' vexp blockstmt blockstmt '</' STMT '>' ;
+ifstmt: '<ifstmt' 'type' '=' '\'' IF '\'' '>' vexp blockstmt blockstmt '</ifstmt>' ;
 
-ifletstmt: '<' STMT 'type' '=' '\'' Iflet '\'' ID '=' '\'' Identifier '\'' '>' vexp blockstmt blockstmt '</' STMT '>' ;
+ifletstmt: '<ifletstmt' 'type' '=' '\'' Iflet '\'' ID '=' '\'' Identifier '\'' '>' vexp blockstmt blockstmt '</ifletstmt>' ;
 
-breakstmt: '<' STMT 'type' '=' '\'' Break '\'' '>' (vexp?) '</' STMT '>' ;
+breakstmt: '<breakstmt' 'type' '=' '\'' Break '\'' '>' (vexp?) '</breakstmt>' ;
 
-returnstmt: '<' STMT 'type' '=' '\'' Return '\'' '>' (vexp | idexp)? '</' STMT '>' ;
+returnstmt: '<returnstmt' 'type' '=' '\'' Return '\'' '>' (vexp | idexp)? '</returnstmt>' ;
 
-loopstmt: '<' STMT 'type' '=' '\'' Loop '\'' '>' blockstmt '</' STMT '>' ;
+loopstmt: '<loopstmt' 'type' '=' '\'' Loop '\'' '>' blockstmt '</loopstmt>' ;
 
-forstmt: '<' STMT 'type' '=' '\'' For '\'' ID '=' '\'' Identifier '\'' '>' '<range>' range_expr '</range>' blockstmt '</' STMT '>' ;
+forstmt: '<forstmt' 'type' '=' '\'' For '\'' ID '=' '\'' Identifier '\'' '>' '<range>' range_expr '</range>' blockstmt '</forstmt>' ;
 
-vectorstmt: '<' STMT 'type' '=' '\'' Vector '\'' '=' '\'' atype '\'' '>' (numexp+ | stringval+ | ()) '</' STMT '>' ;
+vectorstmt: '<vectorstmt' 'type' '=' '\'' Vector '\'' '=' '\'' atype '\'' '>' (numexp+ | stringval+ | ()) '</vectorstmt>' ;
 
-functionstmt: '<' STMT 'type' '=' '\'' Function '\'' ID '=' '\'' Identifier '\'' '>' parameters blockstmt '</' STMT '>' ;
+functionstmt: '<functionstmt' 'type' '=' '\'' Function '\'' ID '=' '\'' Identifier '\'' '>' parameters blockstmt '</functionstmt>' ;
 
 parameters: '<parameters>' (idexp (',' idexp)*)? '</parameters>' ;
 
@@ -94,7 +94,7 @@ Range : '..';
 
 Equal : '==';
 
-Reference : '&';
+Reference : '&amp;';
 
 Type : 'type';
 
@@ -144,9 +144,9 @@ Number : DIGIT+ ;
 
 NUM: 'num';
 
-Identifier :   Letter LetterOrDigit*;
+Identifier : Letter LetterOrDigit*;
 
-Letter :   [a-zA-Z$_];
+Letter : [a-zA-Z$_];
 
 LetterOrDigit: [a-zA-Z0-9$_];
 

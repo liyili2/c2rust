@@ -6,10 +6,11 @@ from types import NoneType
 
 from antlr4 import ParserRuleContext
 
-from RustCode.AST_Scripts.XMLExpLexer import *
-from RustCode.AST_Scripts.XMLExpVisitor import *
-from RustCode.AST_Scripts.XMLTypeSearch import *
-from RustCode.AST_Scripts.XMLProgrammer import *
+from XMLExpLexer import *
+from XMLExpVisitor import *
+from XMLExpParser import *
+#from XMLTypeSearch import *
+from XMLProgrammer import *
 
 class ProgramTransformer(XMLExpVisitor):
 
@@ -17,31 +18,15 @@ class ProgramTransformer(XMLExpVisitor):
         i = 0
         tmp = []
         while ctx.stmt(i) is not None:
-            v = self.visitFunctionstmt(ctx.functionstmt(i))
+            v = self.visitStmt(ctx.stmt(i))
             tmp.append(v)
             i += 1
         return QXProgram(tmp)
-
-
-    def visitFunctionstmt(self, ctx:XMLExpParser.FunctionstmtContext):
-        i=0
-        x = ctx.ID()
-        tmp = []
-        while ctx.idexp(i) is not None:
-            v = ctx.idexp(i).accept(self)
-            tmp.append(v)
-            i += 1
-        exp = ctx.blockstmt().accept(self)
-        return QXFun(x,tmp,exp)
-
-
-    def visitBlockstmt(self, ctx: XMLExpParser.BlockstmtContext):
-        v = self.visitProgram(ctx.program())
-        return QXBlock(v)
-
-
+    
     def visitStmt(self, ctx: XMLExpParser.StmtContext):
-        if ctx.letstmt() is not None:
+        if ctx.functionstmt() is not None:
+            return self.visitFunctionstmt(ctx.functionstmt())
+        elif ctx.letstmt() is not None:
             return self.visitLetstmt(ctx.letstmt())
         elif ctx.exp() is not None:
             return self.visitExp(ctx.exp())
@@ -60,32 +45,54 @@ class ProgramTransformer(XMLExpVisitor):
         elif ctx.forstmt() is not None:
             return self.visitForstmt(ctx.forstmt())
 
+    def visitFunctionstmt(self, ctx:XMLExpParser.FunctionstmtContext):
+        i=0
+        x = ctx.Identifier()
+        tmp = []
+        while ctx.parameters().idexp(i) is not None:          
+    #        print('params', ctx.parameters(), i, ctx.parameters().idexp(i)) 
+            v = ctx.parameters().idexp(i).accept(self)
+            tmp.append(v)
+            i += 1
+        exp = ctx.blockstmt().accept(self)
+ #       print('\n funstmt_in_transformer', x, type(x), tmp, exp)
+        return QXFun(x,tmp,exp)
+
+
+    def visitBlockstmt(self, ctx: XMLExpParser.BlockstmtContext):
+        v = self.visitProgram(ctx.program())
+#        print( '\n blockstmt_in_transformer', type(v), v.exps)
+        return QXBlock(v)
+     
 
     def visitPrintstmt(self, ctx: XMLExpParser.PrintstmtContext):
         s = ctx.stringval().accept(self)
-        e = ctx.exp().accept(self)
-        return QXPrint(s,e)
+        if ctx.exp() is not None:
+            e = ctx.exp().accept(self)
+    #        print('\n printstatement_in_transformer', s, e, type(QXPrint(s,e)))
+            return QXPrint(s,e)
+        else: return QXPrint(s)
 
 
-    def visitAtype(self, ctx: XMLExpParser.AtypeContext):
-        if ctx.Nat() is not None:
-            return Nat()
-        elif ctx.Qt() is not None:
-            v = self.visitElement(ctx.element(0))
-            return Qty(v)
-        elif ctx.Nor() is not None:
-            v = self.visitElement(ctx.element(0))
-            return Qty(v, "Nor")
-        elif ctx.Phi() is not None:
-            v = self.visitElement(ctx.element(0))
-            v1 = v = self.visitElement(ctx.element(1))
-            return Qty(v, "Phi", v1)
-        return Nat()
+    # def visitAtype(self, ctx: XMLExpParser.AtypeContext):
+    #     if ctx.Nat() is not None:
+    #         return Nat()
+    #     elif ctx.Qt() is not None:
+    #         v = self.visitElement(ctx.element(0))
+    #         return Qty(v)
+    #     elif ctx.Nor() is not None:
+    #         v = self.visitElement(ctx.element(0))
+    #         return Qty(v, "Nor")
+    #     elif ctx.Phi() is not None:
+    #         v = self.visitElement(ctx.element(0))
+    #         v1 = v = self.visitElement(ctx.element(1))
+    #         return Qty(v, "Phi", v1)
+    #     return Nat()
 
     def visitLetstmt(self, ctx: XMLExpParser.LetstmtContext):
         f = ctx.Identifier()
         fv = self.visitExp(ctx.exp())
-        return QXLet(f, fv)
+        return QXLet(f.getText(), fv)
 
     def visitIfstmt(self, ctx:XMLExpParser.IfstmtContext):
         f = self.visitVexp(ctx.vexp())
@@ -111,29 +118,42 @@ class ProgramTransformer(XMLExpVisitor):
 
     # should do nothing
     def visitForstmt(self, ctx:XMLExpParser.ForstmtContext):
+
         s = ctx.Identifier()
-        v = ctx.vexp().accept(self)
+        r = ctx.range_expr().accept(self)
         e = ctx.blockstmt().accept(self)
-        return QXFor(s, v, e)
+#        print('\n forstmt_in_transformer', s, r, e)
+        return QXFor(s.getText(), r, e)
+    
+
+    def visitExp(self, ctx:XMLExpParser.ExpContext):
+        if ctx.vexp() is not None:
+            return self.visitVexp(ctx.vexp())
+        elif ctx.funccallexp() is not None:
+            return self.visitFunccallexp(ctx.funccallexp())
+        elif ctx.macroexp() is not None:
+            return self.visitMacroexp(ctx.macroexp())
+        
+    def visitRange_expr(self, ctx: XMLExpParser.Range_exprContext):
+        s = self.visitVexp(ctx.vexp(0))
+        e = self.visitVexp(ctx.vexp(1))
+#        print('\n range_exp_in_transformer', s, e)
+        return Range_expr(s, e)
 
     # X posi, changed the following for an example
     def visitStringval(self, ctx:XMLExpParser.StringvalContext):
-        s = ctx.stringval()
-        return QXString(s)
+        s = ctx.StrLiteral() if ctx.StrLiteral() is not None else ctx.Identifier()
+#        print('\n stringval_in_transformer', s.getText())
+        return QXString(s.getText())
 
 
     def visitIdexp(self, ctx: XMLExpParser.IdexpContext):
         x = ctx.Identifier()
         if ctx.atype() is not None:
             t = self.visitAtype(ctx.atype())
-            return QXIDExp(x, t)
+            return QXIDExp(x.getText(), t)
         else:
-            return QXIDExp(x, None)
-
-
-    def visitExp(self, ctx: XMLExpParser.ExpContext):
-        return ctx.vexp().accept(self)
-
+            return QXIDExp(x.getText(), None)
 
     # Visit a parse tree produced by XMLExpParser#vexp.
     def visitVexp(self, ctx: XMLExpParser.VexpContext):
@@ -150,8 +170,8 @@ class ProgramTransformer(XMLExpVisitor):
         if ctx.FalseLiteral() is not None:
             return QXBool(False)
         if ctx.vexp(1) is None:
-                v = self.visitVexp(ctx.vexp(0))
-                return QXRef(v)
+            v = self.visitVexp(ctx.vexp(0))
+            return QXRef(v)
         else:
             op = self.visitOp(ctx.op())
             v1 = self.visitVexp(ctx.vexp(0))
@@ -161,11 +181,14 @@ class ProgramTransformer(XMLExpVisitor):
 
     def visitOp(self, ctx:XMLExpParser.OpContext):
         if ctx.Plus() is not None:
-            return "Plus"
+            return ctx.getText()
+ #           return "Plus"
         elif ctx.Minus() is not None:
-            return "Minus"
+            return ctx.getText()
+ #           return "Minus"
         elif ctx.Times() is not None:
-            return "Times"
+            return ctx.getText()
+ #           return "Times"
         elif ctx.Div() is not None:
             return "Div"
         elif ctx.Mod() is not None:
@@ -185,9 +208,10 @@ class ProgramTransformer(XMLExpVisitor):
 
     def visitAtype(self, ctx:XMLExpParser.AtypeContext):
         if ctx.Int() is not None:
-            return Int()
+            return ctx.getText()
         if ctx.Bool() is not None:
-            return Bool()
+            return ctx.getText()
 
     def visitNumexp(self, ctx:XMLExpParser.NumexpContext):
-        return int(ctx.getText())
+        return ctx.getText()
+    
