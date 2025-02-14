@@ -1,6 +1,6 @@
-# Generated from XMLExp.g4 by ANTLR 4.13.2
+# Generated from XMLExp.g4 by ANTLR 4.9.2
 from antlr4 import *
-if "." in __name__:
+if __name__ is not None and "." in __name__:
     from .XMLExpParser import XMLExpParser
 else:
     from XMLExpParser import XMLExpParser
@@ -140,6 +140,15 @@ class XMLExpListener(ParseTreeListener):
 
     # Exit a parse tree produced by XMLExpParser#parameters.
     def exitParameters(self, ctx:XMLExpParser.ParametersContext):
+        pass
+
+
+    # Enter a parse tree produced by XMLExpParser#method.
+    def enterMethod(self, ctx:XMLExpParser.MethodContext):
+        pass
+
+    # Exit a parse tree produced by XMLExpParser#method.
+    def exitMethod(self, ctx:XMLExpParser.MethodContext):
         pass
 
 
