@@ -10,105 +10,130 @@ else:
 
 def serializedATN():
     return [
-        4,1,48,278,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
+        4,1,50,345,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
         6,2,7,7,7,2,8,7,8,2,9,7,9,2,10,7,10,2,11,7,11,2,12,7,12,2,13,7,13,
         2,14,7,14,2,15,7,15,2,16,7,16,2,17,7,17,2,18,7,18,2,19,7,19,2,20,
-        7,20,2,21,7,21,2,22,7,22,1,0,4,0,48,8,0,11,0,12,0,49,1,1,1,1,1,1,
-        1,1,3,1,56,8,1,1,1,1,1,3,1,60,8,1,1,1,3,1,63,8,1,1,1,1,1,1,2,1,2,
-        1,2,5,2,70,8,2,10,2,12,2,73,9,2,1,3,1,3,1,3,1,3,1,4,1,4,1,4,1,5,
-        1,5,1,5,1,5,1,5,1,5,1,5,1,5,1,5,1,5,1,5,1,5,1,5,1,5,1,5,1,5,1,5,
-        1,5,3,5,100,8,5,1,6,1,6,5,6,104,8,6,10,6,12,6,107,9,6,1,6,3,6,110,
-        8,6,1,6,1,6,1,7,1,7,1,7,1,7,1,7,3,7,119,8,7,1,8,1,8,3,8,123,8,8,
-        1,8,1,8,1,8,3,8,128,8,8,1,8,1,8,1,8,1,8,1,9,1,9,1,9,1,9,1,9,1,10,
-        1,10,1,10,1,10,1,10,1,10,1,11,1,11,1,11,1,11,1,11,3,11,150,8,11,
-        1,12,1,12,1,12,1,13,1,13,1,13,1,13,1,13,3,13,160,8,13,1,14,1,14,
-        1,14,1,14,1,14,1,14,1,14,1,14,1,14,3,14,171,8,14,1,14,3,14,174,8,
-        14,1,14,1,14,1,14,1,14,1,14,1,14,1,14,1,14,1,14,1,14,1,14,1,14,1,
-        14,1,14,1,14,1,14,1,14,1,14,1,14,1,14,1,14,1,14,1,14,1,14,1,14,3,
-        14,201,8,14,1,14,5,14,204,8,14,10,14,12,14,207,9,14,1,15,1,15,1,
-        15,1,15,1,15,3,15,214,8,15,1,15,1,15,1,15,1,15,1,15,3,15,221,8,15,
-        1,16,1,16,1,16,5,16,226,8,16,10,16,12,16,229,9,16,1,17,1,17,1,17,
-        1,17,1,18,1,18,3,18,237,8,18,1,18,1,18,1,18,3,18,242,8,18,1,18,3,
-        18,245,8,18,1,19,1,19,1,19,3,19,250,8,19,1,20,1,20,1,20,1,20,3,20,
-        256,8,20,1,21,1,21,1,21,1,21,5,21,262,8,21,10,21,12,21,265,9,21,
-        1,21,1,21,1,22,1,22,5,22,271,8,22,10,22,12,22,274,9,22,1,22,1,22,
-        1,22,1,272,1,28,23,0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,
-        34,36,38,40,42,44,0,2,2,0,7,7,26,31,1,0,34,41,299,0,47,1,0,0,0,2,
-        51,1,0,0,0,4,66,1,0,0,0,6,74,1,0,0,0,8,78,1,0,0,0,10,99,1,0,0,0,
-        12,101,1,0,0,0,14,118,1,0,0,0,16,120,1,0,0,0,18,133,1,0,0,0,20,138,
-        1,0,0,0,22,144,1,0,0,0,24,151,1,0,0,0,26,159,1,0,0,0,28,173,1,0,
-        0,0,30,220,1,0,0,0,32,222,1,0,0,0,34,230,1,0,0,0,36,244,1,0,0,0,
-        38,246,1,0,0,0,40,255,1,0,0,0,42,257,1,0,0,0,44,268,1,0,0,0,46,48,
-        3,2,1,0,47,46,1,0,0,0,48,49,1,0,0,0,49,47,1,0,0,0,49,50,1,0,0,0,
-        50,1,1,0,0,0,51,52,5,1,0,0,52,53,5,45,0,0,53,55,5,2,0,0,54,56,3,
-        4,2,0,55,54,1,0,0,0,55,56,1,0,0,0,56,57,1,0,0,0,57,59,5,3,0,0,58,
-        60,5,4,0,0,59,58,1,0,0,0,59,60,1,0,0,0,60,62,1,0,0,0,61,63,3,10,
-        5,0,62,61,1,0,0,0,62,63,1,0,0,0,63,64,1,0,0,0,64,65,3,12,6,0,65,
-        3,1,0,0,0,66,71,3,6,3,0,67,68,5,5,0,0,68,70,3,6,3,0,69,67,1,0,0,
-        0,70,73,1,0,0,0,71,69,1,0,0,0,71,72,1,0,0,0,72,5,1,0,0,0,73,71,1,
-        0,0,0,74,75,5,45,0,0,75,76,5,6,0,0,76,77,3,8,4,0,77,7,1,0,0,0,78,
-        79,5,7,0,0,79,80,3,10,5,0,80,9,1,0,0,0,81,100,5,8,0,0,82,83,5,9,
-        0,0,83,84,5,10,0,0,84,85,3,10,5,0,85,86,5,11,0,0,86,100,1,0,0,0,
-        87,88,5,7,0,0,88,100,3,10,5,0,89,90,5,12,0,0,90,91,3,10,5,0,91,92,
-        5,13,0,0,92,93,5,46,0,0,93,94,5,14,0,0,94,100,1,0,0,0,95,96,5,12,
-        0,0,96,97,3,10,5,0,97,98,5,14,0,0,98,100,1,0,0,0,99,81,1,0,0,0,99,
-        82,1,0,0,0,99,87,1,0,0,0,99,89,1,0,0,0,99,95,1,0,0,0,100,11,1,0,
-        0,0,101,105,5,15,0,0,102,104,3,14,7,0,103,102,1,0,0,0,104,107,1,
-        0,0,0,105,103,1,0,0,0,105,106,1,0,0,0,106,109,1,0,0,0,107,105,1,
-        0,0,0,108,110,3,26,13,0,109,108,1,0,0,0,109,110,1,0,0,0,110,111,
-        1,0,0,0,111,112,5,16,0,0,112,13,1,0,0,0,113,119,3,16,8,0,114,119,
-        3,18,9,0,115,119,3,20,10,0,116,119,3,22,11,0,117,119,3,24,12,0,118,
-        113,1,0,0,0,118,114,1,0,0,0,118,115,1,0,0,0,118,116,1,0,0,0,118,
-        117,1,0,0,0,119,15,1,0,0,0,120,122,5,17,0,0,121,123,5,18,0,0,122,
-        121,1,0,0,0,122,123,1,0,0,0,123,124,1,0,0,0,124,127,5,45,0,0,125,
-        126,5,6,0,0,126,128,3,10,5,0,127,125,1,0,0,0,127,128,1,0,0,0,128,
-        129,1,0,0,0,129,130,5,19,0,0,130,131,3,28,14,0,131,132,5,13,0,0,
-        132,17,1,0,0,0,133,134,3,28,14,0,134,135,5,19,0,0,135,136,3,28,14,
-        0,136,137,5,13,0,0,137,19,1,0,0,0,138,139,5,20,0,0,139,140,5,45,
-        0,0,140,141,5,21,0,0,141,142,3,28,14,0,142,143,3,12,6,0,143,21,1,
-        0,0,0,144,145,5,22,0,0,145,146,3,28,14,0,146,149,3,12,6,0,147,148,
-        5,23,0,0,148,150,3,12,6,0,149,147,1,0,0,0,149,150,1,0,0,0,150,23,
-        1,0,0,0,151,152,3,28,14,0,152,153,5,13,0,0,153,25,1,0,0,0,154,155,
-        5,24,0,0,155,156,3,28,14,0,156,157,5,13,0,0,157,160,1,0,0,0,158,
-        160,3,28,14,0,159,154,1,0,0,0,159,158,1,0,0,0,160,27,1,0,0,0,161,
-        162,6,14,-1,0,162,174,3,30,15,0,163,174,3,34,17,0,164,165,5,7,0,
-        0,165,174,3,28,14,9,166,167,5,45,0,0,167,168,5,42,0,0,168,170,5,
-        2,0,0,169,171,3,32,16,0,170,169,1,0,0,0,170,171,1,0,0,0,171,172,
-        1,0,0,0,172,174,5,3,0,0,173,161,1,0,0,0,173,163,1,0,0,0,173,164,
-        1,0,0,0,173,166,1,0,0,0,174,205,1,0,0,0,175,176,10,5,0,0,176,177,
-        7,0,0,0,177,204,3,28,14,6,178,179,10,4,0,0,179,180,5,32,0,0,180,
-        204,3,28,14,5,181,182,10,3,0,0,182,183,5,33,0,0,183,204,3,28,14,
-        4,184,185,10,2,0,0,185,186,7,1,0,0,186,204,3,28,14,3,187,188,10,
-        8,0,0,188,189,5,12,0,0,189,190,3,28,14,0,190,191,5,14,0,0,191,204,
-        1,0,0,0,192,193,10,7,0,0,193,194,5,25,0,0,194,204,5,45,0,0,195,196,
-        10,6,0,0,196,197,5,25,0,0,197,198,5,45,0,0,198,200,5,2,0,0,199,201,
-        3,32,16,0,200,199,1,0,0,0,200,201,1,0,0,0,201,202,1,0,0,0,202,204,
-        5,3,0,0,203,175,1,0,0,0,203,178,1,0,0,0,203,181,1,0,0,0,203,184,
-        1,0,0,0,203,187,1,0,0,0,203,192,1,0,0,0,203,195,1,0,0,0,204,207,
-        1,0,0,0,205,203,1,0,0,0,205,206,1,0,0,0,206,29,1,0,0,0,207,205,1,
-        0,0,0,208,221,3,40,20,0,209,221,5,45,0,0,210,211,5,45,0,0,211,213,
-        5,2,0,0,212,214,3,32,16,0,213,212,1,0,0,0,213,214,1,0,0,0,214,215,
-        1,0,0,0,215,221,5,3,0,0,216,217,5,2,0,0,217,218,3,28,14,0,218,219,
-        5,3,0,0,219,221,1,0,0,0,220,208,1,0,0,0,220,209,1,0,0,0,220,210,
-        1,0,0,0,220,216,1,0,0,0,221,31,1,0,0,0,222,227,3,28,14,0,223,224,
-        5,5,0,0,224,226,3,28,14,0,225,223,1,0,0,0,226,229,1,0,0,0,227,225,
-        1,0,0,0,227,228,1,0,0,0,228,33,1,0,0,0,229,227,1,0,0,0,230,231,5,
-        45,0,0,231,232,5,42,0,0,232,233,3,36,18,0,233,35,1,0,0,0,234,236,
-        5,12,0,0,235,237,3,38,19,0,236,235,1,0,0,0,236,237,1,0,0,0,237,238,
-        1,0,0,0,238,245,5,14,0,0,239,241,5,2,0,0,240,242,3,38,19,0,241,240,
-        1,0,0,0,241,242,1,0,0,0,242,243,1,0,0,0,243,245,5,3,0,0,244,234,
-        1,0,0,0,244,239,1,0,0,0,245,37,1,0,0,0,246,249,3,28,14,0,247,248,
-        5,13,0,0,248,250,3,28,14,0,249,247,1,0,0,0,249,250,1,0,0,0,250,39,
-        1,0,0,0,251,256,5,46,0,0,252,256,5,44,0,0,253,256,3,42,21,0,254,
-        256,3,44,22,0,255,251,1,0,0,0,255,252,1,0,0,0,255,253,1,0,0,0,255,
-        254,1,0,0,0,256,41,1,0,0,0,257,258,5,12,0,0,258,263,3,28,14,0,259,
-        260,5,5,0,0,260,262,3,28,14,0,261,259,1,0,0,0,262,265,1,0,0,0,263,
-        261,1,0,0,0,263,264,1,0,0,0,264,266,1,0,0,0,265,263,1,0,0,0,266,
-        267,5,14,0,0,267,43,1,0,0,0,268,272,5,43,0,0,269,271,9,0,0,0,270,
-        269,1,0,0,0,271,274,1,0,0,0,272,273,1,0,0,0,272,270,1,0,0,0,273,
-        275,1,0,0,0,274,272,1,0,0,0,275,276,5,43,0,0,276,45,1,0,0,0,28,49,
-        55,59,62,71,99,105,109,118,122,127,149,159,170,173,200,203,205,213,
-        220,227,236,241,244,249,255,263,272
+        7,20,2,21,7,21,2,22,7,22,2,23,7,23,2,24,7,24,2,25,7,25,2,26,7,26,
+        2,27,7,27,2,28,7,28,1,0,5,0,60,8,0,10,0,12,0,63,9,0,1,1,1,1,1,1,
+        3,1,68,8,1,1,2,1,2,1,2,1,2,5,2,74,8,2,10,2,12,2,77,9,2,1,2,1,2,1,
+        3,1,3,1,3,1,3,3,3,85,8,3,1,4,1,4,1,4,1,4,3,4,91,8,4,1,4,1,4,3,4,
+        95,8,4,1,4,3,4,98,8,4,1,4,1,4,1,5,1,5,1,5,5,5,105,8,5,10,5,12,5,
+        108,9,5,1,6,1,6,1,6,1,6,1,7,1,7,1,7,1,8,1,8,1,9,1,9,1,9,1,9,1,9,
+        1,9,1,9,5,9,126,8,9,10,9,12,9,129,9,9,1,9,1,9,3,9,133,8,9,1,9,1,
+        9,1,9,1,9,1,9,1,9,1,9,1,9,1,9,1,9,1,9,1,9,3,9,147,8,9,1,10,1,10,
+        5,10,151,8,10,10,10,12,10,154,9,10,1,10,3,10,157,8,10,1,10,1,10,
+        1,11,1,11,1,11,1,11,1,11,3,11,166,8,11,1,12,1,12,3,12,170,8,12,1,
+        12,1,12,1,12,3,12,175,8,12,1,12,1,12,1,12,1,12,1,13,1,13,1,13,1,
+        13,1,13,1,14,1,14,1,14,1,14,1,14,1,14,1,15,1,15,1,15,1,15,1,15,3,
+        15,197,8,15,1,16,1,16,1,16,1,17,1,17,1,17,1,17,1,17,3,17,207,8,17,
+        1,18,1,18,1,18,1,18,1,18,1,18,1,18,1,18,1,18,3,18,218,8,18,1,18,
+        3,18,221,8,18,1,18,1,18,1,18,1,18,1,18,1,18,1,18,1,18,1,18,1,18,
+        1,18,1,18,1,18,1,18,1,18,1,18,1,18,1,18,1,18,1,18,1,18,1,18,1,18,
+        1,18,1,18,3,18,248,8,18,1,18,5,18,251,8,18,10,18,12,18,254,9,18,
+        1,19,1,19,1,19,1,19,1,19,3,19,261,8,19,1,19,1,19,1,19,1,19,1,19,
+        3,19,268,8,19,1,20,1,20,1,20,5,20,273,8,20,10,20,12,20,276,9,20,
+        1,21,1,21,1,21,1,21,1,22,1,22,3,22,284,8,22,1,22,1,22,1,22,3,22,
+        289,8,22,1,22,3,22,292,8,22,1,23,1,23,1,23,3,23,297,8,23,1,24,1,
+        24,1,24,1,24,1,24,1,25,1,25,1,25,1,25,1,25,5,25,309,8,25,10,25,12,
+        25,312,9,25,3,25,314,8,25,1,25,3,25,317,8,25,1,26,1,26,1,26,1,26,
+        3,26,323,8,26,1,27,1,27,1,27,1,27,5,27,329,8,27,10,27,12,27,332,
+        9,27,1,27,1,27,1,28,1,28,5,28,338,8,28,10,28,12,28,341,9,28,1,28,
+        1,28,1,28,1,339,1,36,29,0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,
+        30,32,34,36,38,40,42,44,46,48,50,52,54,56,0,2,2,0,9,9,23,28,1,0,
+        31,38,370,0,61,1,0,0,0,2,67,1,0,0,0,4,69,1,0,0,0,6,80,1,0,0,0,8,
+        86,1,0,0,0,10,101,1,0,0,0,12,109,1,0,0,0,14,113,1,0,0,0,16,116,1,
+        0,0,0,18,146,1,0,0,0,20,148,1,0,0,0,22,165,1,0,0,0,24,167,1,0,0,
+        0,26,180,1,0,0,0,28,185,1,0,0,0,30,191,1,0,0,0,32,198,1,0,0,0,34,
+        206,1,0,0,0,36,220,1,0,0,0,38,267,1,0,0,0,40,269,1,0,0,0,42,277,
+        1,0,0,0,44,291,1,0,0,0,46,293,1,0,0,0,48,298,1,0,0,0,50,303,1,0,
+        0,0,52,322,1,0,0,0,54,324,1,0,0,0,56,335,1,0,0,0,58,60,3,2,1,0,59,
+        58,1,0,0,0,60,63,1,0,0,0,61,59,1,0,0,0,61,62,1,0,0,0,62,1,1,0,0,
+        0,63,61,1,0,0,0,64,68,3,8,4,0,65,68,3,4,2,0,66,68,3,48,24,0,67,64,
+        1,0,0,0,67,65,1,0,0,0,67,66,1,0,0,0,68,3,1,0,0,0,69,70,5,1,0,0,70,
+        71,5,42,0,0,71,75,5,2,0,0,72,74,3,6,3,0,73,72,1,0,0,0,74,77,1,0,
+        0,0,75,73,1,0,0,0,75,76,1,0,0,0,76,78,1,0,0,0,77,75,1,0,0,0,78,79,
+        5,3,0,0,79,5,1,0,0,0,80,81,5,42,0,0,81,82,5,4,0,0,82,84,3,16,8,0,
+        83,85,5,48,0,0,84,83,1,0,0,0,84,85,1,0,0,0,85,7,1,0,0,0,86,87,5,
+        5,0,0,87,88,5,42,0,0,88,90,5,6,0,0,89,91,3,10,5,0,90,89,1,0,0,0,
+        90,91,1,0,0,0,91,92,1,0,0,0,92,94,5,7,0,0,93,95,5,8,0,0,94,93,1,
+        0,0,0,94,95,1,0,0,0,95,97,1,0,0,0,96,98,3,16,8,0,97,96,1,0,0,0,97,
+        98,1,0,0,0,98,99,1,0,0,0,99,100,3,20,10,0,100,9,1,0,0,0,101,106,
+        3,12,6,0,102,103,5,48,0,0,103,105,3,12,6,0,104,102,1,0,0,0,105,108,
+        1,0,0,0,106,104,1,0,0,0,106,107,1,0,0,0,107,11,1,0,0,0,108,106,1,
+        0,0,0,109,110,5,42,0,0,110,111,5,4,0,0,111,112,3,14,7,0,112,13,1,
+        0,0,0,113,114,5,9,0,0,114,115,3,16,8,0,115,15,1,0,0,0,116,117,3,
+        18,9,0,117,17,1,0,0,0,118,147,5,10,0,0,119,147,5,11,0,0,120,132,
+        5,42,0,0,121,122,5,12,0,0,122,127,3,16,8,0,123,124,5,48,0,0,124,
+        126,3,16,8,0,125,123,1,0,0,0,126,129,1,0,0,0,127,125,1,0,0,0,127,
+        128,1,0,0,0,128,130,1,0,0,0,129,127,1,0,0,0,130,131,5,44,0,0,131,
+        133,1,0,0,0,132,121,1,0,0,0,132,133,1,0,0,0,133,147,1,0,0,0,134,
+        135,5,9,0,0,135,147,3,16,8,0,136,137,5,46,0,0,137,138,3,16,8,0,138,
+        139,5,13,0,0,139,140,5,43,0,0,140,141,5,47,0,0,141,147,1,0,0,0,142,
+        143,5,46,0,0,143,144,3,16,8,0,144,145,5,47,0,0,145,147,1,0,0,0,146,
+        118,1,0,0,0,146,119,1,0,0,0,146,120,1,0,0,0,146,134,1,0,0,0,146,
+        136,1,0,0,0,146,142,1,0,0,0,147,19,1,0,0,0,148,152,5,2,0,0,149,151,
+        3,22,11,0,150,149,1,0,0,0,151,154,1,0,0,0,152,150,1,0,0,0,152,153,
+        1,0,0,0,153,156,1,0,0,0,154,152,1,0,0,0,155,157,3,34,17,0,156,155,
+        1,0,0,0,156,157,1,0,0,0,157,158,1,0,0,0,158,159,5,3,0,0,159,21,1,
+        0,0,0,160,166,3,24,12,0,161,166,3,26,13,0,162,166,3,28,14,0,163,
+        166,3,30,15,0,164,166,3,32,16,0,165,160,1,0,0,0,165,161,1,0,0,0,
+        165,162,1,0,0,0,165,163,1,0,0,0,165,164,1,0,0,0,166,23,1,0,0,0,167,
+        169,5,14,0,0,168,170,5,15,0,0,169,168,1,0,0,0,169,170,1,0,0,0,170,
+        171,1,0,0,0,171,174,5,42,0,0,172,173,5,4,0,0,173,175,3,16,8,0,174,
+        172,1,0,0,0,174,175,1,0,0,0,175,176,1,0,0,0,176,177,5,16,0,0,177,
+        178,3,36,18,0,178,179,5,13,0,0,179,25,1,0,0,0,180,181,3,36,18,0,
+        181,182,5,16,0,0,182,183,3,36,18,0,183,184,5,13,0,0,184,27,1,0,0,
+        0,185,186,5,17,0,0,186,187,5,42,0,0,187,188,5,18,0,0,188,189,3,36,
+        18,0,189,190,3,20,10,0,190,29,1,0,0,0,191,192,5,19,0,0,192,193,3,
+        36,18,0,193,196,3,20,10,0,194,195,5,20,0,0,195,197,3,20,10,0,196,
+        194,1,0,0,0,196,197,1,0,0,0,197,31,1,0,0,0,198,199,3,36,18,0,199,
+        200,5,13,0,0,200,33,1,0,0,0,201,202,5,21,0,0,202,203,3,36,18,0,203,
+        204,5,13,0,0,204,207,1,0,0,0,205,207,3,36,18,0,206,201,1,0,0,0,206,
+        205,1,0,0,0,207,35,1,0,0,0,208,209,6,18,-1,0,209,221,3,38,19,0,210,
+        221,3,42,21,0,211,212,5,9,0,0,212,221,3,36,18,9,213,214,5,42,0,0,
+        214,215,5,39,0,0,215,217,5,6,0,0,216,218,3,40,20,0,217,216,1,0,0,
+        0,217,218,1,0,0,0,218,219,1,0,0,0,219,221,5,7,0,0,220,208,1,0,0,
+        0,220,210,1,0,0,0,220,211,1,0,0,0,220,213,1,0,0,0,221,252,1,0,0,
+        0,222,223,10,5,0,0,223,224,7,0,0,0,224,251,3,36,18,6,225,226,10,
+        4,0,0,226,227,5,29,0,0,227,251,3,36,18,5,228,229,10,3,0,0,229,230,
+        5,30,0,0,230,251,3,36,18,4,231,232,10,2,0,0,232,233,7,1,0,0,233,
+        251,3,36,18,3,234,235,10,8,0,0,235,236,5,46,0,0,236,237,3,36,18,
+        0,237,238,5,47,0,0,238,251,1,0,0,0,239,240,10,7,0,0,240,241,5,22,
+        0,0,241,251,5,42,0,0,242,243,10,6,0,0,243,244,5,22,0,0,244,245,5,
+        42,0,0,245,247,5,6,0,0,246,248,3,40,20,0,247,246,1,0,0,0,247,248,
+        1,0,0,0,248,249,1,0,0,0,249,251,5,7,0,0,250,222,1,0,0,0,250,225,
+        1,0,0,0,250,228,1,0,0,0,250,231,1,0,0,0,250,234,1,0,0,0,250,239,
+        1,0,0,0,250,242,1,0,0,0,251,254,1,0,0,0,252,250,1,0,0,0,252,253,
+        1,0,0,0,253,37,1,0,0,0,254,252,1,0,0,0,255,268,3,52,26,0,256,268,
+        5,42,0,0,257,258,5,42,0,0,258,260,5,6,0,0,259,261,3,40,20,0,260,
+        259,1,0,0,0,260,261,1,0,0,0,261,262,1,0,0,0,262,268,5,7,0,0,263,
+        264,5,6,0,0,264,265,3,36,18,0,265,266,5,7,0,0,266,268,1,0,0,0,267,
+        255,1,0,0,0,267,256,1,0,0,0,267,257,1,0,0,0,267,263,1,0,0,0,268,
+        39,1,0,0,0,269,274,3,36,18,0,270,271,5,48,0,0,271,273,3,36,18,0,
+        272,270,1,0,0,0,273,276,1,0,0,0,274,272,1,0,0,0,274,275,1,0,0,0,
+        275,41,1,0,0,0,276,274,1,0,0,0,277,278,5,42,0,0,278,279,5,39,0,0,
+        279,280,3,44,22,0,280,43,1,0,0,0,281,283,5,46,0,0,282,284,3,46,23,
+        0,283,282,1,0,0,0,283,284,1,0,0,0,284,285,1,0,0,0,285,292,5,47,0,
+        0,286,288,5,6,0,0,287,289,3,46,23,0,288,287,1,0,0,0,288,289,1,0,
+        0,0,289,290,1,0,0,0,290,292,5,7,0,0,291,281,1,0,0,0,291,286,1,0,
+        0,0,292,45,1,0,0,0,293,296,3,36,18,0,294,295,5,13,0,0,295,297,3,
+        36,18,0,296,294,1,0,0,0,296,297,1,0,0,0,297,47,1,0,0,0,298,299,5,
+        45,0,0,299,300,5,46,0,0,300,301,3,50,25,0,301,302,5,47,0,0,302,49,
+        1,0,0,0,303,316,5,42,0,0,304,313,5,6,0,0,305,310,5,42,0,0,306,307,
+        5,48,0,0,307,309,5,42,0,0,308,306,1,0,0,0,309,312,1,0,0,0,310,308,
+        1,0,0,0,310,311,1,0,0,0,311,314,1,0,0,0,312,310,1,0,0,0,313,305,
+        1,0,0,0,313,314,1,0,0,0,314,315,1,0,0,0,315,317,5,7,0,0,316,304,
+        1,0,0,0,316,317,1,0,0,0,317,51,1,0,0,0,318,323,5,43,0,0,319,323,
+        5,41,0,0,320,323,3,54,27,0,321,323,3,56,28,0,322,318,1,0,0,0,322,
+        319,1,0,0,0,322,320,1,0,0,0,322,321,1,0,0,0,323,53,1,0,0,0,324,325,
+        5,46,0,0,325,330,3,36,18,0,326,327,5,48,0,0,327,329,3,36,18,0,328,
+        326,1,0,0,0,329,332,1,0,0,0,330,328,1,0,0,0,330,331,1,0,0,0,331,
+        333,1,0,0,0,332,330,1,0,0,0,333,334,5,47,0,0,334,55,1,0,0,0,335,
+        339,5,40,0,0,336,338,9,0,0,0,337,336,1,0,0,0,338,341,1,0,0,0,339,
+        340,1,0,0,0,339,337,1,0,0,0,340,342,1,0,0,0,341,339,1,0,0,0,342,
+        343,5,40,0,0,343,57,1,0,0,0,36,61,67,75,84,90,94,97,106,127,132,
+        146,152,156,165,169,174,196,206,217,220,247,250,252,260,267,274,
+        283,288,291,296,310,313,316,322,330,339
     ]
 
 class RustParser ( Parser ):
@@ -121,13 +146,14 @@ class RustParser ( Parser ):
 
     sharedContextCache = PredictionContextCache()
 
-    literalNames = [ "<INVALID>", "'fn'", "'('", "')'", "'->'", "','", "':'", 
-                     "'&'", "'i32'", "'Vec'", "'<'", "'>'", "'['", "';'", 
-                     "']'", "'{'", "'}'", "'let'", "'mut'", "'='", "'for'", 
-                     "'in'", "'if'", "'else'", "'return'", "'.'", "'*'", 
-                     "'/'", "'%'", "'+'", "'-'", "'>>'", "'=='", "'..'", 
-                     "'+='", "'-='", "'*='", "'/='", "'%='", "'&='", "'|='", 
-                     "'^='", "'!'", "'\"'" ]
+    literalNames = [ "<INVALID>", "'struct'", "'{'", "'}'", "':'", "'fn'", 
+                     "'('", "')'", "'->'", "'&'", "'i32'", "'String'", "'<'", 
+                     "';'", "'let'", "'mut'", "'='", "'for'", "'in'", "'if'", 
+                     "'else'", "'return'", "'.'", "'*'", "'/'", "'%'", "'+'", 
+                     "'-'", "'>>'", "'=='", "'..'", "'+='", "'-='", "'*='", 
+                     "'/='", "'%='", "'&='", "'|='", "'^='", "'!'", "'\"'", 
+                     "<INVALID>", "<INVALID>", "<INVALID>", "'>'", "'#'", 
+                     "'['", "']'", "','" ]
 
     symbolicNames = [ "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
                       "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
@@ -139,38 +165,46 @@ class RustParser ( Parser ):
                       "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
                       "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
                       "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
-                      "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
-                      "Binary", "Identifier", "Number", "WS", "COMMENT" ]
+                      "<INVALID>", "Binary", "Identifier", "Number", "GT", 
+                      "POUND", "LBRACK", "RBRACK", "COMMA", "WS", "COMMENT" ]
 
     RULE_program = 0
-    RULE_functionDef = 1
-    RULE_paramList = 2
-    RULE_param = 3
-    RULE_referenceType = 4
-    RULE_type = 5
-    RULE_block = 6
-    RULE_statement = 7
-    RULE_letStmt = 8
-    RULE_assignStmt = 9
-    RULE_forStmt = 10
-    RULE_ifStmt = 11
-    RULE_exprStmt = 12
-    RULE_returnStmt = 13
-    RULE_expression = 14
-    RULE_primaryExpression = 15
-    RULE_argumentList = 16
-    RULE_macroCall = 17
-    RULE_macroArgs = 18
-    RULE_macroInner = 19
-    RULE_literal = 20
-    RULE_arrayLiteral = 21
-    RULE_stringLiteral = 22
+    RULE_topLevelItem = 1
+    RULE_structDef = 2
+    RULE_structField = 3
+    RULE_functionDef = 4
+    RULE_paramList = 5
+    RULE_param = 6
+    RULE_referenceType = 7
+    RULE_type = 8
+    RULE_basicType = 9
+    RULE_block = 10
+    RULE_statement = 11
+    RULE_letStmt = 12
+    RULE_assignStmt = 13
+    RULE_forStmt = 14
+    RULE_ifStmt = 15
+    RULE_exprStmt = 16
+    RULE_returnStmt = 17
+    RULE_expression = 18
+    RULE_primaryExpression = 19
+    RULE_argumentList = 20
+    RULE_macroCall = 21
+    RULE_macroArgs = 22
+    RULE_macroInner = 23
+    RULE_attribute = 24
+    RULE_attrInner = 25
+    RULE_literal = 26
+    RULE_arrayLiteral = 27
+    RULE_stringLiteral = 28
 
-    ruleNames =  [ "program", "functionDef", "paramList", "param", "referenceType", 
-                   "type", "block", "statement", "letStmt", "assignStmt", 
-                   "forStmt", "ifStmt", "exprStmt", "returnStmt", "expression", 
-                   "primaryExpression", "argumentList", "macroCall", "macroArgs", 
-                   "macroInner", "literal", "arrayLiteral", "stringLiteral" ]
+    ruleNames =  [ "program", "topLevelItem", "structDef", "structField", 
+                   "functionDef", "paramList", "param", "referenceType", 
+                   "type", "basicType", "block", "statement", "letStmt", 
+                   "assignStmt", "forStmt", "ifStmt", "exprStmt", "returnStmt", 
+                   "expression", "primaryExpression", "argumentList", "macroCall", 
+                   "macroArgs", "macroInner", "attribute", "attrInner", 
+                   "literal", "arrayLiteral", "stringLiteral" ]
 
     EOF = Token.EOF
     T__0=1
@@ -213,14 +247,16 @@ class RustParser ( Parser ):
     T__37=38
     T__38=39
     T__39=40
-    T__40=41
-    T__41=42
-    T__42=43
-    Binary=44
-    Identifier=45
-    Number=46
-    WS=47
-    COMMENT=48
+    Binary=41
+    Identifier=42
+    Number=43
+    GT=44
+    POUND=45
+    LBRACK=46
+    RBRACK=47
+    COMMA=48
+    WS=49
+    COMMENT=50
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
@@ -238,11 +274,11 @@ class RustParser ( Parser ):
             super().__init__(parent, invokingState)
             self.parser = parser
 
-        def functionDef(self, i:int=None):
+        def topLevelItem(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(RustParser.FunctionDefContext)
+                return self.getTypedRuleContexts(RustParser.TopLevelItemContext)
             else:
-                return self.getTypedRuleContext(RustParser.FunctionDefContext,i)
+                return self.getTypedRuleContext(RustParser.TopLevelItemContext,i)
 
 
         def getRuleIndex(self):
@@ -266,17 +302,209 @@ class RustParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 47 
+            self.state = 61
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while True:
-                self.state = 46
-                self.functionDef()
-                self.state = 49 
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 35184372088866) != 0):
+                self.state = 58
+                self.topLevelItem()
+                self.state = 63
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==1):
-                    break
+
+        except RecognitionException as re:
+            localctx.exception = re
+            self._errHandler.reportError(self, re)
+            self._errHandler.recover(self, re)
+        finally:
+            self.exitRule()
+        return localctx
+
+
+    class TopLevelItemContext(ParserRuleContext):
+        __slots__ = 'parser'
+
+        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+            super().__init__(parent, invokingState)
+            self.parser = parser
+
+        def functionDef(self):
+            return self.getTypedRuleContext(RustParser.FunctionDefContext,0)
+
+
+        def structDef(self):
+            return self.getTypedRuleContext(RustParser.StructDefContext,0)
+
+
+        def attribute(self):
+            return self.getTypedRuleContext(RustParser.AttributeContext,0)
+
+
+        def getRuleIndex(self):
+            return RustParser.RULE_topLevelItem
+
+        def enterRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "enterTopLevelItem" ):
+                listener.enterTopLevelItem(self)
+
+        def exitRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "exitTopLevelItem" ):
+                listener.exitTopLevelItem(self)
+
+
+
+
+    def topLevelItem(self):
+
+        localctx = RustParser.TopLevelItemContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 2, self.RULE_topLevelItem)
+        try:
+            self.state = 67
+            self._errHandler.sync(self)
+            token = self._input.LA(1)
+            if token in [5]:
+                self.enterOuterAlt(localctx, 1)
+                self.state = 64
+                self.functionDef()
+                pass
+            elif token in [1]:
+                self.enterOuterAlt(localctx, 2)
+                self.state = 65
+                self.structDef()
+                pass
+            elif token in [45]:
+                self.enterOuterAlt(localctx, 3)
+                self.state = 66
+                self.attribute()
+                pass
+            else:
+                raise NoViableAltException(self)
+
+        except RecognitionException as re:
+            localctx.exception = re
+            self._errHandler.reportError(self, re)
+            self._errHandler.recover(self, re)
+        finally:
+            self.exitRule()
+        return localctx
+
+
+    class StructDefContext(ParserRuleContext):
+        __slots__ = 'parser'
+
+        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+            super().__init__(parent, invokingState)
+            self.parser = parser
+
+        def Identifier(self):
+            return self.getToken(RustParser.Identifier, 0)
+
+        def structField(self, i:int=None):
+            if i is None:
+                return self.getTypedRuleContexts(RustParser.StructFieldContext)
+            else:
+                return self.getTypedRuleContext(RustParser.StructFieldContext,i)
+
+
+        def getRuleIndex(self):
+            return RustParser.RULE_structDef
+
+        def enterRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "enterStructDef" ):
+                listener.enterStructDef(self)
+
+        def exitRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "exitStructDef" ):
+                listener.exitStructDef(self)
+
+
+
+
+    def structDef(self):
+
+        localctx = RustParser.StructDefContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 4, self.RULE_structDef)
+        self._la = 0 # Token type
+        try:
+            self.enterOuterAlt(localctx, 1)
+            self.state = 69
+            self.match(RustParser.T__0)
+            self.state = 70
+            self.match(RustParser.Identifier)
+            self.state = 71
+            self.match(RustParser.T__1)
+            self.state = 75
+            self._errHandler.sync(self)
+            _la = self._input.LA(1)
+            while _la==42:
+                self.state = 72
+                self.structField()
+                self.state = 77
+                self._errHandler.sync(self)
+                _la = self._input.LA(1)
+
+            self.state = 78
+            self.match(RustParser.T__2)
+        except RecognitionException as re:
+            localctx.exception = re
+            self._errHandler.reportError(self, re)
+            self._errHandler.recover(self, re)
+        finally:
+            self.exitRule()
+        return localctx
+
+
+    class StructFieldContext(ParserRuleContext):
+        __slots__ = 'parser'
+
+        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+            super().__init__(parent, invokingState)
+            self.parser = parser
+
+        def Identifier(self):
+            return self.getToken(RustParser.Identifier, 0)
+
+        def type_(self):
+            return self.getTypedRuleContext(RustParser.TypeContext,0)
+
+
+        def COMMA(self):
+            return self.getToken(RustParser.COMMA, 0)
+
+        def getRuleIndex(self):
+            return RustParser.RULE_structField
+
+        def enterRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "enterStructField" ):
+                listener.enterStructField(self)
+
+        def exitRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "exitStructField" ):
+                listener.exitStructField(self)
+
+
+
+
+    def structField(self):
+
+        localctx = RustParser.StructFieldContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 6, self.RULE_structField)
+        self._la = 0 # Token type
+        try:
+            self.enterOuterAlt(localctx, 1)
+            self.state = 80
+            self.match(RustParser.Identifier)
+            self.state = 81
+            self.match(RustParser.T__3)
+            self.state = 82
+            self.type_()
+            self.state = 84
+            self._errHandler.sync(self)
+            _la = self._input.LA(1)
+            if _la==48:
+                self.state = 83
+                self.match(RustParser.COMMA)
+
 
         except RecognitionException as re:
             localctx.exception = re
@@ -326,43 +554,43 @@ class RustParser ( Parser ):
     def functionDef(self):
 
         localctx = RustParser.FunctionDefContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 2, self.RULE_functionDef)
+        self.enterRule(localctx, 8, self.RULE_functionDef)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 51
-            self.match(RustParser.T__0)
-            self.state = 52
+            self.state = 86
+            self.match(RustParser.T__4)
+            self.state = 87
             self.match(RustParser.Identifier)
-            self.state = 53
-            self.match(RustParser.T__1)
-            self.state = 55
+            self.state = 88
+            self.match(RustParser.T__5)
+            self.state = 90
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==45:
-                self.state = 54
+            if _la==42:
+                self.state = 89
                 self.paramList()
 
 
-            self.state = 57
-            self.match(RustParser.T__2)
-            self.state = 59
+            self.state = 92
+            self.match(RustParser.T__6)
+            self.state = 94
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==4:
-                self.state = 58
-                self.match(RustParser.T__3)
+            if _la==8:
+                self.state = 93
+                self.match(RustParser.T__7)
 
 
-            self.state = 62
+            self.state = 97
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 4992) != 0):
-                self.state = 61
+            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 74766790692352) != 0):
+                self.state = 96
                 self.type_()
 
 
-            self.state = 64
+            self.state = 99
             self.block()
         except RecognitionException as re:
             localctx.exception = re
@@ -387,6 +615,12 @@ class RustParser ( Parser ):
                 return self.getTypedRuleContext(RustParser.ParamContext,i)
 
 
+        def COMMA(self, i:int=None):
+            if i is None:
+                return self.getTokens(RustParser.COMMA)
+            else:
+                return self.getToken(RustParser.COMMA, i)
+
         def getRuleIndex(self):
             return RustParser.RULE_paramList
 
@@ -404,21 +638,21 @@ class RustParser ( Parser ):
     def paramList(self):
 
         localctx = RustParser.ParamListContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 4, self.RULE_paramList)
+        self.enterRule(localctx, 10, self.RULE_paramList)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 66
+            self.state = 101
             self.param()
-            self.state = 71
+            self.state = 106
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==5:
-                self.state = 67
-                self.match(RustParser.T__4)
-                self.state = 68
+            while _la==48:
+                self.state = 102
+                self.match(RustParser.COMMA)
+                self.state = 103
                 self.param()
-                self.state = 73
+                self.state = 108
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
@@ -462,14 +696,14 @@ class RustParser ( Parser ):
     def param(self):
 
         localctx = RustParser.ParamContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 6, self.RULE_param)
+        self.enterRule(localctx, 12, self.RULE_param)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 74
+            self.state = 109
             self.match(RustParser.Identifier)
-            self.state = 75
-            self.match(RustParser.T__5)
-            self.state = 76
+            self.state = 110
+            self.match(RustParser.T__3)
+            self.state = 111
             self.referenceType()
         except RecognitionException as re:
             localctx.exception = re
@@ -508,12 +742,12 @@ class RustParser ( Parser ):
     def referenceType(self):
 
         localctx = RustParser.ReferenceTypeContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 8, self.RULE_referenceType)
+        self.enterRule(localctx, 14, self.RULE_referenceType)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 78
-            self.match(RustParser.T__6)
-            self.state = 79
+            self.state = 113
+            self.match(RustParser.T__8)
+            self.state = 114
             self.type_()
         except RecognitionException as re:
             localctx.exception = re
@@ -531,12 +765,9 @@ class RustParser ( Parser ):
             super().__init__(parent, invokingState)
             self.parser = parser
 
-        def type_(self):
-            return self.getTypedRuleContext(RustParser.TypeContext,0)
+        def basicType(self):
+            return self.getTypedRuleContext(RustParser.BasicTypeContext,0)
 
-
-        def Number(self):
-            return self.getToken(RustParser.Number, 0)
 
         def getRuleIndex(self):
             return RustParser.RULE_type
@@ -555,59 +786,150 @@ class RustParser ( Parser ):
     def type_(self):
 
         localctx = RustParser.TypeContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 10, self.RULE_type)
+        self.enterRule(localctx, 16, self.RULE_type)
         try:
-            self.state = 99
+            self.enterOuterAlt(localctx, 1)
+            self.state = 116
+            self.basicType()
+        except RecognitionException as re:
+            localctx.exception = re
+            self._errHandler.reportError(self, re)
+            self._errHandler.recover(self, re)
+        finally:
+            self.exitRule()
+        return localctx
+
+
+    class BasicTypeContext(ParserRuleContext):
+        __slots__ = 'parser'
+
+        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+            super().__init__(parent, invokingState)
+            self.parser = parser
+
+        def Identifier(self):
+            return self.getToken(RustParser.Identifier, 0)
+
+        def type_(self, i:int=None):
+            if i is None:
+                return self.getTypedRuleContexts(RustParser.TypeContext)
+            else:
+                return self.getTypedRuleContext(RustParser.TypeContext,i)
+
+
+        def GT(self):
+            return self.getToken(RustParser.GT, 0)
+
+        def COMMA(self, i:int=None):
+            if i is None:
+                return self.getTokens(RustParser.COMMA)
+            else:
+                return self.getToken(RustParser.COMMA, i)
+
+        def LBRACK(self):
+            return self.getToken(RustParser.LBRACK, 0)
+
+        def Number(self):
+            return self.getToken(RustParser.Number, 0)
+
+        def RBRACK(self):
+            return self.getToken(RustParser.RBRACK, 0)
+
+        def getRuleIndex(self):
+            return RustParser.RULE_basicType
+
+        def enterRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "enterBasicType" ):
+                listener.enterBasicType(self)
+
+        def exitRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "exitBasicType" ):
+                listener.exitBasicType(self)
+
+
+
+
+    def basicType(self):
+
+        localctx = RustParser.BasicTypeContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 18, self.RULE_basicType)
+        self._la = 0 # Token type
+        try:
+            self.state = 146
             self._errHandler.sync(self)
-            la_ = self._interp.adaptivePredict(self._input,5,self._ctx)
+            la_ = self._interp.adaptivePredict(self._input,10,self._ctx)
             if la_ == 1:
                 self.enterOuterAlt(localctx, 1)
-                self.state = 81
-                self.match(RustParser.T__7)
+                self.state = 118
+                self.match(RustParser.T__9)
                 pass
 
             elif la_ == 2:
                 self.enterOuterAlt(localctx, 2)
-                self.state = 82
-                self.match(RustParser.T__8)
-                self.state = 83
-                self.match(RustParser.T__9)
-                self.state = 84
-                self.type_()
-                self.state = 85
+                self.state = 119
                 self.match(RustParser.T__10)
                 pass
 
             elif la_ == 3:
                 self.enterOuterAlt(localctx, 3)
-                self.state = 87
-                self.match(RustParser.T__6)
-                self.state = 88
-                self.type_()
+                self.state = 120
+                self.match(RustParser.Identifier)
+                self.state = 132
+                self._errHandler.sync(self)
+                _la = self._input.LA(1)
+                if _la==12:
+                    self.state = 121
+                    self.match(RustParser.T__11)
+                    self.state = 122
+                    self.type_()
+                    self.state = 127
+                    self._errHandler.sync(self)
+                    _la = self._input.LA(1)
+                    while _la==48:
+                        self.state = 123
+                        self.match(RustParser.COMMA)
+                        self.state = 124
+                        self.type_()
+                        self.state = 129
+                        self._errHandler.sync(self)
+                        _la = self._input.LA(1)
+
+                    self.state = 130
+                    self.match(RustParser.GT)
+
+
                 pass
 
             elif la_ == 4:
                 self.enterOuterAlt(localctx, 4)
-                self.state = 89
-                self.match(RustParser.T__11)
-                self.state = 90
+                self.state = 134
+                self.match(RustParser.T__8)
+                self.state = 135
                 self.type_()
-                self.state = 91
-                self.match(RustParser.T__12)
-                self.state = 92
-                self.match(RustParser.Number)
-                self.state = 93
-                self.match(RustParser.T__13)
                 pass
 
             elif la_ == 5:
                 self.enterOuterAlt(localctx, 5)
-                self.state = 95
-                self.match(RustParser.T__11)
-                self.state = 96
+                self.state = 136
+                self.match(RustParser.LBRACK)
+                self.state = 137
                 self.type_()
-                self.state = 97
-                self.match(RustParser.T__13)
+                self.state = 138
+                self.match(RustParser.T__12)
+                self.state = 139
+                self.match(RustParser.Number)
+                self.state = 140
+                self.match(RustParser.RBRACK)
+                pass
+
+            elif la_ == 6:
+                self.enterOuterAlt(localctx, 6)
+                self.state = 142
+                self.match(RustParser.LBRACK)
+                self.state = 143
+                self.type_()
+                self.state = 144
+                self.match(RustParser.RBRACK)
                 pass
 
 
@@ -655,33 +977,33 @@ class RustParser ( Parser ):
     def block(self):
 
         localctx = RustParser.BlockContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 12, self.RULE_block)
+        self.enterRule(localctx, 20, self.RULE_block)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 101
-            self.match(RustParser.T__14)
-            self.state = 105
+            self.state = 148
+            self.match(RustParser.T__1)
+            self.state = 152
             self._errHandler.sync(self)
-            _alt = self._interp.adaptivePredict(self._input,6,self._ctx)
+            _alt = self._interp.adaptivePredict(self._input,11,self._ctx)
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt==1:
-                    self.state = 102
+                    self.state = 149
                     self.statement() 
-                self.state = 107
+                self.state = 154
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,6,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,11,self._ctx)
 
-            self.state = 109
+            self.state = 156
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 131941412114564) != 0):
-                self.state = 108
+            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 86861420692032) != 0):
+                self.state = 155
                 self.returnStmt()
 
 
-            self.state = 111
-            self.match(RustParser.T__15)
+            self.state = 158
+            self.match(RustParser.T__2)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -735,38 +1057,38 @@ class RustParser ( Parser ):
     def statement(self):
 
         localctx = RustParser.StatementContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 14, self.RULE_statement)
+        self.enterRule(localctx, 22, self.RULE_statement)
         try:
-            self.state = 118
+            self.state = 165
             self._errHandler.sync(self)
-            la_ = self._interp.adaptivePredict(self._input,8,self._ctx)
+            la_ = self._interp.adaptivePredict(self._input,13,self._ctx)
             if la_ == 1:
                 self.enterOuterAlt(localctx, 1)
-                self.state = 113
+                self.state = 160
                 self.letStmt()
                 pass
 
             elif la_ == 2:
                 self.enterOuterAlt(localctx, 2)
-                self.state = 114
+                self.state = 161
                 self.assignStmt()
                 pass
 
             elif la_ == 3:
                 self.enterOuterAlt(localctx, 3)
-                self.state = 115
+                self.state = 162
                 self.forStmt()
                 pass
 
             elif la_ == 4:
                 self.enterOuterAlt(localctx, 4)
-                self.state = 116
+                self.state = 163
                 self.ifStmt()
                 pass
 
             elif la_ == 5:
                 self.enterOuterAlt(localctx, 5)
-                self.state = 117
+                self.state = 164
                 self.exprStmt()
                 pass
 
@@ -815,37 +1137,37 @@ class RustParser ( Parser ):
     def letStmt(self):
 
         localctx = RustParser.LetStmtContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 16, self.RULE_letStmt)
+        self.enterRule(localctx, 24, self.RULE_letStmt)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 120
-            self.match(RustParser.T__16)
-            self.state = 122
+            self.state = 167
+            self.match(RustParser.T__13)
+            self.state = 169
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==18:
-                self.state = 121
-                self.match(RustParser.T__17)
+            if _la==15:
+                self.state = 168
+                self.match(RustParser.T__14)
 
 
-            self.state = 124
+            self.state = 171
             self.match(RustParser.Identifier)
-            self.state = 127
+            self.state = 174
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==6:
-                self.state = 125
-                self.match(RustParser.T__5)
-                self.state = 126
+            if _la==4:
+                self.state = 172
+                self.match(RustParser.T__3)
+                self.state = 173
                 self.type_()
 
 
-            self.state = 129
-            self.match(RustParser.T__18)
-            self.state = 130
+            self.state = 176
+            self.match(RustParser.T__15)
+            self.state = 177
             self.expression(0)
-            self.state = 131
+            self.state = 178
             self.match(RustParser.T__12)
         except RecognitionException as re:
             localctx.exception = re
@@ -887,16 +1209,16 @@ class RustParser ( Parser ):
     def assignStmt(self):
 
         localctx = RustParser.AssignStmtContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 18, self.RULE_assignStmt)
+        self.enterRule(localctx, 26, self.RULE_assignStmt)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 133
+            self.state = 180
             self.expression(0)
-            self.state = 134
-            self.match(RustParser.T__18)
-            self.state = 135
+            self.state = 181
+            self.match(RustParser.T__15)
+            self.state = 182
             self.expression(0)
-            self.state = 136
+            self.state = 183
             self.match(RustParser.T__12)
         except RecognitionException as re:
             localctx.exception = re
@@ -942,18 +1264,18 @@ class RustParser ( Parser ):
     def forStmt(self):
 
         localctx = RustParser.ForStmtContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 20, self.RULE_forStmt)
+        self.enterRule(localctx, 28, self.RULE_forStmt)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 138
-            self.match(RustParser.T__19)
-            self.state = 139
+            self.state = 185
+            self.match(RustParser.T__16)
+            self.state = 186
             self.match(RustParser.Identifier)
-            self.state = 140
-            self.match(RustParser.T__20)
-            self.state = 141
+            self.state = 187
+            self.match(RustParser.T__17)
+            self.state = 188
             self.expression(0)
-            self.state = 142
+            self.state = 189
             self.block()
         except RecognitionException as re:
             localctx.exception = re
@@ -999,23 +1321,23 @@ class RustParser ( Parser ):
     def ifStmt(self):
 
         localctx = RustParser.IfStmtContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 22, self.RULE_ifStmt)
+        self.enterRule(localctx, 30, self.RULE_ifStmt)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 144
-            self.match(RustParser.T__21)
-            self.state = 145
+            self.state = 191
+            self.match(RustParser.T__18)
+            self.state = 192
             self.expression(0)
-            self.state = 146
+            self.state = 193
             self.block()
-            self.state = 149
+            self.state = 196
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==23:
-                self.state = 147
-                self.match(RustParser.T__22)
-                self.state = 148
+            if _la==20:
+                self.state = 194
+                self.match(RustParser.T__19)
+                self.state = 195
                 self.block()
 
 
@@ -1056,12 +1378,12 @@ class RustParser ( Parser ):
     def exprStmt(self):
 
         localctx = RustParser.ExprStmtContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 24, self.RULE_exprStmt)
+        self.enterRule(localctx, 32, self.RULE_exprStmt)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 151
+            self.state = 198
             self.expression(0)
-            self.state = 152
+            self.state = 199
             self.match(RustParser.T__12)
         except RecognitionException as re:
             localctx.exception = re
@@ -1100,23 +1422,23 @@ class RustParser ( Parser ):
     def returnStmt(self):
 
         localctx = RustParser.ReturnStmtContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 26, self.RULE_returnStmt)
+        self.enterRule(localctx, 34, self.RULE_returnStmt)
         try:
-            self.state = 159
+            self.state = 206
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [24]:
+            if token in [21]:
                 self.enterOuterAlt(localctx, 1)
-                self.state = 154
-                self.match(RustParser.T__23)
-                self.state = 155
+                self.state = 201
+                self.match(RustParser.T__20)
+                self.state = 202
                 self.expression(0)
-                self.state = 156
+                self.state = 203
                 self.match(RustParser.T__12)
                 pass
-            elif token in [2, 7, 12, 43, 44, 45, 46]:
+            elif token in [6, 9, 40, 41, 42, 43, 46]:
                 self.enterOuterAlt(localctx, 2)
-                self.state = 158
+                self.state = 205
                 self.expression(0)
                 pass
             else:
@@ -1160,6 +1482,12 @@ class RustParser ( Parser ):
             return self.getTypedRuleContext(RustParser.ArgumentListContext,0)
 
 
+        def LBRACK(self):
+            return self.getToken(RustParser.LBRACK, 0)
+
+        def RBRACK(self):
+            return self.getToken(RustParser.RBRACK, 0)
+
         def getRuleIndex(self):
             return RustParser.RULE_expression
 
@@ -1178,182 +1506,182 @@ class RustParser ( Parser ):
         _parentState = self.state
         localctx = RustParser.ExpressionContext(self, self._ctx, _parentState)
         _prevctx = localctx
-        _startState = 28
-        self.enterRecursionRule(localctx, 28, self.RULE_expression, _p)
+        _startState = 36
+        self.enterRecursionRule(localctx, 36, self.RULE_expression, _p)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 173
+            self.state = 220
             self._errHandler.sync(self)
-            la_ = self._interp.adaptivePredict(self._input,14,self._ctx)
+            la_ = self._interp.adaptivePredict(self._input,19,self._ctx)
             if la_ == 1:
-                self.state = 162
+                self.state = 209
                 self.primaryExpression()
                 pass
 
             elif la_ == 2:
-                self.state = 163
+                self.state = 210
                 self.macroCall()
                 pass
 
             elif la_ == 3:
-                self.state = 164
-                self.match(RustParser.T__6)
-                self.state = 165
+                self.state = 211
+                self.match(RustParser.T__8)
+                self.state = 212
                 self.expression(9)
                 pass
 
             elif la_ == 4:
-                self.state = 166
+                self.state = 213
                 self.match(RustParser.Identifier)
-                self.state = 167
-                self.match(RustParser.T__41)
-                self.state = 168
-                self.match(RustParser.T__1)
-                self.state = 170
+                self.state = 214
+                self.match(RustParser.T__38)
+                self.state = 215
+                self.match(RustParser.T__5)
+                self.state = 217
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if (((_la) & ~0x3f) == 0 and ((1 << _la) & 131941395337348) != 0):
-                    self.state = 169
+                if (((_la) & ~0x3f) == 0 and ((1 << _la) & 86861418594880) != 0):
+                    self.state = 216
                     self.argumentList()
 
 
-                self.state = 172
-                self.match(RustParser.T__2)
+                self.state = 219
+                self.match(RustParser.T__6)
                 pass
 
 
             self._ctx.stop = self._input.LT(-1)
-            self.state = 205
+            self.state = 252
             self._errHandler.sync(self)
-            _alt = self._interp.adaptivePredict(self._input,17,self._ctx)
+            _alt = self._interp.adaptivePredict(self._input,22,self._ctx)
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt==1:
                     if self._parseListeners is not None:
                         self.triggerExitRuleEvent()
                     _prevctx = localctx
-                    self.state = 203
+                    self.state = 250
                     self._errHandler.sync(self)
-                    la_ = self._interp.adaptivePredict(self._input,16,self._ctx)
+                    la_ = self._interp.adaptivePredict(self._input,21,self._ctx)
                     if la_ == 1:
                         localctx = RustParser.ExpressionContext(self, _parentctx, _parentState)
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expression)
-                        self.state = 175
+                        self.state = 222
                         if not self.precpred(self._ctx, 5):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 5)")
-                        self.state = 176
+                        self.state = 223
                         _la = self._input.LA(1)
-                        if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 4227858560) != 0)):
+                        if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 528482816) != 0)):
                             self._errHandler.recoverInline(self)
                         else:
                             self._errHandler.reportMatch(self)
                             self.consume()
-                        self.state = 177
+                        self.state = 224
                         self.expression(6)
                         pass
 
                     elif la_ == 2:
                         localctx = RustParser.ExpressionContext(self, _parentctx, _parentState)
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expression)
-                        self.state = 178
+                        self.state = 225
                         if not self.precpred(self._ctx, 4):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 4)")
-                        self.state = 179
-                        self.match(RustParser.T__31)
-                        self.state = 180
+                        self.state = 226
+                        self.match(RustParser.T__28)
+                        self.state = 227
                         self.expression(5)
                         pass
 
                     elif la_ == 3:
                         localctx = RustParser.ExpressionContext(self, _parentctx, _parentState)
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expression)
-                        self.state = 181
+                        self.state = 228
                         if not self.precpred(self._ctx, 3):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 3)")
-                        self.state = 182
-                        self.match(RustParser.T__32)
-                        self.state = 183
+                        self.state = 229
+                        self.match(RustParser.T__29)
+                        self.state = 230
                         self.expression(4)
                         pass
 
                     elif la_ == 4:
                         localctx = RustParser.ExpressionContext(self, _parentctx, _parentState)
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expression)
-                        self.state = 184
+                        self.state = 231
                         if not self.precpred(self._ctx, 2):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 2)")
-                        self.state = 185
+                        self.state = 232
                         _la = self._input.LA(1)
-                        if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 4380866641920) != 0)):
+                        if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 547608330240) != 0)):
                             self._errHandler.recoverInline(self)
                         else:
                             self._errHandler.reportMatch(self)
                             self.consume()
-                        self.state = 186
+                        self.state = 233
                         self.expression(3)
                         pass
 
                     elif la_ == 5:
                         localctx = RustParser.ExpressionContext(self, _parentctx, _parentState)
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expression)
-                        self.state = 187
+                        self.state = 234
                         if not self.precpred(self._ctx, 8):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 8)")
-                        self.state = 188
-                        self.match(RustParser.T__11)
-                        self.state = 189
+                        self.state = 235
+                        self.match(RustParser.LBRACK)
+                        self.state = 236
                         self.expression(0)
-                        self.state = 190
-                        self.match(RustParser.T__13)
+                        self.state = 237
+                        self.match(RustParser.RBRACK)
                         pass
 
                     elif la_ == 6:
                         localctx = RustParser.ExpressionContext(self, _parentctx, _parentState)
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expression)
-                        self.state = 192
+                        self.state = 239
                         if not self.precpred(self._ctx, 7):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 7)")
-                        self.state = 193
-                        self.match(RustParser.T__24)
-                        self.state = 194
+                        self.state = 240
+                        self.match(RustParser.T__21)
+                        self.state = 241
                         self.match(RustParser.Identifier)
                         pass
 
                     elif la_ == 7:
                         localctx = RustParser.ExpressionContext(self, _parentctx, _parentState)
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expression)
-                        self.state = 195
+                        self.state = 242
                         if not self.precpred(self._ctx, 6):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 6)")
-                        self.state = 196
-                        self.match(RustParser.T__24)
-                        self.state = 197
+                        self.state = 243
+                        self.match(RustParser.T__21)
+                        self.state = 244
                         self.match(RustParser.Identifier)
-                        self.state = 198
-                        self.match(RustParser.T__1)
-                        self.state = 200
+                        self.state = 245
+                        self.match(RustParser.T__5)
+                        self.state = 247
                         self._errHandler.sync(self)
                         _la = self._input.LA(1)
-                        if (((_la) & ~0x3f) == 0 and ((1 << _la) & 131941395337348) != 0):
-                            self.state = 199
+                        if (((_la) & ~0x3f) == 0 and ((1 << _la) & 86861418594880) != 0):
+                            self.state = 246
                             self.argumentList()
 
 
-                        self.state = 202
-                        self.match(RustParser.T__2)
+                        self.state = 249
+                        self.match(RustParser.T__6)
                         pass
 
              
-                self.state = 207
+                self.state = 254
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,17,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,22,self._ctx)
 
         except RecognitionException as re:
             localctx.exception = re
@@ -1403,50 +1731,50 @@ class RustParser ( Parser ):
     def primaryExpression(self):
 
         localctx = RustParser.PrimaryExpressionContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 30, self.RULE_primaryExpression)
+        self.enterRule(localctx, 38, self.RULE_primaryExpression)
         self._la = 0 # Token type
         try:
-            self.state = 220
+            self.state = 267
             self._errHandler.sync(self)
-            la_ = self._interp.adaptivePredict(self._input,19,self._ctx)
+            la_ = self._interp.adaptivePredict(self._input,24,self._ctx)
             if la_ == 1:
                 self.enterOuterAlt(localctx, 1)
-                self.state = 208
+                self.state = 255
                 self.literal()
                 pass
 
             elif la_ == 2:
                 self.enterOuterAlt(localctx, 2)
-                self.state = 209
+                self.state = 256
                 self.match(RustParser.Identifier)
                 pass
 
             elif la_ == 3:
                 self.enterOuterAlt(localctx, 3)
-                self.state = 210
+                self.state = 257
                 self.match(RustParser.Identifier)
-                self.state = 211
-                self.match(RustParser.T__1)
-                self.state = 213
+                self.state = 258
+                self.match(RustParser.T__5)
+                self.state = 260
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if (((_la) & ~0x3f) == 0 and ((1 << _la) & 131941395337348) != 0):
-                    self.state = 212
+                if (((_la) & ~0x3f) == 0 and ((1 << _la) & 86861418594880) != 0):
+                    self.state = 259
                     self.argumentList()
 
 
-                self.state = 215
-                self.match(RustParser.T__2)
+                self.state = 262
+                self.match(RustParser.T__6)
                 pass
 
             elif la_ == 4:
                 self.enterOuterAlt(localctx, 4)
-                self.state = 216
-                self.match(RustParser.T__1)
-                self.state = 217
+                self.state = 263
+                self.match(RustParser.T__5)
+                self.state = 264
                 self.expression(0)
-                self.state = 218
-                self.match(RustParser.T__2)
+                self.state = 265
+                self.match(RustParser.T__6)
                 pass
 
 
@@ -1473,6 +1801,12 @@ class RustParser ( Parser ):
                 return self.getTypedRuleContext(RustParser.ExpressionContext,i)
 
 
+        def COMMA(self, i:int=None):
+            if i is None:
+                return self.getTokens(RustParser.COMMA)
+            else:
+                return self.getToken(RustParser.COMMA, i)
+
         def getRuleIndex(self):
             return RustParser.RULE_argumentList
 
@@ -1490,21 +1824,21 @@ class RustParser ( Parser ):
     def argumentList(self):
 
         localctx = RustParser.ArgumentListContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 32, self.RULE_argumentList)
+        self.enterRule(localctx, 40, self.RULE_argumentList)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 222
+            self.state = 269
             self.expression(0)
-            self.state = 227
+            self.state = 274
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==5:
-                self.state = 223
-                self.match(RustParser.T__4)
-                self.state = 224
+            while _la==48:
+                self.state = 270
+                self.match(RustParser.COMMA)
+                self.state = 271
                 self.expression(0)
-                self.state = 229
+                self.state = 276
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
@@ -1548,14 +1882,14 @@ class RustParser ( Parser ):
     def macroCall(self):
 
         localctx = RustParser.MacroCallContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 34, self.RULE_macroCall)
+        self.enterRule(localctx, 42, self.RULE_macroCall)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 230
+            self.state = 277
             self.match(RustParser.Identifier)
-            self.state = 231
-            self.match(RustParser.T__41)
-            self.state = 232
+            self.state = 278
+            self.match(RustParser.T__38)
+            self.state = 279
             self.macroArgs()
         except RecognitionException as re:
             localctx.exception = re
@@ -1572,6 +1906,12 @@ class RustParser ( Parser ):
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
             super().__init__(parent, invokingState)
             self.parser = parser
+
+        def LBRACK(self):
+            return self.getToken(RustParser.LBRACK, 0)
+
+        def RBRACK(self):
+            return self.getToken(RustParser.RBRACK, 0)
 
         def macroInner(self):
             return self.getTypedRuleContext(RustParser.MacroInnerContext,0)
@@ -1594,41 +1934,41 @@ class RustParser ( Parser ):
     def macroArgs(self):
 
         localctx = RustParser.MacroArgsContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 36, self.RULE_macroArgs)
+        self.enterRule(localctx, 44, self.RULE_macroArgs)
         self._la = 0 # Token type
         try:
-            self.state = 244
+            self.state = 291
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [12]:
+            if token in [46]:
                 self.enterOuterAlt(localctx, 1)
-                self.state = 234
-                self.match(RustParser.T__11)
-                self.state = 236
+                self.state = 281
+                self.match(RustParser.LBRACK)
+                self.state = 283
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if (((_la) & ~0x3f) == 0 and ((1 << _la) & 131941395337348) != 0):
-                    self.state = 235
+                if (((_la) & ~0x3f) == 0 and ((1 << _la) & 86861418594880) != 0):
+                    self.state = 282
                     self.macroInner()
 
 
-                self.state = 238
-                self.match(RustParser.T__13)
+                self.state = 285
+                self.match(RustParser.RBRACK)
                 pass
-            elif token in [2]:
+            elif token in [6]:
                 self.enterOuterAlt(localctx, 2)
-                self.state = 239
-                self.match(RustParser.T__1)
-                self.state = 241
+                self.state = 286
+                self.match(RustParser.T__5)
+                self.state = 288
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if (((_la) & ~0x3f) == 0 and ((1 << _la) & 131941395337348) != 0):
-                    self.state = 240
+                if (((_la) & ~0x3f) == 0 and ((1 << _la) & 86861418594880) != 0):
+                    self.state = 287
                     self.macroInner()
 
 
-                self.state = 243
-                self.match(RustParser.T__2)
+                self.state = 290
+                self.match(RustParser.T__6)
                 pass
             else:
                 raise NoViableAltException(self)
@@ -1673,20 +2013,158 @@ class RustParser ( Parser ):
     def macroInner(self):
 
         localctx = RustParser.MacroInnerContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 38, self.RULE_macroInner)
+        self.enterRule(localctx, 46, self.RULE_macroInner)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 246
+            self.state = 293
             self.expression(0)
-            self.state = 249
+            self.state = 296
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             if _la==13:
-                self.state = 247
+                self.state = 294
                 self.match(RustParser.T__12)
-                self.state = 248
+                self.state = 295
                 self.expression(0)
+
+
+        except RecognitionException as re:
+            localctx.exception = re
+            self._errHandler.reportError(self, re)
+            self._errHandler.recover(self, re)
+        finally:
+            self.exitRule()
+        return localctx
+
+
+    class AttributeContext(ParserRuleContext):
+        __slots__ = 'parser'
+
+        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+            super().__init__(parent, invokingState)
+            self.parser = parser
+
+        def POUND(self):
+            return self.getToken(RustParser.POUND, 0)
+
+        def LBRACK(self):
+            return self.getToken(RustParser.LBRACK, 0)
+
+        def attrInner(self):
+            return self.getTypedRuleContext(RustParser.AttrInnerContext,0)
+
+
+        def RBRACK(self):
+            return self.getToken(RustParser.RBRACK, 0)
+
+        def getRuleIndex(self):
+            return RustParser.RULE_attribute
+
+        def enterRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "enterAttribute" ):
+                listener.enterAttribute(self)
+
+        def exitRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "exitAttribute" ):
+                listener.exitAttribute(self)
+
+
+
+
+    def attribute(self):
+
+        localctx = RustParser.AttributeContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 48, self.RULE_attribute)
+        try:
+            self.enterOuterAlt(localctx, 1)
+            self.state = 298
+            self.match(RustParser.POUND)
+            self.state = 299
+            self.match(RustParser.LBRACK)
+            self.state = 300
+            self.attrInner()
+            self.state = 301
+            self.match(RustParser.RBRACK)
+        except RecognitionException as re:
+            localctx.exception = re
+            self._errHandler.reportError(self, re)
+            self._errHandler.recover(self, re)
+        finally:
+            self.exitRule()
+        return localctx
+
+
+    class AttrInnerContext(ParserRuleContext):
+        __slots__ = 'parser'
+
+        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+            super().__init__(parent, invokingState)
+            self.parser = parser
+
+        def Identifier(self, i:int=None):
+            if i is None:
+                return self.getTokens(RustParser.Identifier)
+            else:
+                return self.getToken(RustParser.Identifier, i)
+
+        def COMMA(self, i:int=None):
+            if i is None:
+                return self.getTokens(RustParser.COMMA)
+            else:
+                return self.getToken(RustParser.COMMA, i)
+
+        def getRuleIndex(self):
+            return RustParser.RULE_attrInner
+
+        def enterRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "enterAttrInner" ):
+                listener.enterAttrInner(self)
+
+        def exitRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "exitAttrInner" ):
+                listener.exitAttrInner(self)
+
+
+
+
+    def attrInner(self):
+
+        localctx = RustParser.AttrInnerContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 50, self.RULE_attrInner)
+        self._la = 0 # Token type
+        try:
+            self.enterOuterAlt(localctx, 1)
+            self.state = 303
+            self.match(RustParser.Identifier)
+            self.state = 316
+            self._errHandler.sync(self)
+            _la = self._input.LA(1)
+            if _la==6:
+                self.state = 304
+                self.match(RustParser.T__5)
+                self.state = 313
+                self._errHandler.sync(self)
+                _la = self._input.LA(1)
+                if _la==42:
+                    self.state = 305
+                    self.match(RustParser.Identifier)
+                    self.state = 310
+                    self._errHandler.sync(self)
+                    _la = self._input.LA(1)
+                    while _la==48:
+                        self.state = 306
+                        self.match(RustParser.COMMA)
+                        self.state = 307
+                        self.match(RustParser.Identifier)
+                        self.state = 312
+                        self._errHandler.sync(self)
+                        _la = self._input.LA(1)
+
+
+
+                self.state = 315
+                self.match(RustParser.T__6)
 
 
         except RecognitionException as re:
@@ -1736,29 +2214,29 @@ class RustParser ( Parser ):
     def literal(self):
 
         localctx = RustParser.LiteralContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 40, self.RULE_literal)
+        self.enterRule(localctx, 52, self.RULE_literal)
         try:
-            self.state = 255
+            self.state = 322
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [46]:
+            if token in [43]:
                 self.enterOuterAlt(localctx, 1)
-                self.state = 251
+                self.state = 318
                 self.match(RustParser.Number)
                 pass
-            elif token in [44]:
+            elif token in [41]:
                 self.enterOuterAlt(localctx, 2)
-                self.state = 252
+                self.state = 319
                 self.match(RustParser.Binary)
                 pass
-            elif token in [12]:
+            elif token in [46]:
                 self.enterOuterAlt(localctx, 3)
-                self.state = 253
+                self.state = 320
                 self.arrayLiteral()
                 pass
-            elif token in [43]:
+            elif token in [40]:
                 self.enterOuterAlt(localctx, 4)
-                self.state = 254
+                self.state = 321
                 self.stringLiteral()
                 pass
             else:
@@ -1780,12 +2258,24 @@ class RustParser ( Parser ):
             super().__init__(parent, invokingState)
             self.parser = parser
 
+        def LBRACK(self):
+            return self.getToken(RustParser.LBRACK, 0)
+
         def expression(self, i:int=None):
             if i is None:
                 return self.getTypedRuleContexts(RustParser.ExpressionContext)
             else:
                 return self.getTypedRuleContext(RustParser.ExpressionContext,i)
 
+
+        def RBRACK(self):
+            return self.getToken(RustParser.RBRACK, 0)
+
+        def COMMA(self, i:int=None):
+            if i is None:
+                return self.getTokens(RustParser.COMMA)
+            else:
+                return self.getToken(RustParser.COMMA, i)
 
         def getRuleIndex(self):
             return RustParser.RULE_arrayLiteral
@@ -1804,28 +2294,28 @@ class RustParser ( Parser ):
     def arrayLiteral(self):
 
         localctx = RustParser.ArrayLiteralContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 42, self.RULE_arrayLiteral)
+        self.enterRule(localctx, 54, self.RULE_arrayLiteral)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 257
-            self.match(RustParser.T__11)
-            self.state = 258
+            self.state = 324
+            self.match(RustParser.LBRACK)
+            self.state = 325
             self.expression(0)
-            self.state = 263
+            self.state = 330
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==5:
-                self.state = 259
-                self.match(RustParser.T__4)
-                self.state = 260
+            while _la==48:
+                self.state = 326
+                self.match(RustParser.COMMA)
+                self.state = 327
                 self.expression(0)
-                self.state = 265
+                self.state = 332
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
-            self.state = 266
-            self.match(RustParser.T__13)
+            self.state = 333
+            self.match(RustParser.RBRACK)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -1860,24 +2350,24 @@ class RustParser ( Parser ):
     def stringLiteral(self):
 
         localctx = RustParser.StringLiteralContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 44, self.RULE_stringLiteral)
+        self.enterRule(localctx, 56, self.RULE_stringLiteral)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 268
-            self.match(RustParser.T__42)
-            self.state = 272
+            self.state = 335
+            self.match(RustParser.T__39)
+            self.state = 339
             self._errHandler.sync(self)
-            _alt = self._interp.adaptivePredict(self._input,27,self._ctx)
+            _alt = self._interp.adaptivePredict(self._input,35,self._ctx)
             while _alt!=1 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt==1+1:
-                    self.state = 269
+                    self.state = 336
                     self.matchWildcard() 
-                self.state = 274
+                self.state = 341
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,27,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,35,self._ctx)
 
-            self.state = 275
-            self.match(RustParser.T__42)
+            self.state = 342
+            self.match(RustParser.T__39)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -1891,7 +2381,7 @@ class RustParser ( Parser ):
     def sempred(self, localctx:RuleContext, ruleIndex:int, predIndex:int):
         if self._predicates == None:
             self._predicates = dict()
-        self._predicates[14] = self.expression_sempred
+        self._predicates[18] = self.expression_sempred
         pred = self._predicates.get(ruleIndex, None)
         if pred is None:
             raise Exception("No predicate with index:" + str(ruleIndex))

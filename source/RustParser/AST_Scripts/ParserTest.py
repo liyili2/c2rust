@@ -1,35 +1,36 @@
 from antlr4 import *
-from RustListener import RustListener
 from RustLexer import RustLexer
 from RustParser import RustParser
+import os
+
+def parse_rust_file(file_path: str, output_dir: str = "./antlr_generated/"):
+    with open(file_path, encoding='utf-8') as f:
+        input_text = f.read()
+
+    i_stream = InputStream(input_text)
+    lexer = RustLexer(i_stream)
+    t_stream = CommonTokenStream(lexer)
+    parser = RustParser(t_stream)
+    tree = parser.program()
+
+    base_name = os.path.basename(file_path)
+    output_file = os.path.join(output_dir, base_name + ".txt")
+    with open(output_file, "w", encoding='utf-8') as f:
+        f.write("Here's the parsing result:\n")
+        f.write(tree.toStringTree(recog=parser))
+
+    print(f"✅ Parsed {file_path} -> {output_file}")
 
 def main():
-  base_adderss = "../../../c2safeRust_examples/"
-  file_name = "aggregate.rs"
-  #giveMeInput = input("(x,0)\n")
-  file_path = base_adderss + file_name
-  # i_stream = InputStream("fn main() {let a: i32 = 1;}")
-  i_stream = FileStream(fileName=file_path)
-  lexer = RustLexer(i_stream)
-  t_stream = CommonTokenStream(lexer)
-  parser = RustParser(t_stream)
-  tree = parser.program()
+    base_dir = "../../../c2safeRust_examples/"
+    test_files = [
+        "aggregate.rs",
+        "bst.rs"
+    ]
 
-  with open(file_name+".txt", "w", encoding='utf-8') as f:
-    f.write("Here's the parsing result:\n")
-    f.write(tree.toStringTree(recog=parser))
-  # print("here's the parsing result: ", tree.toStringTree(recog=parser))
-  #walker = ParseTreeWalker()
-  # y = simulator(state, environment) # Environment is same, initial state varies by pyTest
-  # y.visitProgram(tree)
-  # state = y.get_state()
-
-  # Do assertion check that state is as expected
-  # Add function to do state (binary-> int ) conversion  #TODO#
-  # int n = calInt(arrayQuBits, sizeArray)
-  # Then ASSERT 
-
-#y = XMLVisitor.XMLVisitor()
+    for file_name in test_files:
+        file_path = os.path.join(base_dir, file_name)
+        parse_rust_file(file_path)
 
 if __name__ == "__main__":
     main()

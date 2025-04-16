@@ -20,7 +20,7 @@ fn printall(list: &[i32]) {
     }
     println!("]");
 }
- 
+
 fn main() {
     let test1: [i32; 6] = [1, 2, 3, 4, 5, 6];
     let ret1 = aggregate(&test1);

@@ -17,6 +17,33 @@ class RustListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by RustParser#topLevelItem.
+    def enterTopLevelItem(self, ctx:RustParser.TopLevelItemContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#topLevelItem.
+    def exitTopLevelItem(self, ctx:RustParser.TopLevelItemContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#structDef.
+    def enterStructDef(self, ctx:RustParser.StructDefContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#structDef.
+    def exitStructDef(self, ctx:RustParser.StructDefContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#structField.
+    def enterStructField(self, ctx:RustParser.StructFieldContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#structField.
+    def exitStructField(self, ctx:RustParser.StructFieldContext):
+        pass
+
+
     # Enter a parse tree produced by RustParser#functionDef.
     def enterFunctionDef(self, ctx:RustParser.FunctionDefContext):
         pass
@@ -59,6 +86,15 @@ class RustListener(ParseTreeListener):
 
     # Exit a parse tree produced by RustParser#type.
     def exitType(self, ctx:RustParser.TypeContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#basicType.
+    def enterBasicType(self, ctx:RustParser.BasicTypeContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#basicType.
+    def exitBasicType(self, ctx:RustParser.BasicTypeContext):
         pass
 
 
@@ -185,6 +221,24 @@ class RustListener(ParseTreeListener):
 
     # Exit a parse tree produced by RustParser#macroInner.
     def exitMacroInner(self, ctx:RustParser.MacroInnerContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#attribute.
+    def enterAttribute(self, ctx:RustParser.AttributeContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#attribute.
+    def exitAttribute(self, ctx:RustParser.AttributeContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#attrInner.
+    def enterAttrInner(self, ctx:RustParser.AttrInnerContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#attrInner.
+    def exitAttrInner(self, ctx:RustParser.AttrInnerContext):
         pass
 
 
