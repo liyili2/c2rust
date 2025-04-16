@@ -3,8 +3,8 @@
 struct Node {
     key: i32,
     value: String,
-    left: Option<Box<Node>>,
-    right: Option<Box<Node>>,
+    left: Option<Box<Node> >,
+    right: Option<Box<Node> >,
 }
 
 impl Node {
