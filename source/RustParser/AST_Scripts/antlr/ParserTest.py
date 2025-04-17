@@ -22,7 +22,7 @@ def parse_rust_file(file_path: str, output_dir: str = "./antlr_generated/"):
     print(f"✅ Parsed {file_path} -> {output_file}")
 
 def main():
-    base_dir = "../../../c2safeRust_examples/"
+    base_dir = "../../../../c2safeRust_examples/"
     test_files = [
         "aggregate.rs",
         "bst.rs"
