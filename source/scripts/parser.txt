@@ -3,3 +3,9 @@ java -jar "C:\antlr\antlr4-4.13.1-complete.jar" -Dlanguage=Python3 Rust.g4
 
 Generate the visitor file:
 antlr4 -Dlanguage=Python3 -visitor Rust.g4
+
+Run the TypeChecker tests:
+python -m RustParser.AST_Scripts.tests.TypeCheckerTest
+
+Run the Transformer tests:
+python -m RustParser.AST_Scripts.tests.TransformerTest
