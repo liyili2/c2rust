@@ -1,2 +1,5 @@
-Generate the Parser:
+Generate the parser and the lexer:
 java -jar "C:\antlr\antlr4-4.13.1-complete.jar" -Dlanguage=Python3 Rust.g4
+
+Generate the visitor file:
+antlr4 -Dlanguage=Python3 -visitor Rust.g4

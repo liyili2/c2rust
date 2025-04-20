@@ -1,4 +1,4 @@
-# Generated from Rust.g4 by ANTLR 4.13.1
+# Generated from Rust.g4 by ANTLR 4.13.2
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
@@ -260,7 +260,7 @@ class RustParser ( Parser ):
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
-        self.checkVersion("4.13.1")
+        self.checkVersion("4.13.2")
         self._interp = ParserATNSimulator(self, self.atn, self.decisionsToDFA, self.sharedContextCache)
         self._predicates = None
 
@@ -292,11 +292,13 @@ class RustParser ( Parser ):
             if hasattr( listener, "exitProgram" ):
                 listener.exitProgram(self)
 
-
-
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitProgram" ):
+                return visitor.visitProgram(self)
+            else:
+                return visitor.visitChildren(self)
 
     def program(self):
-
         localctx = RustParser.ProgramContext(self, self._ctx, self.state)
         self.enterRule(localctx, 0, self.RULE_program)
         self._la = 0 # Token type
@@ -350,6 +352,12 @@ class RustParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitTopLevelItem" ):
                 listener.exitTopLevelItem(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitTopLevelItem" ):
+                return visitor.visitTopLevelItem(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -417,6 +425,12 @@ class RustParser ( Parser ):
             if hasattr( listener, "exitStructDef" ):
                 listener.exitStructDef(self)
 
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitStructDef" ):
+                return visitor.visitStructDef(self)
+            else:
+                return visitor.visitChildren(self)
+
 
 
 
@@ -481,6 +495,12 @@ class RustParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitStructField" ):
                 listener.exitStructField(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitStructField" ):
+                return visitor.visitStructField(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -547,6 +567,12 @@ class RustParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitFunctionDef" ):
                 listener.exitFunctionDef(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitFunctionDef" ):
+                return visitor.visitFunctionDef(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -632,6 +658,12 @@ class RustParser ( Parser ):
             if hasattr( listener, "exitParamList" ):
                 listener.exitParamList(self)
 
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitParamList" ):
+                return visitor.visitParamList(self)
+            else:
+                return visitor.visitChildren(self)
+
 
 
 
@@ -690,6 +722,12 @@ class RustParser ( Parser ):
             if hasattr( listener, "exitParam" ):
                 listener.exitParam(self)
 
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitParam" ):
+                return visitor.visitParam(self)
+            else:
+                return visitor.visitChildren(self)
+
 
 
 
@@ -736,6 +774,12 @@ class RustParser ( Parser ):
             if hasattr( listener, "exitReferenceType" ):
                 listener.exitReferenceType(self)
 
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitReferenceType" ):
+                return visitor.visitReferenceType(self)
+            else:
+                return visitor.visitChildren(self)
+
 
 
 
@@ -779,6 +823,12 @@ class RustParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitType" ):
                 listener.exitType(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitType" ):
+                return visitor.visitType(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -845,6 +895,12 @@ class RustParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitBasicType" ):
                 listener.exitBasicType(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitBasicType" ):
+                return visitor.visitBasicType(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -971,6 +1027,12 @@ class RustParser ( Parser ):
             if hasattr( listener, "exitBlock" ):
                 listener.exitBlock(self)
 
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitBlock" ):
+                return visitor.visitBlock(self)
+            else:
+                return visitor.visitChildren(self)
+
 
 
 
@@ -1050,6 +1112,12 @@ class RustParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitStatement" ):
                 listener.exitStatement(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitStatement" ):
+                return visitor.visitStatement(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -1131,6 +1199,12 @@ class RustParser ( Parser ):
             if hasattr( listener, "exitLetStmt" ):
                 listener.exitLetStmt(self)
 
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitLetStmt" ):
+                return visitor.visitLetStmt(self)
+            else:
+                return visitor.visitChildren(self)
+
 
 
 
@@ -1203,6 +1277,12 @@ class RustParser ( Parser ):
             if hasattr( listener, "exitAssignStmt" ):
                 listener.exitAssignStmt(self)
 
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitAssignStmt" ):
+                return visitor.visitAssignStmt(self)
+            else:
+                return visitor.visitChildren(self)
+
 
 
 
@@ -1257,6 +1337,12 @@ class RustParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitForStmt" ):
                 listener.exitForStmt(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitForStmt" ):
+                return visitor.visitForStmt(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -1315,6 +1401,12 @@ class RustParser ( Parser ):
             if hasattr( listener, "exitIfStmt" ):
                 listener.exitIfStmt(self)
 
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitIfStmt" ):
+                return visitor.visitIfStmt(self)
+            else:
+                return visitor.visitChildren(self)
+
 
 
 
@@ -1372,6 +1464,12 @@ class RustParser ( Parser ):
             if hasattr( listener, "exitExprStmt" ):
                 listener.exitExprStmt(self)
 
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitExprStmt" ):
+                return visitor.visitExprStmt(self)
+            else:
+                return visitor.visitChildren(self)
+
 
 
 
@@ -1415,6 +1513,12 @@ class RustParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitReturnStmt" ):
                 listener.exitReturnStmt(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitReturnStmt" ):
+                return visitor.visitReturnStmt(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -1498,6 +1602,12 @@ class RustParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitExpression" ):
                 listener.exitExpression(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitExpression" ):
+                return visitor.visitExpression(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -1725,6 +1835,12 @@ class RustParser ( Parser ):
             if hasattr( listener, "exitPrimaryExpression" ):
                 listener.exitPrimaryExpression(self)
 
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitPrimaryExpression" ):
+                return visitor.visitPrimaryExpression(self)
+            else:
+                return visitor.visitChildren(self)
+
 
 
 
@@ -1818,6 +1934,12 @@ class RustParser ( Parser ):
             if hasattr( listener, "exitArgumentList" ):
                 listener.exitArgumentList(self)
 
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitArgumentList" ):
+                return visitor.visitArgumentList(self)
+            else:
+                return visitor.visitChildren(self)
+
 
 
 
@@ -1876,6 +1998,12 @@ class RustParser ( Parser ):
             if hasattr( listener, "exitMacroCall" ):
                 listener.exitMacroCall(self)
 
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitMacroCall" ):
+                return visitor.visitMacroCall(self)
+            else:
+                return visitor.visitChildren(self)
+
 
 
 
@@ -1927,6 +2055,12 @@ class RustParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitMacroArgs" ):
                 listener.exitMacroArgs(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitMacroArgs" ):
+                return visitor.visitMacroArgs(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -2007,6 +2141,12 @@ class RustParser ( Parser ):
             if hasattr( listener, "exitMacroInner" ):
                 listener.exitMacroInner(self)
 
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitMacroInner" ):
+                return visitor.visitMacroInner(self)
+            else:
+                return visitor.visitChildren(self)
+
 
 
 
@@ -2069,6 +2209,12 @@ class RustParser ( Parser ):
             if hasattr( listener, "exitAttribute" ):
                 listener.exitAttribute(self)
 
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitAttribute" ):
+                return visitor.visitAttribute(self)
+            else:
+                return visitor.visitChildren(self)
+
 
 
 
@@ -2124,6 +2270,12 @@ class RustParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitAttrInner" ):
                 listener.exitAttrInner(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitAttrInner" ):
+                return visitor.visitAttrInner(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -2208,6 +2360,12 @@ class RustParser ( Parser ):
             if hasattr( listener, "exitLiteral" ):
                 listener.exitLiteral(self)
 
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitLiteral" ):
+                return visitor.visitLiteral(self)
+            else:
+                return visitor.visitChildren(self)
+
 
 
 
@@ -2288,6 +2446,12 @@ class RustParser ( Parser ):
             if hasattr( listener, "exitArrayLiteral" ):
                 listener.exitArrayLiteral(self)
 
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitArrayLiteral" ):
+                return visitor.visitArrayLiteral(self)
+            else:
+                return visitor.visitChildren(self)
+
 
 
 
@@ -2343,6 +2507,12 @@ class RustParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitStringLiteral" ):
                 listener.exitStringLiteral(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitStringLiteral" ):
+                return visitor.visitStringLiteral(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 

@@ -1,4 +1,4 @@
-from ASTNode import ASTNode
+from AST_Scripts.ast.ASTNode import ASTNode
 
 class Expression(ASTNode):
     pass
