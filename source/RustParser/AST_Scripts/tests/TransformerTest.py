@@ -8,7 +8,6 @@ from RustParser.AST_Scripts.antlr.RustParser import RustParser
 from RustParser.AST_Scripts.ast.Transformer import Transformer
 from RustParser.AST_Scripts.ast.TypeChecker import TypeChecker
 
-
 def pretty_print_ast(node, indent=0):
     spacer = '  ' * indent
     if isinstance(node, list):
@@ -26,14 +25,10 @@ def pretty_print_ast(node, indent=0):
 lexer = RustLexer(InputStream("fn main(){let a = 1;}"))
 tokens = CommonTokenStream(lexer)
 parser = RustParser(tokens)
-tree = parser.program()  # starting rule
-print("tree is ", tree.toStringTree(recog=parser))
+tree = parser.program()
 builder = Transformer()
-print("transformer is ", builder)
 custom_ast = builder.visit_Program(tree)
-# custom_ast = builder.visit(tree)  # 👈 this is now your AST
-print("custom ast is ", custom_ast)
-# checker = TypeChecker()
-# checker.visit(custom_ast)
-print("🌟 Pretty AST:")
+checker = TypeChecker()
+checker.visit(custom_ast)
+print("Pretty AST:")
 print(pretty_print_ast(custom_ast))

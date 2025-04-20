@@ -2,6 +2,7 @@ from AST_Scripts.ast.Statement import LetStmt
 from AST_Scripts.antlr.RustVisitor import RustVisitor
 from AST_Scripts.ast.TopLevel import FunctionDef, StructDef, Attribute
 from AST_Scripts.ast.Program import Program
+from AST_Scripts.ast.Expression import LiteralExpr
 
 class Transformer(RustVisitor):
     def visit_Program(self, ctx):
@@ -61,7 +62,7 @@ class Transformer(RustVisitor):
         if value is None:
             raise Exception(f"❌ LetStmt has no value: {ctx.getText()}")
 
-        return LetStmt(name=name, declared_type=declared_type, value=value)
+        return LetStmt(name=name, declared_type=declared_type, value=LiteralExpr(value))
 
     def visitBlock(self, ctx):
         stmts = []

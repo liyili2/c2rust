@@ -1,6 +1,6 @@
 from ast import FunctionDef
-from AST_Scripts.ast.Type import IntType, StringType
-from AST_Scripts.ast.TypeEnv import TypeEnv 
+from RustParser.AST_Scripts.ast.Type import IntType, StringType
+from RustParser.AST_Scripts.ast.TypeEnv import TypeEnv 
 
 class TypeChecker:
     def __init__(self):
@@ -16,6 +16,10 @@ class TypeChecker:
 
     def generic_visit(self, node):
         raise Exception(f"No visit method for {node.__class__.__name__}")
+
+    def visit_Program(self, node):
+        print("📦 Visiting Program node")
+        return self.visit(node.items)
 
     def visit_IntType(self, node):
         return node

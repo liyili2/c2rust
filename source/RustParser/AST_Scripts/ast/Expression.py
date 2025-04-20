@@ -1,4 +1,4 @@
-from AST_Scripts.ast.ASTNode import ASTNode
+from RustParser.AST_Scripts.ast.ASTNode import ASTNode
 
 class Expression(ASTNode):
     pass

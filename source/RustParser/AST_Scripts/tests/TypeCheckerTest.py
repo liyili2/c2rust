@@ -1,8 +1,8 @@
 import unittest
-from TypeChecker import TypeChecker
-from Statement import LetStmt
-from Expression import LiteralExpr
-from Type import IntType
+from RustParser.AST_Scripts.ast.TypeChecker import TypeChecker
+from RustParser.AST_Scripts.ast.Statement import LetStmt
+from RustParser.AST_Scripts.ast.Expression import LiteralExpr
+from RustParser.AST_Scripts.ast.Type import IntType
 
 class TestTypeChecker(unittest.TestCase):
     def test_valid_let_stmt_with_int(self):
