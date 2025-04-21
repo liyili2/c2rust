@@ -1,13 +1,33 @@
 from ast import FunctionDef
-from RustParser.AST_Scripts.ast.Type import IntType, StringType
-from RustParser.AST_Scripts.ast.TypeEnv import TypeEnv 
+from AST_Scripts.ast.Type import IntType, StringType
+from AST_Scripts.ast.TypeEnv import TypeEnv 
 
 class TypeChecker:
     def __init__(self):
         self.env = TypeEnv()
 
+    def get_literal_type(self, value):
+        if isinstance(value, int):
+            return IntType()
+        elif isinstance(value, str):
+            return StringType()
+        # elif isinstance(value, bool):
+        #     return BoolType()
+        # elif isinstance(value, float):
+        #     return FloatType()
+        else:
+            raise Exception(f"❌ Unknown literal type for value: {repr(value)}")
+        
+    def visit_Type(self, ctx):
+        type_str = ctx.getText()
+        if type_str == "i32":
+            return IntType()
+        elif type_str == "String":
+            return StringType()
+        else:
+            raise Exception(f"Unknown type: {type_str}")
+
     def visit(self, node):
-        print("node is ", node)
         if node is None:
             raise Exception("❌ TypeChecker received None as a node — check your Transformer.")
         if isinstance(node, list):
@@ -46,12 +66,12 @@ class TypeChecker:
             return_type = None
 
         body = self.visit(ctx.body)  # should be a List[Stmt]
-        print("#2: block is ", body)
         return FunctionDef(name=name, params=params, return_type=return_type, body=body)
 
     def visit_LetStmt(self, node):
         expr_type = self.visit(node.value)
-        if node.declared_type and not isinstance(expr_type, node.declared_type.__class__):
+        if expr_type.__class__ != node.declared_type.__class__:
             raise Exception(f"Type mismatch in declaration of '{node.name}'")
         self.env.declare(node.name, expr_type)
         print(f"✅ '{node.name}' declared with type {expr_type.__class__.__name__}")
+

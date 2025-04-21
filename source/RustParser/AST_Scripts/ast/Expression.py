@@ -1,4 +1,5 @@
 from RustParser.AST_Scripts.ast.ASTNode import ASTNode
+from RustParser.AST_Scripts.ast.Type import IntType, StringType
 
 class Expression(ASTNode):
     pass
@@ -25,6 +26,14 @@ class LiteralExpr(Expression):
 
     def accept(self, visitor):
         return visitor.visit_LiteralExpr(self)
+    
+    def get_type(self):
+        if isinstance(self.value, int):
+            return IntType()
+        elif isinstance(self.value, str):
+            return StringType()
+        else:
+            raise Exception("Unknown literal type")
 
 class FunctionCallExpr(Expression):
     def __init__(self, func, args):

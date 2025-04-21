@@ -3,11 +3,10 @@ from AST_Scripts.antlr.RustVisitor import RustVisitor
 from AST_Scripts.ast.TopLevel import FunctionDef, StructDef, Attribute
 from AST_Scripts.ast.Program import Program
 from AST_Scripts.ast.Expression import LiteralExpr
+from AST_Scripts.ast.Type import IntType, StringType
 
 class Transformer(RustVisitor):
     def visit_Program(self, ctx):
-        print("ctx is ", len(ctx.topLevelItem()))
-        print("visit program")
         items = []
         for item in ctx.topLevelItem():
             result = self.visit(item)
@@ -57,12 +56,14 @@ class Transformer(RustVisitor):
             raise Exception(f"❌ Could not find variable name in letStmt: {ctx.getText()}")
 
         name = name_tok.getText()
-        declared_type = self.visit(ctx.type_()) if ctx.type_() else None
+        type_node = ctx.type_()
+        print("let type node is", type_node)
+        declared_type = self.visit(type_node) if type_node else None
         value = self.visit(ctx.expression()) if ctx.expression() else None
         if value is None:
             raise Exception(f"❌ LetStmt has no value: {ctx.getText()}")
 
-        return LetStmt(name=name, declared_type=declared_type, value=LiteralExpr(value))
+        return LetStmt(name=name, declared_type=declared_type, value=value)
 
     def visitBlock(self, ctx):
         stmts = []
@@ -75,11 +76,33 @@ class Transformer(RustVisitor):
     def visitStatement(self, ctx):
         if ctx.letStmt():
             return self.visit(ctx.letStmt())
-        # Add other statement types here
         else:
             print("⚠️ Unknown statement:", ctx.getText())
             return None
 
     def visitExpression(self, ctx):
-        print("🧠 Visiting expression:", ctx.getText())
-        return ctx.getText()  # or a proper AST node
+        text = ctx.getText()
+        if text.isdigit():
+            return LiteralExpr(value=int(text))
+        try:
+            float_val = float(text)
+            return LiteralExpr(value=float_val)
+        except ValueError:
+            pass
+        if text.startswith('"') and text.endswith('"'):
+            return LiteralExpr(value=text[1:-1])
+        raise Exception(f"❌ Unsupported literal expression: {text}")
+
+    def visitType(self, ctx):
+        type_str = ctx.getText()
+        print(f"🎯 Visiting type: {type_str}")
+        if type_str == "i32":
+            return IntType()
+        elif type_str == "String":
+            return StringType()
+        else:
+            raise Exception(f"❌ Unknown type: {type_str}")
+
+
+    def visitLiteralExpr(self, node):
+        return self.get_literal_type(node.value)
