@@ -12,10 +12,6 @@ class TypeChecker:
             return IntType()
         elif isinstance(value, str):
             return StringType()
-        # elif isinstance(value, bool):
-        #     return BoolType()
-        # elif isinstance(value, float):
-        #     return FloatType()
         else:
             raise Exception(f"❌ Unknown literal type for value: {repr(value)}")
         
