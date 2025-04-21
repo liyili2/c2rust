@@ -75,3 +75,8 @@ class TypeChecker:
         self.env.declare(node.name, expr_type)
         print(f"✅ '{node.name}' declared with type {expr_type.__class__.__name__}")
 
+    def visit_Assignment(self, node):
+        var_type = self.symbol_table.get(node.name)
+        expr_type = self.visit(node.value)
+        if type(var_type) != type(expr_type):
+            raise Exception(f"Type mismatch in assignment to '{node.name}'")

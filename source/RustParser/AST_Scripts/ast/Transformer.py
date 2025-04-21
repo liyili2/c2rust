@@ -1,9 +1,12 @@
-from AST_Scripts.ast.Statement import LetStmt
+from antlr4 import TerminalNode
+from AST_Scripts.ast.Expression import IdentifierExpr
+from AST_Scripts.ast.Statement import AssignStmt, LetStmt
 from AST_Scripts.antlr.RustVisitor import RustVisitor
 from AST_Scripts.ast.TopLevel import FunctionDef, StructDef, Attribute
 from AST_Scripts.ast.Program import Program
-from AST_Scripts.ast.Expression import LiteralExpr
+from AST_Scripts.ast.Expression import LiteralExpr, VariableRef
 from AST_Scripts.ast.Type import IntType, StringType
+from RustParser.AST_Scripts.antlr import RustLexer
 
 class Transformer(RustVisitor):
     def visit_Program(self, ctx):
@@ -65,6 +68,22 @@ class Transformer(RustVisitor):
 
         return LetStmt(name=name, declared_type=declared_type, value=value)
 
+    def visitAssignStmt(self, ctx):
+        print("🔧 Visiting assignmentStmt:", ctx.getText())
+        target_expr = ctx.expression(0)
+        value_expr = ctx.expression(1)
+
+        child = target_expr.getChild(0)
+        if isinstance(child, TerminalNode):  # It's a terminal node
+            name_token = child.getText()
+        elif hasattr(child, 'getText'):  # Could be Identifier wrapped in primaryExpression
+            name_token = child.getText()
+        else:
+            raise Exception(f"❌ Unsupported assignment LHS node: {type(child)}")
+        
+        value = self.visit(value_expr)
+        return AssignStmt(target=name_token, value=value)
+
     def visitBlock(self, ctx):
         stmts = []
         for stmt_ctx in ctx.statement():
@@ -76,6 +95,11 @@ class Transformer(RustVisitor):
     def visitStatement(self, ctx):
         if ctx.letStmt():
             return self.visit(ctx.letStmt())
+        
+        elif ctx.assignStmt():
+            print("assignment case")
+            return self.visit(ctx.assignStmt())
+    
         else:
             print("⚠️ Unknown statement:", ctx.getText())
             return None
@@ -91,6 +115,10 @@ class Transformer(RustVisitor):
             pass
         if text.startswith('"') and text.endswith('"'):
             return LiteralExpr(value=text[1:-1])
+        elif ctx.primaryExpression():
+            ident = ctx.getText()
+            return IdentifierExpr(ident)
+        
         raise Exception(f"❌ Unsupported literal expression: {text}")
 
     def visitType(self, ctx):
@@ -102,7 +130,6 @@ class Transformer(RustVisitor):
             return StringType()
         else:
             raise Exception(f"❌ Unknown type: {type_str}")
-
 
     def visitLiteralExpr(self, node):
         return self.get_literal_type(node.value)

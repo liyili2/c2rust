@@ -42,3 +42,10 @@ class FunctionCallExpr(Expression):
 
     def accept(self, visitor):
         return visitor.visit_function_call_expr(self)
+
+class VariableRef(Expression):
+    def __init__(self, name):
+        self.name = name  # the variable name as string
+
+    def accept(self, visitor):
+        return visitor.visit_VariableRef(self)

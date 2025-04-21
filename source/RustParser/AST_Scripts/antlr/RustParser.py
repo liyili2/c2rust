@@ -1609,8 +1609,6 @@ class RustParser ( Parser ):
             else:
                 return visitor.visitChildren(self)
 
-
-
     def expression(self, _p:int=0):
         _parentctx = self._ctx
         _parentState = self.state

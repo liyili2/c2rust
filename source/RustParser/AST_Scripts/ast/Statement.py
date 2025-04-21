@@ -17,6 +17,9 @@ class AssignStmt(Statement):
         self.target = target
         self.value = value
 
+    def __str__(self):
+        return f"{self.target} = {self.value}"
+
     def accept(self, visitor):
         return visitor.visit_assign_stmt(self)
 
