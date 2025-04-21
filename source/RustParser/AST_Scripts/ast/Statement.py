@@ -21,7 +21,7 @@ class AssignStmt(Statement):
         return f"{self.target} = {self.value}"
 
     def accept(self, visitor):
-        return visitor.visit_assign_stmt(self)
+        return visitor.visit_Assignment(self)
 
 class ReturnStmt(Statement):
     def __init__(self, value):

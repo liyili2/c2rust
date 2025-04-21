@@ -5,6 +5,7 @@ from AST_Scripts.ast.TypeEnv import TypeEnv
 class TypeChecker:
     def __init__(self):
         self.env = TypeEnv()
+        self.symbol_table = {}
 
     def get_literal_type(self, value):
         if isinstance(value, int):
@@ -73,10 +74,11 @@ class TypeChecker:
         if expr_type.__class__ != node.declared_type.__class__:
             raise Exception(f"Type mismatch in declaration of '{node.name}'")
         self.env.declare(node.name, expr_type)
+        self.symbol_table[node.name] = expr_type
         print(f"✅ '{node.name}' declared with type {expr_type.__class__.__name__}")
 
     def visit_Assignment(self, node):
-        var_type = self.symbol_table.get(node.name)
+        var_type = self.symbol_table.get(node.target)
         expr_type = self.visit(node.value)
-        if type(var_type) != type(expr_type):
-            raise Exception(f"Type mismatch in assignment to '{node.name}'")
+        if (var_type.__class__) != (expr_type.__class__):
+            raise Exception(f"Type mismatch in assignment to '{node.target}'")
