@@ -251,6 +251,15 @@ class RustListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by RustParser#booleanLiteral.
+    def enterBooleanLiteral(self, ctx:RustParser.BooleanLiteralContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#booleanLiteral.
+    def exitBooleanLiteral(self, ctx:RustParser.BooleanLiteralContext):
+        pass
+
+
     # Enter a parse tree produced by RustParser#arrayLiteral.
     def enterArrayLiteral(self, ctx:RustParser.ArrayLiteralContext):
         pass

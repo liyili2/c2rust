@@ -28,10 +28,13 @@ class LiteralExpr(Expression):
         return visitor.visit_LiteralExpr(self)
     
     def get_type(self):
+        print("literal is ", self.value)
         if isinstance(self.value, int):
             return IntType()
         elif isinstance(self.value, str):
             return StringType()
+        elif isinstance(self.value, bool):
+            return BoolLiteral()
         else:
             raise Exception("Unknown literal type")
 
@@ -49,3 +52,24 @@ class VariableRef(Expression):
 
     def accept(self, visitor):
         return visitor.visit_VariableRef(self)
+    
+class BoolLiteral:
+    def __init__(self, value: bool):
+        self.value = value
+
+    def accept(self, visitor):
+        return visitor.visit_BoolLiteral(self)
+
+class IntLiteral:
+    def __init__(self, value: int):
+        self.value = value
+
+    def accept(self, visitor):
+        return visitor.visit_IntLiteral(self)
+    
+class StrLiteral:
+    def __init__(self, value: str):
+        self.value = value
+
+    def accept(self, visitor):
+        return visitor.visit_StrLiteral(self)

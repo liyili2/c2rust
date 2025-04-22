@@ -1,5 +1,5 @@
 from ast import FunctionDef
-from AST_Scripts.ast.Type import IntType, StringType
+from AST_Scripts.ast.Type import BoolType, IntType, StringType
 from AST_Scripts.ast.TypeEnv import TypeEnv 
 
 class TypeChecker:
@@ -12,13 +12,17 @@ class TypeChecker:
             return IntType()
         elif isinstance(value, str):
             return StringType()
+        elif isinstance(value, bool):
+            return BoolType()
         else:
             raise Exception(f"❌ Unknown literal type for value: {repr(value)}")
-        
+
     def visit_Type(self, ctx):
         type_str = ctx.getText()
         if type_str == "i32":
             return IntType()
+        elif ctx.getText() == "bool":
+            return BoolType()
         elif type_str == "String":
             return StringType()
         else:
@@ -29,7 +33,9 @@ class TypeChecker:
             raise Exception("❌ TypeChecker received None as a node — check your Transformer.")
         if isinstance(node, list):
             return [self.visit(n) for n in node]
-        return node.accept(self)
+        if hasattr(node, 'accept'):
+            return node.accept(self)
+        return node
 
     def generic_visit(self, node):
         raise Exception(f"No visit method for {node.__class__.__name__}")
@@ -40,6 +46,9 @@ class TypeChecker:
 
     def visit_IntType(self, node):
         return node
+
+    def visit_BoolType(self, node):
+        return BoolType()
 
     def visit_LiteralExpr(self, node):
         if isinstance(node.value, int):
@@ -67,8 +76,14 @@ class TypeChecker:
 
     def visit_LetStmt(self, node):
         expr_type = self.visit(node.value)
-        if expr_type.__class__ != node.declared_type.__class__:
-            raise Exception(f"Type mismatch in declaration of '{node.name}'")
+        
+        if node.declared_type is not None:
+            declared_type = self.visit(node.declared_type)
+            if declared_type.__class__ != expr_type.__class__:
+                raise Exception(f"Type mismatch in declaration of '{node.name}'")
+        else:
+            declared_type = expr_type
+
         self.env.declare(node.name, expr_type)
         self.symbol_table[node.name] = expr_type
         print(f"✅ '{node.name}' declared with type {expr_type.__class__.__name__}")
@@ -82,3 +97,18 @@ class TypeChecker:
 
         if (var_type.__class__) != (expr_type.__class__):
             raise Exception(f"Type mismatch in assignment to '{node.target}'")
+
+    def visit_identifier_expr(self, node):
+        if node.name not in self.symbol_table:
+            raise Exception(f"❌ Use of undefined variable '{node.name}'")
+
+        return self.symbol_table[node.name]
+
+    def visit_BoolLiteral(self, node):
+        return BoolType()
+
+    def visit_IntLiteral(self, node):
+        return IntType()
+
+    def visit_StrLiteral(self, node):
+        return StringType()

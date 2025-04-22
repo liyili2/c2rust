@@ -29,6 +29,7 @@ type
 basicType
     : 'i32'
     | 'String'
+    | 'bool'
     | Identifier ('<' type (',' type)* '>')?
     | '&' type
     | '[' type ';' Number ']'
@@ -60,7 +61,7 @@ expression
     | expression '.' Identifier                               
     | expression '.' Identifier '(' argumentList? ')'         
     | expression ('*' | '/' | '%' | '+' | '-' | '>>' | '&') expression   
-    | expression '==' expression  
+    | expression '==' expression
     | expression '..' expression
     | expression ('+=' | '-=' | '*=' | '/=' | '%=' | '&=' | '|=' | '^=') expression     
     | Identifier '!' '(' argumentList? ')'                       
@@ -87,7 +88,11 @@ attrInner
     : Identifier ( '(' (Identifier (COMMA Identifier)*)? ')' )?
     ;
 
-literal: Number | Binary | arrayLiteral | stringLiteral;
+TRUE: 'true';
+FALSE: 'false';
+
+literal: Number | Binary | arrayLiteral | stringLiteral | booleanLiteral;
+booleanLiteral: TRUE | FALSE;
 Binary: '0b' [0-1]+;
 arrayLiteral: '[' expression (',' expression)* ']';
 stringLiteral: '"' .*? '"';

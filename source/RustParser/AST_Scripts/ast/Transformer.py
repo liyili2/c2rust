@@ -1,11 +1,11 @@
 from antlr4 import TerminalNode
-from AST_Scripts.ast.Expression import IdentifierExpr
+from AST_Scripts.ast.Expression import BoolLiteral, IdentifierExpr, IntLiteral, StrLiteral
 from AST_Scripts.ast.Statement import AssignStmt, LetStmt
 from AST_Scripts.antlr.RustVisitor import RustVisitor
 from AST_Scripts.ast.TopLevel import FunctionDef, StructDef, Attribute
 from AST_Scripts.ast.Program import Program
 from AST_Scripts.ast.Expression import LiteralExpr, VariableRef
-from AST_Scripts.ast.Type import IntType, StringType
+from AST_Scripts.ast.Type import BoolType, IntType, StringType
 from RustParser.AST_Scripts.antlr import RustLexer
 
 class Transformer(RustVisitor):
@@ -17,6 +17,17 @@ class Transformer(RustVisitor):
 
         print("✅ program items are", items)
         return Program(items)
+
+    def get_literal_type(self, value):
+        print("value class is ", value.__class__)
+        if isinstance(value, IntLiteral):
+            return IntType()
+        elif isinstance(value, StrLiteral):
+            return StringType()
+        elif isinstance(value, BoolLiteral):
+            return BoolType()
+        else:
+            raise Exception(f"❌ Unknown literal type for value: {repr(value)}")
 
     def visitTopLevelItem(self, ctx):
         print("visit top level")
@@ -60,11 +71,16 @@ class Transformer(RustVisitor):
 
         name = name_tok.getText()
         type_node = ctx.type_()
+
         print("let type node is", type_node)
         declared_type = self.visit(type_node) if type_node else None
         value = self.visit(ctx.expression()) if ctx.expression() else None
         if value is None:
             raise Exception(f"❌ LetStmt has no value: {ctx.getText()}")
+
+        if type_node is None:
+            declared_type = self.get_literal_type(value)
+            print("let type node#2 is", declared_type)
 
         return LetStmt(name=name, declared_type=declared_type, value=value)
 
@@ -113,12 +129,16 @@ class Transformer(RustVisitor):
             return LiteralExpr(value=float_val)
         except ValueError:
             pass
-        if text.startswith('"') and text.endswith('"'):
+        if text == "true":
+            return BoolLiteral(True)
+        elif text == "false":
+            return BoolLiteral(False)
+        elif text.startswith('"') and text.endswith('"'):
             return LiteralExpr(value=text[1:-1])
         elif ctx.primaryExpression():
             ident = ctx.getText()
             return IdentifierExpr(ident)
-        
+
         raise Exception(f"❌ Unsupported literal expression: {text}")
 
     def visitType(self, ctx):
@@ -131,5 +151,11 @@ class Transformer(RustVisitor):
         else:
             raise Exception(f"❌ Unknown type: {type_str}")
 
-    def visitLiteralExpr(self, node):
-        return self.get_literal_type(node.value)
+    def visitLiteral(self, ctx):
+        text = ctx.getText()
+        if text == "true":
+            return BoolLiteral(True)
+        elif text == "false":
+            return BoolLiteral(False)
+        elif ctx.Number():
+            return LiteralExpr(value=int(text))

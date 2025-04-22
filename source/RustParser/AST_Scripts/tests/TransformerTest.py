@@ -22,7 +22,7 @@ def pretty_print_ast(node, indent=0):
     else:
         return f"{spacer}{repr(node)}"
 
-lexer = RustLexer(InputStream("fn main(){let a : i32 = 1; a=12; b = 1;}"))
+lexer = RustLexer(InputStream("fn main(){let a : i32 = 1; a=12;let b = true;}"))
 tokens = CommonTokenStream(lexer)
 parser = RustParser(tokens)
 tree = parser.program()

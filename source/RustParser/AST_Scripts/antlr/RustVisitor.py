@@ -18,6 +18,7 @@ class RustVisitor(ParseTreeVisitor):
     def visitTopLevelItem(self, ctx:RustParser.TopLevelItemContext):
         return self.visitChildren(ctx)
 
+
     # Visit a parse tree produced by RustParser#structDef.
     def visitStructDef(self, ctx:RustParser.StructDefContext):
         return self.visitChildren(ctx)
@@ -140,6 +141,11 @@ class RustVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by RustParser#literal.
     def visitLiteral(self, ctx:RustParser.LiteralContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#booleanLiteral.
+    def visitBooleanLiteral(self, ctx:RustParser.BooleanLiteralContext):
         return self.visitChildren(ctx)
 
 

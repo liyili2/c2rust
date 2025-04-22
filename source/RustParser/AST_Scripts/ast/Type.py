@@ -3,6 +3,13 @@ from RustParser.AST_Scripts.ast.ASTNode import ASTNode
 class Type:
     pass
 
+class BoolType:
+    def __repr__(self):
+        return "Bool"
+
+    def __eq__(self, other):
+        return isinstance(other, BoolType)
+
 class IntType(Type):
     def __repr__(self):
         return "i32"
