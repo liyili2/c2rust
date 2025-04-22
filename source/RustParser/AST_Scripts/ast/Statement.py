@@ -12,6 +12,14 @@ class LetStmt(Statement):
     def accept(self, visitor):
         return visitor.visit_LetStmt(self)
 
+class IfStmt:
+    def __init__(self, condition, then_branch, else_branch=None):
+        self.condition = condition
+        self.then_branch = then_branch
+        self.else_branch = else_branch
+    def accept(self, visitor):
+        return visitor.visit_IfStmt(self)
+
 class AssignStmt(Statement):
     def __init__(self, target, value):
         self.target = target

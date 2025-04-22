@@ -1,6 +1,6 @@
 from antlr4 import TerminalNode
 from AST_Scripts.ast.Expression import BoolLiteral, IdentifierExpr, IntLiteral, StrLiteral
-from AST_Scripts.ast.Statement import AssignStmt, LetStmt
+from AST_Scripts.ast.Statement import AssignStmt, IfStmt, LetStmt
 from AST_Scripts.antlr.RustVisitor import RustVisitor
 from AST_Scripts.ast.TopLevel import FunctionDef, StructDef, Attribute
 from AST_Scripts.ast.Program import Program
@@ -84,6 +84,17 @@ class Transformer(RustVisitor):
 
         return LetStmt(name=name, declared_type=declared_type, value=value)
 
+    def visitIfStmt(self, ctx):
+        print("======================================visiting if stmt")
+        condition = self.visit(ctx.expression())
+        then_branch = self.visit(ctx.block(0))
+
+        else_branch = None
+        if ctx.block(1):  # if the optional else exists
+            else_branch = self.visit(ctx.block(1))
+
+        return IfStmt(condition=condition, then_branch=then_branch, else_branch=else_branch)
+
     def visitAssignStmt(self, ctx):
         print("🔧 Visiting assignmentStmt:", ctx.getText())
         target_expr = ctx.expression(0)
@@ -111,7 +122,8 @@ class Transformer(RustVisitor):
     def visitStatement(self, ctx):
         if ctx.letStmt():
             return self.visit(ctx.letStmt())
-        
+        elif ctx.ifStmt():
+            return self.visit(ctx.ifStmt())
         elif ctx.assignStmt():
             print("assignment case")
             return self.visit(ctx.assignStmt())

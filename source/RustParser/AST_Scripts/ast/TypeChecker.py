@@ -98,6 +98,10 @@ class TypeChecker:
         if (var_type.__class__) != (expr_type.__class__):
             raise Exception(f"Type mismatch in assignment to '{node.target}'")
 
+    #TODO
+    def visit_IfStmt(self, node):
+        pass
+
     def visit_identifier_expr(self, node):
         if node.name not in self.symbol_table:
             raise Exception(f"❌ Use of undefined variable '{node.name}'")
