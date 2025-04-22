@@ -98,9 +98,17 @@ class TypeChecker:
         if (var_type.__class__) != (expr_type.__class__):
             raise Exception(f"Type mismatch in assignment to '{node.target}'")
 
-    #TODO
     def visit_IfStmt(self, node):
-        pass
+        print("🔍 Visiting IfStmt")
+        condition_type = self.visit(node.condition)
+        if not isinstance(condition_type, BoolType):
+            raise Exception(f"❌ Condition in if-statement must be of type bool, got {condition_type.__class__.__name__}")
+        for stmt in node.then_branch:
+            self.visit(stmt)
+        if node.else_branch:
+            for stmt in node.else_branch:
+                self.visit(stmt)
+        print("✅ IfStmt type-checked successfully")
 
     def visit_identifier_expr(self, node):
         if node.name not in self.symbol_table:
