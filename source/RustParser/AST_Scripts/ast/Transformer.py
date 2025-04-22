@@ -126,8 +126,7 @@ class Transformer(RustVisitor):
             return self.visit(ctx.ifStmt())
         elif ctx.assignStmt():
             print("assignment case")
-            return self.visit(ctx.assignStmt())
-    
+            return self.visit(ctx.assignStmt())   
         else:
             print("⚠️ Unknown statement:", ctx.getText())
             return None
