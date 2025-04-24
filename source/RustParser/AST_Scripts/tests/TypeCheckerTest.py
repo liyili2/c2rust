@@ -1,11 +1,11 @@
 import unittest
 import sys
 import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 from AST_Scripts.ast.TypeChecker import TypeChecker
 from AST_Scripts.ast.Statement import AssignStmt, IfStmt, LetStmt
 from AST_Scripts.ast.Expression import BoolLiteral, LiteralExpr
 from AST_Scripts.ast.Type import IntType
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
 class TestTypeChecker(unittest.TestCase):
     def test_valid_let_stmt_with_int(self):
