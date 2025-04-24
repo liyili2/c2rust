@@ -88,14 +88,13 @@ class TypeChecker:
         # print(f"✅ '{node.name}' declared with type {expr_type.__class__.__name__}")
 
     def visit_Assignment(self, node):
-        if node.target not in self.symbol_table:
+        try:
+            var_type = self.env.lookup(node.target)
+        except Exception:
             raise Exception(f"❌ Variable '{node.target}' is not defined")
-
-        var_type = self.symbol_table.get(node.target)
         expr_type = self.visit(node.value)
-
-        if (var_type.__class__) != (expr_type.__class__):
-            raise Exception(f"Type mismatch in assignment to '{node.target}'")
+        if type(var_type) != type(expr_type):
+            raise Exception(f"❌ Type mismatch in assignment to '{node.target}'")
 
     def visit_IfStmt(self, node):
         condition_type = self.visit(node.condition)

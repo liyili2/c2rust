@@ -1,8 +1,11 @@
 import unittest
-from RustParser.AST_Scripts.ast.TypeChecker import TypeChecker
-from RustParser.AST_Scripts.ast.Statement import LetStmt
-from RustParser.AST_Scripts.ast.Expression import LiteralExpr
-from RustParser.AST_Scripts.ast.Type import IntType
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+from AST_Scripts.ast.TypeChecker import TypeChecker
+from AST_Scripts.ast.Statement import AssignStmt, IfStmt, LetStmt
+from AST_Scripts.ast.Expression import BoolLiteral, LiteralExpr
+from AST_Scripts.ast.Type import IntType
 
 class TestTypeChecker(unittest.TestCase):
     def test_valid_let_stmt_with_int(self):
@@ -17,7 +20,7 @@ class TestTypeChecker(unittest.TestCase):
         self.assertIn("x", checker.env.scopes[-1])
         self.assertIsInstance(checker.env.scopes[-1]["x"], IntType)
 
-    def test_type_mismatch(self):
+    def test_let_stmt_type_mismatch(self):
         checker = TypeChecker()
         stmt = LetStmt(
             name="x",
@@ -29,6 +32,32 @@ class TestTypeChecker(unittest.TestCase):
             checker.visit(stmt)
 
         self.assertIn("Type mismatch", str(context.exception))
+
+    def test_valid_if_stmt(self):
+        checker = TypeChecker()
+        checker.env.define("a", IntType())
+
+        stmt = IfStmt(
+            condition=BoolLiteral(True),
+            then_branch=[AssignStmt("a", LiteralExpr(1))],
+            else_branch=[AssignStmt("a", LiteralExpr(2))]
+        )
+
+        checker.visit(stmt)
+
+    def test_if_stmt_with_non_bool_condition(self):
+        checker = TypeChecker()
+        checker.env.define("a", IntType())
+
+        stmt = IfStmt(
+            condition=LiteralExpr(42),  # Not a BoolLiteral!
+            then_branch=[AssignStmt("a", LiteralExpr(1))],
+            else_branch=[AssignStmt("a", LiteralExpr(2))]
+        )
+
+        with self.assertRaises(Exception) as context:
+            checker.visit(stmt)
+        self.assertIn("Condition in if-statement must be of type bool", str(context.exception))
 
 if __name__ == "__main__":
     unittest.main()
