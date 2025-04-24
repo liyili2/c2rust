@@ -85,7 +85,7 @@ class TypeChecker:
 
         self.env.declare(node.name, expr_type)
         self.symbol_table[node.name] = expr_type
-        print(f"✅ '{node.name}' declared with type {expr_type.__class__.__name__}")
+        # print(f"✅ '{node.name}' declared with type {expr_type.__class__.__name__}")
 
     def visit_Assignment(self, node):
         if node.target not in self.symbol_table:
@@ -98,7 +98,6 @@ class TypeChecker:
             raise Exception(f"Type mismatch in assignment to '{node.target}'")
 
     def visit_IfStmt(self, node):
-        print("🔍 Visiting IfStmt")
         condition_type = self.visit(node.condition)
         if not isinstance(condition_type, BoolType):
             raise Exception(f"❌ Condition in if-statement must be of type bool, got {condition_type.__class__.__name__}")
@@ -107,7 +106,6 @@ class TypeChecker:
         if node.else_branch:
             for stmt in node.else_branch:
                 self.visit(stmt)
-        print("✅ IfStmt type-checked successfully")
 
     def visit_ForStmt(self, node):
         iterable_type = self.visit(node.iterable)

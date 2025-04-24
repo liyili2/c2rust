@@ -15,11 +15,10 @@ class Transformer(RustVisitor):
             result = self.visit(item)
             items.append(result)
 
-        print("✅ program items are", items)
+        #print("✅ program items are", items)
         return Program(items)
 
     def get_literal_type(self, value):
-        print("value class is ", value.__class__)
         if isinstance(value, IntLiteral):
             return IntType()
         elif isinstance(value, StrLiteral):
@@ -65,7 +64,6 @@ class Transformer(RustVisitor):
         return Attribute(name=attr_name, args=args)
 
     def visitLetStmt(self, ctx):
-        print("🧪 Visiting letStmt:", ctx.getText())
         name_tok = ctx.Identifier()
         if name_tok is None:
             raise Exception(f"❌ Could not find variable name in letStmt: {ctx.getText()}")
@@ -75,7 +73,6 @@ class Transformer(RustVisitor):
 
         declared_type = self.visit(type_node) if type_node else None
         value = self.visit(ctx.expression()) if ctx.expression() else None
-        print("-----------------------------", value)
         if value is None:
             raise Exception(f"❌ LetStmt has no value: {ctx.getText()}")
 
@@ -85,9 +82,7 @@ class Transformer(RustVisitor):
         return LetStmt(name=name, declared_type=declared_type, value=value)
 
     def visitIfStmt(self, ctx):
-        print("🔍 ifStmt text:", ctx.getText())
         condition = self.visit(ctx.expression())
-        print("((((((((()))))))", condition)
         then_branch = self.visit(ctx.block(0))
         else_branch = None
         if ctx.block(1):
@@ -95,14 +90,13 @@ class Transformer(RustVisitor):
         return IfStmt(condition=condition, then_branch=then_branch, else_branch=else_branch)
 
     def visitAssignStmt(self, ctx):
-        print("🔧 Visiting assignmentStmt:", ctx.getText())
         target_expr = ctx.expression(0)
         value_expr = ctx.expression(1)
         child = target_expr.getChild(0)
 
-        if isinstance(child, TerminalNode):  # It's a terminal node
+        if isinstance(child, TerminalNode):
             name_token = child.getText()
-        elif hasattr(child, 'getText'):  # Could be Identifier wrapped in primaryExpression
+        elif hasattr(child, 'getText'):
             name_token = child.getText()
         else:
             raise Exception(f"❌ Unsupported assignment LHS node: {type(child)}")
@@ -121,7 +115,7 @@ class Transformer(RustVisitor):
         stmts = []
         for stmt_ctx in ctx.statement():
             result = self.visit(stmt_ctx)
-            print("🧱 Statement transformed:", result)
+            #print("🧱 Statement transformed:", result)
             stmts.append(result)
         return stmts
 
@@ -194,7 +188,6 @@ class Transformer(RustVisitor):
 
     def visitType(self, ctx):
         type_str = ctx.getText()
-        print(f"🎯 Visiting type: {type_str}")
 
         if type_str.startswith('[') and ';' in type_str and type_str.endswith(']'):
             inner_type_str, size_str = type_str[1:-1].split(';')
@@ -229,6 +222,5 @@ class Transformer(RustVisitor):
             return LiteralExpr(value=int(text))
 
     def visitArrayLiteral(self, ctx):
-        print("🔍 Visiting array literal:", ctx.getText())
         elements = [self.visit(expr) for expr in ctx.expression()]
         return ArrayLiteral(elements)

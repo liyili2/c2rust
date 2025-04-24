@@ -4,7 +4,6 @@ class FunctionDef:
         self.params = params  # list of (name, type)
         self.return_type = return_type
         self.body = body      # list of statements
-        print("blcok is ", self.body)
 
     def accept(self, visitor):
         method_Identifier = f'visit_{self.__class__.__name__}'
