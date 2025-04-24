@@ -115,6 +115,10 @@ class TypeChecker:
             raise Exception(f"❌ Use of undefined variable '{node.name}'")
 
         return self.symbol_table[node.name]
+    
+    #TODO
+    def visit_ArrayLiteral(self, node):
+        pass
 
     def visit_BoolLiteral(self, node):
         return BoolType()

@@ -1,3 +1,5 @@
+cd ./source/RustParser/AST_Scripts/antlr
+
 Generate the parser and the lexer:
 java -jar "C:\antlr\antlr4-4.13.1-complete.jar" -Dlanguage=Python3 Rust.g4
 

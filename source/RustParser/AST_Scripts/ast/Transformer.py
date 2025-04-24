@@ -1,11 +1,11 @@
 from antlr4 import TerminalNode
-from AST_Scripts.ast.Expression import BoolLiteral, IdentifierExpr, IntLiteral, StrLiteral
-from AST_Scripts.ast.Statement import AssignStmt, IfStmt, LetStmt
+from AST_Scripts.ast.Expression import ArrayLiteral, BoolLiteral, IdentifierExpr, IntLiteral, StrLiteral
+from AST_Scripts.ast.Statement import AssignStmt, ForStmt, IfStmt, LetStmt
 from AST_Scripts.antlr.RustVisitor import RustVisitor
 from AST_Scripts.ast.TopLevel import FunctionDef, StructDef, Attribute
 from AST_Scripts.ast.Program import Program
 from AST_Scripts.ast.Expression import LiteralExpr, VariableRef
-from AST_Scripts.ast.Type import BoolType, IntType, StringType
+from AST_Scripts.ast.Type import ArrayType, BoolType, IntType, StringType
 from RustParser.AST_Scripts.antlr import RustLexer
 
 class Transformer(RustVisitor):
@@ -26,11 +26,12 @@ class Transformer(RustVisitor):
             return StringType()
         elif isinstance(value, BoolLiteral):
             return BoolType()
+        elif isinstance(value, ArrayLiteral):
+            return ArrayType()
         else:
             raise Exception(f"❌ Unknown literal type for value: {repr(value)}")
 
     def visitTopLevelItem(self, ctx):
-        print("visit top level")
         if ctx.functionDef():
             return self.visit(ctx.functionDef())
         elif ctx.structDef():
@@ -72,35 +73,31 @@ class Transformer(RustVisitor):
         name = name_tok.getText()
         type_node = ctx.type_()
 
-        print("let type node is", type_node)
         declared_type = self.visit(type_node) if type_node else None
         value = self.visit(ctx.expression()) if ctx.expression() else None
+        print("-----------------------------", value)
         if value is None:
             raise Exception(f"❌ LetStmt has no value: {ctx.getText()}")
 
         if type_node is None:
             declared_type = self.get_literal_type(value)
-            print("let type node#2 is", declared_type)
 
         return LetStmt(name=name, declared_type=declared_type, value=value)
 
     def visitIfStmt(self, ctx):
-        print("======================================visiting if stmt")
         condition = self.visit(ctx.expression())
         then_branch = self.visit(ctx.block(0))
-
         else_branch = None
-        if ctx.block(1):  # if the optional else exists
+        if ctx.block(1):
             else_branch = self.visit(ctx.block(1))
-
         return IfStmt(condition=condition, then_branch=then_branch, else_branch=else_branch)
 
     def visitAssignStmt(self, ctx):
         print("🔧 Visiting assignmentStmt:", ctx.getText())
         target_expr = ctx.expression(0)
         value_expr = ctx.expression(1)
-
         child = target_expr.getChild(0)
+
         if isinstance(child, TerminalNode):  # It's a terminal node
             name_token = child.getText()
         elif hasattr(child, 'getText'):  # Could be Identifier wrapped in primaryExpression
@@ -110,6 +107,13 @@ class Transformer(RustVisitor):
         
         value = self.visit(value_expr)
         return AssignStmt(target=name_token, value=value)
+    
+    def visitForStmt(self, ctx):
+        var_name = ctx.Identifier().getText()
+        iterable_expr = self.visit(ctx.expression())
+        body = self.visit(ctx.block())
+
+        return ForStmt(var=var_name, iterable=iterable_expr, body=body)
 
     def visitBlock(self, ctx):
         stmts = []
@@ -125,13 +129,17 @@ class Transformer(RustVisitor):
         elif ctx.ifStmt():
             return self.visit(ctx.ifStmt())
         elif ctx.assignStmt():
-            print("assignment case")
-            return self.visit(ctx.assignStmt())   
+            return self.visit(ctx.assignStmt())
+        elif ctx.forStmt():
+            return self.visit(ctx.forStmt())   
         else:
             print("⚠️ Unknown statement:", ctx.getText())
             return None
 
+    #TODO : make it more clean and organized
     def visitExpression(self, ctx):
+        if ctx.primaryExpression():
+            return self.visit(ctx.primaryExpression())
         text = ctx.getText()
         if text.isdigit():
             return LiteralExpr(value=int(text))
@@ -146,22 +154,42 @@ class Transformer(RustVisitor):
             return BoolLiteral(False)
         elif text.startswith('"') and text.endswith('"'):
             return LiteralExpr(value=text[1:-1])
+        
+        elif text.startswith('[') and text.endswith(']'):
+            return ArrayLiteral(elements=text[1:-1])
+
         elif ctx.primaryExpression():
             ident = ctx.getText()
             return IdentifierExpr(ident)
-
         raise Exception(f"❌ Unsupported literal expression: {text}")
 
     def visitType(self, ctx):
         type_str = ctx.getText()
         print(f"🎯 Visiting type: {type_str}")
-        if type_str == "i32":
-            return IntType()
-        elif type_str == "String":
-            return StringType()
-        else:
-            raise Exception(f"❌ Unknown type: {type_str}")
 
+        if type_str.startswith('[') and ';' in type_str and type_str.endswith(']'):
+            inner_type_str, size_str = type_str[1:-1].split(';')
+            inner_type = self._basic_type_from_str(inner_type_str.strip())
+            size = int(size_str.strip())
+            return ArrayType(inner_type, size)
+
+        elif type_str.startswith('[') and type_str.endswith(']'):
+            inner_type_str = type_str[1:-1]
+            inner_type = self._basic_type_from_str(inner_type_str.strip())
+            return ArrayType(inner_type, None)
+
+        return self._basic_type_from_str(type_str)
+
+    def _basic_type_from_str(self, s):
+        if s == "i32":
+            return IntType()
+        elif s == "String":
+            return StringType()
+        elif s == "bool":
+            return BoolType()
+        else:
+            raise Exception(f"❌ Unknown basic type: {s}")
+        
     def visitLiteral(self, ctx):
         text = ctx.getText()
         if text == "true":
@@ -170,3 +198,8 @@ class Transformer(RustVisitor):
             return BoolLiteral(False)
         elif ctx.Number():
             return LiteralExpr(value=int(text))
+
+    def visitArrayLiteral(self, ctx):
+        print("🔍 Visiting array literal:", ctx.getText())
+        elements = [self.visit(expr) for expr in ctx.expression()]
+        return ArrayLiteral(elements)

@@ -73,3 +73,12 @@ class StrLiteral:
 
     def accept(self, visitor):
         return visitor.visit_StrLiteral(self)
+    
+class ArrayLiteral:
+    def __init__(self, elements):
+        self.elements = elements
+        self.line = None
+        self.column = None
+
+    def accept(self, visitor):
+        return visitor.visit_ArrayLiteral(self)

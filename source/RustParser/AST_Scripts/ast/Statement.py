@@ -12,6 +12,15 @@ class LetStmt(Statement):
     def accept(self, visitor):
         return visitor.visit_LetStmt(self)
 
+class ForStmt:
+    def __init__(self, var, iterable, body):
+        self.var = var          
+        self.iterable = iterable
+        self.body = body
+
+    def accept(self, visitor):
+        return visitor.visit_ForStmt(self)
+
 class IfStmt:
     def __init__(self, condition, then_branch, else_branch=None):
         self.condition = condition
