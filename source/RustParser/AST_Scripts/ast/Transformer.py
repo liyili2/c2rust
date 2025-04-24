@@ -85,7 +85,9 @@ class Transformer(RustVisitor):
         return LetStmt(name=name, declared_type=declared_type, value=value)
 
     def visitIfStmt(self, ctx):
+        print("🔍 ifStmt text:", ctx.getText())
         condition = self.visit(ctx.expression())
+        print("((((((((()))))))", condition)
         then_branch = self.visit(ctx.block(0))
         else_branch = None
         if ctx.block(1):
@@ -154,14 +156,41 @@ class Transformer(RustVisitor):
             return BoolLiteral(False)
         elif text.startswith('"') and text.endswith('"'):
             return LiteralExpr(value=text[1:-1])
-        
         elif text.startswith('[') and text.endswith(']'):
-            return ArrayLiteral(elements=text[1:-1])
-
+            inner = text[1:-1].strip()
+            if not inner:
+                elements = []
+            else:
+                element_texts = [e.strip() for e in inner.split(',')]
+                elements = []
+                for e_text in element_texts:
+                    try:
+                        if e_text.isdigit():
+                            elements.append(LiteralExpr(value=int(e_text)))
+                        else:
+                            float_val = float(e_text)
+                            elements.append(LiteralExpr(value=float_val))
+                    except ValueError:
+                        elements.append(IdentifierExpr(e_text))
+            return ArrayLiteral(elements=elements)
         elif ctx.primaryExpression():
             ident = ctx.getText()
             return IdentifierExpr(ident)
         raise Exception(f"❌ Unsupported literal expression: {text}")
+
+    def visitPrimaryExpression(self, ctx):
+        if ctx.literal():
+            return self.visit(ctx.literal())
+        elif ctx.Identifier():
+            return IdentifierExpr(ctx.Identifier().getText())
+        elif ctx.expression():
+            return self.visit(ctx.expression())
+        # elif ctx.Identifier() and ctx.argumentList():
+        #     # Function call: foo(1, 2)
+        #     args = self.visit(ctx.argumentList()) if ctx.argumentList() else []
+        #     return FunctionCall(name=ctx.Identifier().getText(), args=args)
+        else:
+            raise Exception(f"❌ Unsupported primary expression: {ctx.getText()}")
 
     def visitType(self, ctx):
         type_str = ctx.getText()

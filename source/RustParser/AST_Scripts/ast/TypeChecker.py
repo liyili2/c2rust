@@ -1,5 +1,5 @@
 from ast import FunctionDef
-from AST_Scripts.ast.Type import BoolType, IntType, StringType
+from AST_Scripts.ast.Type import ArrayType, BoolType, IntType, StringType
 from AST_Scripts.ast.TypeEnv import TypeEnv 
 
 class TypeChecker:
@@ -8,6 +8,7 @@ class TypeChecker:
         self.symbol_table = {}
 
     def get_literal_type(self, value):
+        print("value is ---------------------", value)
         if isinstance(value, int):
             return IntType()
         elif isinstance(value, str):
@@ -116,9 +117,9 @@ class TypeChecker:
 
         return self.symbol_table[node.name]
     
-    #TODO
     def visit_ArrayLiteral(self, node):
-        pass
+        first_elem = node.elements[0]
+        return ArrayType(first_elem.__class__)
 
     def visit_BoolLiteral(self, node):
         return BoolType()

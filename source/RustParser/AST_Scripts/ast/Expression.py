@@ -73,7 +73,7 @@ class StrLiteral:
 
     def accept(self, visitor):
         return visitor.visit_StrLiteral(self)
-    
+
 class ArrayLiteral:
     def __init__(self, elements):
         self.elements = elements
@@ -82,3 +82,6 @@ class ArrayLiteral:
 
     def accept(self, visitor):
         return visitor.visit_ArrayLiteral(self)
+    
+    def __repr__(self):
+        return f"ArrayLiteral({self.elements})"
