@@ -8,7 +8,6 @@ class TypeChecker:
         self.symbol_table = {}
 
     def get_literal_type(self, value):
-        print("value is ---------------------", value)
         if isinstance(value, int):
             return IntType()
         elif isinstance(value, str):
@@ -42,7 +41,6 @@ class TypeChecker:
         raise Exception(f"No visit method for {node.__class__.__name__}")
 
     def visit_Program(self, node):
-        print("📦 Visiting Program node")
         return self.visit(node.items)
 
     def visit_IntType(self, node):
@@ -111,10 +109,18 @@ class TypeChecker:
                 self.visit(stmt)
         print("✅ IfStmt type-checked successfully")
 
+    def visit_ForStmt(self, node):
+        iterable_type = self.visit(node.iterable)
+        if not isinstance(iterable_type, ArrayType):
+            raise Exception(f"❌ 'for' loop expects an array iterable, got {iterable_type}")
+
+        self.env.define(node.var, iterable_type.elem_type)
+        for stmt in node.body:
+            self.visit(stmt)
+
     def visit_identifier_expr(self, node):
         if node.name not in self.symbol_table:
             raise Exception(f"❌ Use of undefined variable '{node.name}'")
-
         return self.symbol_table[node.name]
     
     def visit_ArrayLiteral(self, node):

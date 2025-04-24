@@ -11,6 +11,9 @@ class TypeEnv:
     def declare(self, name, typ):
         self.scopes[-1][name] = typ
 
+    def define(self, name, var_type):
+        self.scopes[-1][name] = var_type
+
     def lookup(self, name):
         for scope in reversed(self.scopes):
             if name in scope:

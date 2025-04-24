@@ -14,7 +14,7 @@ class LetStmt(Statement):
 
 class ForStmt:
     def __init__(self, var, iterable, body):
-        self.var = var          
+        self.var = var
         self.iterable = iterable
         self.body = body
 
