@@ -1,5 +1,6 @@
 grammar Exp;
 
+// print out our XML.
 program: exp (';' exp)* ;
 
 exp: Identifier | letexp | callexp | ifexp | skipexp | xgexp | cuexp 
@@ -78,6 +79,9 @@ pairtype: '(' typea ',' typea ')';
 
 
 funct: '(' typea '->' typea ')';
+
+// macro
+vec: '['  ']';
         
  // Lexical Specification of this Programming Language
  //  - lexical specification rules start with uppercase

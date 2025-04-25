@@ -75,6 +75,10 @@ primaryExpression
 
 argumentList: expression (',' expression)*;
 
+vector
+    : '[' ( argumentList )? ']'
+    ;
+
 macroCall: Identifier '!' macroArgs;
 macroArgs: '[' macroInner? ']' | '(' macroInner? ')';
 macroInner: expression (';' expression)?;  // supports [value; count] form
