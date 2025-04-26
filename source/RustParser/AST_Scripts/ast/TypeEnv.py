@@ -9,10 +9,14 @@ class TypeEnv:
         self.scopes.pop()
 
     def declare(self, name, typ):
-        self.scopes[-1][name] = typ
-
-    def define(self, name, var_type):
-        self.scopes[-1][name] = var_type
+        self.scopes[-1][name] = {
+            "type": typ,
+            "owned": True,
+            "borrowed": False,
+        }
+        
+    def define(self, name, info):
+        self.scopes[-1][name] = info
 
     def lookup(self, name):
         for scope in reversed(self.scopes):

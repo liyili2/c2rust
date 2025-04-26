@@ -5,7 +5,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '.
 
 from AST_Scripts.ast.TypeChecker import TypeChecker
 from AST_Scripts.ast.Statement import AssignStmt, IfStmt, LetStmt
-from AST_Scripts.ast.Expression import BoolLiteral, LiteralExpr
+from AST_Scripts.ast.Expression import BoolLiteral, IdentifierExpr, LiteralExpr
 from AST_Scripts.ast.Type import IntType
 
 class TestTypeChecker(unittest.TestCase):
@@ -19,7 +19,7 @@ class TestTypeChecker(unittest.TestCase):
 
         checker.visit(stmt)
         self.assertIn("x", checker.env.scopes[-1])
-        self.assertIsInstance(checker.env.scopes[-1]["x"], IntType)
+        self.assertIsInstance(checker.env.scopes[-1]["x"]["type"], IntType)
 
     def test_let_stmt_type_mismatch(self):
         checker = TypeChecker()
@@ -36,14 +36,18 @@ class TestTypeChecker(unittest.TestCase):
 
     def test_valid_if_stmt(self):
         checker = TypeChecker()
-        checker.env.define("a", IntType())
-
+        let_a = LetStmt(
+            name="a",
+            declared_type=IntType(),
+            value=LiteralExpr(42)
+        )
         stmt = IfStmt(
             condition=BoolLiteral(True),
             then_branch=[AssignStmt("a", LiteralExpr(1))],
             else_branch=[AssignStmt("a", LiteralExpr(2))]
         )
 
+        checker.visit(let_a)
         checker.visit(stmt)
 
     def test_if_stmt_with_non_bool_condition(self):
@@ -59,6 +63,30 @@ class TestTypeChecker(unittest.TestCase):
         with self.assertRaises(Exception) as context:
             checker.visit(stmt)
         self.assertIn("Condition in if-statement must be of type bool", str(context.exception))
+
+    def test_use_after_move_raises_error(self):
+        checker = TypeChecker()      
+        let_x = LetStmt(
+            name="x",
+            declared_type=IntType(),
+            value=LiteralExpr(42)
+        )
+        let_y = LetStmt(
+            name="y",
+            declared_type=IntType(),
+            value=IdentifierExpr("x")
+        )
+        reassign_x = AssignStmt(
+            target="x",
+            value=LiteralExpr(5)
+        )
+
+        checker.visit(let_x)
+        checker.visit(let_y)
+        with self.assertRaises(Exception) as context:
+                checker.visit(reassign_x)
+
+        self.assertIn("❌ Use of moved value", str(context.exception))
 
 if __name__ == "__main__":
     unittest.main()
