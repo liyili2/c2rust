@@ -59,6 +59,9 @@ class TypeChecker:
 
         if isinstance(node.value, str):
             return StringType()
+        
+        if isinstance(node.value, bool):
+            return BoolType()
         else:
             return False
 
@@ -123,6 +126,7 @@ class TypeChecker:
                 return False
 
             value_info["owned"] = False
+
         return True
 
     def visit_IfStmt(self, node):
@@ -140,7 +144,8 @@ class TypeChecker:
         iterable_type = self.visit(node.iterable)
         if not isinstance(iterable_type, ArrayType):
             return False
-        self.env.define(node.var, iterable_type.elem_type)
+
+        self.env.define(node.var, {"type": iterable_type.elem_type, "owned": True, "borrowed": False})
         for stmt in node.body:
             self.visit(stmt)
         return True
