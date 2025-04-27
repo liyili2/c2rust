@@ -8,6 +8,13 @@ class TypeChecker:
         self.env = TypeEnv()
         self.symbol_table = {}
 
+    def resolve_function_return_type(self, node):
+        func_name = node.func
+        func_info = self.env.lookup_function(func_name)
+        if func_info["kind"] != "function":
+            return False
+        return func_info["return_type"]
+
     def get_literal_type(self, value):
         if isinstance(value, int):
             return IntType()
@@ -72,13 +79,38 @@ class TypeChecker:
         else:
             params = []
 
+        param_types = [typ for (name, typ) in params]
         if ctx.return_type != None:
             return_type = self.visit(ctx.return_type)
         else:
             return_type = None
 
+        self.env.declare_function(name, {
+            "kind": "function",
+            "return_type": return_type,
+            "param_types": param_types,
+        })
+
         body = self.visit(ctx.body)  # should be a List[Stmt]
         return FunctionDef(name=name, params=params, return_type=return_type, body=body)
+
+    def visit_FunctionCallExpr(self, node):
+        print("0")
+        for arg in node.args:
+            print("1")
+            arg_type = self.visit(arg)
+            if isinstance(arg, IdentifierExpr):
+                print("2")
+                info = self.env.lookup(arg.name)
+
+                if not isinstance(info["type"], (IntType, BoolType)):
+                    print("3")
+                    if not info["owned"]:
+                        print("4")
+                        return False
+                    info["owned"] = False
+
+        return self.resolve_function_return_type(node)
 
     def visit_LetStmt(self, node):
         expr_type = self.visit(node.value)
@@ -107,24 +139,18 @@ class TypeChecker:
             info = self.env.lookup(node.target)
         except Exception:
             return False
-
         if not info["owned"]:
             return False
-
         expr_type = self.visit(node.value)
         if type(info["type"]) != type(expr_type):
             return False
-
         if isinstance(node.value, IdentifierExpr):
             try:
                 value_info = self.env.lookup(node.value.name)
             except Exception:
                 return False
-
-            print("info is ", value_info)
             if not value_info["owned"]:
                 return False
-
             value_info["owned"] = False
 
         return True
@@ -151,6 +177,12 @@ class TypeChecker:
         return True
 
     def visit_identifier_expr(self, node):
+        try:
+            info = self.env.lookup(node.name)
+        except Exception:
+            return False
+        if not info["owned"]:
+            return False
         if node.name not in self.symbol_table:
             return False
         return self.symbol_table[node.name]

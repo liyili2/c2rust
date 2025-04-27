@@ -44,7 +44,7 @@ class FunctionCallExpr(Expression):
         self.args = args
 
     def accept(self, visitor):
-        return visitor.visit_function_call_expr(self)
+        return visitor.visit_FunctionCallExpr(self)
 
 class VariableRef(Expression):
     def __init__(self, name):

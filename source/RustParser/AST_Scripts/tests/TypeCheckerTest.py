@@ -1,3 +1,4 @@
+from ast import Expression
 import unittest
 import sys
 import os
@@ -5,7 +6,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '.
 
 from AST_Scripts.ast.TypeChecker import TypeChecker
 from AST_Scripts.ast.Statement import AssignStmt, IfStmt, LetStmt
-from AST_Scripts.ast.Expression import BoolLiteral, IdentifierExpr, LiteralExpr
+from AST_Scripts.ast.Expression import BoolLiteral, FunctionCallExpr, IdentifierExpr, LiteralExpr
 from AST_Scripts.ast.Type import IntType
 
 class TestTypeChecker(unittest.TestCase):
@@ -79,6 +80,28 @@ class TestTypeChecker(unittest.TestCase):
         checker.visit(let_x)
         checker.visit(let_y)
         assert(not checker.visit(reassign_x))
+
+    def test_pass_moved_value_to_function(self):
+        checker = TypeChecker()
+        checker.env.declare_function("foo", [IntType()], None)
+        let_x = LetStmt(
+            name="x",
+            declared_type=IntType(),
+            value=LiteralExpr(42)
+        )
+        let_y = LetStmt(
+            name="y",
+            declared_type=IntType(),
+            value=IdentifierExpr("x")
+        )
+        call_foo_with_x = FunctionCallExpr(
+            func="foo",
+            args=[IdentifierExpr("x")]
+        )
+
+        checker.visit(let_x)
+        checker.visit(let_y)
+        assert(not checker.visit(call_foo_with_x))
 
 if __name__ == "__main__":
     unittest.main()
