@@ -102,13 +102,12 @@ class TypeChecker:
             if isinstance(arg, IdentifierExpr):
                 print("2")
                 info = self.env.lookup(arg.name)
-
-                if not isinstance(info["type"], (IntType, BoolType)):
-                    print("3")
-                    if not info["owned"]:
-                        print("4")
-                        return False
-                    info["owned"] = False
+                # if not isinstance(info["type"], (IntType, BoolType, StringType)):
+                print("3: ", info["owned"])
+                if not info["owned"]:
+                    print("4")
+                    return False
+                info["owned"] = False
 
         return self.resolve_function_return_type(node)
 
