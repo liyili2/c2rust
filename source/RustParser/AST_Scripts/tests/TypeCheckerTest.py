@@ -17,7 +17,7 @@ class TestTypeChecker(unittest.TestCase):
             value=LiteralExpr(42)
         )
 
-        checker.visit(stmt)
+        assert(checker.visit(stmt))
         self.assertIn("x", checker.env.scopes[-1])
         self.assertIsInstance(checker.env.scopes[-1]["x"]["type"], IntType)
 
@@ -29,10 +29,7 @@ class TestTypeChecker(unittest.TestCase):
             value=LiteralExpr("hello!")  # Not an int!
         )
 
-        with self.assertRaises(Exception) as context:
-            checker.visit(stmt)
-
-        self.assertIn("Type mismatch", str(context.exception))
+        assert(not checker.visit(stmt))
 
     def test_valid_if_stmt(self):
         checker = TypeChecker()
@@ -47,8 +44,8 @@ class TestTypeChecker(unittest.TestCase):
             else_branch=[AssignStmt("a", LiteralExpr(2))]
         )
 
-        checker.visit(let_a)
-        checker.visit(stmt)
+        assert(checker.visit(let_a))
+        assert(checker.visit(stmt))
 
     def test_if_stmt_with_non_bool_condition(self):
         checker = TypeChecker()
@@ -60,9 +57,7 @@ class TestTypeChecker(unittest.TestCase):
             else_branch=[AssignStmt("a", LiteralExpr(2))]
         )
 
-        with self.assertRaises(Exception) as context:
-            checker.visit(stmt)
-        self.assertIn("Condition in if-statement must be of type bool", str(context.exception))
+        assert(not checker.visit(stmt))
 
     def test_use_after_move_raises_error(self):
         checker = TypeChecker()      
@@ -83,10 +78,7 @@ class TestTypeChecker(unittest.TestCase):
 
         checker.visit(let_x)
         checker.visit(let_y)
-        with self.assertRaises(Exception) as context:
-                checker.visit(reassign_x)
-
-        self.assertIn("❌ Use of moved value", str(context.exception))
+        assert(not checker.visit(reassign_x))
 
 if __name__ == "__main__":
     unittest.main()

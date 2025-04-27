@@ -42,7 +42,10 @@ class TypeChecker:
         raise Exception(f"No visit method for {node.__class__.__name__}")
 
     def visit_Program(self, node):
-        return self.visit(node.items)
+        for item in node.items:
+            if not self.visit(item):
+                return False
+        return True
 
     def visit_IntType(self, node):
         return node
@@ -57,7 +60,7 @@ class TypeChecker:
         if isinstance(node.value, str):
             return StringType()
         else:
-            raise Exception(f"Unknown literal type: {node.value}")
+            return False
 
     def visit_FunctionDef(self, ctx):
         name = ctx.Identifier
@@ -79,7 +82,7 @@ class TypeChecker:
         if node.declared_type is not None:
             declared_type = self.visit(node.declared_type)
             if declared_type.__class__ != expr_type.__class__:
-                raise Exception(f"Type mismatch in declaration of '{node.name}'")
+                return False
         else:
             declared_type = expr_type
 
@@ -89,59 +92,62 @@ class TypeChecker:
             try:
                 value_info = self.env.lookup(node.value.name)
             except Exception:
-                raise Exception(f"❌ Variable '{node.value.name}' is not defined")
+                return False
             if not value_info["owned"]:
-                raise Exception(f"❌ Use of moved value '{node.value.name}'")
+                return False
             value_info["owned"] = False
-        # print(f"✅ '{node.name}' declared with type {expr_type.__class__.__name__}")
+
+        return True
 
     def visit_Assignment(self, node):
         try:
             info = self.env.lookup(node.target)
         except Exception:
-            raise Exception(f"❌ Variable is not defined")
+            return False
 
         if not info["owned"]:
-            raise Exception("❌ Use of moved value")
+            return False
 
         expr_type = self.visit(node.value)
         if type(info["type"]) != type(expr_type):
-            raise Exception(f"❌ Type mismatch in assignment")
+            return False
 
-        print("node value class is ", node.value.__class__, node.value.value)
         if isinstance(node.value, IdentifierExpr):
             try:
                 value_info = self.env.lookup(node.value.name)
             except Exception:
-                raise Exception(f"❌ Variable '{node.value.name}' is not defined")
+                return False
 
+            print("info is ", value_info)
             if not value_info["owned"]:
-                raise Exception(f"❌ Use of moved value '{node.value.name}'")
+                return False
 
             value_info["owned"] = False
+        return True
 
     def visit_IfStmt(self, node):
         condition_type = self.visit(node.condition)
         if not isinstance(condition_type, BoolType):
-            raise Exception(f"❌ Condition in if-statement must be of type bool, got {condition_type.__class__.__name__}")
+            return False
         for stmt in node.then_branch:
             self.visit(stmt)
         if node.else_branch:
             for stmt in node.else_branch:
                 self.visit(stmt)
+        return True
 
     def visit_ForStmt(self, node):
         iterable_type = self.visit(node.iterable)
         if not isinstance(iterable_type, ArrayType):
-            raise Exception(f"❌ 'for' loop expects an array iterable, got {iterable_type}")
-
+            return False
         self.env.define(node.var, iterable_type.elem_type)
         for stmt in node.body:
             self.visit(stmt)
+        return True
 
     def visit_identifier_expr(self, node):
         if node.name not in self.symbol_table:
-            raise Exception(f"❌ Use of undefined variable '{node.name}'")
+            return False
         return self.symbol_table[node.name]
     
     def visit_ArrayLiteral(self, node):

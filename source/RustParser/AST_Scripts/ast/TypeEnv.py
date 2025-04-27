@@ -14,7 +14,7 @@ class TypeEnv:
             "owned": True,
             "borrowed": False,
         }
-        
+
     def define(self, name, info):
         self.scopes[-1][name] = info
 
