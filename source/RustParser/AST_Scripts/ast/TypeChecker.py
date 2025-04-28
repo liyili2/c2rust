@@ -85,13 +85,8 @@ class TypeChecker:
         else:
             return_type = None
 
-        self.env.declare_function(name, {
-            "kind": "function",
-            "return_type": return_type,
-            "param_types": param_types,
-        })
-
-        body = self.visit(ctx.body)  # should be a List[Stmt]
+        self.env.declare_function(name, param_types, return_type)
+        body = self.visit(ctx.body)
         return FunctionDef(name=name, params=params, return_type=return_type, body=body)
 
     def visit_FunctionCallExpr(self, node):
