@@ -165,5 +165,28 @@ class TestTypeChecker(unittest.TestCase):
         result = checker.visit(assign_stmt)
         self.assertFalse(result, "Assignment to a borrowed variable should fail!")
 
+    def test_move_borrowed_variable_should_fail(self):
+        checker = TypeChecker()
+
+        let_x = LetStmt(
+            name="x",
+            declared_type=IntType(),
+            value=LiteralExpr(5)
+        )
+        borrow_x = LetStmt(
+            name="y",
+            declared_type=RefType(IntType()),
+            value=BorrowExpr("x")
+        )
+        move_x = LetStmt(
+            name="z",
+            declared_type=IntType(),
+            value=IdentifierExpr("x")
+        )
+
+        assert(checker.visit(let_x))
+        assert(checker.visit(borrow_x))
+        assert(not checker.visit(move_x))
+
 if __name__ == "__main__":
     unittest.main()

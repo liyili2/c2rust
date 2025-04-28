@@ -115,6 +115,8 @@ class TypeChecker:
                 value_info = self.env.lookup(node.value.name)
             except Exception:
                 return False
+            if value_info["borrowed"]:
+                return False
             if not value_info["owned"]:
                 return False
             value_info["owned"] = False
