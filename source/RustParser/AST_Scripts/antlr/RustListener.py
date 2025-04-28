@@ -179,6 +179,15 @@ class RustListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by RustParser#borrowExpression.
+    def enterBorrowExpression(self, ctx:RustParser.BorrowExpressionContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#borrowExpression.
+    def exitBorrowExpression(self, ctx:RustParser.BorrowExpressionContext):
+        pass
+
+
     # Enter a parse tree produced by RustParser#primaryExpression.
     def enterPrimaryExpression(self, ctx:RustParser.PrimaryExpressionContext):
         pass

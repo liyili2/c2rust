@@ -46,9 +46,16 @@ class FunctionCallExpr(Expression):
     def accept(self, visitor):
         return visitor.visit_FunctionCallExpr(self)
 
+class BorrowExpr(Expression):
+    def __init__(self, name):
+        self.name = name
+
+    def accept(self, visitor):
+        return visitor.visit_BorrowExpr(self)
+
 class VariableRef(Expression):
     def __init__(self, name):
-        self.name = name  # the variable name as string
+        self.name = name
 
     def accept(self, visitor):
         return visitor.visit_VariableRef(self)

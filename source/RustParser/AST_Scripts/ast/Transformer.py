@@ -1,5 +1,5 @@
 from antlr4 import TerminalNode
-from AST_Scripts.ast.Expression import ArrayLiteral, BoolLiteral, IdentifierExpr, IntLiteral, StrLiteral
+from AST_Scripts.ast.Expression import ArrayLiteral, BoolLiteral, BorrowExpr, IdentifierExpr, IntLiteral, StrLiteral
 from AST_Scripts.ast.Statement import AssignStmt, ForStmt, IfStmt, LetStmt
 from AST_Scripts.antlr.RustVisitor import RustVisitor
 from AST_Scripts.ast.TopLevel import FunctionDef, StructDef, Attribute
@@ -185,6 +185,13 @@ class Transformer(RustVisitor):
         #     return FunctionCall(name=ctx.Identifier().getText(), args=args)
         else:
             raise Exception(f"❌ Unsupported primary expression: {ctx.getText()}")
+
+    def visit_borrowExpression(self, ctx):
+        expr = self.visit(ctx.expression())
+        if not isinstance(expr, IdentifierExpr):
+            raise Exception("Can only borrow variables (identifiers).")
+
+        return BorrowExpr(expr.name)
 
     def visitType(self, ctx):
         type_str = ctx.getText()

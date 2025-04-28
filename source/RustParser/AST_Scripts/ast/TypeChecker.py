@@ -1,5 +1,5 @@
 from ast import FunctionDef
-from AST_Scripts.ast.Type import ArrayType, BoolType, IntType, StringType
+from AST_Scripts.ast.Type import ArrayType, BoolType, IntType, RefType, StringType
 from AST_Scripts.ast.TypeEnv import TypeEnv
 from AST_Scripts.ast.Expression import IdentifierExpr, LiteralExpr 
 
@@ -95,17 +95,10 @@ class TypeChecker:
         return FunctionDef(name=name, params=params, return_type=return_type, body=body)
 
     def visit_FunctionCallExpr(self, node):
-        print("0")
         for arg in node.args:
-            print("1")
-            arg_type = self.visit(arg)
             if isinstance(arg, IdentifierExpr):
-                print("2")
                 info = self.env.lookup(arg.name)
-                # if not isinstance(info["type"], (IntType, BoolType, StringType)):
-                print("3: ", info["owned"])
                 if not info["owned"]:
-                    print("4")
                     return False
                 info["owned"] = False
 
@@ -139,6 +132,8 @@ class TypeChecker:
         except Exception:
             return False
         if not info["owned"]:
+            return False
+        if info["borrowed"] :
             return False
         expr_type = self.visit(node.value)
         if type(info["type"]) != type(expr_type):
@@ -185,7 +180,15 @@ class TypeChecker:
         if node.name not in self.symbol_table:
             return False
         return self.symbol_table[node.name]
-    
+
+    def visit_BorrowExpr(self, node):
+        info = self.env.lookup(node.name)
+        if not info["owned"]:
+            return False
+
+        info["borrowed"] = True
+        return RefType(info["type"])
+
     def visit_ArrayLiteral(self, node):
         first_elem = node.elements[0]
         return ArrayType(first_elem.__class__)

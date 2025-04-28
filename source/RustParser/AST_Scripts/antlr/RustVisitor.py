@@ -104,6 +104,11 @@ class RustVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by RustParser#borrowExpression.
+    def visitBorrowExpression(self, ctx:RustParser.BorrowExpressionContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by RustParser#primaryExpression.
     def visitPrimaryExpression(self, ctx:RustParser.PrimaryExpressionContext):
         return self.visitChildren(ctx)

@@ -57,7 +57,7 @@ expression
     : literal
     | primaryExpression
     | macroCall
-    | '&' expression
+    | borrowExpression
     | expression '[' expression ']'
     | expression '.' Identifier
     | expression '.' Identifier '(' argumentList? ')'
@@ -68,6 +68,7 @@ expression
     | Identifier '!' '(' argumentList? ')'
     ;
 
+borrowExpression: '&' expression;
 primaryExpression
     : literal
     | Identifier
