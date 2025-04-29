@@ -215,5 +215,27 @@ class TestTypeChecker(unittest.TestCase):
         info = checker.env.lookup("x")
         self.assertFalse(info["borrowed"])
 
+    def test_reborrow_while_already_borrowed(self):
+        checker = TypeChecker()
+        let_x = LetStmt(
+            name="x",
+            declared_type=IntType(), 
+            value=LiteralExpr(1)
+        )
+        borrow1 = LetStmt(
+            name="ref1",
+            declared_type=IntType(),
+            value=IdentifierExpr("x")
+        )
+        borrow2 = LetStmt(
+            name="ref2",
+            declared_type=IntType(),
+            value=IdentifierExpr("x")
+        )
+
+        assert checker.visit(let_x)
+        assert checker.visit(borrow1)
+        assert not checker.visit(borrow2)
+
 if __name__ == "__main__":
     unittest.main()

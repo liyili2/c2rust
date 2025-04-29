@@ -95,6 +95,8 @@ class TypeChecker:
                 info = self.env.lookup(arg.name)
                 if not info["owned"]:
                     return False
+                if info["borrowed"] :
+                    return False
                 info["borrowed"] = True
 
         result = self.resolve_function_return_type(node)
@@ -189,6 +191,9 @@ class TypeChecker:
     def visit_BorrowExpr(self, node):
         info = self.env.lookup(node.name)
         if not info["owned"]:
+            return False
+        
+        if info["borrowed"]:
             return False
 
         info["borrowed"] = True
