@@ -95,9 +95,17 @@ class TypeChecker:
                 info = self.env.lookup(arg.name)
                 if not info["owned"]:
                     return False
-                info["owned"] = False
+                info["borrowed"] = True
 
-        return self.resolve_function_return_type(node)
+        result = self.resolve_function_return_type(node)
+
+        for arg in node.args:
+            if isinstance(arg, IdentifierExpr):
+                info = self.env.lookup(arg.name)
+                if info["borrowed"]:
+                    info["borrowed"] = False
+
+        return result
 
     def visit_LetStmt(self, node):
         expr_type = self.visit(node.value)
