@@ -9,11 +9,12 @@ class TypeEnv:
     def exit_scope(self):
         self.scopes.pop()
 
-    def declare(self, name, typ):
+    def declare(self, name, typ, mutable=False):
         self.scopes[-1][name] = {
             "type": typ,
             "owned": True,
             "borrowed": False,
+            "mutable": mutable,
         }
 
     def define(self, name, info):

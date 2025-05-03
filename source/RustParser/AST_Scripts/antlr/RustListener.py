@@ -125,6 +125,33 @@ class RustListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by RustParser#varDef.
+    def enterVarDef(self, ctx:RustParser.VarDefContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#varDef.
+    def exitVarDef(self, ctx:RustParser.VarDefContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#immutableDef.
+    def enterImmutableDef(self, ctx:RustParser.ImmutableDefContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#immutableDef.
+    def exitImmutableDef(self, ctx:RustParser.ImmutableDefContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#mutableDef.
+    def enterMutableDef(self, ctx:RustParser.MutableDefContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#mutableDef.
+    def exitMutableDef(self, ctx:RustParser.MutableDefContext):
+        pass
+
+
     # Enter a parse tree produced by RustParser#assignStmt.
     def enterAssignStmt(self, ctx:RustParser.AssignStmtContext):
         pass

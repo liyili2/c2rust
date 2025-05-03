@@ -74,6 +74,21 @@ class RustVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by RustParser#varDef.
+    def visitVarDef(self, ctx:RustParser.VarDefContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#immutableDef.
+    def visitImmutableDef(self, ctx:RustParser.ImmutableDefContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#mutableDef.
+    def visitMutableDef(self, ctx:RustParser.MutableDefContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by RustParser#assignStmt.
     def visitAssignStmt(self, ctx:RustParser.AssignStmtContext):
         return self.visitChildren(ctx)

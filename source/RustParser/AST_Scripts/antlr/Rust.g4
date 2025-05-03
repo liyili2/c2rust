@@ -46,7 +46,10 @@ statement
     | exprStmt
     ;
 
-letStmt: 'let' 'mut'? Identifier (':' type)? '=' expression ';';
+letStmt: 'let' varDef '=' expression ';';
+varDef: mutableDef | immutableDef;
+immutableDef: Identifier (':' type)?;
+mutableDef: 'mut' Identifier (':' type)? ;
 assignStmt: expression '=' expression ';';
 forStmt: 'for' Identifier 'in' expression block;
 ifStmt: 'if' expression block ('else' block)?;

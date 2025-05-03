@@ -10,13 +10,13 @@ from AST_Scripts.ast.Statement import AssignStmt, IfStmt, LetStmt, ReturnStmt
 from AST_Scripts.ast.Expression import BoolLiteral, BorrowExpr, FunctionCallExpr, IdentifierExpr, LiteralExpr
 from AST_Scripts.ast.Type import IntType, RefType
 from AST_Scripts.ast.TopLevel import FunctionDef
+from AST_Scripts.ast.VarDef import VarDef
 
 class TestTypeChecker(unittest.TestCase):
     def test_valid_let_stmt_with_int(self):
         checker = TypeChecker()
         stmt = LetStmt(
-            name="x",
-            declared_type=IntType(),
+            var_def=VarDef(name="x", type=IntType()),
             value=LiteralExpr(42)
         )
 
@@ -27,8 +27,7 @@ class TestTypeChecker(unittest.TestCase):
     def test_let_stmt_type_mismatch(self):
         checker = TypeChecker()
         stmt = LetStmt(
-            name="x",
-            declared_type=IntType(),
+            var_def=VarDef(name="x", type=IntType()),
             value=LiteralExpr("hello!")  # Not an int!
         )
 
@@ -37,8 +36,7 @@ class TestTypeChecker(unittest.TestCase):
     def test_valid_if_stmt(self):
         checker = TypeChecker()
         let_a = LetStmt(
-            name="a",
-            declared_type=IntType(),
+            var_def=VarDef(name="a", type=IntType()),
             value=LiteralExpr(42)
         )
         stmt = IfStmt(
@@ -65,13 +63,11 @@ class TestTypeChecker(unittest.TestCase):
     def test_use_after_move_raises_error(self):
         checker = TypeChecker()      
         let_x = LetStmt(
-            name="x",
-            declared_type=IntType(),
+            var_def=VarDef(name="x", type=IntType()),
             value=LiteralExpr(42)
         )
         let_y = LetStmt(
-            name="y",
-            declared_type=IntType(),
+            var_def=VarDef(name="y", type=IntType()),
             value=IdentifierExpr("x")
         )
         reassign_x = AssignStmt(
@@ -87,13 +83,11 @@ class TestTypeChecker(unittest.TestCase):
         checker = TypeChecker()
         checker.env.declare_function("foo", [IntType()], None)
         let_x = LetStmt(
-            name="x",
-            declared_type=IntType(),
+            var_def=VarDef(name="x", type=IntType()),
             value=LiteralExpr(42)
         )
         let_y = LetStmt(
-            name="y",
-            declared_type=IntType(),
+            var_def=VarDef(name="y", type=IntType()),
             value=IdentifierExpr("x")
         )
         call_foo_with_x = FunctionCallExpr(
@@ -108,8 +102,7 @@ class TestTypeChecker(unittest.TestCase):
     def test_use_after_move_to_function(self):
         checker = TypeChecker()
         let_x = LetStmt(
-            name="x",
-            declared_type=IntType(),
+            var_def=VarDef(name="x", type=IntType()),
             value=LiteralExpr(42)
         )
         call_foo = FunctionCallExpr(
@@ -117,8 +110,7 @@ class TestTypeChecker(unittest.TestCase):
             args=[IdentifierExpr("x")]
         )
         assign_y = LetStmt(
-            name="y",
-            declared_type=IntType(),
+            var_def=VarDef(name="y", type=IntType()),
             value=IdentifierExpr("x")
         )
         checker.env.declare_function(
@@ -127,16 +119,15 @@ class TestTypeChecker(unittest.TestCase):
             return_type=None
         )
 
-        assert(checker.visit(let_x)) 
+        assert(checker.visit(let_x))
         checker.visit(call_foo)
-        # assert(not checker.visit(assign_y))
+        assert(checker.visit(assign_y))
 
     def test_borrow_expr_marks_as_borrowed_and_returns_ref_type(self):
         checker = TypeChecker()
 
         let_stmt = LetStmt(
-            name="x",
-            declared_type=IntType(),
+            var_def=VarDef(name="x", type=IntType()),
             value=LiteralExpr(42)
         )
         checker.visit(let_stmt)
@@ -151,8 +142,7 @@ class TestTypeChecker(unittest.TestCase):
     def test_assignment_while_borrowed_should_fail(self):
         checker = TypeChecker()
         let_stmt = LetStmt(
-            name="x",
-            declared_type=IntType(),
+            var_def=VarDef(name="x", type=IntType()),
             value=LiteralExpr(42)
         )
         checker.visit(let_stmt)
@@ -171,18 +161,15 @@ class TestTypeChecker(unittest.TestCase):
         checker = TypeChecker()
 
         let_x = LetStmt(
-            name="x",
-            declared_type=IntType(),
+            var_def=VarDef(name="x", type=IntType()),
             value=LiteralExpr(5)
         )
         borrow_x = LetStmt(
-            name="y",
-            declared_type=RefType(IntType()),
+            var_def=VarDef(name="y", type=RefType(IntType())),
             value=BorrowExpr("x")
         )
         move_x = LetStmt(
-            name="z",
-            declared_type=IntType(),
+            var_def=VarDef(name="z", type=IntType()),
             value=IdentifierExpr("x")
         )
 
@@ -194,14 +181,8 @@ class TestTypeChecker(unittest.TestCase):
         checker = TypeChecker()
 
         let_x = LetStmt(
-            name="x",
-            declared_type=IntType(),
+            var_def=VarDef(name="x", type=IntType()),
             value=LiteralExpr(5)
-        )
-        borrow_x = LetStmt(
-            name="y",
-            declared_type=RefType(IntType()),
-            value=BorrowExpr("x")
         )
         checker.env.declare_function("foo", RefType(IntType()), IntType())
         func_call = FunctionCallExpr(
@@ -209,7 +190,6 @@ class TestTypeChecker(unittest.TestCase):
             args=[IdentifierExpr("x")]
         )
         checker.visit(let_x)
-        checker.visit(borrow_x)
         checker.visit(func_call)
 
         info = checker.env.lookup("x")
@@ -218,24 +198,36 @@ class TestTypeChecker(unittest.TestCase):
     def test_reborrow_while_already_borrowed(self):
         checker = TypeChecker()
         let_x = LetStmt(
-            name="x",
-            declared_type=IntType(), 
+            var_def=VarDef(name="x", type=IntType(), mutable=False),
             value=LiteralExpr(1)
         )
         borrow1 = LetStmt(
-            name="ref1",
-            declared_type=IntType(),
+            var_def=VarDef(name="ref1", type=IntType(), mutable=False),
             value=IdentifierExpr("x")
         )
         borrow2 = LetStmt(
-            name="ref2",
-            declared_type=IntType(),
+            var_def=VarDef(name="ref2", type=IntType(), mutable=False),
             value=IdentifierExpr("x")
         )
 
         assert checker.visit(let_x)
         assert checker.visit(borrow1)
         assert not checker.visit(borrow2)
+
+    def test_mutable_borrow_of_immutable_variable(self):
+        checker = TypeChecker()
+        let_stmt = LetStmt(
+            var_def=VarDef(name="x", type=IntType(), mutable=False),
+            value=LiteralExpr(5)
+        )
+
+        borrow_stmt = LetStmt(
+            var_def=VarDef(name="y", type=None, mutable=False),
+            value=BorrowExpr(name="x", mutable=True)
+        )
+
+        assert checker.visit(let_stmt)
+        assert not checker.visit(borrow_stmt)
 
 if __name__ == "__main__":
     unittest.main()

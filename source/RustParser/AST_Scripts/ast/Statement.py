@@ -4,10 +4,12 @@ class Statement(ASTNode):
     pass
 
 class LetStmt(Statement):
-    def __init__(self, name, declared_type, value):
-        self.name = name
-        self.declared_type = declared_type
+    def __init__(self, var_def, value):
+        self.var_def = var_def
         self.value = value
+        self.declared_type = var_def.type
+        self.name = var_def.name
+        self.mutable = var_def.mutable
 
     def accept(self, visitor):
         return visitor.visit_LetStmt(self)

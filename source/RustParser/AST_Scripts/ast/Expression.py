@@ -47,8 +47,9 @@ class FunctionCallExpr(Expression):
         return visitor.visit_FunctionCallExpr(self)
 
 class BorrowExpr(Expression):
-    def __init__(self, name):
+    def __init__(self, name, mutable=False):
         self.name = name
+        self.mutable = mutable
 
     def accept(self, visitor):
         return visitor.visit_BorrowExpr(self)
@@ -59,7 +60,7 @@ class VariableRef(Expression):
 
     def accept(self, visitor):
         return visitor.visit_VariableRef(self)
-    
+
 class BoolLiteral:
     def __init__(self, value: bool):
         self.value = value
@@ -73,7 +74,7 @@ class IntLiteral:
 
     def accept(self, visitor):
         return visitor.visit_IntLiteral(self)
-    
+
 class StrLiteral:
     def __init__(self, value: str):
         self.value = value

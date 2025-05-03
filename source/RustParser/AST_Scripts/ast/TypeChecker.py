@@ -1,7 +1,7 @@
 from ast import FunctionDef
 from AST_Scripts.ast.Type import ArrayType, BoolType, IntType, RefType, StringType
 from AST_Scripts.ast.TypeEnv import TypeEnv
-from AST_Scripts.ast.Expression import IdentifierExpr, LiteralExpr 
+from AST_Scripts.ast.Expression import BorrowExpr, IdentifierExpr, LiteralExpr 
 
 class TypeChecker:
     def __init__(self):
@@ -131,6 +131,13 @@ class TypeChecker:
                 return False
             value_info["owned"] = False
 
+        if isinstance(node.value, BorrowExpr):
+            try:
+                value_info = self.env.lookup(node.value.name)
+            except Exception:
+                return False
+            if node.value.mutable and not value_info["mutable"]:
+                return False
         return True
 
     def visit_Assignment(self, node):
@@ -192,9 +199,15 @@ class TypeChecker:
         info = self.env.lookup(node.name)
         if not info["owned"]:
             return False
-        
-        if info["borrowed"]:
-            return False
+
+        if node.mutable:  # ← You'll need to add this to BorrowExpr
+            if not info["mutable"]:
+                return False  # Can't mutably borrow an immutable variable
+            if info["borrowed"]:
+                return False  # Can't mutably borrow if already borrowed
+        else:
+            if info["borrowed"]:
+                return False
 
         info["borrowed"] = True
         return RefType(info["type"])
