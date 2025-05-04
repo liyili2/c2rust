@@ -11,3 +11,6 @@ python -m RustParser.AST_Scripts.tests.TypeCheckerTest
 
 Run the Transformer tests:
 python -m RustParser.AST_Scripts.tests.TransformerTest
+
+Run the Parser tests:
+python ParserTest

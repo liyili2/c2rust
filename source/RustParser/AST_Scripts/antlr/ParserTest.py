@@ -25,7 +25,8 @@ def main():
     base_dir = "../../../../c2safeRust_examples/"
     test_files = [
         "aggregate.rs",
-        "bst.rs"
+        "bst.rs",
+        "output.rs"
     ]
 
     for file_name in test_files:
