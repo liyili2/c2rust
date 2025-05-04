@@ -7,6 +7,7 @@ from AST_Scripts.ast.Program import Program
 from AST_Scripts.ast.Expression import LiteralExpr, VariableRef
 from AST_Scripts.ast.Type import ArrayType, BoolType, IntType, StringType
 from RustParser.AST_Scripts.antlr import RustLexer
+from AST_Scripts.ast.VarDef import VarDef
 
 class Transformer(RustVisitor):
     def visit_Program(self, ctx):
@@ -64,22 +65,29 @@ class Transformer(RustVisitor):
         return Attribute(name=attr_name, args=args)
 
     def visitLetStmt(self, ctx):
-        name_tok = ctx.Identifier()
-        if name_tok is None:
-            raise Exception(f"❌ Could not find variable name in letStmt: {ctx.getText()}")
-
-        name = name_tok.getText()
-        type_node = ctx.type_()
-
-        declared_type = self.visit(type_node) if type_node else None
-        value = self.visit(ctx.expression()) if ctx.expression() else None
+        var_def = self.visit(ctx.varDef())
+        value = self.visit(ctx.expression())
         if value is None:
             raise Exception(f"❌ LetStmt has no value: {ctx.getText()}")
+        return LetStmt(var_def=var_def, value=value)
+    
+    def visitVarDef(self, ctx):
+        if ctx.mutableDef():
+            return self.visit(ctx.mutableDef())
+        else:
+            return self.visit(ctx.immutableDef())
 
-        if type_node is None:
-            declared_type = self.get_literal_type(value)
+    def visitMutableDef(self, ctx):
+        name = ctx.Identifier().getText()
+        type_node = ctx.type_()
+        declared_type = self.visit(type_node) if type_node else None
+        return VarDef(name=name, type=declared_type, mutable=True)
 
-        return LetStmt(name=name, declared_type=declared_type, value=value)
+    def visitImmutableDef(self, ctx):
+        name = ctx.Identifier().getText()
+        type_node = ctx.type_()
+        declared_type = self.visit(type_node) if type_node else None
+        return VarDef(name=name, type=declared_type, mutable=False)
 
     def visitIfStmt(self, ctx):
         condition = self.visit(ctx.expression())
