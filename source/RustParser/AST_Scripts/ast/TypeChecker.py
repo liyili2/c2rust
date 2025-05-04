@@ -113,7 +113,7 @@ class TypeChecker:
         expr_type = self.visit(node.value)
         if node.declared_type is not None:
             declared_type = self.visit(node.declared_type)
-            if declared_type.__class__ != expr_type.__class__:
+            if declared_type.__class__ != expr_type.__class__ and not isinstance(expr_type, RefType):
                 return False
         else:
             declared_type = expr_type

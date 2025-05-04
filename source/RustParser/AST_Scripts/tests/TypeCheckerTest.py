@@ -229,5 +229,23 @@ class TestTypeChecker(unittest.TestCase):
         assert checker.visit(let_stmt)
         assert not checker.visit(borrow_stmt)
 
+    def test_mutable_borrow_while_immutable_exists(self):
+        checker = TypeChecker()
+        let_x = LetStmt(
+            var_def=VarDef(name="x", type=IntType()),
+            value=LiteralExpr(10)
+        )
+        borrow_y = LetStmt(
+            var_def=VarDef(name="y", type=IntType()),
+            value=BorrowExpr(name="x", mutable=False)
+        )
+        borrow_z = LetStmt(
+            var_def=VarDef(name="z", type=IntType()),
+            value=BorrowExpr(name="x", mutable=True)
+        )
+        assert checker.visit(let_x)
+        assert checker.visit(borrow_y)
+        assert not checker.visit(borrow_z)
+
 if __name__ == "__main__":
     unittest.main()
