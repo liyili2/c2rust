@@ -19,6 +19,61 @@ class RustVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by RustParser#typeAlias.
+    def visitTypeAlias(self, ctx:RustParser.TypeAliasContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#externBlock.
+    def visitExternBlock(self, ctx:RustParser.ExternBlockContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#externItem.
+    def visitExternItem(self, ctx:RustParser.ExternItemContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#externParams.
+    def visitExternParams(self, ctx:RustParser.ExternParamsContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#externParam.
+    def visitExternParam(self, ctx:RustParser.ExternParamContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#visibility.
+    def visitVisibility(self, ctx:RustParser.VisibilityContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#attributes.
+    def visitAttributes(self, ctx:RustParser.AttributesContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#innerAttribute.
+    def visitInnerAttribute(self, ctx:RustParser.InnerAttributeContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#attribute.
+    def visitAttribute(self, ctx:RustParser.AttributeContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#attrArgs.
+    def visitAttrArgs(self, ctx:RustParser.AttrArgsContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#attrArg.
+    def visitAttrArg(self, ctx:RustParser.AttrArgContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by RustParser#structDef.
     def visitStructDef(self, ctx:RustParser.StructDefContext):
         return self.visitChildren(ctx)
@@ -44,6 +99,26 @@ class RustVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by RustParser#constDef.
+    def visitConstDef(self, ctx:RustParser.ConstDefContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#unionDef.
+    def visitUnionDef(self, ctx:RustParser.UnionDefContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#unionField.
+    def visitUnionField(self, ctx:RustParser.UnionFieldContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#unsafeDef.
+    def visitUnsafeDef(self, ctx:RustParser.UnsafeDefContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by RustParser#referenceType.
     def visitReferenceType(self, ctx:RustParser.ReferenceTypeContext):
         return self.visitChildren(ctx)
@@ -51,6 +126,16 @@ class RustVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by RustParser#type.
     def visitType(self, ctx:RustParser.TypeContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#typePath.
+    def visitTypePath(self, ctx:RustParser.TypePathContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#pointerType.
+    def visitPointerType(self, ctx:RustParser.PointerTypeContext):
         return self.visitChildren(ctx)
 
 
@@ -146,16 +231,6 @@ class RustVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by RustParser#macroInner.
     def visitMacroInner(self, ctx:RustParser.MacroInnerContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by RustParser#attribute.
-    def visitAttribute(self, ctx:RustParser.AttributeContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by RustParser#attrInner.
-    def visitAttrInner(self, ctx:RustParser.AttrInnerContext):
         return self.visitChildren(ctx)
 
 

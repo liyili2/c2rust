@@ -5,31 +5,55 @@ program: (topLevelItem)* ;
 topLevelItem
     : functionDef
     | structDef
-    | attribute
+    | attributes
+    | externBlock
+    | typeAlias
+    | constDef
+    | unionDef
+    | unsafeDef
     ;
 
-structDef
-    : 'struct' Identifier '{' structField* '}'
+typeAlias: visibility? 'type' Identifier '=' type ';';
+externBlock: 'extern' STRING_LITERAL '{' externItem* '}';
+
+externItem
+    : visibility? 'type' Identifier ';'
+    | visibility? 'static' 'mut'? Identifier ':' type ';'
+    | visibility? 'fn' Identifier '(' externParams? ')' 
+        ('->' type)? ';'
     ;
 
-structField
-    : Identifier ':' type ','?
-    ;
+externParams: externParam (',' externParam)* (',' '...')? | '...';
+externParam: (UNDERSCORE | Identifier)? ':' (type | ELLIPSIS);
 
+visibility: 'pub';
+attributes: innerAttribute+ ;
+innerAttribute: POUND  (EXCL?) LBRACK attribute RBRACK;
+attribute: Identifier (LPAREN attrArgs RPAREN)?;
+attrArgs: attrArg (COMMA attrArg)*;
+attrArg: Identifier;
+structDef: visibility? 'struct' Identifier '{' structField* '}';
+structField: visibility? Identifier ':' type ','?;
 functionDef: 'fn' Identifier '(' paramList? ')' '->'? type? block;
-
 paramList: param (',' param)*;
 param: Identifier ':' referenceType;
-
+constDef: visibility? 'const' Identifier ':' type '=' expression ';';
+unionDef: visibility? 'union' Identifier  ((':' type '=' expression ';') | '{' unionField* '}');
+unionField: visibility? Identifier ':' type ','?;
+unsafeDef: visibility? 'unsafe' Identifier ':' type '=' expression ';';
 referenceType: '&' type;
 type
     : basicType
+    | pointerType
     ;
-
+typePath: Identifier ('::' Identifier)*;
+pointerType: '*' ('mut' | 'const') type;
 basicType
     : 'i32'
     | 'String'
     | 'bool'
+    | '()'
+    | typePath ('<' type (',' type)* '>')?
     | Identifier ('<' type (',' type)* '>')?
     | '&' type
     | '[' type ';' Number ']'
@@ -84,14 +108,6 @@ macroCall: Identifier '!' macroArgs;
 macroArgs: '[' macroInner? ']' | '(' macroInner? ')';
 macroInner: expression (';' expression)?;  // supports [value; count] form
 
-attribute
-    : POUND LBRACK attrInner RBRACK
-    ;
-
-attrInner
-    : Identifier ( '(' (Identifier (COMMA Identifier)*)? ')' )?
-    ;
-
 TRUE: 'true';
 FALSE: 'false';
 
@@ -103,11 +119,18 @@ stringLiteral: '"' .*? '"';
 Identifier: [a-zA-Z_][a-zA-Z0-9_]*;
 Number: [0-9]+;
 
+DOUBLE_COLON: '::';
+EXCL: '!';
 GT: '>'; // make sure this comes FIRST
 POUND: '#';
 LBRACK: '[';
 RBRACK: ']';
 COMMA: ',';
-
+LPAREN: '(';
+RPAREN: ')';
+UNDERSCORE: '_';
+COLON: ':';
+STRING_LITERAL: '"' (~["\\] | '\\' .)* '"';
+ELLIPSIS: '...';
 WS: [ \t\r\n]+ -> skip;
 COMMENT: '//' ~[\r\n]* -> skip;

@@ -13,4 +13,4 @@ Run the Transformer tests:
 python -m RustParser.AST_Scripts.tests.TransformerTest
 
 Run the Parser tests:
-python ParserTest
+python ParserTest.py
