@@ -50,7 +50,7 @@ type
     : basicType
     | pointerType
     ;
-typePath: Identifier ('::' Identifier)*;
+typePath: DOUBLE_COLON? Identifier (DOUBLE_COLON Identifier)*;
 pointerType: '*' ('mut' | 'const') type;
 basicType
     : 'i32'
@@ -60,7 +60,7 @@ basicType
     | typePath ('<' type (',' type)* '>')?
     | Identifier ('<' type (',' type)* '>')?
     | '&' type
-    | '[' type ';' Number ']'
+    | typePath? '[' type ';' Number ']'
     | '[' type ']'
     ;
 
@@ -92,9 +92,10 @@ expression
     | primaryExpression
     | macroCall
     | borrowExpression
+    | typePath DOUBLE_COLON '<' type '>()'
     | 'match' expression '{' matchArm+ '}'
     | expression '[' expression ']'
-    | expression ('*' | '/' | '%' | '+' | '-' | '>>' | '&') expression
+    | expression ('*' | '/' | '%' | '+' | '-' | '>>' | '&' | '>=' | '<=') expression
     | expression '==' expression
     | expression '..' expression
     | expression ('+=' | '-=' | '*=' | '/=' | '%=' | '&=' | '|=' | '^=') expression
