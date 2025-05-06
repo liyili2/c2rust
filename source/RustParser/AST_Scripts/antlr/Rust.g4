@@ -46,10 +46,7 @@ unionDef: visibility? 'union' Identifier  ((':' type '=' expression ';') | '{' u
 unionField: visibility? Identifier ':' type ','?;
 unsafeDef: visibility? 'unsafe' Identifier ':' type '=' expression ';';
 referenceType: '&' type;
-type
-    : basicType
-    | pointerType
-    ;
+type: basicType | pointerType;
 typePath: DOUBLE_COLON? Identifier (DOUBLE_COLON Identifier)*;
 pointerType: '*' ('mut' | 'const') type;
 basicType
@@ -64,7 +61,7 @@ basicType
     | '[' type ']'
     ;
 
-block: '{' statement* returnStmt? '}';
+block: '{' statement* returnStmt? '}' | statement | returnStmt;
 
 statement
     : letStmt
@@ -73,8 +70,13 @@ statement
     | forStmt
     | ifStmt
     | exprStmt
+    | funcCall
+    | whileStmt
+    | 'match' expression '{' matchArm+ '}'
     ;
 
+whileStmt: 'while' expression block;
+funcCall: '.'Identifier '(' argumentList ')';
 staticVarDecl: 'static' 'mut'? Identifier ':' type '=' expression ';';
 letStmt: 'let' varDef '=' expression ';';
 varDef: mutableDef | immutableDef;
@@ -90,13 +92,13 @@ expression
     : postfixExpression
     | literal
     | primaryExpression
+    | '*' Identifier
     | macroCall
     | borrowExpression
     | typePath DOUBLE_COLON '<' type '>()'
-    | 'match' expression '{' matchArm+ '}'
     | expression '[' expression ']'
     | expression ('*' | '/' | '%' | '+' | '-' | '>>' | '&' | '>=' | '<=') expression
-    | expression '==' expression
+    | expression ('==' | '!=' | '>' | '<') expression
     | expression '..' expression
     | expression ('+=' | '-=' | '*=' | '/=' | '%=' | '&=' | '|=' | '^=') expression
     | Identifier '!' '(' argumentList? ')'
@@ -104,7 +106,7 @@ expression
     ;
 
 borrowExpression: '&' expression;
-postfixExpression: primaryExpression '.' Identifier'()' | primaryExpression ('.' Identifier ('(' argumentList? ')')? | '[' expression ']')* ';';
+postfixExpression: primaryExpression? '.' Identifier'()' | primaryExpression ('.' Identifier ('(' argumentList? ')')? | '[' expression ']')* ';';
 primaryExpression
     : literal
     | Identifier

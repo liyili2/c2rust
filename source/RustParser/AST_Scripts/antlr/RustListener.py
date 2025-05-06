@@ -287,6 +287,24 @@ class RustListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by RustParser#whileStmt.
+    def enterWhileStmt(self, ctx:RustParser.WhileStmtContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#whileStmt.
+    def exitWhileStmt(self, ctx:RustParser.WhileStmtContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#funcCall.
+    def enterFuncCall(self, ctx:RustParser.FuncCallContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#funcCall.
+    def exitFuncCall(self, ctx:RustParser.FuncCallContext):
+        pass
+
+
     # Enter a parse tree produced by RustParser#staticVarDecl.
     def enterStaticVarDecl(self, ctx:RustParser.StaticVarDeclContext):
         pass
