@@ -224,6 +224,11 @@ class RustVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by RustParser#postfixExpression.
+    def visitPostfixExpression(self, ctx:RustParser.PostfixExpressionContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by RustParser#primaryExpression.
     def visitPrimaryExpression(self, ctx:RustParser.PrimaryExpressionContext):
         return self.visitChildren(ctx)

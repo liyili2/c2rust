@@ -87,14 +87,13 @@ exprStmt: expression ';';
 returnStmt: 'return' expression ';' | expression;
 
 expression
-    : literal
+    : postfixExpression
+    | literal
     | primaryExpression
     | macroCall
     | borrowExpression
     | 'match' expression '{' matchArm+ '}'
     | expression '[' expression ']'
-    | expression '.' Identifier
-    | expression '.' Identifier '(' argumentList? ')'
     | expression ('*' | '/' | '%' | '+' | '-' | '>>' | '&') expression
     | expression '==' expression
     | expression '..' expression
@@ -104,6 +103,7 @@ expression
     ;
 
 borrowExpression: '&' expression;
+postfixExpression: primaryExpression '.' Identifier'()' | primaryExpression ('.' Identifier ('(' argumentList? ')')? | '[' expression ']')* ';';
 primaryExpression
     : literal
     | Identifier

@@ -395,6 +395,15 @@ class RustListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by RustParser#postfixExpression.
+    def enterPostfixExpression(self, ctx:RustParser.PostfixExpressionContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#postfixExpression.
+    def exitPostfixExpression(self, ctx:RustParser.PostfixExpressionContext):
+        pass
+
+
     # Enter a parse tree produced by RustParser#primaryExpression.
     def enterPrimaryExpression(self, ctx:RustParser.PrimaryExpressionContext):
         pass
