@@ -109,8 +109,10 @@ primaryExpression
     | Identifier
     | Identifier '(' argumentList? ')'
     | '(' expression ')'
+    | Identifier '{' structLiteralField (',' structLiteralField)* ','? '}'
     ;
 
+structLiteralField: Identifier ':' expression;
 matchArm: matchPattern ('|' matchPattern)* '=>' block;
 matchPattern: Number | UNDERSCORE | Identifier;
 argumentList: expression (',' expression)*;

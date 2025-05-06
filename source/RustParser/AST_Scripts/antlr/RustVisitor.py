@@ -229,6 +229,11 @@ class RustVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by RustParser#structLiteralField.
+    def visitStructLiteralField(self, ctx:RustParser.StructLiteralFieldContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by RustParser#matchArm.
     def visitMatchArm(self, ctx:RustParser.MatchArmContext):
         return self.visitChildren(ctx)

@@ -404,6 +404,15 @@ class RustListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by RustParser#structLiteralField.
+    def enterStructLiteralField(self, ctx:RustParser.StructLiteralFieldContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#structLiteralField.
+    def exitStructLiteralField(self, ctx:RustParser.StructLiteralFieldContext):
+        pass
+
+
     # Enter a parse tree produced by RustParser#matchArm.
     def enterMatchArm(self, ctx:RustParser.MatchArmContext):
         pass
