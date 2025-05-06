@@ -152,6 +152,24 @@ class RustListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by RustParser#unsafeModifier.
+    def enterUnsafeModifier(self, ctx:RustParser.UnsafeModifierContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#unsafeModifier.
+    def exitUnsafeModifier(self, ctx:RustParser.UnsafeModifierContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#externAbi.
+    def enterExternAbi(self, ctx:RustParser.ExternAbiContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#externAbi.
+    def exitExternAbi(self, ctx:RustParser.ExternAbiContext):
+        pass
+
+
     # Enter a parse tree produced by RustParser#paramList.
     def enterParamList(self, ctx:RustParser.ParamListContext):
         pass

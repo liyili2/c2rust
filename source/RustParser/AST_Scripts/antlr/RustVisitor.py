@@ -89,6 +89,16 @@ class RustVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by RustParser#unsafeModifier.
+    def visitUnsafeModifier(self, ctx:RustParser.UnsafeModifierContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#externAbi.
+    def visitExternAbi(self, ctx:RustParser.ExternAbiContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by RustParser#paramList.
     def visitParamList(self, ctx:RustParser.ParamListContext):
         return self.visitChildren(ctx)

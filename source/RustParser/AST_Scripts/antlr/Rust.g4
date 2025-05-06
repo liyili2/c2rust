@@ -34,9 +34,13 @@ attrArgs: attrArg (COMMA attrArg)*;
 attrArg: Identifier;
 structDef: visibility? 'struct' Identifier '{' structField* '}';
 structField: visibility? Identifier ':' type ','?;
-functionDef: 'fn' Identifier '(' paramList? ')' '->'? type? block;
+functionDef: visibility? unsafeModifier? externAbi? 'fn' Identifier '(' paramList? ')' '->'? type? block;
+unsafeModifier: 'unsafe';
+externAbi: 'extern' STRING_LITERAL?;
+
 paramList: param (',' param)*;
-param: Identifier ':' referenceType;
+param: 'mut'? Identifier ':' type;
+
 constDef: visibility? 'const' Identifier ':' type '=' expression ';';
 unionDef: visibility? 'union' Identifier  ((':' type '=' expression ';') | '{' unionField* '}');
 unionField: visibility? Identifier ':' type ','?;
