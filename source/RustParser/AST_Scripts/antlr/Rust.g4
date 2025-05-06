@@ -68,12 +68,14 @@ block: '{' statement* returnStmt? '}';
 
 statement
     : letStmt
+    | staticVarDecl
     | assignStmt
     | forStmt
     | ifStmt
     | exprStmt
     ;
 
+staticVarDecl: 'static' 'mut'? Identifier ':' type '=' expression ';';
 letStmt: 'let' varDef '=' expression ';';
 varDef: mutableDef | immutableDef;
 immutableDef: Identifier (':' type)?;

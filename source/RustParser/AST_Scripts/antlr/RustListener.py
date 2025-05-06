@@ -287,6 +287,15 @@ class RustListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by RustParser#staticVarDecl.
+    def enterStaticVarDecl(self, ctx:RustParser.StaticVarDeclContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#staticVarDecl.
+    def exitStaticVarDecl(self, ctx:RustParser.StaticVarDeclContext):
+        pass
+
+
     # Enter a parse tree produced by RustParser#letStmt.
     def enterLetStmt(self, ctx:RustParser.LetStmtContext):
         pass
