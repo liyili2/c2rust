@@ -91,6 +91,7 @@ expression
     | primaryExpression
     | macroCall
     | borrowExpression
+    | 'match' expression '{' matchArm+ '}'
     | expression '[' expression ']'
     | expression '.' Identifier
     | expression '.' Identifier '(' argumentList? ')'
@@ -99,6 +100,7 @@ expression
     | expression '..' expression
     | expression ('+=' | '-=' | '*=' | '/=' | '%=' | '&=' | '|=' | '^=') expression
     | Identifier '!' '(' argumentList? ')'
+    | expression 'as' type
     ;
 
 borrowExpression: '&' expression;
@@ -109,6 +111,8 @@ primaryExpression
     | '(' expression ')'
     ;
 
+matchArm: matchPattern ('|' matchPattern)* '=>' block;
+matchPattern: Number | UNDERSCORE | Identifier;
 argumentList: expression (',' expression)*;
 macroCall: Identifier '!' macroArgs;
 macroArgs: '[' macroInner? ']' | '(' macroInner? ')';
@@ -117,14 +121,15 @@ macroInner: expression (';' expression)?;  // supports [value; count] form
 TRUE: 'true';
 FALSE: 'false';
 
-literal: arrayLiteral | Number | Binary | stringLiteral | booleanLiteral;
+literal: arrayLiteral | Number | Binary | stringLiteral | booleanLiteral | CHAR_LITERAL;
 booleanLiteral: TRUE | FALSE;
 Binary: '0b' [0-1]+;
-arrayLiteral: '[' expression (',' expression)* ']';
+arrayLiteral: '[' expression (',' expression)* ']' | '[' expression ';' expression ']';
 stringLiteral: '"' .*? '"';
 Identifier: [a-zA-Z_][a-zA-Z0-9_]*;
 Number: [0-9]+;
 
+CHAR_LITERAL: '\'' (~['\\\r\n] | '\\' .) '\'';
 DOUBLE_COLON: '::';
 EXCL: '!';
 GT: '>'; // make sure this comes FIRST

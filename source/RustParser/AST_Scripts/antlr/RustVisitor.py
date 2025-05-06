@@ -229,6 +229,16 @@ class RustVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by RustParser#matchArm.
+    def visitMatchArm(self, ctx:RustParser.MatchArmContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#matchPattern.
+    def visitMatchPattern(self, ctx:RustParser.MatchPatternContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by RustParser#argumentList.
     def visitArgumentList(self, ctx:RustParser.ArgumentListContext):
         return self.visitChildren(ctx)

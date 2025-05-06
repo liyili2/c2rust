@@ -404,6 +404,24 @@ class RustListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by RustParser#matchArm.
+    def enterMatchArm(self, ctx:RustParser.MatchArmContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#matchArm.
+    def exitMatchArm(self, ctx:RustParser.MatchArmContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#matchPattern.
+    def enterMatchPattern(self, ctx:RustParser.MatchPatternContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#matchPattern.
+    def exitMatchPattern(self, ctx:RustParser.MatchPatternContext):
+        pass
+
+
     # Enter a parse tree produced by RustParser#argumentList.
     def enterArgumentList(self, ctx:RustParser.ArgumentListContext):
         pass
