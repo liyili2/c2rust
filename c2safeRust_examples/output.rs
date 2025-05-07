@@ -334,7 +334,7 @@ pub unsafe extern "C" fn post2nfa(mut postfix: *mut libc::c_char) -> *mut State 
                 s = state(Split as libc::c_int, e.start, 0 as *mut State);
                 let fresh12 = stackp;
                 stackp = stackp.offset(1);
-                *fresh12 = frag(s, append(e.out, list1(&mut (*s).out1)));
+                *fresh12 = frag(s, 1);
             }
             42 => {
                 stackp = stackp.offset(-1);

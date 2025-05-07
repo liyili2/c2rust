@@ -6,6 +6,9 @@ java -jar "C:\antlr\antlr4-4.13.1-complete.jar" -Dlanguage=Python3 Rust.g4
 Generate the visitor file:
 antlr4 -Dlanguage=Python3 -visitor Rust.g4
 
+Both together:
+java -Xmx500M -cp "C:\antlr\antlr-4.13.1-complete.jar" org.antlr.v4.Tool -Dlanguage=Python3 -visitor Rust.g4
+
 Run the TypeChecker tests:
 python -m RustParser.AST_Scripts.tests.TypeCheckerTest
 

@@ -86,33 +86,37 @@ whileStmt: 'while' expression block;
 staticVarDecl: visibility? 'static' 'mut'? Identifier ':' (type | Identifier) '=' initializer ';';
 initializer: expression | block;
 letStmt: 'let' varDef '=' expression ';';
-varDef: mutableDef | immutableDef;
-immutableDef: Identifier (':' type)?;
-mutableDef: 'mut' Identifier (':' type)? ;
+
+varDef: 'ref' 'mut'? Identifier (':' type)?
+    | 'mut' Identifier (':' type)?
+    | Identifier (':' type)?;
+
 assignStmt: expression '=' expression ';';
 forStmt: 'for' Identifier 'in' expression block;
 ifStmt: 'if' expression block ('else' block)?;
 exprStmt: expression ';';
-returnStmt: 'return' expression ';' | expression;
+returnStmt: 'return' (expression)? ';' | expression;
 loopStmt: 'loop' block;
 
 expression
     : postfixExpression
     | literal
     | primaryExpression
-    | '*' Identifier
+    | '*' expression
     | macroCall
     | borrowExpression
     | typePath DOUBLE_COLON '<' type '>()'
     | expression '[' expression ']'
     | '!' expression
     | expression ('*' | '/' | '%' | '+' | '-' | '>>' | '&' | '>=' | '<=') expression
-    | expression ('==' | '!=' | '>' | '<') expression
+    | expression ('==' | '!=' | '>' | '<' | '||' | '&&') expression
     | expression '..' expression
     | expression ('+=' | '-=' | '*=' | '/=' | '%=' | '&=' | '|=' | '^=') expression
     | Identifier '!' '(' argumentList? ')'
     | expression 'as' type ('as' type)*
     | expressionBlock
+    | '&' 'mut' expression
+    | '(' expression ')'
     ;
 
 expressionBlock: '{' statement* expression '}';
@@ -120,7 +124,8 @@ borrowExpression: '&' expression;
 postfixExpression
   : primaryExpression
     (
-      '.' Identifier                             // field
+      ('()' | '('argumentList?')')
+    |  ('.' Identifier)+
     | '.' Identifier ( '(' argumentList? ')' | '()' )     // method call
     | '[' expression ']'                         // indexing
     )*

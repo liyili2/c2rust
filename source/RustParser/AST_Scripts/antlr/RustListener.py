@@ -1,4 +1,4 @@
-# Generated from Rust.g4 by ANTLR 4.13.2
+# Generated from Rust.g4 by ANTLR 4.13.1
 from antlr4 import *
 if "." in __name__:
     from .RustParser import RustParser
@@ -329,24 +329,6 @@ class RustListener(ParseTreeListener):
 
     # Exit a parse tree produced by RustParser#varDef.
     def exitVarDef(self, ctx:RustParser.VarDefContext):
-        pass
-
-
-    # Enter a parse tree produced by RustParser#immutableDef.
-    def enterImmutableDef(self, ctx:RustParser.ImmutableDefContext):
-        pass
-
-    # Exit a parse tree produced by RustParser#immutableDef.
-    def exitImmutableDef(self, ctx:RustParser.ImmutableDefContext):
-        pass
-
-
-    # Enter a parse tree produced by RustParser#mutableDef.
-    def enterMutableDef(self, ctx:RustParser.MutableDefContext):
-        pass
-
-    # Exit a parse tree produced by RustParser#mutableDef.
-    def exitMutableDef(self, ctx:RustParser.MutableDefContext):
         pass
 
 
