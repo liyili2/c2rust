@@ -165,7 +165,7 @@ macroInner: expression (';' expression)?;  // supports [value; count] form
 TRUE: 'true';
 FALSE: 'false';
 
-literal: arrayLiteral | Number | SignedNumber | Binary | stringLiteral | booleanLiteral | CHAR_LITERAL;
+literal: arrayLiteral | HexNumber | Number | SignedNumber | Binary | stringLiteral | booleanLiteral | CHAR_LITERAL;
 booleanLiteral: TRUE | FALSE;
 Binary: '0b' [0-1]+;
 arrayLiteral: '[' expression (',' expression)* ']' | '[' expression ';' expression ']';
@@ -175,6 +175,7 @@ Identifier: [a-zA-Z_][a-zA-Z0-9_]*;
 Number: [0-9]+;
 SignedNumber: ('-' | '+') Number;
 
+HexNumber: '0x' [0-9a-fA-F]+;
 CHAR_LITERAL: '\'' (~['\\\r\n] | '\\' .) '\'';
 DOUBLE_COLON: '::';
 EXCL: '!';
