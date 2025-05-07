@@ -174,6 +174,11 @@ class RustVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by RustParser#initializer.
+    def visitInitializer(self, ctx:RustParser.InitializerContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by RustParser#letStmt.
     def visitLetStmt(self, ctx:RustParser.LetStmtContext):
         return self.visitChildren(ctx)
@@ -226,6 +231,11 @@ class RustVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by RustParser#expression.
     def visitExpression(self, ctx:RustParser.ExpressionContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#expressionBlock.
+    def visitExpressionBlock(self, ctx:RustParser.ExpressionBlockContext):
         return self.visitChildren(ctx)
 
 

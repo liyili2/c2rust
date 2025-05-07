@@ -305,6 +305,15 @@ class RustListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by RustParser#initializer.
+    def enterInitializer(self, ctx:RustParser.InitializerContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#initializer.
+    def exitInitializer(self, ctx:RustParser.InitializerContext):
+        pass
+
+
     # Enter a parse tree produced by RustParser#letStmt.
     def enterLetStmt(self, ctx:RustParser.LetStmtContext):
         pass
@@ -401,6 +410,15 @@ class RustListener(ParseTreeListener):
 
     # Exit a parse tree produced by RustParser#expression.
     def exitExpression(self, ctx:RustParser.ExpressionContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#expressionBlock.
+    def enterExpressionBlock(self, ctx:RustParser.ExpressionBlockContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#expressionBlock.
+    def exitExpressionBlock(self, ctx:RustParser.ExpressionBlockContext):
         pass
 
 

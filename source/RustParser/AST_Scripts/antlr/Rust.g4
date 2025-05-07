@@ -11,6 +11,7 @@ topLevelItem
     | constDef
     | unionDef
     | unsafeDef
+    | staticVarDecl
     ;
 
 typeAlias: visibility? 'type' Identifier '=' type ';';
@@ -38,7 +39,7 @@ functionDef: visibility? unsafeModifier? externAbi? 'fn' Identifier '(' paramLis
 unsafeModifier: 'unsafe';
 externAbi: 'extern' STRING_LITERAL?;
 
-paramList: param (',' param)*;
+paramList: param (',' param)* (',')?;
 param: 'mut'? Identifier ':' type;
 
 constDef: visibility? 'const' Identifier ':' type '=' expression ';';
@@ -60,9 +61,10 @@ basicType
     | typePath? '[' type ';' Number ']'
     | typePath
     | '[' type ']'
+    | Identifier
     ;
 
-block: '{' statement* returnStmt? '}' | statement | returnStmt;
+block: '{' statement* returnStmt? '}';
 
 statement
     : letStmt
@@ -81,7 +83,8 @@ statement
     ;
 
 whileStmt: 'while' expression block;
-staticVarDecl: 'static' 'mut'? Identifier ':' type '=' expression ';';
+staticVarDecl: visibility? 'static' 'mut'? Identifier ':' (type | Identifier) '=' initializer ';';
+initializer: expression | block;
 letStmt: 'let' varDef '=' expression ';';
 varDef: mutableDef | immutableDef;
 immutableDef: Identifier (':' type)?;
@@ -102,14 +105,17 @@ expression
     | borrowExpression
     | typePath DOUBLE_COLON '<' type '>()'
     | expression '[' expression ']'
+    | '!' expression
     | expression ('*' | '/' | '%' | '+' | '-' | '>>' | '&' | '>=' | '<=') expression
     | expression ('==' | '!=' | '>' | '<') expression
     | expression '..' expression
     | expression ('+=' | '-=' | '*=' | '/=' | '%=' | '&=' | '|=' | '^=') expression
     | Identifier '!' '(' argumentList? ')'
     | expression 'as' type ('as' type)*
+    | expressionBlock
     ;
 
+expressionBlock: '{' statement* expression '}';
 borrowExpression: '&' expression;
 postfixExpression
   : primaryExpression
@@ -147,13 +153,14 @@ macroInner: expression (';' expression)?;  // supports [value; count] form
 TRUE: 'true';
 FALSE: 'false';
 
-literal: arrayLiteral | Number | Binary | stringLiteral | booleanLiteral | CHAR_LITERAL;
+literal: arrayLiteral | Number | SignedNumber | Binary | stringLiteral | booleanLiteral | CHAR_LITERAL;
 booleanLiteral: TRUE | FALSE;
 Binary: '0b' [0-1]+;
 arrayLiteral: '[' expression (',' expression)* ']' | '[' expression ';' expression ']';
 stringLiteral: '"' .*? '"';
 Identifier: [a-zA-Z_][a-zA-Z0-9_]*;
 Number: [0-9]+;
+SignedNumber: ('-' | '+') Number;
 
 CHAR_LITERAL: '\'' (~['\\\r\n] | '\\' .) '\'';
 DOUBLE_COLON: '::';
