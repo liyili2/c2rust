@@ -30,9 +30,16 @@ externParam: (UNDERSCORE | Identifier)? ':' (type | ELLIPSIS);
 visibility: 'pub';
 attributes: innerAttribute+ ;
 innerAttribute: POUND  (EXCL?) LBRACK attribute RBRACK;
-attribute: Identifier (LPAREN attrArgs RPAREN)?;
-attrArgs: attrArg (COMMA attrArg)*;
-attrArg: Identifier;
+attribute
+    : Identifier
+    | Identifier '=' attrValue
+    | Identifier '(' attrArgs ')'
+    ;
+
+attrArgs: attrArg (',' attrArg)*;
+attrArg: Identifier ('=' attrValue)?;
+attrValue: STRING_LITERAL | Number | Identifier;
+
 structDef: visibility? 'struct' Identifier '{' structField* '}';
 structField: visibility? Identifier ':' type ','?;
 functionDef: visibility? unsafeModifier? externAbi? 'fn' Identifier '(' paramList? ')' '->'? type? block;
@@ -162,6 +169,7 @@ literal: arrayLiteral | Number | SignedNumber | Binary | stringLiteral | boolean
 booleanLiteral: TRUE | FALSE;
 Binary: '0b' [0-1]+;
 arrayLiteral: '[' expression (',' expression)* ']' | '[' expression ';' expression ']';
+STRING_LITERAL: '"' (~["\\] | '\\' .)* '"';
 stringLiteral: '"' .*? '"';
 Identifier: [a-zA-Z_][a-zA-Z0-9_]*;
 Number: [0-9]+;
@@ -179,7 +187,6 @@ LPAREN: '(';
 RPAREN: ')';
 UNDERSCORE: '_';
 COLON: ':';
-STRING_LITERAL: '"' (~["\\] | '\\' .)* '"';
 ELLIPSIS: '...';
 WS: [ \t\r\n]+ -> skip;
 COMMENT: '//' ~[\r\n]* -> skip;

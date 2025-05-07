@@ -125,6 +125,15 @@ class RustListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by RustParser#attrValue.
+    def enterAttrValue(self, ctx:RustParser.AttrValueContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#attrValue.
+    def exitAttrValue(self, ctx:RustParser.AttrValueContext):
+        pass
+
+
     # Enter a parse tree produced by RustParser#structDef.
     def enterStructDef(self, ctx:RustParser.StructDefContext):
         pass

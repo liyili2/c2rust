@@ -74,6 +74,11 @@ class RustVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by RustParser#attrValue.
+    def visitAttrValue(self, ctx:RustParser.AttrValueContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by RustParser#structDef.
     def visitStructDef(self, ctx:RustParser.StructDefContext):
         return self.visitChildren(ctx)
