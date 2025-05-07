@@ -58,6 +58,7 @@ basicType
     | Identifier ('<' type (',' type)* '>')?
     | '&' type
     | typePath? '[' type ';' Number ']'
+    | typePath
     | '[' type ']'
     ;
 
@@ -67,16 +68,19 @@ statement
     : letStmt
     | staticVarDecl
     | assignStmt
+    | Identifier ';'
+    | expression ('+=' | '-=' | '*=' | '/=' | '%=' | '&=' | '|=' | '^=') expression ';'
     | forStmt
     | ifStmt
     | exprStmt
-    | funcCall
     | whileStmt
+    | loopStmt
+    | 'break' ';'
+    | 'continue' ';'
     | 'match' expression '{' matchArm+ '}'
     ;
 
 whileStmt: 'while' expression block;
-funcCall: '.'Identifier '(' argumentList ')';
 staticVarDecl: 'static' 'mut'? Identifier ':' type '=' expression ';';
 letStmt: 'let' varDef '=' expression ';';
 varDef: mutableDef | immutableDef;
@@ -87,6 +91,7 @@ forStmt: 'for' Identifier 'in' expression block;
 ifStmt: 'if' expression block ('else' block)?;
 exprStmt: expression ';';
 returnStmt: 'return' expression ';' | expression;
+loopStmt: 'loop' block;
 
 expression
     : postfixExpression
@@ -102,19 +107,35 @@ expression
     | expression '..' expression
     | expression ('+=' | '-=' | '*=' | '/=' | '%=' | '&=' | '|=' | '^=') expression
     | Identifier '!' '(' argumentList? ')'
-    | expression 'as' type
+    | expression 'as' type ('as' type)*
     ;
 
 borrowExpression: '&' expression;
-postfixExpression: primaryExpression? '.' Identifier'()' | primaryExpression ('.' Identifier ('(' argumentList? ')')? | '[' expression ']')* ';';
+postfixExpression
+  : primaryExpression
+    (
+      '.' Identifier                             // field
+    | '.' Identifier ( '(' argumentList? ')' | '()' )     // method call
+    | '[' expression ']'                         // indexing
+    )*
+  ;
+
 primaryExpression
     : literal
     | Identifier
+    | qualifiedFunctionCall
     | Identifier '(' argumentList? ')'
     | '(' expression ')'
     | Identifier '{' structLiteralField (',' structLiteralField)* ','? '}'
     ;
 
+qualifiedFunctionCall
+  : DOUBLE_COLON typePath DOUBLE_COLON Identifier genericArgs? '(' argumentList? ')'
+  ;
+
+genericArgs
+  : '<' type (',' type)* '>'
+  ;
 structLiteralField: Identifier ':' expression;
 matchArm: matchPattern ('|' matchPattern)* '=>' block;
 matchPattern: Number | UNDERSCORE | Identifier;

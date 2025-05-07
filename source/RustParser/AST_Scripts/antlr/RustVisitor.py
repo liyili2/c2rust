@@ -169,11 +169,6 @@ class RustVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by RustParser#funcCall.
-    def visitFuncCall(self, ctx:RustParser.FuncCallContext):
-        return self.visitChildren(ctx)
-
-
     # Visit a parse tree produced by RustParser#staticVarDecl.
     def visitStaticVarDecl(self, ctx:RustParser.StaticVarDeclContext):
         return self.visitChildren(ctx)
@@ -224,6 +219,11 @@ class RustVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by RustParser#loopStmt.
+    def visitLoopStmt(self, ctx:RustParser.LoopStmtContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by RustParser#expression.
     def visitExpression(self, ctx:RustParser.ExpressionContext):
         return self.visitChildren(ctx)
@@ -241,6 +241,16 @@ class RustVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by RustParser#primaryExpression.
     def visitPrimaryExpression(self, ctx:RustParser.PrimaryExpressionContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#qualifiedFunctionCall.
+    def visitQualifiedFunctionCall(self, ctx:RustParser.QualifiedFunctionCallContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#genericArgs.
+    def visitGenericArgs(self, ctx:RustParser.GenericArgsContext):
         return self.visitChildren(ctx)
 
 

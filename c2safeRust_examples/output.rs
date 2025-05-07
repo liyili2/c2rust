@@ -98,9 +98,9 @@ pub unsafe extern "C" fn re2post(mut re: *mut libc::c_char) -> *mut libc::c_char
     if strlen(re)
         >= (::core::mem::size_of::<[libc::c_char; 8000]>() as libc::c_ulong)
             .wrapping_div(2 as libc::c_int as libc::c_ulong)
-    // {
-    //     return 0 as *mut libc::c_char;
-    // }
+    {
+        return 0 as *mut libc::c_char;
+    }
     while *re != 0 {
         match *re as libc::c_int {
             40 => {
@@ -108,8 +108,8 @@ pub unsafe extern "C" fn re2post(mut re: *mut libc::c_char) -> *mut libc::c_char
                     natom -= 1;
                     natom;
                     let fresh0 = dst;
-                    dst = dst.offset(1);
-                    *fresh0 = '.' as i32 as libc::c_char;
+                    // dst = dst.offset(1);
+                    *fresh0 = '.' as i32 as libc::c_char ;
                 }
                 if p >= paren.as_mut_ptr().offset(100 as libc::c_int as isize) {
                     return 0 as *mut libc::c_char;

@@ -296,15 +296,6 @@ class RustListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by RustParser#funcCall.
-    def enterFuncCall(self, ctx:RustParser.FuncCallContext):
-        pass
-
-    # Exit a parse tree produced by RustParser#funcCall.
-    def exitFuncCall(self, ctx:RustParser.FuncCallContext):
-        pass
-
-
     # Enter a parse tree produced by RustParser#staticVarDecl.
     def enterStaticVarDecl(self, ctx:RustParser.StaticVarDeclContext):
         pass
@@ -395,6 +386,15 @@ class RustListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by RustParser#loopStmt.
+    def enterLoopStmt(self, ctx:RustParser.LoopStmtContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#loopStmt.
+    def exitLoopStmt(self, ctx:RustParser.LoopStmtContext):
+        pass
+
+
     # Enter a parse tree produced by RustParser#expression.
     def enterExpression(self, ctx:RustParser.ExpressionContext):
         pass
@@ -428,6 +428,24 @@ class RustListener(ParseTreeListener):
 
     # Exit a parse tree produced by RustParser#primaryExpression.
     def exitPrimaryExpression(self, ctx:RustParser.PrimaryExpressionContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#qualifiedFunctionCall.
+    def enterQualifiedFunctionCall(self, ctx:RustParser.QualifiedFunctionCallContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#qualifiedFunctionCall.
+    def exitQualifiedFunctionCall(self, ctx:RustParser.QualifiedFunctionCallContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#genericArgs.
+    def enterGenericArgs(self, ctx:RustParser.GenericArgsContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#genericArgs.
+    def exitGenericArgs(self, ctx:RustParser.GenericArgsContext):
         pass
 
 
