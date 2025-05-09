@@ -169,6 +169,11 @@ class RustVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by RustParser#unsafeBlock.
+    def visitUnsafeBlock(self, ctx:RustParser.UnsafeBlockContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by RustParser#whileStmt.
     def visitWhileStmt(self, ctx:RustParser.WhileStmtContext):
         return self.visitChildren(ctx)

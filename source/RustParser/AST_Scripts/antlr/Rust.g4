@@ -42,7 +42,7 @@ attrValue: STRING_LITERAL | Number | Identifier;
 
 structDef: visibility? 'struct' Identifier '{' structField* '}';
 structField: visibility? Identifier ':' type ','?;
-functionDef: visibility? unsafeModifier? externAbi? 'fn' Identifier '(' paramList? ')' '->'? type? block;
+functionDef: visibility? unsafeModifier? externAbi? 'fn' Identifier ('()' | '(' paramList? ')') '->'? type? block;
 unsafeModifier: 'unsafe';
 externAbi: 'extern' STRING_LITERAL?;
 
@@ -54,13 +54,15 @@ unionDef: visibility? 'union' Identifier  ((':' type '=' expression ';') | '{' u
 unionField: visibility? Identifier ':' type ','?;
 unsafeDef: visibility? 'unsafe' Identifier ':' type '=' expression ';';
 referenceType: '&' type;
+
 type: basicType | pointerType;
-typePath: DOUBLE_COLON? Identifier (DOUBLE_COLON Identifier)*;
-pointerType: '*' ('mut' | 'const') type;
+typePath: Identifier DOUBLE_COLON | DOUBLE_COLON? Identifier (DOUBLE_COLON Identifier)* ;
+pointerType: '*' ('mut' | 'const') (type)?;
 basicType
     : 'i32'
     | 'String'
     | 'bool'
+    | 'u8'
     | '()'
     | typePath ('<' type (',' type)* '>')?
     | Identifier ('<' type (',' type)* '>')?
@@ -83,12 +85,16 @@ statement
     | ifStmt
     | exprStmt
     | whileStmt
+    | returnStmt
     | loopStmt
     | 'break' ';'
     | 'continue' ';'
     | 'match' expression '{' matchArm+ '}'
+    | qualifiedFunctionCall ';'
+    | unsafeBlock
     ;
 
+unsafeBlock: 'unsafe' block;
 whileStmt: 'while' expression block;
 staticVarDecl: visibility? 'static' 'mut'? Identifier ':' (type | Identifier) '=' initializer ';';
 initializer: expression | block;
@@ -102,7 +108,7 @@ assignStmt: expression '=' expression ';';
 forStmt: 'for' Identifier 'in' expression block;
 ifStmt: 'if' expression block ('else' block)?;
 exprStmt: expression ';';
-returnStmt: 'return' (expression)? ';' | expression;
+returnStmt: 'return' (expression)? ';';
 loopStmt: 'loop' block;
 
 expression
@@ -133,8 +139,8 @@ postfixExpression
     (
       ('()' | '('argumentList?')')
     |  ('.' Identifier)+
-    | '.' Identifier ( '(' argumentList? ')' | '()' )     // method call
-    | '[' expression ']'                         // indexing
+    | '.' Identifier ( '(' argumentList? ')' | '()' )
+    | '[' expression ']'
     )*
   ;
 
@@ -148,7 +154,7 @@ primaryExpression
     ;
 
 qualifiedFunctionCall
-  : DOUBLE_COLON typePath DOUBLE_COLON Identifier genericArgs? '(' argumentList? ')'
+  : DOUBLE_COLON typePath Identifier genericArgs? ('()' | '(' argumentList? ')') | Identifier (DOUBLE_COLON Identifier)* ('()' | '(' argumentList? ')')
   ;
 
 genericArgs
@@ -157,7 +163,7 @@ genericArgs
 structLiteralField: Identifier ':' expression;
 matchArm: matchPattern ('|' matchPattern)* '=>' block;
 matchPattern: Number | UNDERSCORE | Identifier;
-argumentList: expression (',' expression)*;
+argumentList: expression (',' expression)* (',')?;
 macroCall: Identifier '!' macroArgs;
 macroArgs: '[' macroInner? ']' | '(' macroInner? ')';
 macroInner: expression (';' expression)?;  // supports [value; count] form
