@@ -130,6 +130,7 @@ expression
     | expressionBlock
     | '&' 'mut' expression
     | '(' expression ')'
+    | (DOUBLE_COLON Identifier)+ ('()' | '(' argumentList ')')
     ;
 
 expressionBlock: '{' statement* expression '}';
@@ -163,7 +164,7 @@ genericArgs
 structLiteralField: Identifier ':' expression;
 matchArm: matchPattern ('|' matchPattern)* '=>' block;
 matchPattern: Number | UNDERSCORE | Identifier;
-argumentList: expression (',' expression)* (',')?;
+argumentList: expression (',' expression)* (',')? | (DOUBLE_COLON Identifier)+ ('()' | '(' argumentList ')');
 macroCall: Identifier '!' macroArgs;
 macroArgs: '[' macroInner? ']' | '(' macroInner? ')';
 macroInner: expression (';' expression)?;  // supports [value; count] form

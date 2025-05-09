@@ -526,7 +526,7 @@ unsafe fn main_0(
 pub fn main() {
     let mut args: Vec::<*mut libc::c_char> = Vec::new();
     for arg in ::std::env::args() {
-        args.push( (::std::ffi::CString::new(arg)).expect("Failed to convert argument into CString.").into_raw(),);
+        // args.push( (::std::ffi::CString::new(arg)).expect("Failed to convert argument into CString.").into_raw(),);
     }
     args.push(::core::ptr::null_mut());
     unsafe {
