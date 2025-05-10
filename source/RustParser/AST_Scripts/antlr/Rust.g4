@@ -108,7 +108,7 @@ assignStmt: expression '=' expression ';';
 forStmt: 'for' Identifier 'in' expression block;
 ifStmt: 'if' expression block ('else' block)?;
 exprStmt: expression ';';
-returnStmt: 'return' (expression)? ';';
+returnStmt: 'return' (expression)? ';' | Identifier;
 loopStmt: 'loop' block;
 
 expression

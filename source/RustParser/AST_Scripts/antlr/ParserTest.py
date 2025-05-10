@@ -24,8 +24,8 @@ def parse_rust_file(file_path: str, output_dir: str = "./antlr_generated/"):
 def main():
     base_dir = "../../../../c2safeRust_examples/"
     test_files = [
-        # "aggregate.rs",
-        # "bst.rs",
+        "aggregate.rs",
+        "bst.rs",
         "output.rs"
     ]
 
