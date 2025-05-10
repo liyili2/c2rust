@@ -2,12 +2,13 @@ from antlr4 import TerminalNode
 from AST_Scripts.ast.Expression import ArrayLiteral, BoolLiteral, BorrowExpr, IdentifierExpr, IntLiteral, StrLiteral
 from AST_Scripts.ast.Statement import AssignStmt, ForStmt, IfStmt, LetStmt
 from AST_Scripts.antlr.RustVisitor import RustVisitor
-from AST_Scripts.ast.TopLevel import FunctionDef, StructDef, Attribute
+from AST_Scripts.ast.TopLevel import ExternBlock, ExternStaticVarDecl, ExternTypeDecl, FunctionDef, StructDef, Attribute
 from AST_Scripts.ast.Program import Program
-from AST_Scripts.ast.Expression import LiteralExpr, VariableRef
-from AST_Scripts.ast.Type import ArrayType, BoolType, IntType, StringType
-from RustParser.AST_Scripts.antlr import RustLexer
+from AST_Scripts.ast.Expression import LiteralExpr
+from AST_Scripts.ast.Type import ArrayType, BoolType, IntType, PointerType, StringType, Type
+from AST_Scripts.antlr import RustLexer, RustParser
 from AST_Scripts.ast.VarDef import VarDef
+from AST_Scripts.antlr import RustParser
 
 class Transformer(RustVisitor):
     def visit_Program(self, ctx):
@@ -32,15 +33,12 @@ class Transformer(RustVisitor):
             raise Exception(f"❌ Unknown literal type for value: {repr(value)}")
 
     def visitTopLevelItem(self, ctx):
-        if ctx.functionDef():
-            return self.visit(ctx.functionDef())
-        elif ctx.structDef():
-            return self.visit(ctx.structDef())
-        elif ctx.attribute():
-            return self.visit(ctx.attribute())
-        else:
-            print("⚠️ Unknown topLevelItem:", ctx.getText())
-            return None
+        for child in ctx.getChildren():
+            result = self.visit(child)
+            if result is not None:
+                return result
+        print("⚠️ Unrecognized topLevelItem:", ctx.getText())
+        return None
 
     def visitFunctionDef(self, ctx):
         name = ctx.Identifier().getText()
@@ -59,10 +57,69 @@ class Transformer(RustVisitor):
         field_type = self.visit(ctx.type_())
         return (field_name, field_type)
 
+    def visitAttributes(self, ctx):
+        return [self.visit(inner) for inner in ctx.innerAttribute()]
+
+    def visitInnerAttribute(self, ctx):
+        return self.visit(ctx.attribute())
+
     def visitAttribute(self, ctx):
-        attr_name = ctx.attrInner().Identifier(0).getText()
-        args = [i.getText() for i in ctx.attrInner().Identifier()[1:]]
-        return Attribute(name=attr_name, args=args)
+        name = ctx.Identifier().getText()
+        if ctx.attrValue():  # Case: name = value
+            value = self.visit(ctx.attrValue())
+            return Attribute(name=name, value=value)
+        elif ctx.attrArgs():  # Case: name(args)
+            args = self.visit(ctx.attrArgs())
+            return Attribute(name=name, args=args)
+        else:  # Case: plain name
+            return Attribute(name=name)
+
+    def visitAttrArgs(self, ctx):
+        return [self.visit(arg) for arg in ctx.attrArg()]
+
+    def visitAttrArg(self, ctx):
+        name = ctx.Identifier().getText()
+        if ctx.attrValue():
+            value = self.visit(ctx.attrValue())
+            return (name, value)
+        else:
+            return (name, None)
+
+    def visitAttrValue(self, ctx):
+        if ctx.STRING_LITERAL():
+            return ctx.STRING_LITERAL().getText()
+        elif ctx.Number():
+            return int(ctx.Number().getText())  # or float, depending on your grammar
+        else:
+            return ctx.Identifier().getText()
+
+    def visitExternBlock(self, ctx):
+        abi = ctx.STRING_LITERAL().getText().strip('"')
+        items = [self.visit(item) for item in ctx.externItem()]
+        return ExternBlock(abi, items)
+
+    def visitExternItem(self, ctx):
+        if str.__contains__(ctx.getChild(1).getText(), "type"):
+            visibility = ctx.visibility().getText() if ctx.visibility() else None
+            name = ctx.Identifier().getText()
+            return ExternTypeDecl(name=name, visibility=visibility)
+
+        elif str.__contains__(ctx.getChild(0).getText(), "static"):
+            print(1)
+            visibility = ctx.visibility().getText() if ctx.visibility() else None
+            print(2)
+            mutable = False
+            print(3)
+            if ctx.getChild(1).getText() == "mut":
+                print("mut true!")
+                mutable = True
+            name = ctx.Identifier().getText()
+            print("name is ", name)
+            var_type = self.visit(ctx.type_())
+            print("var_type is ", var_type)
+            return ExternStaticVarDecl(name=name, var_type=var_type, mutable=mutable, visibility=visibility)
+
+        raise Exception("❌ Unsupported externItem structure")
 
     def visitLetStmt(self, ctx):
         var_def = self.visit(ctx.varDef())
@@ -217,16 +274,48 @@ class Transformer(RustVisitor):
 
         return self._basic_type_from_str(type_str)
 
-    def _basic_type_from_str(self, s):
-        if s == "i32":
-            return IntType()
-        elif s == "String":
-            return StringType()
-        elif s == "bool":
-            return BoolType()
-        else:
-            raise Exception(f"❌ Unknown basic type: {s}")
+    def _basic_type_from_str(self, s: str):
+        s = s.strip()
+
+        # Check for basic types first
+        if s in {"i32", "u32", "f64", "bool", "char", "usize", "isize", "FILE"}:
+            return Type()
+
+        # Handle pointer types
+        if s.startswith("*mut "):
+            pointee_type = self._basic_type_from_str(s[5:].strip())  # Remove "*mut " prefix and recurse
+            return PointerType(mutability="mut", pointee_type=pointee_type)
         
+        if s.startswith("*const "):
+            pointee_type = self._basic_type_from_str(s[7:].strip())  # Remove "*const " prefix and recurse
+            return PointerType(mutability="const", pointee_type=pointee_type)
+        
+        # Handle case for pointer types without space (e.g., "*mutFILE" or "*constFILE")
+        if s.startswith("*mut") or s.startswith("*const"):
+            if " " in s:  # If there’s a space, it’s a normal pointer type with a separate pointee
+                pointer_type, pointee = s.split(" ", 1)
+                if pointer_type == "*mut":
+                    return PointerType(mutability="mut", pointee_type=self._basic_type_from_str(pointee.strip()))
+                elif pointer_type == "*const":
+                    return PointerType(mutability="const", pointee_type=self._basic_type_from_str(pointee.strip()))
+            else:
+                # Handle cases like "*mutFILE" or "*constFILE"
+                if s.startswith("*mut"):
+                    return PointerType(mutability="mut", pointee_type=self._basic_type_from_str(s[5:].strip()))
+                elif s.startswith("*const"):
+                    return PointerType(mutability="const", pointee_type=self._basic_type_from_str(s[7:].strip()))
+
+        # Default to basic type if no match
+        return Type()
+
+    def visitPointerType(self, ctx):
+        mut_token = ctx.getChild(1).getText()
+        mutable = (mut_token == "mut")
+        pointee_ctx = ctx.type()
+        pointee_type = self.visit(pointee_ctx) if pointee_ctx else None
+
+        return PointerType(mutable, pointee_type)
+
     def visitLiteral(self, ctx):
         text = ctx.getText()
         if text == "true":

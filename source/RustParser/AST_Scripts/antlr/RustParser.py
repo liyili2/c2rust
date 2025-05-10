@@ -960,7 +960,6 @@ class RustParser ( Parser ):
         def externParams(self):
             return self.getTypedRuleContext(RustParser.ExternParamsContext,0)
 
-
         def getRuleIndex(self):
             return RustParser.RULE_externItem
 
@@ -978,11 +977,7 @@ class RustParser ( Parser ):
             else:
                 return visitor.visitChildren(self)
 
-
-
-
     def externItem(self):
-
         localctx = RustParser.ExternItemContext(self, self._ctx, self.state)
         self.enterRule(localctx, 8, self.RULE_externItem)
         self._la = 0 # Token type
@@ -1498,11 +1493,7 @@ class RustParser ( Parser ):
             else:
                 return visitor.visitChildren(self)
 
-
-
-
     def attribute(self):
-
         localctx = RustParser.AttributeContext(self, self._ctx, self.state)
         self.enterRule(localctx, 20, self.RULE_attribute)
         try:
