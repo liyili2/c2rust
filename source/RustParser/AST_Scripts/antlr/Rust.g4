@@ -90,7 +90,7 @@ statement
     | 'break' ';'
     | 'continue' ';'
     | 'match' expression '{' matchArm+ '}'
-    | qualifiedFunctionCall ';'
+    | qualifiedFunctionCall ('.' qualifiedFunctionCall)* ';'
     | unsafeBlock
     ;
 
@@ -155,7 +155,8 @@ primaryExpression
     ;
 
 qualifiedFunctionCall
-  : DOUBLE_COLON typePath Identifier genericArgs? ('()' | '(' argumentList? ')') | Identifier (DOUBLE_COLON Identifier)* ('()' | '(' argumentList? ')')
+  : DOUBLE_COLON typePath Identifier genericArgs? ('()' | '(' argumentList? ')') 
+  | Identifier ('.' Identifier)* (DOUBLE_COLON Identifier)* ('()' | '(' ( Identifier '(' STRING_LITERAL ')' | argumentList)* ')')
   ;
 
 genericArgs
@@ -164,7 +165,7 @@ genericArgs
 structLiteralField: Identifier ':' expression;
 matchArm: matchPattern ('|' matchPattern)* '=>' block;
 matchPattern: Number | UNDERSCORE | Identifier;
-argumentList: expression (',' expression)* (',')? | (DOUBLE_COLON Identifier)+ ('()' | '(' argumentList ')');
+argumentList: (qualifiedFunctionCall | expression) (',' (qualifiedFunctionCall | expression))* (',')? | (DOUBLE_COLON Identifier)+ ('()' | '(' argumentList ')');
 macroCall: Identifier '!' macroArgs;
 macroArgs: '[' macroInner? ']' | '(' macroInner? ')';
 macroInner: expression (';' expression)?;  // supports [value; count] form
@@ -173,7 +174,7 @@ TRUE: 'true';
 FALSE: 'false';
 
 literal: arrayLiteral | HexNumber | Number | SignedNumber | BYTE_STRING_LITERAL | 
-Binary | stringLiteral | booleanLiteral | CHAR_LITERAL;
+         Binary | STRING_LITERAL | booleanLiteral | CHAR_LITERAL;
 booleanLiteral: TRUE | FALSE;
 Binary: '0b' [0-1]+;
 arrayLiteral: '[' expression (',' expression)* ']' | '[' expression ';' expression ']';
