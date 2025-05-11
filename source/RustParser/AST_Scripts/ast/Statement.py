@@ -5,7 +5,6 @@ class Statement(ASTNode):
 
 class LetStmt(Statement):
     def __init__(self, var_def, value):
-        # self.var_def = var_def
         self.value = value
         self.declared_type = var_def.type
         self.name = var_def.name
