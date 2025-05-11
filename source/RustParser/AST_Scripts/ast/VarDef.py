@@ -1,5 +1,6 @@
 class VarDef:
-    def __init__(self, name, type=None, mutable=False):
+    def __init__(self, name, mutable=False, by_ref=False, var_type=None):
         self.name = name
-        self.type = type
         self.mutable = mutable
+        self.by_ref = by_ref
+        self.type = var_type

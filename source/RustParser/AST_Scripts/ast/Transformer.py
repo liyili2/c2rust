@@ -188,16 +188,35 @@ class Transformer(RustVisitor):
 
     def visitLetStmt(self, ctx):
         var_def = self.visit(ctx.varDef())
-        value = self.visit(ctx.expression())
-        if value is None:
-            raise Exception(f"❌ LetStmt has no value: {ctx.getText()}")
-        return LetStmt(var_def=var_def, value=value)
+        value = self.visit(ctx.expression()) if ctx.expression() else None
+        return LetStmt(var_def, value)
     
     def visitVarDef(self, ctx):
-        if ctx.mutableDef():
-            return self.visit(ctx.mutableDef())
+        by_ref = False
+        mutable = False
+        name = None
+        var_type = None
+
+        tokens = [ctx.getChild(i).getText() for i in range(ctx.getChildCount())]
+
+        if 'ref' in tokens:
+            by_ref = True
+            if 'mut' in tokens:
+                mutable = True
+            name_index = tokens.index('mut') + 1 if 'mut' in tokens else tokens.index('ref') + 1
+            name = tokens[name_index]
+
+        elif tokens[0] == 'mut':
+            mutable = True
+            name = tokens[1]
         else:
-            return self.visit(ctx.immutableDef())
+            name = tokens[0]
+
+        if ':' in tokens:
+            type_index = tokens.index(':') + 1
+            var_type = self.visit(ctx.type_())
+
+        return VarDef(name=name, mutable=mutable, by_ref=by_ref, var_type=var_type)
 
     def visitMutableDef(self, ctx):
         name = ctx.Identifier().getText()
