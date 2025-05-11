@@ -90,3 +90,9 @@ class TypeAliasDecl:
         self.name = name
         self.target_type = target_type
         self.visibility = visibility
+
+class UnionDef:
+    def __init__(self, name, fields, visibility=None):
+        self.name = name
+        self.fields = fields
+        self.visibility = visibility
