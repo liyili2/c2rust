@@ -943,13 +943,11 @@ class RustParser ( Parser ):
         def visibility(self):
             return self.getTypedRuleContext(RustParser.VisibilityContext,0)
 
-
         def COLON(self):
             return self.getToken(RustParser.COLON, 0)
 
         def type_(self):
             return self.getTypedRuleContext(RustParser.TypeContext,0)
-
 
         def LPAREN(self):
             return self.getToken(RustParser.LPAREN, 0)
@@ -1178,7 +1176,6 @@ class RustParser ( Parser ):
         finally:
             self.exitRule()
         return localctx
-
 
     class ExternParamContext(ParserRuleContext):
         __slots__ = 'parser'
@@ -2930,7 +2927,6 @@ class RustParser ( Parser ):
 
         def typePath(self):
             return self.getTypedRuleContext(RustParser.TypePathContext,0)
-
 
         def type_(self, i:int=None):
             if i is None:

@@ -66,3 +66,7 @@ class ExternStaticVarDecl:
     def __repr__(self):
         mut = "mut " if self.mutable else ""
         return f"<ExternStaticVarDecl {mut}{self.name}: {self.var_type}>"
+
+class PathType:
+    def __init__(self, segments):
+        self.segments = segments

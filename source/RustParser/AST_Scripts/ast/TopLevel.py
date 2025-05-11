@@ -69,3 +69,18 @@ class ExternFnDecl(ExternItem):
 
     def __repr__(self):
         return f"<ExternFnDecl {self.visibility or ''} fn {self.name}({self.params}) -> {self.return_type}>"
+
+class ExternFunctionDecl:
+    def __init__(self, name, params, return_type=None, variadic=False, visibility=None):
+        self.name = name  # function name (string)
+        self.params = params  # list of parameter types (AST nodes or strings)
+        self.return_type = return_type  # return type (AST node or string), or None for `-> ()`
+        self.variadic = variadic  # True if the function is variadic (`...` present)
+        self.visibility = visibility  # e.g., 'pub', or None
+
+    def __repr__(self):
+        return (
+            f"ExternFunctionDecl(name={self.name!r}, params={self.params}, "
+            f"return_type={self.return_type}, variadic={self.variadic}, "
+            f"visibility={self.visibility})"
+        )

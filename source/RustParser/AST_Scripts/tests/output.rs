@@ -5,10 +5,10 @@ extern "C" {
     pub type _IO_codecvt;
     pub type _IO_marker;
     static mut stderr: *mut FILE;
-    // fn fprintf(_: *mut FILE, _: *const libc::c_char, _: ...) -> libc::c_int;
-    // fn printf(_: *const libc::c_char, _: ...) -> libc::c_int;
-    // fn malloc(_: libc::c_ulong) -> *mut libc::c_void;
-    // fn strlen(_: *const libc::c_char) -> libc::c_ulong;
+    fn fprintf(_: *mut FILE, _: *const libc::c_char, _: ...) -> libc::c_int;
+    fn printf(_: *const libc::c_char, _: ...) -> libc::c_int;
+    fn malloc(_: libc::c_ulong) -> *mut libc::c_void;
+    fn strlen(_: *const libc::c_char) -> libc::c_ulong;
 }
 // pub type size_t = libc::c_ulong;
 // pub type __off_t = libc::c_long;
