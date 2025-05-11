@@ -50,11 +50,12 @@ class ExternTypeDecl(ExternItem):
         return f"<ExternTypeDecl {self.visibility or ''} type {self.name}>"
 
 class ExternStaticVarDecl(ExternItem):
-    def __init__(self, name: str, var_type: Type, mutable: bool, visibility: str = None):
+    def __init__(self, name: str, var_type: Type, mutable: bool, initial_value, visibility: str = None):
         self.name = name
         self.var_type = var_type
         self.mutable = mutable
         self.visibility = visibility
+        self.value = initial_value
 
     def __repr__(self):
         mut = "mut " if self.mutable else ""

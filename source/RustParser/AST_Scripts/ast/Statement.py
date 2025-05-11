@@ -54,3 +54,14 @@ class Block(Statement):
 
     def accept(self, visitor):
         return visitor.visit_block(self)
+
+class ExternStaticVarDecl(Statement):
+    def __init__(self, name, var_type, mutable, initial_value, visibility=None):
+        self.name = name                  # str
+        self.var_type = var_type          # Type or str
+        self.mutable = mutable            # bool
+        self.initial_value = initial_value  # Expr
+        self.visibility = visibility      # Optional[str]
+
+    def __repr__(self):
+        return f"ExternStaticVarDecl(name={self.name}, type={self.var_type}, mutable={self.mutable}, visibility={self.visibility}, init={self.initial_value})"

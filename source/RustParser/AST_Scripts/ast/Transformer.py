@@ -156,7 +156,7 @@ class Transformer(RustVisitor):
             mutable = ctx.getChild(1).getText() == "mut"
             name = ctx.Identifier().getText()
             var_type = self.visit(ctx.type_())
-            return ExternStaticVarDecl(name=name, var_type=var_type, mutable=mutable, visibility=visibility)
+            return ExternStaticVarDecl(name=name, var_type=var_type, initial_value= None, mutable=mutable, visibility=visibility)
 
         elif ctx.LPAREN() and ctx.RPAREN() and ctx.externParams():
             visibility = ctx.visibility().getText() if ctx.visibility() else None
@@ -218,6 +218,20 @@ class Transformer(RustVisitor):
 
         return VarDef(name=name, mutable=mutable, by_ref=by_ref, var_type=var_type)
 
+    def visitStaticItem(self, ctx):
+        visibility = ctx.visibility().getText() if ctx.visibility() else None
+        mutable = ctx.getChild(1).getText() == "mut"  # static mut ...
+        name = ctx.Identifier().getText()
+        var_type = self.visit(ctx.type_())
+        value = self.visit(ctx.expr()) if ctx.expr() else None
+        return ExternStaticVarDecl(
+            name=name,
+            var_type=var_type,
+            mutable=mutable,
+            visibility=visibility,
+            initial_value=value,
+        )
+
     def visitMutableDef(self, ctx):
         name = ctx.Identifier().getText()
         type_node = ctx.type_()
@@ -276,10 +290,32 @@ class Transformer(RustVisitor):
         elif ctx.assignStmt():
             return self.visit(ctx.assignStmt())
         elif ctx.forStmt():
-            return self.visit(ctx.forStmt())   
+            return self.visit(ctx.forStmt()) 
+        elif ctx.staticVarDecl():
+            return self.visit(ctx.staticVarDecl())
         else:
             print("⚠️ Unknown statement:", ctx.getText())
             return None
+
+    def visitStaticVarDecl(self, ctx):
+        visibility = ctx.visibility().getText() if ctx.visibility() else None
+        mutable = ctx.getChild(2).getText() == 'mut' if ctx.getChild(1).getText() == 'static' else False
+        identifier_index = 3 if mutable else 2
+        name = ctx.getChild(identifier_index).getText()
+        type_node = ctx.type_()
+        if type_node:
+            var_type = self.visit(type_node)
+        else:
+            var_type = ctx.Identifier()[-1].getText()
+        initializer = self.visit(ctx.initializer())
+
+        return ExternStaticVarDecl(
+            name=name,
+            var_type=var_type,
+            mutable=mutable,
+            initial_value=initializer,
+            visibility=visibility
+        )
 
     #TODO : make it more clean and organized
     def visitExpression(self, ctx):
@@ -347,22 +383,24 @@ class Transformer(RustVisitor):
 
         if type_str.startswith('[') and ';' in type_str and type_str.endswith(']'):
             inner_type_str, size_str = type_str[1:-1].split(';')
-            inner_type = self._basic_type_from_str(inner_type_str.strip())
-            size = int(size_str.strip())
+            inner_type = self._basic_type_from_str(inner_type_str.strip())  # Extract base type
+            size = int(size_str.strip())  # Extract array size (e.g., 8000)
             return ArrayType(inner_type, size)
+
         elif type_str.startswith('[') and type_str.endswith(']'):
             inner_type_str = type_str[1:-1]
-            inner_type = self._basic_type_from_str(inner_type_str.strip())
-            return ArrayType(inner_type, None) 
+            inner_type = self._basic_type_from_str(inner_type_str.strip())  # Extract base type
+            return ArrayType(inner_type, None)  # No size specified
+
         elif ctx.pointerType():
             return self.visit(ctx.pointerType())
+
         elif ctx.basicType().typePath():
-            return type_str.split("::")[-1]
-            # return self.visit(ctx.basicType().typePath())
+            return type_str.split("::")[-1]  # Return just the type name after the last '::'
+
         else:
-            print("it's the else", type_str)
+            print("Unknown type:", type_str)
             return type_str
-        # return self._basic_type_from_str(type_str)
 
     def visitPointerType(self, ctx):
         mut_token = ctx.getChild(1).getText()
