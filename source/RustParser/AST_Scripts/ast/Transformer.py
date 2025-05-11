@@ -2,7 +2,7 @@ from antlr4 import TerminalNode
 from AST_Scripts.ast.Expression import ArrayLiteral, BoolLiteral, BorrowExpr, IdentifierExpr, IntLiteral, StrLiteral
 from AST_Scripts.ast.Statement import AssignStmt, ForStmt, IfStmt, LetStmt
 from AST_Scripts.antlr.RustVisitor import RustVisitor
-from AST_Scripts.ast.TopLevel import ExternBlock, ExternFunctionDecl, ExternStaticVarDecl, ExternTypeDecl, FunctionDef, StructDef, Attribute
+from AST_Scripts.ast.TopLevel import ExternBlock, ExternFunctionDecl, ExternStaticVarDecl, ExternTypeDecl, FunctionDef, StructDef, Attribute, TypeAliasDecl
 from AST_Scripts.ast.Program import Program
 from AST_Scripts.ast.Expression import LiteralExpr
 from AST_Scripts.ast.Type import ArrayType, BoolType, IntType, PathType, PointerType, StringType, Type
@@ -65,6 +65,12 @@ class Transformer(RustVisitor):
                 return result
         print("⚠️ Unrecognized topLevelItem:", ctx.getText())
         return None
+    
+    def visitTypeAlias(self, ctx):
+        visibility = ctx.visibility().getText() if ctx.visibility() else None
+        name = ctx.Identifier().getText()
+        target_type = self.visit(ctx.type_())
+        return TypeAliasDecl(name=name, target_type=target_type, visibility=visibility)
 
     def visitFunctionDef(self, ctx):
         name = ctx.Identifier().getText()

@@ -84,3 +84,9 @@ class ExternFunctionDecl:
             f"return_type={self.return_type}, variadic={self.variadic}, "
             f"visibility={self.visibility})"
         )
+
+class TypeAliasDecl:
+    def __init__(self, name, target_type, visibility=None):
+        self.name = name
+        self.target_type = target_type
+        self.visibility = visibility
