@@ -90,7 +90,7 @@ class ArrayLiteral:
 
     def accept(self, visitor):
         return visitor.visitArrayLiteral(self)
-    
+
     def __repr__(self):
         return f"ArrayLiteral({self.elements})"
 
@@ -105,5 +105,13 @@ class CastExpr:
     def __init__(self, expr, target_type, line=None, column=None):
         self.expr = expr
         self.target_type = target_type
+        # self.line = line
+        # self.column = column
+
+class MethodCallExpr:
+    def __init__(self, receiver, method_name, args=None, line=None, column=None):
+        self.receiver = receiver  # e.g., `paren`
+        self.method_name = method_name  # e.g., `as_mut_ptr`
+        self.args = args or []  # Arguments passed to the method, empty in this case
         # self.line = line
         # self.column = column

@@ -1,5 +1,5 @@
 from antlr4 import TerminalNode
-from AST_Scripts.ast.Expression import ArrayLiteral, BoolLiteral, BorrowExpr, CastExpr, IdentifierExpr, IntLiteral, RepeatArrayLiteral, StrLiteral
+from AST_Scripts.ast.Expression import ArrayLiteral, BoolLiteral, BorrowExpr, CastExpr, IdentifierExpr, IntLiteral, MethodCallExpr, RepeatArrayLiteral, StrLiteral
 from AST_Scripts.ast.Statement import AssignStmt, ForStmt, IfStmt, LetStmt, StaticVarDecl
 from AST_Scripts.antlr.RustVisitor import RustVisitor
 from AST_Scripts.ast.TopLevel import ExternBlock, ExternFunctionDecl, ExternStaticVarDecl, ExternTypeDecl, FunctionDef, StructDef, Attribute, TypeAliasDecl, UnionDef
@@ -11,6 +11,16 @@ from AST_Scripts.ast.VarDef import VarDef
 from AST_Scripts.antlr import RustParser
 
 class Transformer(RustVisitor):
+    def _expr_from_text(self, text):
+        text = text.strip()
+        if text.isdigit():
+            return LiteralExpr(value=int(text))
+        try:
+            return LiteralExpr(value=float(text))
+        except ValueError:
+            pass
+        return IdentifierExpr(name=text)
+
     def _basic_type_from_str(self, s: str):
         print("#0: ", s)
         s = s.strip()
@@ -346,6 +356,15 @@ class Transformer(RustVisitor):
     #TODO : make it more clean and organized
     def visitExpression(self, ctx):
         print("in exp visitor")
+        text = ctx.getText()
+
+    # Handle method calls like `paren.as_mut_ptr()`
+        if '.' in text and text.endswith(')'):
+            receiver_text, method_part = text.rsplit('.', 1)
+            method_name = method_part[:-2]  # strip trailing '()'
+
+            receiver_expr = self._expr_from_text(receiver_text)
+            return MethodCallExpr(receiver=receiver_expr, method_name=method_name)
         if ctx.getChildCount() == 3 and ctx.getChild(1).getText() == 'as':
             expr = self.visit(ctx.getChild(0))  # e.g., 0
             type_text = ctx.getChild(2).getText()

@@ -88,10 +88,10 @@ pub unsafe extern "C" fn re2post(mut re: *mut libc::c_char) -> *mut libc::c_char
     // let mut nalt: libc::c_int = 0;
     // let mut natom: libc::c_int = 0;
     // static mut buf: [libc::c_char; 8000] = [0; 8000];
-    let mut dst: *mut libc::c_char = 0 as *mut libc::c_char;
+    // let mut dst: *mut libc::c_char = 0 as *mut libc::c_char;
     // let mut paren: [C2RustUnnamed; 100] = [C2RustUnnamed { nalt: 0, natom: 0 }; 100];
     // let mut p: *mut C2RustUnnamed = 0 as *mut C2RustUnnamed;
-    // p = paren.as_mut_ptr();
+    p = paren.as_mut_ptr();
     // dst = buf.as_mut_ptr();
     // nalt = 0 as libc::c_int;
     // natom = 0 as libc::c_int;
