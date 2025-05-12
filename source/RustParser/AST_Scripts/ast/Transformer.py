@@ -1,6 +1,6 @@
 from antlr4 import TerminalNode
-from AST_Scripts.ast.Expression import ArrayLiteral, BoolLiteral, BorrowExpr, IdentifierExpr, IntLiteral, StrLiteral
-from AST_Scripts.ast.Statement import AssignStmt, ForStmt, IfStmt, LetStmt
+from AST_Scripts.ast.Expression import ArrayLiteral, BoolLiteral, BorrowExpr, IdentifierExpr, IntLiteral, RepeatArrayLiteral, StrLiteral
+from AST_Scripts.ast.Statement import AssignStmt, ForStmt, IfStmt, LetStmt, StaticVarDecl
 from AST_Scripts.antlr.RustVisitor import RustVisitor
 from AST_Scripts.ast.TopLevel import ExternBlock, ExternFunctionDecl, ExternStaticVarDecl, ExternTypeDecl, FunctionDef, StructDef, Attribute, TypeAliasDecl, UnionDef
 from AST_Scripts.ast.Program import Program
@@ -12,30 +12,49 @@ from AST_Scripts.antlr import RustParser
 
 class Transformer(RustVisitor):
     def _basic_type_from_str(self, s: str):
+        print("#0: ", s)
         s = s.strip()
         if s in {"i32", "u32", "f64", "bool", "char", "usize", "isize", "FILE"}:
+            print("#1")
             return Type()
         if s.startswith("*mut "):
+            print("#2")
             print("in mut")
             pointee_type = self._basic_type_from_str(s[5:].strip())
             return PointerType(mutability="mut", pointee_type=pointee_type)
         if s.startswith("*const "):
-            print("in const")
+            print("#3")
             pointee_type = self._basic_type_from_str(s[7:].strip())
             return PointerType(mutability="const", pointee_type=pointee_type)        
         if s.startswith("*mut") or s.startswith("*const"):
+            print("#4")
             if " " in s:
+                print("#41")
                 pointer_type, pointee = s.split(" ", 1)
                 if pointer_type == "*mut":
+                    print("#411")
                     return PointerType(mutability="mut", pointee_type=self._basic_type_from_str(pointee.strip()))
                 elif pointer_type == "*const":
+                    print("#412")
                     return PointerType(mutability="const", pointee_type=self._basic_type_from_str(pointee.strip()))
             else:
+                print("#42")
                 if s.startswith("*mut"):
+                    print("#421")
                     return PointerType(mutability="mut", pointee_type=self._basic_type_from_str(s[5:].strip()))
                 elif s.startswith("*const"):
+                    print("#422")
                     return PointerType(mutability="const", pointee_type=self._basic_type_from_str(s[7:].strip()))
-        return Type()
+        if "::" in s:
+            print("#5")
+            if ';' in s:
+                inner_type_str, _ = s.strip('[]').split(';', 1)
+                return inner_type_str.strip().split('::')[-1]
+            else:
+                return s.strip().split('::')[-1]
+
+        print("fuck!")
+        return None
 
     def visit_Program(self, ctx):
         items = []
@@ -302,23 +321,31 @@ class Transformer(RustVisitor):
         mutable = ctx.getChild(2).getText() == 'mut' if ctx.getChild(1).getText() == 'static' else False
         identifier_index = 3 if mutable else 2
         name = ctx.getChild(identifier_index).getText()
-        type_node = ctx.type_()
-        if type_node:
-            var_type = self.visit(type_node)
+        var_type = None
+        if ctx.type_():
+            var_type = self.visit(ctx.type_())
+            print("------------------------in if ", var_type)
         else:
-            var_type = ctx.Identifier()[-1].getText()
-        initializer = self.visit(ctx.initializer())
+            print("----------------------in else")
+            colon_index = [i for i, child in enumerate(ctx.children) if child.getText() == ':'][0]
+            eq_index = [i for i, child in enumerate(ctx.children) if child.getText() == '='][0]
+            type_tokens = ctx.children[colon_index + 1:eq_index]
+            type_str = ''.join(child.getText() for child in type_tokens).strip()
+            var_type = self._basic_type_from_str(type_str)
 
-        return ExternStaticVarDecl(
+        initializer = self.visit(ctx.initializer())
+        print("init val type is ", initializer.__class__)
+
+        return StaticVarDecl(
             name=name,
             var_type=var_type,
             mutable=mutable,
-            initial_value=initializer,
-            visibility=visibility
-        )
+            visibility=visibility,
+            initial_value=initializer)
 
     #TODO : make it more clean and organized
     def visitExpression(self, ctx):
+        print("in exp visitor")
         if ctx.primaryExpression():
             return self.visit(ctx.primaryExpression())
         text = ctx.getText()
@@ -336,25 +363,46 @@ class Transformer(RustVisitor):
         elif text.startswith('"') and text.endswith('"'):
             return LiteralExpr(value=text[1:-1])
         elif text.startswith('[') and text.endswith(']'):
+            print("sorry u saw meeeee")
             inner = text[1:-1].strip()
             if not inner:
                 elements = []
+            elif ';' in inner:
+                value_str, size_str = [x.strip() for x in inner.split(';', 1)]
+                try:
+                    value_expr = LiteralExpr(value=int(value_str))
+                except ValueError:
+                    try:
+                        value_expr = LiteralExpr(value=float(value_str))
+                    except ValueError:
+                        value_expr = IdentifierExpr(name=value_str)
+
+                try:
+                    repeat_expr = LiteralExpr(value=int(size_str))
+                except ValueError:
+                    repeat_expr = IdentifierExpr(name=size_str)
+
+                return RepeatArrayLiteral(
+                    elements=[value_expr],  # Keep 1 for semantic clarity
+                    count=repeat_expr
+                )
             else:
                 element_texts = [e.strip() for e in inner.split(',')]
                 elements = []
                 for e_text in element_texts:
                     try:
-                        if e_text.isdigit():
-                            elements.append(LiteralExpr(value=int(e_text)))
-                        else:
-                            float_val = float(e_text)
-                            elements.append(LiteralExpr(value=float_val))
+                        elements.append(LiteralExpr(value=int(e_text)))
                     except ValueError:
-                        elements.append(IdentifierExpr(e_text))
-            return ArrayLiteral(elements=elements)
+                        try:
+                            elements.append(LiteralExpr(value=float(e_text)))
+                        except ValueError:
+                            elements.append(IdentifierExpr(name=e_text))
+                return ArrayLiteral(elements=elements)
+
         elif ctx.primaryExpression():
             ident = ctx.getText()
             return IdentifierExpr(ident)
+
         raise Exception(f"❌ Unsupported literal expression: {text}")
 
     def visitPrimaryExpression(self, ctx):
@@ -380,6 +428,7 @@ class Transformer(RustVisitor):
 
     def visitType(self, ctx):
         type_str = ctx.getText()
+        print("+++++++++++++++++++++++++++++++ ", type_str)
 
         if type_str.startswith('[') and ';' in type_str and type_str.endswith(']'):
             inner_type_str, size_str = type_str[1:-1].split(';')
@@ -418,6 +467,7 @@ class Transformer(RustVisitor):
         return PathType(segments=segments)
 
     def visitLiteral(self, ctx):
+        print("in literal")
         text = ctx.getText()
         if text == "true":
             return BoolLiteral(True)
@@ -425,7 +475,29 @@ class Transformer(RustVisitor):
             return BoolLiteral(False)
         elif ctx.Number():
             return LiteralExpr(value=int(text))
+        elif ctx.arrayLiteral():
+            return ArrayLiteral(ctx)
 
     def visitArrayLiteral(self, ctx):
-        elements = [self.visit(expr) for expr in ctx.expression()]
-        return ArrayLiteral(elements)
+        if ctx.getChildCount() == 5 and ctx.getChild(2).getText() == ';':
+            value_expr = self.visit(ctx.expression(0))
+            count_expr = self.visit(ctx.expression(1))
+            return RepeatArrayLiteral(
+                value=value_expr,
+                count=count_expr,
+                line=self._get_line(ctx),
+                column=self._get_column(ctx))
+        else:
+            elements = [self.visit(expr) for expr in ctx.expression()]
+            return ArrayLiteral(
+                elements=elements,
+                line=self._get_line(ctx),
+                column=self._get_column(ctx))
+
+    def visitInitializer(self, ctx):
+        print("****************************************visit init")
+        if ctx.expression():
+            return self.visit(ctx.expression())
+        else:
+            print("Unhandled initializer kind")
+            return None

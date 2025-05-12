@@ -85,11 +85,18 @@ class StrLiteral:
 class ArrayLiteral:
     def __init__(self, elements):
         self.elements = elements
-        self.line = None
-        self.column = None
+        # self.line = None
+        # self.column = None
 
     def accept(self, visitor):
-        return visitor.visit_ArrayLiteral(self)
+        return visitor.visitArrayLiteral(self)
     
     def __repr__(self):
         return f"ArrayLiteral({self.elements})"
+
+class RepeatArrayLiteral:
+    def __init__(self, elements, count, line=None, column=None):
+        self.elements = elements
+        self.count = count
+        # self.line = line
+        # self.column = column

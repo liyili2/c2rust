@@ -33,12 +33,12 @@ class RefType(Type):
         return f"&{self.inner}"
 
 class ArrayType(Type):
-    def __init__(self, elem_type, size=None):
-        self.elem_type = elem_type
+    def __init__(self, var_type, size=None):
+        self.var_type = var_type
         self.size = size
 
     def __repr__(self):
-        return f"[{self.elem_type}; {self.size}]" if self.size else f"[{self.elem_type}]"
+        return f"[{self.var_type}; {self.size}]" if self.size else f"[{self.elem_type}]"
 
 class PointerType:
     def __init__(self, mutability: str, pointee_type=None):

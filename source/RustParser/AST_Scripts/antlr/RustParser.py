@@ -2706,10 +2706,8 @@ class RustParser ( Parser ):
         def basicType(self):
             return self.getTypedRuleContext(RustParser.BasicTypeContext,0)
 
-
         def pointerType(self):
             return self.getTypedRuleContext(RustParser.PointerTypeContext,0)
-
 
         def getRuleIndex(self):
             return RustParser.RULE_type
@@ -3594,14 +3592,11 @@ class RustParser ( Parser ):
         def initializer(self):
             return self.getTypedRuleContext(RustParser.InitializerContext,0)
 
-
         def type_(self):
             return self.getTypedRuleContext(RustParser.TypeContext,0)
 
-
         def visibility(self):
             return self.getTypedRuleContext(RustParser.VisibilityContext,0)
-
 
         def getRuleIndex(self):
             return RustParser.RULE_staticVarDecl
