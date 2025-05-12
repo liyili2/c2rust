@@ -100,3 +100,10 @@ class RepeatArrayLiteral:
         self.count = count
         # self.line = line
         # self.column = column
+
+class CastExpr:
+    def __init__(self, expr, target_type, line=None, column=None):
+        self.expr = expr
+        self.target_type = target_type
+        # self.line = line
+        # self.column = column

@@ -1,5 +1,5 @@
 from antlr4 import TerminalNode
-from AST_Scripts.ast.Expression import ArrayLiteral, BoolLiteral, BorrowExpr, IdentifierExpr, IntLiteral, RepeatArrayLiteral, StrLiteral
+from AST_Scripts.ast.Expression import ArrayLiteral, BoolLiteral, BorrowExpr, CastExpr, IdentifierExpr, IntLiteral, RepeatArrayLiteral, StrLiteral
 from AST_Scripts.ast.Statement import AssignStmt, ForStmt, IfStmt, LetStmt, StaticVarDecl
 from AST_Scripts.antlr.RustVisitor import RustVisitor
 from AST_Scripts.ast.TopLevel import ExternBlock, ExternFunctionDecl, ExternStaticVarDecl, ExternTypeDecl, FunctionDef, StructDef, Attribute, TypeAliasDecl, UnionDef
@@ -346,6 +346,11 @@ class Transformer(RustVisitor):
     #TODO : make it more clean and organized
     def visitExpression(self, ctx):
         print("in exp visitor")
+        if ctx.getChildCount() == 3 and ctx.getChild(1).getText() == 'as':
+            expr = self.visit(ctx.getChild(0))  # e.g., 0
+            type_text = ctx.getChild(2).getText()
+            target_type = self._basic_type_from_str(type_text)  # You can just pass type_text if you don’t resolve types
+            return CastExpr(expr=expr, target_type=target_type)
         if ctx.primaryExpression():
             return self.visit(ctx.primaryExpression())
         text = ctx.getText()
