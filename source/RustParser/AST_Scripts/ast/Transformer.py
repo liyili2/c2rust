@@ -1,6 +1,6 @@
 from antlr4 import TerminalNode
 from AST_Scripts.ast.Expression import ArrayLiteral, BinaryExpr, BoolLiteral, BorrowExpr, CastExpr, DereferenceExpr, IdentifierExpr, IntLiteral, MethodCallExpr, RepeatArrayLiteral, StrLiteral
-from AST_Scripts.ast.Statement import AssignStmt, CompoundAssignment, ForStmt, IfStmt, LetStmt, MatchArm, MatchPattern, MatchStmt, StaticVarDecl, WhileStmt
+from AST_Scripts.ast.Statement import AssignStmt, CompoundAssignment, ExpressionStmt, ForStmt, IfStmt, LetStmt, MatchArm, MatchPattern, MatchStmt, StaticVarDecl, WhileStmt
 from AST_Scripts.antlr.RustVisitor import RustVisitor
 from AST_Scripts.ast.TopLevel import ExternBlock, ExternFunctionDecl, ExternStaticVarDecl, ExternTypeDecl, FunctionDef, StructDef, Attribute, TypeAliasDecl, UnionDef
 from AST_Scripts.ast.Program import Program
@@ -296,8 +296,15 @@ class Transformer(RustVisitor):
             #print("🧱 Statement transformed:", result)
             stmts.append(result)
         return stmts
+    
+    def visitExpressionStatement(self, ctx):
+        expr = self.visit(ctx.expression())
+        return ExpressionStmt(expr=expr, line=ctx.start.line, column=ctx.start.column)
 
     def visitStatement(self, ctx):
+        if ctx.Identifier():
+            name = ctx.Identifier().getText()
+            return ExpressionStmt(expr=IdentifierExpr(name=name), line=ctx.start.line, column=ctx.start.column)
         if ctx.letStmt():
             return self.visit(ctx.letStmt())
         elif ctx.ifStmt():

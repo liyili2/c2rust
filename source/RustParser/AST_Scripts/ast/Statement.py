@@ -121,3 +121,13 @@ class CompoundAssignment(Statement):
 
     def accept(self, visitor):
         return visitor.visitCompoundAssignment(self)
+
+
+class ExpressionStmt(Statement):
+    def __init__(self, expr, line, column):
+        self.expr = expr
+        # self.line = line
+        # self.column = column
+
+    def accept(self, visitor):
+        return visitor.visitExpressionStmt(self)
