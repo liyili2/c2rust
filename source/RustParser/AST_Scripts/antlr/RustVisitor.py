@@ -169,6 +169,16 @@ class RustVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by RustParser#compoundOp.
+    def visitCompoundOp(self, ctx:RustParser.CompoundOpContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#compoundAssignment.
+    def visitCompoundAssignment(self, ctx:RustParser.CompoundAssignmentContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by RustParser#matchStmt.
     def visitMatchStmt(self, ctx:RustParser.MatchStmtContext):
         return self.visitChildren(ctx)

@@ -104,13 +104,13 @@ pub unsafe extern "C" fn re2post(mut re: *mut libc::c_char) -> *mut libc::c_char
     while *re != 0 {
         match *re as libc::c_int {
             40 => {
-    //             if natom > 1 as libc::c_int {
-    //                 natom -= 1;
+                if natom > 1 as libc::c_int {
+                    natom -= 1;
     //                 natom;
     //                 let fresh0 = dst;
     //                 // dst = dst.offset(1);
     //                 *fresh0 = '.' as i32 as libc::c_char ;
-    //             }
+                }
     //             if p >= paren.as_mut_ptr().offset(100 as libc::c_int as isize) {
     //                 return 0 as *mut libc::c_char;
     //             }
@@ -121,7 +121,7 @@ pub unsafe extern "C" fn re2post(mut re: *mut libc::c_char) -> *mut libc::c_char
     //             nalt = 0 as libc::c_int;
     //             natom = 0 as libc::c_int;
             }
-            124 => {
+            // 124 => {
     //             if natom == 0 as libc::c_int {
     //                 return 0 as *mut libc::c_char;
     //             }
@@ -136,8 +136,8 @@ pub unsafe extern "C" fn re2post(mut re: *mut libc::c_char) -> *mut libc::c_char
     //             }
     //             nalt += 1;
     //             nalt;
-            }
-            41 => {
+            // }
+            // 41 => {
     //             if p == paren.as_mut_ptr() {
     //                 return 0 as *mut libc::c_char;
     //             }
@@ -167,7 +167,7 @@ pub unsafe extern "C" fn re2post(mut re: *mut libc::c_char) -> *mut libc::c_char
     //             natom += 1;
     //             natom;
             }
-            42 | 43 | 63 => {
+            // 42 | 43 | 63 => {
     //             if natom == 0 as libc::c_int {
     //                 return 0 as *mut libc::c_char;
     //             }
@@ -175,20 +175,20 @@ pub unsafe extern "C" fn re2post(mut re: *mut libc::c_char) -> *mut libc::c_char
     //             dst = dst.offset(1);
     //             *fresh4 = *re;
     //         }
-            _ => {
+            // _ => {
     //             if natom > 1 as libc::c_int {
     //                 natom -= 1;
     //                 natom;
     //                 let fresh5 = dst;
     //                 dst = dst.offset(1);
     //                 *fresh5 = '.' as i32 as libc::c_char;
-                }
+                // }
     //             let fresh6 = dst;
     //             dst = dst.offset(1);
     //             *fresh6 = *re;
     //             natom += 1;
     //             natom;
-            }
+            // }
         }
     //     re = re.offset(1);
     //     re;

@@ -80,7 +80,7 @@ statement
     | staticVarDecl
     | assignStmt
     | Identifier ';'
-    | expression ('+=' | '-=' | '*=' | '/=' | '%=' | '&=' | '|=' | '^=') expression ';'
+    | compoundAssignment
     | forStmt
     | ifStmt
     | exprStmt
@@ -94,6 +94,8 @@ statement
     | unsafeBlock
     ;
 
+compoundOp: '+=' | '-=' | '*=' | '/=' | '%=' | '&=' | '|=' | '^=' ;
+compoundAssignment: expression compoundOp expression ';' ;
 matchStmt: 'match' expression '{' matchArm+ '}' ;
 unsafeBlock: 'unsafe' block;
 whileStmt: 'while' expression block;

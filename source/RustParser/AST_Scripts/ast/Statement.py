@@ -110,3 +110,14 @@ class MatchArm:
 class MatchPattern:
     def __init__(self, value):
         self.value = value            # e.g., number, identifier name, "_"
+
+class CompoundAssignment(Statement):
+    def __init__(self, target, op, value, line, column):
+        self.target = target      # e.g., IdentifierExpr("natom")
+        self.op = op              # e.g., "-="
+        self.value = value        # e.g., LiteralExpr(1)
+        # self.line = line
+        # self.column = column
+
+    def accept(self, visitor):
+        return visitor.visitCompoundAssignment(self)

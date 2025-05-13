@@ -1,6 +1,6 @@
 from antlr4 import TerminalNode
 from AST_Scripts.ast.Expression import ArrayLiteral, BinaryExpr, BoolLiteral, BorrowExpr, CastExpr, DereferenceExpr, IdentifierExpr, IntLiteral, MethodCallExpr, RepeatArrayLiteral, StrLiteral
-from AST_Scripts.ast.Statement import AssignStmt, ForStmt, IfStmt, LetStmt, MatchArm, MatchPattern, MatchStmt, StaticVarDecl, WhileStmt
+from AST_Scripts.ast.Statement import AssignStmt, CompoundAssignment, ForStmt, IfStmt, LetStmt, MatchArm, MatchPattern, MatchStmt, StaticVarDecl, WhileStmt
 from AST_Scripts.antlr.RustVisitor import RustVisitor
 from AST_Scripts.ast.TopLevel import ExternBlock, ExternFunctionDecl, ExternStaticVarDecl, ExternTypeDecl, FunctionDef, StructDef, Attribute, TypeAliasDecl, UnionDef
 from AST_Scripts.ast.Program import Program
@@ -22,48 +22,34 @@ class Transformer(RustVisitor):
         return IdentifierExpr(name=text)
 
     def _basic_type_from_str(self, s: str):
-        print("#0: ", s)
         s = s.strip()
         if s in {"i32", "u32", "f64", "bool", "char", "usize", "isize", "FILE"}:
-            print("#1")
             return Type()
         if s.startswith("*mut "):
-            print("#2")
-            print("in mut")
             pointee_type = self._basic_type_from_str(s[5:].strip())
             return PointerType(mutability="mut", pointee_type=pointee_type)
         if s.startswith("*const "):
-            print("#3")
             pointee_type = self._basic_type_from_str(s[7:].strip())
             return PointerType(mutability="const", pointee_type=pointee_type)        
         if s.startswith("*mut") or s.startswith("*const"):
-            print("#4")
             if " " in s:
-                print("#41")
                 pointer_type, pointee = s.split(" ", 1)
                 if pointer_type == "*mut":
-                    print("#411")
                     return PointerType(mutability="mut", pointee_type=self._basic_type_from_str(pointee.strip()))
                 elif pointer_type == "*const":
-                    print("#412")
                     return PointerType(mutability="const", pointee_type=self._basic_type_from_str(pointee.strip()))
             else:
-                print("#42")
                 if s.startswith("*mut"):
-                    print("#421")
                     return PointerType(mutability="mut", pointee_type=self._basic_type_from_str(s[5:].strip()))
                 elif s.startswith("*const"):
-                    print("#422")
                     return PointerType(mutability="const", pointee_type=self._basic_type_from_str(s[7:].strip()))
         if "::" in s:
-            print("#5")
             if ';' in s:
                 inner_type_str, _ = s.strip('[]').split(';', 1)
                 return inner_type_str.strip().split('::')[-1]
             else:
                 return s.strip().split('::')[-1]
 
-        print("fuck!")
         return None
 
     def visit_Program(self, ctx):
@@ -326,6 +312,9 @@ class Transformer(RustVisitor):
             return self.visit(ctx.whileStmt())
         elif ctx.matchStmt():
             return self.visit(ctx.matchStmt())
+        elif ctx.compoundAssignment():
+            print("9999999999999999999999999999999999999999999999999999999999999here!")
+            return self.visit(ctx.compoundAssignment())
         else:
             print("⚠️ Unknown statement:", ctx.getText())
             return None
@@ -358,13 +347,10 @@ class Transformer(RustVisitor):
     binary_operators = {'==', '!=', '<', '>', '<=', '>=', '+', '-', '*', '/', '%', '&&', '||'}
     def visitExpression(self, ctx):
         text = ctx.getText()
-        print("in exp visitor: ", text)
         if text.isdigit():
             return LiteralExpr(value=int(text))
         if ctx.getChildCount() == 1:
-            print("I'm an only child")
             child = ctx.getChild(0)
-            print(f"DEBUG: child={child}, type={type(child)}")
             if isinstance(child, RustParser.RustParser.PrimaryExpressionContext):
                 return IdentifierExpr(name=child.getText())
 
@@ -463,8 +449,6 @@ class Transformer(RustVisitor):
 
     def visitType(self, ctx):
         type_str = ctx.getText()
-        print("+++++++++++++++++++++++++++++++ ", type_str)
-
         if type_str.startswith('[') and ';' in type_str and type_str.endswith(']'):
             inner_type_str, size_str = type_str[1:-1].split(';')
             inner_type = self._basic_type_from_str(inner_type_str.strip())  # Extract base type
@@ -542,7 +526,6 @@ class Transformer(RustVisitor):
         return WhileStmt(condition=condition, body=body, line=ctx.start.line, column=ctx.start.column)
 
     def visitMatchStmt(self, ctx):
-        print("Visiting matchStmt")
         expr = self.visit(ctx.expression())
         arms = []
         for arm_ctx in ctx.matchArm():
@@ -555,3 +538,14 @@ class Transformer(RustVisitor):
             arms.append(MatchArm(patterns=patterns, body=body))
 
         return MatchStmt(expr=expr, arms=arms, line=ctx.start.line, column=ctx.start.column)
+
+    def visitCompoundAssignment(self, ctx):
+        print("In visitCompoundAssignment")
+        lhs_ctx = ctx.expression(0)
+        rhs_ctx = ctx.expression(1)
+        target = self.visit(lhs_ctx)
+        value = self.visit(rhs_ctx)
+        op = ctx.compoundOp().getText()
+        return CompoundAssignment(
+            target=target, op=op, value=value,
+            line=ctx.start.line, column=ctx.start.column)

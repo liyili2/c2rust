@@ -296,6 +296,24 @@ class RustListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by RustParser#compoundOp.
+    def enterCompoundOp(self, ctx:RustParser.CompoundOpContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#compoundOp.
+    def exitCompoundOp(self, ctx:RustParser.CompoundOpContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#compoundAssignment.
+    def enterCompoundAssignment(self, ctx:RustParser.CompoundAssignmentContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#compoundAssignment.
+    def exitCompoundAssignment(self, ctx:RustParser.CompoundAssignmentContext):
+        pass
+
+
     # Enter a parse tree produced by RustParser#matchStmt.
     def enterMatchStmt(self, ctx:RustParser.MatchStmtContext):
         pass
