@@ -115,3 +115,13 @@ class MethodCallExpr:
         self.args = args or []  # Arguments passed to the method, empty in this case
         # self.line = line
         # self.column = column
+
+class DereferenceExpr:
+    def __init__(self, expr):
+        self.expr = expr
+
+class BinaryExpr:
+    def __init__(self, left, op, right):
+        self.left = left
+        self.op = op  # e.g., '!=', '==', '+', etc.
+        self.right = right

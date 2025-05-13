@@ -142,7 +142,7 @@ postfixExpression
     |  ('.' Identifier)+
     | '.' Identifier ( '(' argumentList? ')' | '()' )
     | '[' expression ']'
-    )*
+    )+
   ;
 
 primaryExpression

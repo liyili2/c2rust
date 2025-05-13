@@ -91,7 +91,7 @@ pub unsafe extern "C" fn re2post(mut re: *mut libc::c_char) -> *mut libc::c_char
     // let mut dst: *mut libc::c_char = 0 as *mut libc::c_char;
     // let mut paren: [C2RustUnnamed; 100] = [C2RustUnnamed { nalt: 0, natom: 0 }; 100];
     // let mut p: *mut C2RustUnnamed = 0 as *mut C2RustUnnamed;
-    p = paren.as_mut_ptr();
+    // p = paren.as_mut_ptr();
     // dst = buf.as_mut_ptr();
     // nalt = 0 as libc::c_int;
     // natom = 0 as libc::c_int;
@@ -101,7 +101,7 @@ pub unsafe extern "C" fn re2post(mut re: *mut libc::c_char) -> *mut libc::c_char
     // {
     //     return 0 as *mut libc::c_char;
     // }
-    // while *re != 0 {
+    while *re != 0 {
     //     match *re as libc::c_int {
     //         40 => {
     //             if natom > 1 as libc::c_int {
@@ -192,7 +192,7 @@ pub unsafe extern "C" fn re2post(mut re: *mut libc::c_char) -> *mut libc::c_char
     //     }
     //     re = re.offset(1);
     //     re;
-    // }
+    }
     // if p != paren.as_mut_ptr() {
     //     return 0 as *mut libc::c_char;
     // }

@@ -81,3 +81,13 @@ class ExternStaticVarDecl(Statement):
 
     def __repr__(self):
         return f"ExternStaticVarDecl(name={self.name}, type={self.var_type}, mutable={self.mutable}, visibility={self.visibility}, init={self.initial_value})"
+
+class WhileStmt(Statement):
+    def __init__(self, condition, body, line=None, column=None):
+        self.condition = condition
+        self.body = body
+        # self.line = line
+        # self.column = column
+
+    def accept(self, visitor):
+        return visitor.visitWhileStmt(self)

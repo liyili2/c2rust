@@ -1,6 +1,6 @@
 from antlr4 import TerminalNode
-from AST_Scripts.ast.Expression import ArrayLiteral, BoolLiteral, BorrowExpr, CastExpr, IdentifierExpr, IntLiteral, MethodCallExpr, RepeatArrayLiteral, StrLiteral
-from AST_Scripts.ast.Statement import AssignStmt, ForStmt, IfStmt, LetStmt, StaticVarDecl
+from AST_Scripts.ast.Expression import ArrayLiteral, BinaryExpr, BoolLiteral, BorrowExpr, CastExpr, DereferenceExpr, IdentifierExpr, IntLiteral, MethodCallExpr, RepeatArrayLiteral, StrLiteral
+from AST_Scripts.ast.Statement import AssignStmt, ForStmt, IfStmt, LetStmt, StaticVarDecl, WhileStmt
 from AST_Scripts.antlr.RustVisitor import RustVisitor
 from AST_Scripts.ast.TopLevel import ExternBlock, ExternFunctionDecl, ExternStaticVarDecl, ExternTypeDecl, FunctionDef, StructDef, Attribute, TypeAliasDecl, UnionDef
 from AST_Scripts.ast.Program import Program
@@ -322,6 +322,8 @@ class Transformer(RustVisitor):
             return self.visit(ctx.forStmt()) 
         elif ctx.staticVarDecl():
             return self.visit(ctx.staticVarDecl())
+        elif ctx.whileStmt():
+            return self.visit(ctx.whileStmt())
         else:
             print("⚠️ Unknown statement:", ctx.getText())
             return None
@@ -334,9 +336,7 @@ class Transformer(RustVisitor):
         var_type = None
         if ctx.type_():
             var_type = self.visit(ctx.type_())
-            print("------------------------in if ", var_type)
         else:
-            print("----------------------in else")
             colon_index = [i for i, child in enumerate(ctx.children) if child.getText() == ':'][0]
             eq_index = [i for i, child in enumerate(ctx.children) if child.getText() == '='][0]
             type_tokens = ctx.children[colon_index + 1:eq_index]
@@ -353,16 +353,30 @@ class Transformer(RustVisitor):
             visibility=visibility,
             initial_value=initializer)
 
-    #TODO : make it more clean and organized
+    binary_operators = {'==', '!=', '<', '>', '<=', '>=', '+', '-', '*', '/', '%', '&&', '||'}
     def visitExpression(self, ctx):
-        print("in exp visitor")
         text = ctx.getText()
+        print("in exp visitor: ", text)
+        if text.isdigit():
+            return LiteralExpr(value=int(text))
+        if ctx.getChildCount() == 1:
+            print("I'm an only child")
+            child = ctx.getChild(0)
+            print(f"DEBUG: child={child}, type={type(child)}")
+            if isinstance(child, RustParser.RustParser.PrimaryExpressionContext):
+                return IdentifierExpr(name=child.getText())
 
-    # Handle method calls like `paren.as_mut_ptr()`
+        if ctx.getChildCount() == 3 and ctx.getChild(1).getText() in self.binary_operators:
+            left_expr = self.visit(ctx.getChild(0))
+            op = ctx.getChild(1).getText()
+            right_expr = self.visit(ctx.getChild(2))
+            return BinaryExpr(left=left_expr, op=op, right=right_expr)
+        if ctx.getChild(0).getText() == '*':
+            inner_expr = self.visit(ctx.getChild(1))
+            return DereferenceExpr(expr=inner_expr)
         if '.' in text and text.endswith(')'):
             receiver_text, method_part = text.rsplit('.', 1)
             method_name = method_part[:-2]  # strip trailing '()'
-
             receiver_expr = self._expr_from_text(receiver_text)
             return MethodCallExpr(receiver=receiver_expr, method_name=method_name)
         if ctx.getChildCount() == 3 and ctx.getChild(1).getText() == 'as':
@@ -372,9 +386,6 @@ class Transformer(RustVisitor):
             return CastExpr(expr=expr, target_type=target_type)
         if ctx.primaryExpression():
             return self.visit(ctx.primaryExpression())
-        text = ctx.getText()
-        if text.isdigit():
-            return LiteralExpr(value=int(text))
         try:
             float_val = float(text)
             return LiteralExpr(value=float_val)
@@ -422,11 +433,9 @@ class Transformer(RustVisitor):
                         except ValueError:
                             elements.append(IdentifierExpr(name=e_text))
                 return ArrayLiteral(elements=elements)
-
         elif ctx.primaryExpression():
             ident = ctx.getText()
             return IdentifierExpr(ident)
-
         raise Exception(f"❌ Unsupported literal expression: {text}")
 
     def visitPrimaryExpression(self, ctx):
@@ -519,9 +528,13 @@ class Transformer(RustVisitor):
                 column=self._get_column(ctx))
 
     def visitInitializer(self, ctx):
-        print("****************************************visit init")
         if ctx.expression():
             return self.visit(ctx.expression())
         else:
             print("Unhandled initializer kind")
             return None
+
+    def visitWhileStmt(self, ctx):
+        condition = self.visit(ctx.expression())
+        body = [self.visit(stmt) for stmt in ctx.block().statement()]
+        return WhileStmt(condition=condition, body=body, line=ctx.start.line, column=ctx.start.column)
