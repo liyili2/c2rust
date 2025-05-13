@@ -296,6 +296,15 @@ class RustListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by RustParser#matchStmt.
+    def enterMatchStmt(self, ctx:RustParser.MatchStmtContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#matchStmt.
+    def exitMatchStmt(self, ctx:RustParser.MatchStmtContext):
+        pass
+
+
     # Enter a parse tree produced by RustParser#unsafeBlock.
     def enterUnsafeBlock(self, ctx:RustParser.UnsafeBlockContext):
         pass

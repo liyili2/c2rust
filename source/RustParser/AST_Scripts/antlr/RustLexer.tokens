@@ -116,8 +116,8 @@ COMMENT=85
 '^='=31
 'break'=32
 'continue'=33
-'match'=34
-'.'=35
+'.'=34
+'match'=35
 'while'=36
 'let'=37
 'ref'=38

@@ -89,11 +89,12 @@ statement
     | loopStmt
     | 'break' ';'
     | 'continue' ';'
-    | 'match' expression '{' matchArm+ '}'
+    | matchStmt
     | qualifiedFunctionCall ('.' qualifiedFunctionCall)* ';'
     | unsafeBlock
     ;
 
+matchStmt: 'match' expression '{' matchArm+ '}' ;
 unsafeBlock: 'unsafe' block;
 whileStmt: 'while' expression block;
 staticVarDecl: visibility? 'static' 'mut'? Identifier ':' (type | Identifier) '=' initializer ';';

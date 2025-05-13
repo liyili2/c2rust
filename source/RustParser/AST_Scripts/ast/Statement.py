@@ -73,11 +73,11 @@ class Block(Statement):
 
 class ExternStaticVarDecl(Statement):
     def __init__(self, name, var_type, mutable, initial_value, visibility=None):
-        self.name = name                  # str
-        self.var_type = var_type          # Type or str
-        self.mutable = mutable            # bool
-        self.initial_value = initial_value  # Expr
-        self.visibility = visibility      # Optional[str]
+        self.name = name
+        self.var_type = var_type
+        self.mutable = mutable
+        self.initial_value = initial_value
+        self.visibility = visibility
 
     def __repr__(self):
         return f"ExternStaticVarDecl(name={self.name}, type={self.var_type}, mutable={self.mutable}, visibility={self.visibility}, init={self.initial_value})"
@@ -91,3 +91,22 @@ class WhileStmt(Statement):
 
     def accept(self, visitor):
         return visitor.visitWhileStmt(self)
+
+class MatchStmt(Statement):
+    def __init__(self, expr, arms, line, column):
+        self.expr = expr              # the expression being matched
+        self.arms = arms              # list of MatchArm
+        # self.line = line
+        # self.column = column
+
+    def accept(self, visitor):
+        return visitor.visit_match_stmt(self)
+
+class MatchArm:
+    def __init__(self, patterns, body):
+        self.patterns = patterns      # list of MatchPattern
+        self.body = body              # list of statements (block)
+
+class MatchPattern:
+    def __init__(self, value):
+        self.value = value            # e.g., number, identifier name, "_"

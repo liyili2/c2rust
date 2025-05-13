@@ -1,6 +1,6 @@
 from antlr4 import TerminalNode
 from AST_Scripts.ast.Expression import ArrayLiteral, BinaryExpr, BoolLiteral, BorrowExpr, CastExpr, DereferenceExpr, IdentifierExpr, IntLiteral, MethodCallExpr, RepeatArrayLiteral, StrLiteral
-from AST_Scripts.ast.Statement import AssignStmt, ForStmt, IfStmt, LetStmt, StaticVarDecl, WhileStmt
+from AST_Scripts.ast.Statement import AssignStmt, ForStmt, IfStmt, LetStmt, MatchArm, MatchPattern, MatchStmt, StaticVarDecl, WhileStmt
 from AST_Scripts.antlr.RustVisitor import RustVisitor
 from AST_Scripts.ast.TopLevel import ExternBlock, ExternFunctionDecl, ExternStaticVarDecl, ExternTypeDecl, FunctionDef, StructDef, Attribute, TypeAliasDecl, UnionDef
 from AST_Scripts.ast.Program import Program
@@ -324,6 +324,8 @@ class Transformer(RustVisitor):
             return self.visit(ctx.staticVarDecl())
         elif ctx.whileStmt():
             return self.visit(ctx.whileStmt())
+        elif ctx.matchStmt():
+            return self.visit(ctx.matchStmt())
         else:
             print("⚠️ Unknown statement:", ctx.getText())
             return None
@@ -538,3 +540,18 @@ class Transformer(RustVisitor):
         condition = self.visit(ctx.expression())
         body = [self.visit(stmt) for stmt in ctx.block().statement()]
         return WhileStmt(condition=condition, body=body, line=ctx.start.line, column=ctx.start.column)
+
+    def visitMatchStmt(self, ctx):
+        print("Visiting matchStmt")
+        expr = self.visit(ctx.expression())
+        arms = []
+        for arm_ctx in ctx.matchArm():
+            patterns = []
+            for pat_ctx in arm_ctx.matchPattern():
+                pat_text = pat_ctx.getText()
+                patterns.append(MatchPattern(pat_text))
+
+            body = [self.visit(stmt) for stmt in arm_ctx.block().statement()]
+            arms.append(MatchArm(patterns=patterns, body=body))
+
+        return MatchStmt(expr=expr, arms=arms, line=ctx.start.line, column=ctx.start.column)
