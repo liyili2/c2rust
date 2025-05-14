@@ -1,5 +1,5 @@
 from antlr4 import TerminalNode
-from AST_Scripts.ast.Expression import ArrayLiteral, BinaryExpr, BoolLiteral, BorrowExpr, CastExpr, DereferenceExpr, IdentifierExpr, IntLiteral, MethodCallExpr, RepeatArrayLiteral, StrLiteral
+from AST_Scripts.ast.Expression import ArrayLiteral, BinaryExpr, BoolLiteral, BorrowExpr, CastExpr, CharLiteralExpr, DereferenceExpr, IdentifierExpr, IntLiteral, MethodCallExpr, RepeatArrayLiteral, StrLiteral
 from AST_Scripts.ast.Statement import AssignStmt, CompoundAssignment, ExpressionStmt, ForStmt, IfStmt, LetStmt, MatchArm, MatchPattern, MatchStmt, StaticVarDecl, WhileStmt
 from AST_Scripts.antlr.RustVisitor import RustVisitor
 from AST_Scripts.ast.TopLevel import ExternBlock, ExternFunctionDecl, ExternStaticVarDecl, ExternTypeDecl, FunctionDef, StructDef, Attribute, TypeAliasDecl, UnionDef
@@ -278,10 +278,10 @@ class Transformer(RustVisitor):
             name_token = child.getText()
         else:
             raise Exception(f"❌ Unsupported assignment LHS node: {type(child)}")
-        
+
         value = self.visit(value_expr)
         return AssignStmt(target=name_token, value=value)
-    
+
     def visitForStmt(self, ctx):
         var_name = ctx.Identifier().getText()
         iterable_expr = self.visit(ctx.expression())
@@ -293,7 +293,6 @@ class Transformer(RustVisitor):
         stmts = []
         for stmt_ctx in ctx.statement():
             result = self.visit(stmt_ctx)
-            #print("🧱 Statement transformed:", result)
             stmts.append(result)
         return stmts
     
@@ -352,8 +351,18 @@ class Transformer(RustVisitor):
             initial_value=initializer)
 
     binary_operators = {'==', '!=', '<', '>', '<=', '>=', '+', '-', '*', '/', '%', '&&', '||'}
+
     def visitExpression(self, ctx):
         text = ctx.getText()
+        if "as" in text:
+            print("expression is ", text)
+            left_expr = self.visit(ctx.expression(0))
+            type_nodes = ctx.type_()
+            result = left_expr
+            for i in range(len(type_nodes)):
+                result = CastExpr(expr=result, target_type=type_nodes[i].getText())
+            return result
+
         if text.isdigit():
             return LiteralExpr(value=int(text))
         if ctx.getChildCount() == 1:
@@ -369,16 +378,24 @@ class Transformer(RustVisitor):
         if ctx.getChild(0).getText() == '*':
             inner_expr = self.visit(ctx.getChild(1))
             return DereferenceExpr(expr=inner_expr)
+
         if '.' in text and text.endswith(')'):
             receiver_text, method_part = text.rsplit('.', 1)
-            method_name = method_part[:-2]  # strip trailing '()'
+            method_name = method_part[:-2]
             receiver_expr = self._expr_from_text(receiver_text)
-            return MethodCallExpr(receiver=receiver_expr, method_name=method_name)
+            arg_str = method_part[method_part.index('(') + 1 : -1]
+            return MethodCallExpr(receiver=receiver_expr, args=arg_str, method_name=method_name)
+
         if ctx.getChildCount() == 3 and ctx.getChild(1).getText() == 'as':
-            expr = self.visit(ctx.getChild(0))  # e.g., 0
+            expr = self.visit(ctx.getChild(0))
             type_text = ctx.getChild(2).getText()
-            target_type = self._basic_type_from_str(type_text)  # You can just pass type_text if you don’t resolve types
+            target_type = self._basic_type_from_str(type_text)
             return CastExpr(expr=expr, target_type=target_type)
+
+        if text.startswith("'") and text.endswith("'"):
+            char_value = text[1]
+            return CharLiteralExpr(value=char_value)
+
         if ctx.primaryExpression():
             return self.visit(ctx.primaryExpression())
         try:
@@ -432,6 +449,9 @@ class Transformer(RustVisitor):
             ident = ctx.getText()
             return IdentifierExpr(ident)
         raise Exception(f"❌ Unsupported literal expression: {text}")
+    
+    def visitCharLiteralExpr(self, ctx):
+        return ctx.value
 
     def visitPrimaryExpression(self, ctx):
         if ctx.literal():

@@ -108,11 +108,16 @@ class CastExpr:
         # self.line = line
         # self.column = column
 
+class UnaryExpr(Expression):
+    def __init__(self, op, expr):
+        self.op = op
+        self.expr = expr
+
 class MethodCallExpr:
-    def __init__(self, receiver, method_name, args=None, line=None, column=None):
-        self.receiver = receiver  # e.g., `paren`
-        self.method_name = method_name  # e.g., `as_mut_ptr`
-        self.args = args or []  # Arguments passed to the method, empty in this case
+    def __init__(self, receiver, method_name, args, line=None, column=None):
+        self.receiver = receiver
+        self.method_name = method_name
+        self.args = args or []
         # self.line = line
         # self.column = column
 
@@ -125,3 +130,10 @@ class BinaryExpr:
         self.left = left
         self.op = op  # e.g., '!=', '==', '+', etc.
         self.right = right
+
+class CharLiteralExpr(Expression):
+    def __init__(self, value):
+        self.value = value
+
+    def accept(self, visitor):
+        return visitor.visitCharLiteralExpr(self)
