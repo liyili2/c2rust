@@ -104,24 +104,23 @@ class MatchStmt(Statement):
 
 class MatchArm:
     def __init__(self, patterns, body):
-        self.patterns = patterns      # list of MatchPattern
-        self.body = body              # list of statements (block)
+        self.patterns = patterns
+        self.body = body
 
 class MatchPattern:
     def __init__(self, value):
-        self.value = value            # e.g., number, identifier name, "_"
+        self.value = value
 
 class CompoundAssignment(Statement):
     def __init__(self, target, op, value, line, column):
-        self.target = target      # e.g., IdentifierExpr("natom")
-        self.op = op              # e.g., "-="
-        self.value = value        # e.g., LiteralExpr(1)
+        self.target = target
+        self.op = op
+        self.value = value
         # self.line = line
         # self.column = column
 
     def accept(self, visitor):
         return visitor.visitCompoundAssignment(self)
-
 
 class ExpressionStmt(Statement):
     def __init__(self, expr, line, column):
@@ -131,3 +130,13 @@ class ExpressionStmt(Statement):
 
     def accept(self, visitor):
         return visitor.visitExpressionStmt(self)
+
+class ReturnStmt(Statement):
+    def __init__(self, value=None):
+        self.value = value
+
+    def accept(self, visitor):
+        return visitor.visitReturnStmt(self)
+    
+    def __repr__(self):
+        return f"ReturnStmt(value={self.value})"

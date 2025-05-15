@@ -1,6 +1,6 @@
 from antlr4 import TerminalNode
 from AST_Scripts.ast.Expression import ArrayLiteral, BinaryExpr, BoolLiteral, BorrowExpr, CastExpr, CharLiteralExpr, DereferenceExpr, FieldAccessExpr, IdentifierExpr, IndexExpr, IntLiteral, MethodCallExpr, RepeatArrayLiteral, StrLiteral
-from AST_Scripts.ast.Statement import AssignStmt, CompoundAssignment, ExpressionStmt, ForStmt, IfStmt, LetStmt, MatchArm, MatchPattern, MatchStmt, StaticVarDecl, WhileStmt
+from AST_Scripts.ast.Statement import AssignStmt, CompoundAssignment, ExpressionStmt, ForStmt, IfStmt, LetStmt, MatchArm, MatchPattern, MatchStmt, ReturnStmt, StaticVarDecl, WhileStmt
 from AST_Scripts.antlr.RustVisitor import RustVisitor
 from AST_Scripts.ast.TopLevel import ExternBlock, ExternFunctionDecl, ExternStaticVarDecl, ExternTypeDecl, FunctionDef, StructDef, Attribute, TypeAliasDecl, UnionDef
 from AST_Scripts.ast.Program import Program
@@ -405,9 +405,23 @@ class Transformer(RustVisitor):
             return self.visit(ctx.matchStmt())
         elif ctx.compoundAssignment():
             return self.visit(ctx.compoundAssignment())
+        elif ctx.returnStmt():
+            return self.visit(ctx.returnStmt())
         else:
             print("⚠️ Unknown statement:", ctx.getText())
             return None
+
+    def visitReturnStmt(self, ctx):
+        if ctx.getChildCount() == 3:
+            expr = self.visit(ctx.expression())
+            return ReturnStmt(expr)
+        elif ctx.getChildCount() == 2:
+            return ReturnStmt()
+        elif ctx.Identifier():
+            label_name = ctx.Identifier().getText()
+            return label_name
+        else:
+            raise Exception("Unrecognized return statement")
 
     def visitStaticVarDecl(self, ctx):
         visibility = ctx.visibility().getText() if ctx.visibility() else None
