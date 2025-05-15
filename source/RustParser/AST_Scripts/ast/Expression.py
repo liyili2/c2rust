@@ -137,3 +137,19 @@ class CharLiteralExpr(Expression):
 
     def accept(self, visitor):
         return visitor.visitCharLiteralExpr(self)
+    
+class FieldAccessExpr(Expression):
+    def __init__(self, receiver, field_name):
+        self.receiver = receiver
+        self.field_name = field_name
+
+    def accept(self, visitor):
+        return visitor.visitFieldAccessExpr(self)
+
+class IndexExpr(Expression):
+    def __init__(self, target, index):
+        self.target = target
+        self.index = index
+
+    def accept(self, visitor):
+        return visitor.visitIndexExpr(self)

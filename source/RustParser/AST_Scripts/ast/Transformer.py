@@ -1,5 +1,5 @@
 from antlr4 import TerminalNode
-from AST_Scripts.ast.Expression import ArrayLiteral, BinaryExpr, BoolLiteral, BorrowExpr, CastExpr, CharLiteralExpr, DereferenceExpr, IdentifierExpr, IntLiteral, MethodCallExpr, RepeatArrayLiteral, StrLiteral
+from AST_Scripts.ast.Expression import ArrayLiteral, BinaryExpr, BoolLiteral, BorrowExpr, CastExpr, CharLiteralExpr, DereferenceExpr, FieldAccessExpr, IdentifierExpr, IndexExpr, IntLiteral, MethodCallExpr, RepeatArrayLiteral, StrLiteral
 from AST_Scripts.ast.Statement import AssignStmt, CompoundAssignment, ExpressionStmt, ForStmt, IfStmt, LetStmt, MatchArm, MatchPattern, MatchStmt, StaticVarDecl, WhileStmt
 from AST_Scripts.antlr.RustVisitor import RustVisitor
 from AST_Scripts.ast.TopLevel import ExternBlock, ExternFunctionDecl, ExternStaticVarDecl, ExternTypeDecl, FunctionDef, StructDef, Attribute, TypeAliasDecl, UnionDef
@@ -15,6 +15,8 @@ class Transformer(RustVisitor):
         text = text.strip()
         if text.isdigit():
             return LiteralExpr(value=int(text))
+        elif text.startswith("'") and text.endswith("'"):
+            return CharLiteralExpr(text[1:-1])
         try:
             return LiteralExpr(value=float(text))
         except ValueError:
@@ -52,13 +54,96 @@ class Transformer(RustVisitor):
 
         return None
 
+    def _handleChainedMethodCall(self, ctx):
+        text = ctx.getText()
+        parts = text.split('.')
+        receiver = self._expr_from_text(parts[0])
+        current = receiver
+        for part in parts[1:]:
+            # if '(' in part:
+            #     method_name = part.split('(')[0]
+            #     args_text = part[part.find('(')+1:part.rfind(')')]
+            #     print("count is ", ctx.getChildCount(), args)
+            #     args = [self._expr_from_text(arg.strip()) for arg in args_text.split(',') if arg.strip()]
+            # else:
+            method_name = part
+            args = []
+            print("count is ", ctx.getChildCount())
+            for i in range(ctx.getChildCount()):
+                    # print("child is ", ctx.getChild(i))
+                # if isinstance(ctx.getChild(i), RustParser.RustParser.ArgumentListContext):
+                    print(f"Child {i}: {type(ctx.getChild(i))} → {ctx.getChild(i).getText()}")
+                    args = [self.visit(child) for child in ctx.getChild(i).expression()]
+                    break
+
+            current = MethodCallExpr(receiver=current, method_name=method_name, args=args)
+        return current
+    
+    def visitPostfixExpression(self, ctx):
+        expr = self.visit(ctx.primaryExpression())
+        i = 1
+        while i < ctx.getChildCount():
+            token = ctx.getChild(i).getText()
+
+            if token == '(':
+                arg_list_ctx = ctx.getChild(i + 1)
+                if hasattr(arg_list_ctx, 'expression'):
+                    args = [self.visit(e) for e in arg_list_ctx.expression()]
+                else:
+                    args = []
+                expr = MethodCallExpr(receiver=expr, method_name=None, args=args)
+                i += 3
+
+            elif token == '.':
+                next_token = ctx.getChild(i + 1)
+                method_or_field = next_token.getText()
+                if (i + 2 < ctx.getChildCount() and ctx.getChild(i + 2).getText() in ['(', '()']):
+                    if ctx.getChild(i + 2).getText() == '()':
+                        args = []
+                        i += 3
+                    else:
+                        arg_list_ctx = ctx.getChild(i + 3)
+                        if hasattr(arg_list_ctx, 'expression'):
+                            args = [self.visit(e) for e in arg_list_ctx.expression()]
+                        else:
+                            args = []
+                        i += 5
+                    expr = MethodCallExpr(receiver=expr, method_name=method_or_field, args=args)
+                else:
+                    expr = FieldAccessExpr(receiver=expr, field_name=method_or_field)
+                    i += 2
+            elif token == '[':
+                index_expr = self.visit(ctx.getChild(i + 1))
+                expr = IndexExpr(target=expr, index=index_expr)
+                i += 3
+            else:
+                i += 1
+        return expr
+
+    def visitFieldAccessExpr(self, expr):
+        receiver_val = self.visit(expr.receiver)        
+        field_name = expr.field_name
+        if isinstance(receiver_val, dict):
+            if field_name in receiver_val:
+                return receiver_val[field_name]
+            else:
+                raise Exception(f"Field '{field_name}' not found in {receiver_val}")
+        else:
+            raise Exception(f"Cannot access field '{field_name}' on non-object type: {type(receiver_val)}")
+
+    def visitIndexExpr(self, expr):
+        target_val = self.visit(expr.target)
+        index_val = self.visit(expr.index)
+        try:
+            return target_val[index_val]
+        except (IndexError, TypeError, KeyError) as e:
+            raise Exception(f"Indexing error: {e}")
+
     def visit_Program(self, ctx):
         items = []
         for item in ctx.topLevelItem():
             result = self.visit(item)
             items.append(result)
-
-        #print("✅ program items are", items)
         return Program(items)
 
     def get_literal_type(self, value):
@@ -319,7 +404,6 @@ class Transformer(RustVisitor):
         elif ctx.matchStmt():
             return self.visit(ctx.matchStmt())
         elif ctx.compoundAssignment():
-            print("9999999999999999999999999999999999999999999999999999999999999here!")
             return self.visit(ctx.compoundAssignment())
         else:
             print("⚠️ Unknown statement:", ctx.getText())
@@ -354,13 +438,29 @@ class Transformer(RustVisitor):
 
     def visitExpression(self, ctx):
         text = ctx.getText()
-        if "as" in text:
-            print("expression is ", text)
+        # print("expression is ", text)
+        # print("expression is ", text, ctx.getChildCount())
+        if ctx.postfixExpression() is not None:
+            print("yeah!")
+            return self.visit(ctx.postfixExpression())
+
+        if ctx.getChildCount() == 3:
+            middle = ctx.getChild(1)
+            if isinstance(middle, TerminalNode):
+                op = middle.getText()
+                if op in self.binary_operators:
+                    left_expr = self.visit(ctx.getChild(0))
+                    right_expr = self.visit(ctx.getChild(2))
+                    return BinaryExpr(left=left_expr, op=op, right=right_expr)
+
+        elif "as" in text and ctx.getChildCount() >= 3:
+            print("cast expression is ", text)
             left_expr = self.visit(ctx.expression(0))
             type_nodes = ctx.type_()
             result = left_expr
             for i in range(len(type_nodes)):
-                result = CastExpr(expr=result, target_type=type_nodes[i].getText())
+                type_node = self._basic_type_from_str(type_nodes[i].getText())
+                result = CastExpr(expr=result, target_type=type_node)
             return result
 
         if text.isdigit():
@@ -370,21 +470,9 @@ class Transformer(RustVisitor):
             if isinstance(child, RustParser.RustParser.PrimaryExpressionContext):
                 return IdentifierExpr(name=child.getText())
 
-        if ctx.getChildCount() == 3 and ctx.getChild(1).getText() in self.binary_operators:
-            left_expr = self.visit(ctx.getChild(0))
-            op = ctx.getChild(1).getText()
-            right_expr = self.visit(ctx.getChild(2))
-            return BinaryExpr(left=left_expr, op=op, right=right_expr)
         if ctx.getChild(0).getText() == '*':
             inner_expr = self.visit(ctx.getChild(1))
             return DereferenceExpr(expr=inner_expr)
-
-        if '.' in text and text.endswith(')'):
-            receiver_text, method_part = text.rsplit('.', 1)
-            method_name = method_part[:-2]
-            receiver_expr = self._expr_from_text(receiver_text)
-            arg_str = method_part[method_part.index('(') + 1 : -1]
-            return MethodCallExpr(receiver=receiver_expr, args=arg_str, method_name=method_name)
 
         if ctx.getChildCount() == 3 and ctx.getChild(1).getText() == 'as':
             expr = self.visit(ctx.getChild(0))
@@ -448,8 +536,10 @@ class Transformer(RustVisitor):
         elif ctx.primaryExpression():
             ident = ctx.getText()
             return IdentifierExpr(ident)
+
+        print("with sorrow: ", text, ctx.getChild(0).__class__)
         raise Exception(f"❌ Unsupported literal expression: {text}")
-    
+
     def visitCharLiteralExpr(self, ctx):
         return ctx.value
 
