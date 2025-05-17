@@ -9,7 +9,7 @@ class IdentifierExpr(Expression):
         self.name = name
 
     def accept(self, visitor):
-        return visitor.visit_identifier_expr(self)
+        return visitor.visitPrimaryExpression(self)
 
 class BinaryExpr(Expression):
     def __init__(self, left, op, right):
@@ -125,6 +125,9 @@ class DereferenceExpr:
     def __init__(self, expr):
         self.expr = expr
 
+    def accept(self, visitor):
+        return visitor.visitDereferenceExpr(self)
+
 class BinaryExpr:
     def __init__(self, left, op, right):
         self.left = left
@@ -153,3 +156,29 @@ class IndexExpr(Expression):
 
     def accept(self, visitor):
         return visitor.visitIndexExpr(self)
+
+class ParenExpr(Expression):
+    def __init__(self, inner_expr):
+        self.inner_expr = inner_expr
+
+    def accept(self, visitor):
+        return visitor.visitParenExpr(self)
+
+    def __repr__(self):
+        return f"ParenExpr({self.inner_expr})"
+    
+class StructLiteralField:
+    def __init__(self, name, value):
+        self.name = name
+        self.value = value
+
+    def accept(self, visitor):
+        return visitor.visitStructLiteralField(self)
+
+class StructLiteralExpr(Expression):
+    def __init__(self, struct_name, fields):
+        self.struct_name = struct_name
+        self.fields = fields
+
+    def accept(self, visitor):
+        return visitor.visitStructLiteralExpr(self)

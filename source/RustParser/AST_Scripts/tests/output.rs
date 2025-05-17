@@ -104,17 +104,17 @@ pub unsafe extern "C" fn re2post(mut re: *mut libc::c_char) -> *mut libc::c_char
     while *re != 0 {
         match *re as libc::c_int {
             40 => {
-                if natom > 1 as libc::c_int {
+                // if natom > 1 as libc::c_int {
                     // natom -= 1;
                     // natom;
                     // let fresh0 = dst;
                     // dst = dst.offset(1);
                     // *fresh0 = '.' as i32 as libc::c_char ;
-                }
-                if p >= paren.as_mut_ptr().offset(100 as libc::c_int as isize) {
-                    return 0 as *mut libc::c_char;
-                }
-    //             (*p).nalt = nalt;
+                // }
+                // if p >= paren.as_mut_ptr().offset(100 as libc::c_int as isize) {
+                //     return 0 as *mut libc::c_char;
+                // }
+                (*p).nalt = nalt;
     //             (*p).natom = natom;
     //             p = p.offset(1);
     //             p;

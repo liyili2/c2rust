@@ -1,5 +1,5 @@
 from antlr4 import TerminalNode
-from AST_Scripts.ast.Expression import ArrayLiteral, BinaryExpr, BoolLiteral, BorrowExpr, CastExpr, CharLiteralExpr, DereferenceExpr, FieldAccessExpr, IdentifierExpr, IndexExpr, IntLiteral, MethodCallExpr, RepeatArrayLiteral, StrLiteral
+from AST_Scripts.ast.Expression import ArrayLiteral, BinaryExpr, BoolLiteral, BorrowExpr, CastExpr, CharLiteralExpr, DereferenceExpr, FieldAccessExpr, IdentifierExpr, IndexExpr, IntLiteral, MethodCallExpr, ParenExpr, RepeatArrayLiteral, StrLiteral, StructLiteralExpr
 from AST_Scripts.ast.Statement import AssignStmt, CompoundAssignment, ExpressionStmt, ForStmt, IfStmt, LetStmt, MatchArm, MatchPattern, MatchStmt, ReturnStmt, StaticVarDecl, WhileStmt
 from AST_Scripts.antlr.RustVisitor import RustVisitor
 from AST_Scripts.ast.TopLevel import ExternBlock, ExternFunctionDecl, ExternStaticVarDecl, ExternTypeDecl, FunctionDef, StructDef, Attribute, TypeAliasDecl, UnionDef
@@ -78,9 +78,10 @@ class Transformer(RustVisitor):
 
             current = MethodCallExpr(receiver=current, method_name=method_name, args=args)
         return current
-    
+
     def visitPostfixExpression(self, ctx):
         expr = self.visit(ctx.primaryExpression())
+        print("post fix is ", expr)
         i = 1
         while i < ctx.getChildCount():
             token = ctx.getChild(i).getText()
@@ -121,7 +122,8 @@ class Transformer(RustVisitor):
         return expr
 
     def visitFieldAccessExpr(self, expr):
-        receiver_val = self.visit(expr.receiver)        
+        receiver_val = self.visit(expr.receiver)
+        print("inside field access we have ", receiver_val.__class__)
         field_name = expr.field_name
         if isinstance(receiver_val, dict):
             if field_name in receiver_val:
@@ -353,25 +355,18 @@ class Transformer(RustVisitor):
         return IfStmt(condition=condition, then_branch=then_branch, else_branch=else_branch)
 
     def visitAssignStmt(self, ctx):
-        target_expr = ctx.expression(0)
-        value_expr = ctx.expression(1)
-        child = target_expr.getChild(0)
-
-        if isinstance(child, TerminalNode):
-            name_token = child.getText()
-        elif hasattr(child, 'getText'):
-            name_token = child.getText()
+        target_expr = self.visit(ctx.expression(0))
+        print("assignment target is ", target_expr.__class__)
+        value_expr = self.visit(ctx.expression(1))
+        if isinstance(target_expr, (IdentifierExpr, FieldAccessExpr, IndexExpr)):
+            return AssignStmt(target=target_expr, value=value_expr)
         else:
-            raise Exception(f"❌ Unsupported assignment LHS node: {type(child)}")
-
-        value = self.visit(value_expr)
-        return AssignStmt(target=name_token, value=value)
+            raise Exception(f"❌ Unsupported assignment LHS node: {type(target_expr)}")
 
     def visitForStmt(self, ctx):
         var_name = ctx.Identifier().getText()
         iterable_expr = self.visit(ctx.expression())
         body = self.visit(ctx.block())
-
         return ForStmt(var=var_name, iterable=iterable_expr, body=body)
 
     def visitBlock(self, ctx):
@@ -380,7 +375,7 @@ class Transformer(RustVisitor):
             result = self.visit(stmt_ctx)
             stmts.append(result)
         return stmts
-    
+
     def visitExpressionStatement(self, ctx):
         expr = self.visit(ctx.expression())
         return ExpressionStmt(expr=expr, line=ctx.start.line, column=ctx.start.column)
@@ -451,12 +446,22 @@ class Transformer(RustVisitor):
     binary_operators = {'==', '!=', '<', '>', '<=', '>=', '+', '-', '*', '/', '%', '&&', '||'}
 
     def visitExpression(self, ctx):
+        return self.visitChildren(ctx)
         text = ctx.getText()
-        # print("expression is ", text)
+        # print("expression is ", ctx.primaryExpression())
         # print("expression is ", text, ctx.getChildCount())
+        if ctx.dereferenceExpression():
+            # print("it is ", ctx.getChild(0).__class__, ctx.getChild(1).__class__)
+            return self.visit(ctx.dereferenceExpression())
+
         if ctx.postfixExpression() is not None:
-            print("yeah!")
             return self.visit(ctx.postfixExpression())
+
+        if ctx.primaryExpression() is not None:
+            return self.visit(ctx.primaryExpression())
+
+        if ctx.dereferenceExpression() is not None:
+            return self.visit(ctx.dereferenceExpression())
 
         if ctx.getChildCount() == 3:
             middle = ctx.getChild(1)
@@ -553,23 +558,40 @@ class Transformer(RustVisitor):
 
         print("with sorrow: ", text, ctx.getChild(0).__class__)
         raise Exception(f"❌ Unsupported literal expression: {text}")
+    
+    def visitPrimaryExpression(self, ctx):
+        print("in primary visitor ", ctx, ctx.__class__)
+        if ctx.literal():
+            return self.visit(ctx.literal())
+
+        if ctx.qualifiedFunctionCall():
+            return self.visit(ctx.qualifiedFunctionCall())
+
+        if ctx.getChildCount() == 1:
+            name = ctx.Identifier().getText()
+            return IdentifierExpr(name)
+        if ctx.getChildCount() == 3 and ctx.getChild(0).getText() == '(':
+            inner_expr = self.visit(ctx.expression())
+            return ParenExpr(inner_expr)
+
+        if ctx.getChildCount() >= 4 and ctx.getChild(1).getText() == '(':    
+            function_name = ctx.Identifier().getText()
+            args = self.visit(ctx.argumentList()) if ctx.argumentList() else []
+            return MethodCallExpr(function_name, args)
+
+        if ctx.getChildCount() >= 4 and ctx.getChild(1).getText() == '{':    
+            struct_name = ctx.Identifier().getText()
+            fields = [self.visit(field) for field in ctx.structLiteralField()]
+            return StructLiteralExpr(struct_name, fields)
+
+        raise Exception(f"Unknown primaryExpression: {ctx.getText()}")
+
+    def visitDereferenceExpression(self, ctx):
+        target_expr = self.visit(ctx.expression())
+        return DereferenceExpr(target_expr)
 
     def visitCharLiteralExpr(self, ctx):
         return ctx.value
-
-    def visitPrimaryExpression(self, ctx):
-        if ctx.literal():
-            return self.visit(ctx.literal())
-        elif ctx.Identifier():
-            return IdentifierExpr(ctx.Identifier().getText())
-        elif ctx.expression():
-            return self.visit(ctx.expression())
-        # elif ctx.Identifier() and ctx.argumentList():
-        #     # Function call: foo(1, 2)
-        #     args = self.visit(ctx.argumentList()) if ctx.argumentList() else []
-        #     return FunctionCall(name=ctx.Identifier().getText(), args=args)
-        else:
-            raise Exception(f"❌ Unsupported primary expression: {ctx.getText()}")
 
     def visit_borrowExpression(self, ctx):
         expr = self.visit(ctx.expression())
@@ -627,6 +649,12 @@ class Transformer(RustVisitor):
             return LiteralExpr(value=int(text))
         elif ctx.arrayLiteral():
             return ArrayLiteral(ctx)
+        
+    def visitParenExpr(self, ctx):
+        inner_expr = ctx.expression()
+        print("inside paren we have ", inner_expr.__class__)
+        result = self.visit(inner_expr)
+        return result
 
     def visitArrayLiteral(self, ctx):
         if ctx.getChildCount() == 5 and ctx.getChild(2).getText() == ';':

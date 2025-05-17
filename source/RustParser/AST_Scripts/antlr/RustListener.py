@@ -440,6 +440,24 @@ class RustListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by RustParser#parenExpression.
+    def enterParenExpression(self, ctx:RustParser.ParenExpressionContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#parenExpression.
+    def exitParenExpression(self, ctx:RustParser.ParenExpressionContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#dereferenceExpression.
+    def enterDereferenceExpression(self, ctx:RustParser.DereferenceExpressionContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#dereferenceExpression.
+    def exitDereferenceExpression(self, ctx:RustParser.DereferenceExpressionContext):
+        pass
+
+
     # Enter a parse tree produced by RustParser#expressionBlock.
     def enterExpressionBlock(self, ctx:RustParser.ExpressionBlockContext):
         pass

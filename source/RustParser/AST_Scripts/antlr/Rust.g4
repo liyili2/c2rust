@@ -118,7 +118,8 @@ expression
     : postfixExpression
     | literal
     | primaryExpression
-    | '*' expression
+    | dereferenceExpression
+    | parenExpression
     | macroCall
     | borrowExpression
     | typePath DOUBLE_COLON '<' type '>()'
@@ -136,6 +137,8 @@ expression
     | (DOUBLE_COLON Identifier)+ ('()' | '(' argumentList ')')
     ;
 
+parenExpression: '(' expression ')';
+dereferenceExpression: '*' expression;
 expressionBlock: '{' statement* expression '}';
 borrowExpression: '&' expression;
 postfixExpression

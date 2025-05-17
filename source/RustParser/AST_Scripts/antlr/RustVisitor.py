@@ -249,6 +249,16 @@ class RustVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by RustParser#parenExpression.
+    def visitParenExpression(self, ctx:RustParser.ParenExpressionContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#dereferenceExpression.
+    def visitDereferenceExpression(self, ctx:RustParser.DereferenceExpressionContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by RustParser#expressionBlock.
     def visitExpressionBlock(self, ctx:RustParser.ExpressionBlockContext):
         return self.visitChildren(ctx)
