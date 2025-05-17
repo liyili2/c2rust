@@ -356,8 +356,8 @@ class Transformer(RustVisitor):
 
     def visitAssignStmt(self, ctx):
         target_expr = self.visit(ctx.expression(0))
-        print("assignment target is ", target_expr.__class__)
         value_expr = self.visit(ctx.expression(1))
+        print("assignment target is ", value_expr.__class__, value_expr)
         if isinstance(target_expr, (IdentifierExpr, FieldAccessExpr, IndexExpr)):
             return AssignStmt(target=target_expr, value=value_expr)
         else:
@@ -446,7 +446,7 @@ class Transformer(RustVisitor):
     binary_operators = {'==', '!=', '<', '>', '<=', '>=', '+', '-', '*', '/', '%', '&&', '||'}
 
     def visitExpression(self, ctx):
-        return self.visitChildren(ctx)
+        # return self.visitChildren(ctx)
         text = ctx.getText()
         # print("expression is ", ctx.primaryExpression())
         # print("expression is ", text, ctx.getChildCount())
@@ -558,7 +558,7 @@ class Transformer(RustVisitor):
 
         print("with sorrow: ", text, ctx.getChild(0).__class__)
         raise Exception(f"❌ Unsupported literal expression: {text}")
-    
+
     def visitPrimaryExpression(self, ctx):
         print("in primary visitor ", ctx, ctx.__class__)
         if ctx.literal():

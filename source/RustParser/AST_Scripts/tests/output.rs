@@ -114,11 +114,11 @@ pub unsafe extern "C" fn re2post(mut re: *mut libc::c_char) -> *mut libc::c_char
                 // if p >= paren.as_mut_ptr().offset(100 as libc::c_int as isize) {
                 //     return 0 as *mut libc::c_char;
                 // }
-                (*p).nalt = nalt;
-    //             (*p).natom = natom;
-    //             p = p.offset(1);
-    //             p;
-    //             nalt = 0 as libc::c_int;
+                // (*p).nalt = nalt;
+                // (*p).natom = natom;
+                // p = p.offset(1);
+                // p;
+                nalt = 0 as libc::c_int;
     //             natom = 0 as libc::c_int;
             }
             // 124 => {
