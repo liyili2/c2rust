@@ -214,13 +214,13 @@ class Transformer(RustVisitor):
 
     def visitAttribute(self, ctx):
         name = ctx.Identifier().getText()
-        if ctx.attrValue():  # Case: name = value
+        if ctx.attrValue():
             value = self.visit(ctx.attrValue())
             return Attribute(name=name, value=value)
-        elif ctx.attrArgs():  # Case: name(args)
+        elif ctx.attrArgs():
             args = self.visit(ctx.attrArgs())
             return Attribute(name=name, args=args)
-        else:  # Case: plain name
+        else:
             return Attribute(name=name)
 
     def visitAttrArgs(self, ctx):
@@ -434,8 +434,6 @@ class Transformer(RustVisitor):
             var_type = self._basic_type_from_str(type_str)
 
         initializer = self.visit(ctx.initializer())
-        print("init val type is ", initializer.__class__)
-
         return StaticVarDecl(
             name=name,
             var_type=var_type,
