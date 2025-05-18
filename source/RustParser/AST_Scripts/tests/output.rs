@@ -84,7 +84,7 @@
 //     pub n: libc::c_int,
 // }
 // #[no_mangle]
-pub unsafe extern "C" fn re2post(mut re: *mut libc::c_char) -> *mut libc::c_char {
+// pub unsafe extern "C" fn re2post(mut re: *mut libc::c_char) -> *mut libc::c_char {
     // let mut nalt: libc::c_int = 0;
     // let mut natom: libc::c_int = 0;
     // static mut buf: [libc::c_char; 8000] = [0; 8000];
@@ -101,8 +101,8 @@ pub unsafe extern "C" fn re2post(mut re: *mut libc::c_char) -> *mut libc::c_char
     // {
     //     return 0 as *mut libc::c_char;
     // }
-    while *re != 0 {
-        match *re as libc::c_int {
+    // while *re != 0 {
+        // match *re as libc::c_int {
             // 40 => {
                 // if natom > 1 as libc::c_int {
                     // natom -= 1;
@@ -121,78 +121,78 @@ pub unsafe extern "C" fn re2post(mut re: *mut libc::c_char) -> *mut libc::c_char
                 // nalt = 0 as libc::c_int;
                 // natom = 0 as libc::c_int;
             // }
-            124 => {
+            // 124 => {
                 // if natom == 0 as libc::c_int {
                 //     return 0 as *mut libc::c_char;
                 // }
-                loop {
+                // loop {
                     // natom -= 1;
                     // if !(natom > 0 as libc::c_int) {
                     //     break;
                     // }
                     // let fresh1 = dst;
                     // dst = dst.offset(1);
-                    *fresh1 = '.' as i32 as libc::c_char;
-                }
-    //             nalt += 1;
-    //             nalt;
-            }
-            // 41 => {
-    //             if p == paren.as_mut_ptr() {
-    //                 return 0 as *mut libc::c_char;
-    //             }
-    //             if natom == 0 as libc::c_int {
-    //                 return 0 as *mut libc::c_char;
-    //             }
-    //             loop {
-    //                 natom -= 1;
-    //                 if !(natom > 0 as libc::c_int) {
-    //                     break;
-    //                 }
-    //                 let fresh2 = dst;
-    //                 dst = dst.offset(1);
-    //                 *fresh2 = '.' as i32 as libc::c_char;
-    //             }
-    //             while nalt > 0 as libc::c_int {
-    //                 let fresh3 = dst;
-    //                 dst = dst.offset(1);
-    //                 *fresh3 = '|' as i32 as libc::c_char;
-    //                 nalt -= 1;
-    //                 nalt;
-    //             }
-    //             p = p.offset(-1);
-    //             p;
-    //             nalt = (*p).nalt;
-    //             natom = (*p).natom;
-    //             natom += 1;
-    //             natom;
-            }
-            // 42 | 43 | 63 => {
-    //             if natom == 0 as libc::c_int {
-    //                 return 0 as *mut libc::c_char;
-    //             }
-    //             let fresh4 = dst;
-    //             dst = dst.offset(1);
-    //             *fresh4 = *re;
-    //         }
-            // _ => {
-    //             if natom > 1 as libc::c_int {
-    //                 natom -= 1;
-    //                 natom;
-    //                 let fresh5 = dst;
-    //                 dst = dst.offset(1);
-    //                 *fresh5 = '.' as i32 as libc::c_char;
+                    // *fresh1 = '.' as i32 as libc::c_char;
                 // }
-    //             let fresh6 = dst;
-    //             dst = dst.offset(1);
-    //             *fresh6 = *re;
-    //             natom += 1;
-    //             natom;
+                // nalt += 1;
+                // nalt;
             // }
-        }
-    //     re = re.offset(1);
-    //     re;
-    }
+            // 41 => {
+                // if p == paren.as_mut_ptr() {
+                //     return 0 as *mut libc::c_char;
+                // }
+                // if natom == 0 as libc::c_int {
+                //     return 0 as *mut libc::c_char;
+                // }
+                // loop {
+                    // natom -= 1;
+                    // if !(natom > 0 as libc::c_int) {
+                    //     break;
+                    // }
+                    // let fresh2 = dst;
+                    // dst = dst.offset(1);
+                    // *fresh2 = '.' as i32 as libc::c_char;
+                // }
+                // while nalt > 0 as libc::c_int {
+                //     let fresh3 = dst;
+                //     dst = dst.offset(1);
+                //     *fresh3 = '|' as i32 as libc::c_char;
+                //     nalt -= 1;
+                //     nalt;
+                // }
+                // p = p.offset(-1);
+                // p;
+                // nalt = (*p).nalt;
+                // natom = (*p).natom;
+                // natom += 1;
+                // natom;
+            // }
+            // 42 | 43 | 63 => {
+            //     if natom == 0 as libc::c_int {
+            //         return 0 as *mut libc::c_char;
+            //     }
+            //     let fresh4 = dst;
+            //     dst = dst.offset(1);
+            //     *fresh4 = *re;
+            // }
+            // _ => {
+            //     if natom > 1 as libc::c_int {
+            //         natom -= 1;
+            //         natom;
+            //         let fresh5 = dst;
+            //         dst = dst.offset(1);
+            //         *fresh5 = '.' as i32 as libc::c_char;
+            //     }
+            //     let fresh6 = dst;
+            //     dst = dst.offset(1);
+            //     *fresh6 = *re;
+            //     natom += 1;
+            //     natom;
+            // }
+        // }
+        // re = re.offset(1);
+        // re;
+    // }
     // if p != paren.as_mut_ptr() {
     //     return 0 as *mut libc::c_char;
     // }
@@ -213,19 +213,19 @@ pub unsafe extern "C" fn re2post(mut re: *mut libc::c_char) -> *mut libc::c_char
     //     nalt;
     // }
     // *dst = 0 as libc::c_int as libc::c_char;
-    return buf.as_mut_ptr();
-}
-// #[no_mangle]
-// pub static mut matchstate: State = {
-//     let mut init = State {
-//         c: Match as libc::c_int,
-//         out: 0 as *const State as *mut State,
-//         out1: 0 as *const State as *mut State,
-//         lastlist: 0,
-//     };
-//     init
-// };
-// #[no_mangle]
+    // return buf.as_mut_ptr();
+// }
+#[no_mangle]
+pub static mut matchstate: State = {
+    let mut init = State {
+        c: Match as libc::c_int,
+        out: 0 as *const State as *mut State,
+        out1: 0 as *const State as *mut State,
+        lastlist: 0,
+    };
+    init
+};
+#[no_mangle]
 // pub static mut nstate: libc::c_int = 0;
 // #[no_mangle]
 // pub unsafe extern "C" fn state(

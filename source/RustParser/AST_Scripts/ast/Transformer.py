@@ -357,7 +357,6 @@ class Transformer(RustVisitor):
     def visitAssignStmt(self, ctx):
         target_expr = self.visit(ctx.expression(0))
         value_expr = self.visit(ctx.expression(1))
-        print("assignment target is ", target_expr.__class__, target_expr)
         if isinstance(target_expr, (IdentifierExpr, FieldAccessExpr, IndexExpr, DereferenceExpr)):
             return AssignStmt(target=target_expr, value=value_expr)
         else:
