@@ -1,6 +1,6 @@
 from antlr4 import TerminalNode
 from AST_Scripts.ast.Expression import ArrayLiteral, BinaryExpr, BoolLiteral, BorrowExpr, CastExpr, CharLiteralExpr, DereferenceExpr, FieldAccessExpr, IdentifierExpr, IndexExpr, IntLiteral, MethodCallExpr, ParenExpr, RepeatArrayLiteral, StrLiteral, StructLiteralExpr
-from AST_Scripts.ast.Statement import AssignStmt, CompoundAssignment, ExpressionStmt, ForStmt, IfStmt, LetStmt, MatchArm, MatchPattern, MatchStmt, ReturnStmt, StaticVarDecl, WhileStmt
+from AST_Scripts.ast.Statement import AssignStmt, CompoundAssignment, ExpressionStmt, ForStmt, IfStmt, LetStmt, LoopStmt, MatchArm, MatchPattern, MatchStmt, ReturnStmt, StaticVarDecl, WhileStmt
 from AST_Scripts.antlr.RustVisitor import RustVisitor
 from AST_Scripts.ast.TopLevel import ExternBlock, ExternFunctionDecl, ExternStaticVarDecl, ExternTypeDecl, FunctionDef, StructDef, Attribute, TypeAliasDecl, UnionDef
 from AST_Scripts.ast.Program import Program
@@ -402,9 +402,15 @@ class Transformer(RustVisitor):
             return self.visit(ctx.compoundAssignment())
         elif ctx.returnStmt():
             return self.visit(ctx.returnStmt())
+        elif ctx.loopStmt():
+            return self.visit(ctx.loopStmt())
         else:
             print("⚠️ Unknown statement:", ctx.getText())
             return None
+        
+    def visitLoopStmt(self, ctx):
+        block = self.visit(ctx.block())
+        return LoopStmt(body=block)
 
     def visitReturnStmt(self, ctx):
         if ctx.getChildCount() == 3:

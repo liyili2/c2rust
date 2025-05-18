@@ -140,3 +140,13 @@ class ReturnStmt(Statement):
     
     def __repr__(self):
         return f"ReturnStmt(value={self.value})"
+
+class LoopStmt(Statement):
+    def __init__(self, body):
+        self.body = body  # This should be a Block object
+
+    def accept(self, visitor):
+        return visitor.visitLoopStmt(self)
+
+    def __repr__(self):
+        return f"LoopStmt(body={repr(self.body)})"
