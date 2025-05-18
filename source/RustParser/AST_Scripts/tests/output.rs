@@ -127,12 +127,12 @@ pub unsafe extern "C" fn re2post(mut re: *mut libc::c_char) -> *mut libc::c_char
                 // }
                 loop {
                     // natom -= 1;
-                    if !(natom > 0 as libc::c_int) {
-                        break;
-                    }
-    //                 let fresh1 = dst;
-    //                 dst = dst.offset(1);
-    //                 *fresh1 = '.' as i32 as libc::c_char;
+                    // if !(natom > 0 as libc::c_int) {
+                    //     break;
+                    // }
+                    // let fresh1 = dst;
+                    // dst = dst.offset(1);
+                    *fresh1 = '.' as i32 as libc::c_char;
                 }
     //             nalt += 1;
     //             nalt;

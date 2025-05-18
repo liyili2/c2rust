@@ -357,8 +357,8 @@ class Transformer(RustVisitor):
     def visitAssignStmt(self, ctx):
         target_expr = self.visit(ctx.expression(0))
         value_expr = self.visit(ctx.expression(1))
-        print("assignment target is ", value_expr.__class__, value_expr)
-        if isinstance(target_expr, (IdentifierExpr, FieldAccessExpr, IndexExpr)):
+        print("assignment target is ", target_expr.__class__, target_expr)
+        if isinstance(target_expr, (IdentifierExpr, FieldAccessExpr, IndexExpr, DereferenceExpr)):
             return AssignStmt(target=target_expr, value=value_expr)
         else:
             raise Exception(f"❌ Unsupported assignment LHS node: {type(target_expr)}")
@@ -470,7 +470,7 @@ class Transformer(RustVisitor):
 
         if ctx.dereferenceExpression() is not None:
             return self.visit(ctx.dereferenceExpression())
-        
+
         if ctx.getChildCount() == 2 and str(ctx.getChild(0)) == '!':
             expr = self.visit(ctx.expression(0))
             return UnaryExpr(op='!', expr=expr)
