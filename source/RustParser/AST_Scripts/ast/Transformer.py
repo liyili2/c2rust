@@ -1,5 +1,5 @@
 from antlr4 import TerminalNode
-from AST_Scripts.ast.Expression import ArrayLiteral, BinaryExpr, BoolLiteral, BorrowExpr, CastExpr, CharLiteralExpr, DereferenceExpr, FieldAccessExpr, IdentifierExpr, IndexExpr, IntLiteral, MethodCallExpr, ParenExpr, RepeatArrayLiteral, StrLiteral, StructLiteralExpr
+from AST_Scripts.ast.Expression import ArrayLiteral, BinaryExpr, BoolLiteral, BorrowExpr, CastExpr, CharLiteralExpr, DereferenceExpr, FieldAccessExpr, IdentifierExpr, IndexExpr, IntLiteral, MethodCallExpr, ParenExpr, RepeatArrayLiteral, StrLiteral, StructLiteralExpr, UnaryExpr
 from AST_Scripts.ast.Statement import AssignStmt, CompoundAssignment, ExpressionStmt, ForStmt, IfStmt, LetStmt, LoopStmt, MatchArm, MatchPattern, MatchStmt, ReturnStmt, StaticVarDecl, WhileStmt
 from AST_Scripts.antlr.RustVisitor import RustVisitor
 from AST_Scripts.ast.TopLevel import ExternBlock, ExternFunctionDecl, ExternStaticVarDecl, ExternTypeDecl, FunctionDef, StructDef, Attribute, TypeAliasDecl, UnionDef
@@ -466,6 +466,10 @@ class Transformer(RustVisitor):
 
         if ctx.dereferenceExpression() is not None:
             return self.visit(ctx.dereferenceExpression())
+        
+        if ctx.getChildCount() == 2 and str(ctx.getChild(0)) == '!':
+            expr = self.visit(ctx.expression(0))
+            return UnaryExpr(op='!', expr=expr)
 
         if ctx.getChildCount() == 3:
             middle = ctx.getChild(1)
@@ -560,7 +564,7 @@ class Transformer(RustVisitor):
             ident = ctx.getText()
             return IdentifierExpr(ident)
 
-        print("with sorrow: ", text, ctx.getChild(0).__class__)
+        print("with sorrow: ", text, ctx.getChild(0).__class__, ctx.getChildCount())
         raise Exception(f"❌ Unsupported literal expression: {text}")
 
     def visitPrimaryExpression(self, ctx):

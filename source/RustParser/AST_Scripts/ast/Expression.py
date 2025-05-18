@@ -113,6 +113,9 @@ class UnaryExpr(Expression):
         self.op = op
         self.expr = expr
 
+    def accept(self, visitor):
+        return visitor.visitExpression(self.expr)
+
 class MethodCallExpr:
     def __init__(self, receiver, method_name, args, line=None, column=None):
         self.receiver = receiver
