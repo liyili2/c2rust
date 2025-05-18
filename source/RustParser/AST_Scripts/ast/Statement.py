@@ -150,3 +150,11 @@ class LoopStmt(Statement):
 
     def __repr__(self):
         return f"LoopStmt(body={repr(self.body)})"
+    
+class BreakStmt(Statement):
+    def accept(self, visitor):
+        return self
+
+class ContinueStmt(Statement):
+    def accept(self, visitor):
+        return self

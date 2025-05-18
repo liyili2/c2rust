@@ -128,7 +128,7 @@ pub unsafe extern "C" fn re2post(mut re: *mut libc::c_char) -> *mut libc::c_char
                 loop {
                     // natom -= 1;
                     if !(natom > 0 as libc::c_int) {
-    //                     break;
+                        break;
                     }
     //                 let fresh1 = dst;
     //                 dst = dst.offset(1);
