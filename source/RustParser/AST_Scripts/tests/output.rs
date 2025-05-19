@@ -215,17 +215,17 @@
     // *dst = 0 as libc::c_int as libc::c_char;
     // return buf.as_mut_ptr();
 // }
-#[no_mangle]
+// #[no_mangle]
 pub static mut matchstate: State = {
     let mut init = State {
         c: Match as libc::c_int,
-        out: 0 as *const State as *mut State,
-        out1: 0 as *const State as *mut State,
-        lastlist: 0,
+        // out: 0 as *const State as *mut State,
+        // out1: 0 as *const State as *mut State,
+        // lastlist: 0,
     };
     init
 };
-#[no_mangle]
+// #[no_mangle]
 // pub static mut nstate: libc::c_int = 0;
 // #[no_mangle]
 // pub unsafe extern "C" fn state(

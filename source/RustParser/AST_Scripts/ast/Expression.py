@@ -171,9 +171,10 @@ class ParenExpr(Expression):
         return f"ParenExpr({self.inner_expr})"
     
 class StructLiteralField:
-    def __init__(self, name, value):
+    def __init__(self, name, value, field_type=None):
         self.name = name
         self.value = value
+        self.field_type = field_type
 
     def accept(self, visitor):
         return visitor.visitStructLiteralField(self)

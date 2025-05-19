@@ -1,5 +1,5 @@
 from antlr4 import TerminalNode
-from AST_Scripts.ast.Expression import ArrayLiteral, BinaryExpr, BoolLiteral, BorrowExpr, CastExpr, CharLiteralExpr, DereferenceExpr, FieldAccessExpr, IdentifierExpr, IndexExpr, IntLiteral, MethodCallExpr, ParenExpr, RepeatArrayLiteral, StrLiteral, StructLiteralExpr, UnaryExpr
+from AST_Scripts.ast.Expression import ArrayLiteral, BinaryExpr, BoolLiteral, BorrowExpr, CastExpr, CharLiteralExpr, DereferenceExpr, FieldAccessExpr, IdentifierExpr, IndexExpr, IntLiteral, MethodCallExpr, ParenExpr, RepeatArrayLiteral, StrLiteral, StructLiteralExpr, StructLiteralField, UnaryExpr
 from AST_Scripts.ast.Statement import AssignStmt, BreakStmt, CompoundAssignment, ContinueStmt, ExpressionStmt, ForStmt, IfStmt, LetStmt, LoopStmt, MatchArm, MatchPattern, MatchStmt, ReturnStmt, StaticVarDecl, WhileStmt
 from AST_Scripts.antlr.RustVisitor import RustVisitor
 from AST_Scripts.ast.TopLevel import ExternBlock, ExternFunctionDecl, ExternStaticVarDecl, ExternTypeDecl, FunctionDef, StructDef, Attribute, TypeAliasDecl, UnionDef
@@ -9,8 +9,13 @@ from AST_Scripts.ast.Type import ArrayType, BoolType, IntType, PathType, Pointer
 from AST_Scripts.antlr import RustLexer, RustParser
 from AST_Scripts.ast.VarDef import VarDef
 from AST_Scripts.antlr import RustParser
+from AST_Scripts.ast.Block import InitBlock
 
 class Transformer(RustVisitor):
+    def __init__(self):
+        super().__init__()
+        self.struct_defs = {}
+
     def _expr_from_text(self, text):
         text = text.strip()
         if text.isdigit():
@@ -199,6 +204,14 @@ class Transformer(RustVisitor):
     def visitStructDef(self, ctx):
         name = ctx.Identifier().getText()
         fields = [self.visit(f) for f in ctx.structField()]
+        field_types = {}
+
+        for field_ctx in fields:
+            field_name = field_ctx.Identifier().getText()
+            field_type = field_ctx.type().getText()
+            field_types[field_name] = field_type
+
+        self.struct_defs[name] = field_types
         return StructDef(name=name, fields=fields)
 
     def visitStructField(self, ctx):
@@ -453,12 +466,8 @@ class Transformer(RustVisitor):
     binary_operators = {'==', '!=', '<', '>', '<=', '>=', '+', '-', '*', '/', '%', '&&', '||'}
 
     def visitExpression(self, ctx):
-        # return self.visitChildren(ctx)
         text = ctx.getText()
-        # print("expression is ", ctx.primaryExpression())
-        # print("expression is ", text, ctx.getChildCount())
         if ctx.dereferenceExpression():
-            # print("it is ", ctx.getChild(0).__class__, ctx.getChild(1).__class__)
             return self.visit(ctx.dereferenceExpression())
 
         if ctx.postfixExpression() is not None:
@@ -484,7 +493,6 @@ class Transformer(RustVisitor):
                     return BinaryExpr(left=left_expr, op=op, right=right_expr)
 
         elif "as" in text and ctx.getChildCount() >= 3:
-            print("cast expression is ", text)
             left_expr = self.visit(ctx.expression(0))
             type_nodes = ctx.type_()
             result = left_expr
@@ -528,7 +536,6 @@ class Transformer(RustVisitor):
         elif text.startswith('"') and text.endswith('"'):
             return LiteralExpr(value=text[1:-1])
         elif text.startswith('[') and text.endswith(']'):
-            print("sorry u saw meeeee")
             inner = text[1:-1].strip()
             if not inner:
                 elements = []
@@ -592,8 +599,15 @@ class Transformer(RustVisitor):
 
         if ctx.getChildCount() >= 4 and ctx.getChild(1).getText() == '{':    
             struct_name = ctx.Identifier().getText()
-            fields = [self.visit(field) for field in ctx.structLiteralField()]
-            return StructLiteralExpr(struct_name, fields)
+            struct_field_types = self.struct_defs.get(struct_name, {})
+            fields = []
+            for field_ctx in ctx.structLiteralField():
+                name = field_ctx.Identifier().getText()
+                value = self.visit(field_ctx.expression())
+                field_type = struct_field_types.get(name)
+                fields.append(StructLiteralField(name=name, value=value, field_type=field_type))
+
+            return StructLiteralExpr(struct_name=struct_name, fields=fields)
 
         raise Exception(f"Unknown primaryExpression: {ctx.getText()}")
 
@@ -684,11 +698,44 @@ class Transformer(RustVisitor):
                 column=self._get_column(ctx))
 
     def visitInitializer(self, ctx):
+        print("init is ", ctx.getChild(0).__class__)
         if ctx.expression():
+            print("1")
             return self.visit(ctx.expression())
+        elif ctx.block():
+            print("2")
+            return self.visit(ctx.block())
+        elif ctx.initBlock():
+            print("3")
+            return self.visit(ctx.initBlock())
         else:
             print("Unhandled initializer kind")
             return None
+        
+    # def visitInitBlock(self, ctx):
+    #     fields = {}
+    #     for field_ctx in ctx.fields:
+    #         name = field_ctx.Identifier().getText()
+    #         value = self.visit(field_ctx.expression())
+    #         fields[name] = value
+
+    #     return_expr = self.visit(ctx.expression())        
+    #     struct_literal = StructLiteralExpr(
+    #         typename="",  # can't tell from this rule; probably passed in letStmt
+    #         fields=fields
+    #     )
+
+    #     let_stmt = LetStmt(
+    #         name="init",  # hardcoded unless inferred from outer rule
+    #         var_type=None,
+    #         value=struct_literal,
+    #         mutable=True  # again, hardcoded unless inferred
+    #     )
+
+    #     return InitBlock(
+    #         statements=[let_stmt],
+    #         return_expr=return_expr
+    #     )
 
     def visitWhileStmt(self, ctx):
         condition = self.visit(ctx.expression())

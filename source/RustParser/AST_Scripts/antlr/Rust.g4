@@ -4,6 +4,7 @@ program: (topLevelItem)* ;
 
 topLevelItem
     : functionDef
+    | staticVarDecl
     | structDef
     | attributes
     | externBlock
@@ -11,7 +12,6 @@ topLevelItem
     | constDef
     | unionDef
     | unsafeDef
-    | staticVarDecl
     ;
 
 typeAlias: visibility? 'type' Identifier '=' type ';';
@@ -73,7 +73,7 @@ basicType
     | Identifier
     ;
 
-block: '{' statement* returnStmt? '}';
+block: '{' statement* returnStmt? expression? '}';
 
 statement
     : letStmt
@@ -100,13 +100,15 @@ matchStmt: 'match' expression '{' matchArm+ '}' ;
 unsafeBlock: 'unsafe' block;
 whileStmt: 'while' expression block;
 staticVarDecl: visibility? 'static' 'mut'? Identifier ':' (type | Identifier) '=' initializer ';';
-initializer: expression | block;
-letStmt: 'let' varDef '=' expression ';';
+initializer: initBlock | block | expression ;
+letStmt: 'let' varDef '=' expression ';' | 'let' varDef initBlock;
 
 varDef: 'ref' 'mut'? Identifier (':' type)?
-    | 'mut' Identifier (':' type)?
+    | 'mut' Identifier ((':' | '=') type)?
     | Identifier (':' type)?;
 
+initBlock: '{' (Identifier ':' expression ',')* '}' ';' expression;
+fieldList: (Identifier ':' expression (',' Identifier ':' expression)* ','?)?;
 assignStmt: expression '=' expression ';';
 forStmt: 'for' Identifier 'in' expression block;
 ifStmt: 'if' expression block ('else' block)?;

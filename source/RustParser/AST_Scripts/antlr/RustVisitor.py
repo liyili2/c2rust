@@ -1,4 +1,4 @@
-# Generated from Rust.g4 by ANTLR 4.13.1
+# Generated from Rust.g4 by ANTLR 4.13.2
 from antlr4 import *
 if "." in __name__:
     from .RustParser import RustParser
@@ -211,6 +211,16 @@ class RustVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by RustParser#varDef.
     def visitVarDef(self, ctx:RustParser.VarDefContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#initBlock.
+    def visitInitBlock(self, ctx:RustParser.InitBlockContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#fieldList.
+    def visitFieldList(self, ctx:RustParser.FieldListContext):
         return self.visitChildren(ctx)
 
 
