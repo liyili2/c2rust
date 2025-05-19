@@ -219,9 +219,9 @@
 pub static mut matchstate: State = {
     let mut init = State {
         c: Match as libc::c_int,
-        // out: 0 as *const State as *mut State,
-        // out1: 0 as *const State as *mut State,
-        // lastlist: 0,
+        out: 0 as *const State as *mut State,
+        out1: 0 as *const State as *mut State,
+        lastlist: 0,
     };
     init
 };

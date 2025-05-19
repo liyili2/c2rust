@@ -2,10 +2,12 @@ from RustParser.AST_Scripts.ast.ASTNode import ASTNode
 from RustParser.AST_Scripts.ast.Type import IntType, StringType
 
 class Expression(ASTNode):
-    pass
+    def __init__(self, type=None):
+        self.type = type
 
 class IdentifierExpr(Expression):
-    def __init__(self, name):
+    def __init__(self, name, type=None):
+        super().__init__(type)
         self.name = name
 
     def accept(self, visitor):
@@ -23,12 +25,12 @@ class BinaryExpr(Expression):
 class LiteralExpr(Expression):
     def __init__(self, value):
         self.value = value
+        self.type = self.get_type()
 
     def accept(self, visitor):
         return visitor.visit_LiteralExpr(self)
-    
+
     def get_type(self):
-        print("literal is ", self.value)
         if isinstance(self.value, int):
             return IntType()
         elif isinstance(self.value, str):
@@ -101,12 +103,14 @@ class RepeatArrayLiteral:
         # self.line = line
         # self.column = column
 
-class CastExpr:
-    def __init__(self, expr, target_type, line=None, column=None):
+class CastExpr(Expression):
+    def __init__(self, expr, type):
+        super().__init__(type)
         self.expr = expr
-        self.target_type = target_type
-        # self.line = line
-        # self.column = column
+        self.type = type
+
+    def accept(self, visitor):
+        return visitor.visitCastExpr(self)
 
 class UnaryExpr(Expression):
     def __init__(self, op, expr):

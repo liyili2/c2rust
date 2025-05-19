@@ -41,9 +41,9 @@ class ArrayType(Type):
         return f"[{self.var_type}; {self.size}]" if self.size else f"[{self.elem_type}]"
 
 class PointerType:
-    def __init__(self, mutability: str, pointee_type=None):
-        self.mutability = mutability  # True if 'mut', False if 'const'
-        self.pointee_type = pointee_type  # Another type node, or None if not provided
+    def __init__(self, mutability: str, pointee_type):
+        self.mutability = mutability
+        self.pointee_type = pointee_type
 
     def __repr__(self):
         mutability = "mut" if self.mutability else "const"
