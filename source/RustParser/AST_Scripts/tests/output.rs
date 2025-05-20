@@ -228,29 +228,30 @@
 // #[no_mangle]
 // pub static mut nstate: libc::c_int = 0;
 // #[no_mangle]
-pub unsafe extern "C" fn state(
+// pub unsafe extern "C" fn state(
     // mut c: libc::c_int,
     // mut out: *mut State,
     // mut out1: *mut State,
-) -> *mut State  {
+// ) -> *mut State  {
     // let mut s: *mut State = 0 as *mut State;
     // nstate += 1;
     // nstate;
+    ////not handled yet
     // s = malloc(::core::mem::size_of::<State>() as libc::c_ulong) as *mut State;
     // (*s).lastlist = 0 as libc::c_int;
     // (*s).c = c;
     // (*s).out = out;
     // (*s).out1 = out1;
     // return s;
-}
-// #[no_mangle]
-// pub unsafe extern "C" fn frag(mut start: *mut State, mut out: *mut Ptrlist) -> Frag {
-//     let mut n: Frag = {
-//         let mut init = Frag { start: start, out: out };
-//         init
-//     };
-//     return n;
 // }
+// #[no_mangle]
+pub unsafe extern "C" fn frag(mut start: *mut State, mut out: *mut Ptrlist) -> Frag {
+    let mut n: Frag = {
+        let mut init = Frag { start: start, out: out };
+        init
+    };
+    // return n;
+}
 // #[no_mangle]
 // pub unsafe extern "C" fn list1(mut outp: *mut *mut State) -> *mut Ptrlist {
 //     let mut l: *mut Ptrlist = 0 as *mut Ptrlist;

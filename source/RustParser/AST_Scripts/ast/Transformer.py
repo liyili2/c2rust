@@ -10,6 +10,7 @@ from AST_Scripts.antlr import RustLexer, RustParser
 from AST_Scripts.ast.VarDef import VarDef
 from AST_Scripts.antlr import RustParser
 from AST_Scripts.ast.Block import InitBlock
+from AST_Scripts.ast.Func import FunctionParamList, Param
 
 class Transformer(RustVisitor):
     def __init__(self):
@@ -185,10 +186,25 @@ class Transformer(RustVisitor):
 
     def visitFunctionDef(self, ctx):
         name = ctx.Identifier().getText()
+        # print("param list is ", len(ctx.paramList()))
         params = self.visit(ctx.paramList()) if ctx.paramList() else []
+        print("params are ", params)
         return_type = self.visit(ctx.type_()) if ctx.type_() else None
         body = self.visit(ctx.block())
         return FunctionDef(identifier=name, params=params, return_type=return_type, body=body)
+    
+    def visitParam(self, ctx):
+        print("in param node")
+        is_mut = ctx.getChild(0).getText() == "mut"
+        identifier = ctx.Identifier().getText() if is_mut else ctx.getChild(0).getText()
+        type_ctx = ctx.type_()
+        typ = self.visit(type_ctx) if type_ctx else None
+        return Param(name=identifier, typ=typ, is_mut=is_mut)
+
+    def visitParamList(self, ctx):
+        print("in param list")
+        params = [self.visit(param_ctx) for param_ctx in ctx.param()]
+        return FunctionParamList(params)
 
     def visitStructDef(self, ctx):
         name = ctx.Identifier().getText()
@@ -455,6 +471,11 @@ class Transformer(RustVisitor):
 
     def visitExpression(self, ctx):
         text = ctx.getText()
+        print("text is ", text, ctx.__class__, ctx.getChildCount())
+        for i in range(ctx.getChildCount()):
+            child = ctx.getChild(i)
+            print(f"child {i}: text = {child.getText()}, type = {child.__class__}")
+
         if ctx.dereferenceExpression():
             return self.visit(ctx.dereferenceExpression())
 

@@ -1,4 +1,4 @@
-# Generated from Rust.g4 by ANTLR 4.13.2
+# Generated from Rust.g4 by ANTLR 4.13.1
 from antlr4 import *
 if "." in __name__:
     from .RustParser import RustParser

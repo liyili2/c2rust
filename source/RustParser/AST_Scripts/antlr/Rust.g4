@@ -101,7 +101,7 @@ unsafeBlock: 'unsafe' block;
 whileStmt: 'while' expression block;
 staticVarDecl: visibility? 'static' 'mut'? Identifier ':' (type | Identifier) '=' initializer ';';
 initializer: initBlock | block | expression ;
-letStmt: 'let' varDef '=' expression ';' | 'let' varDef initBlock;
+letStmt: 'let' varDef '=' expression ';' | 'let' 'mut'? Identifier ':' (type | Identifier) '=' initializer ';' | 'let' varDef initBlock ;
 
 varDef: 'ref' 'mut'? Identifier (':' type)?
     | 'mut' Identifier ((':' | '=') type)?
