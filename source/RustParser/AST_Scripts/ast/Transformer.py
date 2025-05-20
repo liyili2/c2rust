@@ -646,7 +646,10 @@ class Transformer(RustVisitor):
         mut_token = ctx.getChild(1).getText()
         mutable = (mut_token == "mut")
         pointee_type_ctxs = ctx.type_()
-        pointee_type = self.visit(pointee_type_ctxs[0]) if pointee_type_ctxs else None
+        if isinstance(pointee_type_ctxs, list) :
+            pointee_type = self.visit(pointee_type_ctxs[0]) if pointee_type_ctxs else None
+        else:
+            pointee_type = self.visit(pointee_type_ctxs) if pointee_type_ctxs else None
 
         return PointerType(mutable, pointee_type)
 
