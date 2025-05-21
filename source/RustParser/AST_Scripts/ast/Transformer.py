@@ -1,4 +1,5 @@
 from antlr4 import TerminalNode
+import re
 from AST_Scripts.ast.Expression import ArrayLiteral, BinaryExpr, BoolLiteral, BorrowExpr, CastExpr, CharLiteralExpr, DereferenceExpr, FieldAccessExpr, IdentifierExpr, IndexExpr, IntLiteral, MethodCallExpr, ParenExpr, RepeatArrayLiteral, StrLiteral, StructLiteralExpr, StructLiteralField, UnaryExpr
 from AST_Scripts.ast.Statement import AssignStmt, BreakStmt, CompoundAssignment, ContinueStmt, ExpressionStmt, ForStmt, IfStmt, LetStmt, LoopStmt, MatchArm, MatchPattern, MatchStmt, ReturnStmt, StaticVarDecl, WhileStmt
 from AST_Scripts.antlr.RustVisitor import RustVisitor
@@ -77,30 +78,40 @@ class Transformer(RustVisitor):
         return current
 
     def visitPostfixExpression(self, ctx):
+        print("in postfix visitor")
         expr = self.visit(ctx.primaryExpression())
         i = 1
         while i < ctx.getChildCount():
             token = ctx.getChild(i).getText()
 
             if token == '(':
+                print("1111111111")
                 arg_list_ctx = ctx.getChild(i + 1)
                 if hasattr(arg_list_ctx, 'expression'):
+                    print("22222222222: ", arg_list_ctx.expression()[0].__class__)
                     args = [self.visit(e) for e in arg_list_ctx.expression()]
+                    print("args are ", args)
                 else:
+                    print("33333333333")
                     args = []
                 expr = MethodCallExpr(receiver=expr, method_name=None, args=args)
                 i += 3
 
             elif token == '.':
+                print("44444444444")
                 next_token = ctx.getChild(i + 1)
                 method_or_field = next_token.getText()
                 if (i + 2 < ctx.getChildCount() and ctx.getChild(i + 2).getText() in ['(', '()']):
+                    print("5555555555")
                     if ctx.getChild(i + 2).getText() == '()':
+                        print("666666666666")
                         args = []
                         i += 3
                     else:
+                        print("77777777777")
                         arg_list_ctx = ctx.getChild(i + 3)
                         if hasattr(arg_list_ctx, 'expression'):
+                            print("88888888888")
                             args = [self.visit(e) for e in arg_list_ctx.expression()]
                         else:
                             args = []
@@ -212,8 +223,8 @@ class Transformer(RustVisitor):
         field_types = {}
 
         for field_ctx in fields:
-            field_name = field_ctx.Identifier().getText()
-            field_type = field_ctx.type().getText()
+            field_name = field_ctx[0]
+            field_type = field_ctx[1]
             field_types[field_name] = field_type
 
         self.struct_defs[name] = field_types
@@ -480,6 +491,7 @@ class Transformer(RustVisitor):
             return self.visit(ctx.dereferenceExpression())
 
         if ctx.postfixExpression() is not None:
+            print("postfix detection")
             return self.visit(ctx.postfixExpression())
 
         if ctx.primaryExpression() is not None:
@@ -587,6 +599,16 @@ class Transformer(RustVisitor):
         elif ctx.primaryExpression():
             ident = ctx.getText()
             return IdentifierExpr(ident)
+        
+        match = re.match(r'^(.*)::<(.+)>\(\)$', text)
+        if match:
+            path = match.group(1)
+            type_args = match.group(2)
+            print("Function with turbofish syntax:")
+            print("Path:", path)
+            print("Type args:", type_args)
+            self.visitQualifiedFunctionCall(ctx=ctx)
+            
 
         raise Exception(f"❌ Unsupported literal expression: {text}")
 
@@ -622,6 +644,24 @@ class Transformer(RustVisitor):
 
         raise Exception(f"Unknown primaryExpression: {ctx.getText()}")
 
+    def visitQualifiedFunctionCall(self, ctx):
+        print("in qualified")
+        # type_path = self.visit(ctx.typePath())
+        print("path is ", ctx.Identifier().__class__ , len(ctx.Identifier()))
+        function_name = ctx.Identifier().getText()
+        print("name is ", function_name)
+        generic_args = self.visit(ctx.genericArgs()) if ctx.genericArgs() else None
+        print("args are ", generic_args)
+        if ctx.argumentList():
+            args = self.visit(ctx.argumentList())
+        else:
+            args = []
+
+        return MethodCallExpr(method_name=function_name, args=args)
+
+    def visitGenericArgs(self, ctx):
+        return [self.visit(ty) for ty in ctx.type()]
+
     def visitDereferenceExpression(self, ctx):
         target_expr = self.visit(ctx.expression())
         return DereferenceExpr(target_expr)
@@ -642,7 +682,7 @@ class Transformer(RustVisitor):
 
     def visitType(self, ctx):
         type_str = ctx.getText()
-        print("in visit type: ", type_str)
+        # print("in visit type: ", type_str)
         if type_str.startswith('[') and ';' in type_str and type_str.endswith(']'):
             inner_type_str, size_str = type_str[1:-1].split(';')
             inner_type = self._basic_type_from_str(inner_type_str.strip())

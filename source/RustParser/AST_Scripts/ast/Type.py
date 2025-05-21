@@ -17,6 +17,10 @@ class IntType(Type):
 class StringType(Type):
     def __repr__(self):
         return "String"
+    
+class FloatType(Type):
+    def __repr__(self):
+        return "float"
 
 class StructType(Type):
     def __init__(self, name):

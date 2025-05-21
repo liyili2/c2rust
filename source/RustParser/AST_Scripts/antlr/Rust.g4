@@ -124,7 +124,7 @@ expression
     | parenExpression
     | macroCall
     | borrowExpression
-    | typePath DOUBLE_COLON '<' type '>()'
+    | typePath Identifier DOUBLE_COLON '<' type '>()'
     | expression '[' expression ']'
     | '!' expression
     | expression ('*' | '/' | '%' | '+' | '-' | '>>' | '&' | '>=' | '<=') expression
@@ -163,7 +163,7 @@ primaryExpression
     ;
 
 qualifiedFunctionCall
-  : DOUBLE_COLON typePath Identifier genericArgs? ('()' | '(' argumentList? ')') 
+  : DOUBLE_COLON typePath Identifier DOUBLE_COLON genericArgs? ('()' | '(' argumentList? ')') 
   | Identifier ('.' Identifier)* (DOUBLE_COLON Identifier)* ('()' | '(' ( Identifier '(' STRING_LITERAL ')' | argumentList)* ')')
   ;
 

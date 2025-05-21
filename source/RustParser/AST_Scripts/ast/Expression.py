@@ -1,5 +1,5 @@
 from RustParser.AST_Scripts.ast.ASTNode import ASTNode
-from RustParser.AST_Scripts.ast.Type import IntType, StringType
+from RustParser.AST_Scripts.ast.Type import IntType, StringType, FloatType
 
 class Expression(ASTNode):
     def __init__(self, type=None):
@@ -31,8 +31,11 @@ class LiteralExpr(Expression):
         return visitor.visit_LiteralExpr(self)
 
     def get_type(self):
+        print("literal val is ", self.value)
         if isinstance(self.value, int):
             return IntType()
+        elif isinstance(self.value, float):
+            return FloatType()
         elif isinstance(self.value, str):
             return StringType()
         elif isinstance(self.value, bool):

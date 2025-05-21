@@ -87,9 +87,9 @@ class ExternFunctionDecl:
         )
 
 class TypeAliasDecl:
-    def __init__(self, name, target_type, visibility=None):
+    def __init__(self, name, type, visibility=None):
         self.name = name
-        self.target_type = target_type
+        self.type = type
         self.visibility = visibility
 
 class UnionDef:
