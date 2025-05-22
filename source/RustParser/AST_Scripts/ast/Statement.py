@@ -158,3 +158,14 @@ class BreakStmt(Statement):
 class ContinueStmt(Statement):
     def accept(self, visitor):
         return self
+
+class StructLiteral(Statement):
+    def __init__(self, type_name: str, fields: list):
+        self.type_name = type_name
+        self.fields = fields
+
+    def accept(self, visitor):
+        return visitor.visitStructLiteral(self)
+
+    def __repr__(self):
+        return f"StructLiteral(type_name={self.type_name}, fields={self.fields})"

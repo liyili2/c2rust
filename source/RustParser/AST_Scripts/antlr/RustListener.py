@@ -26,12 +26,30 @@ class RustListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by RustParser#topLevelDef.
+    def enterTopLevelDef(self, ctx:RustParser.TopLevelDefContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#topLevelDef.
+    def exitTopLevelDef(self, ctx:RustParser.TopLevelDefContext):
+        pass
+
+
     # Enter a parse tree produced by RustParser#typeAlias.
     def enterTypeAlias(self, ctx:RustParser.TypeAliasContext):
         pass
 
     # Exit a parse tree produced by RustParser#typeAlias.
     def exitTypeAlias(self, ctx:RustParser.TypeAliasContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#interfaceDef.
+    def enterInterfaceDef(self, ctx:RustParser.InterfaceDefContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#interfaceDef.
+    def exitInterfaceDef(self, ctx:RustParser.InterfaceDefContext):
         pass
 
 
@@ -77,6 +95,24 @@ class RustListener(ParseTreeListener):
 
     # Exit a parse tree produced by RustParser#visibility.
     def exitVisibility(self, ctx:RustParser.VisibilityContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#unsafeModifier.
+    def enterUnsafeModifier(self, ctx:RustParser.UnsafeModifierContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#unsafeModifier.
+    def exitUnsafeModifier(self, ctx:RustParser.UnsafeModifierContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#externAbi.
+    def enterExternAbi(self, ctx:RustParser.ExternAbiContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#externAbi.
+    def exitExternAbi(self, ctx:RustParser.ExternAbiContext):
         pass
 
 
@@ -152,30 +188,21 @@ class RustListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by RustParser#structLiteral.
+    def enterStructLiteral(self, ctx:RustParser.StructLiteralContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#structLiteral.
+    def exitStructLiteral(self, ctx:RustParser.StructLiteralContext):
+        pass
+
+
     # Enter a parse tree produced by RustParser#functionDef.
     def enterFunctionDef(self, ctx:RustParser.FunctionDefContext):
         pass
 
     # Exit a parse tree produced by RustParser#functionDef.
     def exitFunctionDef(self, ctx:RustParser.FunctionDefContext):
-        pass
-
-
-    # Enter a parse tree produced by RustParser#unsafeModifier.
-    def enterUnsafeModifier(self, ctx:RustParser.UnsafeModifierContext):
-        pass
-
-    # Exit a parse tree produced by RustParser#unsafeModifier.
-    def exitUnsafeModifier(self, ctx:RustParser.UnsafeModifierContext):
-        pass
-
-
-    # Enter a parse tree produced by RustParser#externAbi.
-    def enterExternAbi(self, ctx:RustParser.ExternAbiContext):
-        pass
-
-    # Exit a parse tree produced by RustParser#externAbi.
-    def exitExternAbi(self, ctx:RustParser.ExternAbiContext):
         pass
 
 
@@ -233,30 +260,12 @@ class RustListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by RustParser#referenceType.
-    def enterReferenceType(self, ctx:RustParser.ReferenceTypeContext):
-        pass
-
-    # Exit a parse tree produced by RustParser#referenceType.
-    def exitReferenceType(self, ctx:RustParser.ReferenceTypeContext):
-        pass
-
-
     # Enter a parse tree produced by RustParser#type.
     def enterType(self, ctx:RustParser.TypeContext):
         pass
 
     # Exit a parse tree produced by RustParser#type.
     def exitType(self, ctx:RustParser.TypeContext):
-        pass
-
-
-    # Enter a parse tree produced by RustParser#typePath.
-    def enterTypePath(self, ctx:RustParser.TypePathContext):
-        pass
-
-    # Exit a parse tree produced by RustParser#typePath.
-    def exitTypePath(self, ctx:RustParser.TypePathContext):
         pass
 
 
@@ -278,6 +287,15 @@ class RustListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by RustParser#typePath.
+    def enterTypePath(self, ctx:RustParser.TypePathContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#typePath.
+    def exitTypePath(self, ctx:RustParser.TypePathContext):
+        pass
+
+
     # Enter a parse tree produced by RustParser#block.
     def enterBlock(self, ctx:RustParser.BlockContext):
         pass
@@ -287,12 +305,39 @@ class RustListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by RustParser#unsafeBlock.
+    def enterUnsafeBlock(self, ctx:RustParser.UnsafeBlockContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#unsafeBlock.
+    def exitUnsafeBlock(self, ctx:RustParser.UnsafeBlockContext):
+        pass
+
+
     # Enter a parse tree produced by RustParser#statement.
     def enterStatement(self, ctx:RustParser.StatementContext):
         pass
 
     # Exit a parse tree produced by RustParser#statement.
     def exitStatement(self, ctx:RustParser.StatementContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#letStmt.
+    def enterLetStmt(self, ctx:RustParser.LetStmtContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#letStmt.
+    def exitLetStmt(self, ctx:RustParser.LetStmtContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#varDef.
+    def enterVarDef(self, ctx:RustParser.VarDefContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#varDef.
+    def exitVarDef(self, ctx:RustParser.VarDefContext):
         pass
 
 
@@ -323,30 +368,12 @@ class RustListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by RustParser#unsafeBlock.
-    def enterUnsafeBlock(self, ctx:RustParser.UnsafeBlockContext):
-        pass
-
-    # Exit a parse tree produced by RustParser#unsafeBlock.
-    def exitUnsafeBlock(self, ctx:RustParser.UnsafeBlockContext):
-        pass
-
-
     # Enter a parse tree produced by RustParser#whileStmt.
     def enterWhileStmt(self, ctx:RustParser.WhileStmtContext):
         pass
 
     # Exit a parse tree produced by RustParser#whileStmt.
     def exitWhileStmt(self, ctx:RustParser.WhileStmtContext):
-        pass
-
-
-    # Enter a parse tree produced by RustParser#staticVarDecl.
-    def enterStaticVarDecl(self, ctx:RustParser.StaticVarDeclContext):
-        pass
-
-    # Exit a parse tree produced by RustParser#staticVarDecl.
-    def exitStaticVarDecl(self, ctx:RustParser.StaticVarDeclContext):
         pass
 
 
@@ -359,21 +386,12 @@ class RustListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by RustParser#letStmt.
-    def enterLetStmt(self, ctx:RustParser.LetStmtContext):
+    # Enter a parse tree produced by RustParser#staticVarDecl.
+    def enterStaticVarDecl(self, ctx:RustParser.StaticVarDeclContext):
         pass
 
-    # Exit a parse tree produced by RustParser#letStmt.
-    def exitLetStmt(self, ctx:RustParser.LetStmtContext):
-        pass
-
-
-    # Enter a parse tree produced by RustParser#varDef.
-    def enterVarDef(self, ctx:RustParser.VarDefContext):
-        pass
-
-    # Exit a parse tree produced by RustParser#varDef.
-    def exitVarDef(self, ctx:RustParser.VarDefContext):
+    # Exit a parse tree produced by RustParser#staticVarDecl.
+    def exitStaticVarDecl(self, ctx:RustParser.StaticVarDeclContext):
         pass
 
 
@@ -383,15 +401,6 @@ class RustListener(ParseTreeListener):
 
     # Exit a parse tree produced by RustParser#initBlock.
     def exitInitBlock(self, ctx:RustParser.InitBlockContext):
-        pass
-
-
-    # Enter a parse tree produced by RustParser#fieldList.
-    def enterFieldList(self, ctx:RustParser.FieldListContext):
-        pass
-
-    # Exit a parse tree produced by RustParser#fieldList.
-    def exitFieldList(self, ctx:RustParser.FieldListContext):
         pass
 
 
@@ -458,12 +467,102 @@ class RustListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by RustParser#castExpressionPostFix.
+    def enterCastExpressionPostFix(self, ctx:RustParser.CastExpressionPostFixContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#castExpressionPostFix.
+    def exitCastExpressionPostFix(self, ctx:RustParser.CastExpressionPostFixContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#compoundOps.
+    def enterCompoundOps(self, ctx:RustParser.CompoundOpsContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#compoundOps.
+    def exitCompoundOps(self, ctx:RustParser.CompoundOpsContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#patternSymbol.
+    def enterPatternSymbol(self, ctx:RustParser.PatternSymbolContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#patternSymbol.
+    def exitPatternSymbol(self, ctx:RustParser.PatternSymbolContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#conditionalOps.
+    def enterConditionalOps(self, ctx:RustParser.ConditionalOpsContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#conditionalOps.
+    def exitConditionalOps(self, ctx:RustParser.ConditionalOpsContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#booleanOps.
+    def enterBooleanOps(self, ctx:RustParser.BooleanOpsContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#booleanOps.
+    def exitBooleanOps(self, ctx:RustParser.BooleanOpsContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#binaryOps.
+    def enterBinaryOps(self, ctx:RustParser.BinaryOpsContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#binaryOps.
+    def exitBinaryOps(self, ctx:RustParser.BinaryOpsContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#structFieldDec.
+    def enterStructFieldDec(self, ctx:RustParser.StructFieldDecContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#structFieldDec.
+    def exitStructFieldDec(self, ctx:RustParser.StructFieldDecContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#mutableExpression.
+    def enterMutableExpression(self, ctx:RustParser.MutableExpressionContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#mutableExpression.
+    def exitMutableExpression(self, ctx:RustParser.MutableExpressionContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#unaryOpes.
+    def enterUnaryOpes(self, ctx:RustParser.UnaryOpesContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#unaryOpes.
+    def exitUnaryOpes(self, ctx:RustParser.UnaryOpesContext):
+        pass
+
+
     # Enter a parse tree produced by RustParser#parenExpression.
     def enterParenExpression(self, ctx:RustParser.ParenExpressionContext):
         pass
 
     # Exit a parse tree produced by RustParser#parenExpression.
     def exitParenExpression(self, ctx:RustParser.ParenExpressionContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#referenceExpression.
+    def enterReferenceExpression(self, ctx:RustParser.ReferenceExpressionContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#referenceExpression.
+    def exitReferenceExpression(self, ctx:RustParser.ReferenceExpressionContext):
         pass
 
 
@@ -494,15 +593,6 @@ class RustListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by RustParser#postfixExpression.
-    def enterPostfixExpression(self, ctx:RustParser.PostfixExpressionContext):
-        pass
-
-    # Exit a parse tree produced by RustParser#postfixExpression.
-    def exitPostfixExpression(self, ctx:RustParser.PostfixExpressionContext):
-        pass
-
-
     # Enter a parse tree produced by RustParser#primaryExpression.
     def enterPrimaryExpression(self, ctx:RustParser.PrimaryExpressionContext):
         pass
@@ -512,12 +602,66 @@ class RustListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by RustParser#fieldAccessPostFix.
+    def enterFieldAccessPostFix(self, ctx:RustParser.FieldAccessPostFixContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#fieldAccessPostFix.
+    def exitFieldAccessPostFix(self, ctx:RustParser.FieldAccessPostFixContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#callExpression.
+    def enterCallExpression(self, ctx:RustParser.CallExpressionContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#callExpression.
+    def exitCallExpression(self, ctx:RustParser.CallExpressionContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#postfixExpression.
+    def enterPostfixExpression(self, ctx:RustParser.PostfixExpressionContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#postfixExpression.
+    def exitPostfixExpression(self, ctx:RustParser.PostfixExpressionContext):
+        pass
+
+
     # Enter a parse tree produced by RustParser#qualifiedFunctionCall.
     def enterQualifiedFunctionCall(self, ctx:RustParser.QualifiedFunctionCallContext):
         pass
 
     # Exit a parse tree produced by RustParser#qualifiedFunctionCall.
     def exitQualifiedFunctionCall(self, ctx:RustParser.QualifiedFunctionCallContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#macroCall.
+    def enterMacroCall(self, ctx:RustParser.MacroCallContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#macroCall.
+    def exitMacroCall(self, ctx:RustParser.MacroCallContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#macroArgs.
+    def enterMacroArgs(self, ctx:RustParser.MacroArgsContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#macroArgs.
+    def exitMacroArgs(self, ctx:RustParser.MacroArgsContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#macroInner.
+    def enterMacroInner(self, ctx:RustParser.MacroInnerContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#macroInner.
+    def exitMacroInner(self, ctx:RustParser.MacroInnerContext):
         pass
 
 
@@ -563,33 +707,6 @@ class RustListener(ParseTreeListener):
 
     # Exit a parse tree produced by RustParser#argumentList.
     def exitArgumentList(self, ctx:RustParser.ArgumentListContext):
-        pass
-
-
-    # Enter a parse tree produced by RustParser#macroCall.
-    def enterMacroCall(self, ctx:RustParser.MacroCallContext):
-        pass
-
-    # Exit a parse tree produced by RustParser#macroCall.
-    def exitMacroCall(self, ctx:RustParser.MacroCallContext):
-        pass
-
-
-    # Enter a parse tree produced by RustParser#macroArgs.
-    def enterMacroArgs(self, ctx:RustParser.MacroArgsContext):
-        pass
-
-    # Exit a parse tree produced by RustParser#macroArgs.
-    def exitMacroArgs(self, ctx:RustParser.MacroArgsContext):
-        pass
-
-
-    # Enter a parse tree produced by RustParser#macroInner.
-    def enterMacroInner(self, ctx:RustParser.MacroInnerContext):
-        pass
-
-    # Exit a parse tree produced by RustParser#macroInner.
-    def exitMacroInner(self, ctx:RustParser.MacroInnerContext):
         pass
 
 
