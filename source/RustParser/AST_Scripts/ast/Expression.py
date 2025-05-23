@@ -11,7 +11,7 @@ class IdentifierExpr(Expression):
         self.name = name
 
     def accept(self, visitor):
-        return visitor.visitPrimaryExpression(self)
+        return visitor.visit_identifier_expr(self)
 
 class BinaryExpr(Expression):
     def __init__(self, left, op, right):
@@ -31,7 +31,6 @@ class LiteralExpr(Expression):
         return visitor.visit_LiteralExpr(self)
 
     def get_type(self):
-        print("literal val is ", self.value)
         if isinstance(self.value, int):
             return IntType()
         elif isinstance(self.value, float):
@@ -193,3 +192,23 @@ class StructLiteralExpr(Expression):
 
     def accept(self, visitor):
         return visitor.visitStructLiteralExpr(self)
+    
+class MacroCall(Expression):
+    def __init__(self, name, args, delimiter):
+        self.kind = "MacroCall"
+        self.name = name
+        self.args = args
+        self.delimiter = delimiter
+
+    def accept(self, visitor):
+        return visitor.visitMacroCall(visitor)
+
+class RangeExpression(Expression):
+    def __init__(self, start, end, inclusive=False):
+        self.kind = "RangeExpression"
+        self.start = start  # AST node for the left side, e.g., Literal(0)
+        self.end = end      # AST node for the right side, e.g., Identifier("len")
+        self.inclusive = inclusive
+
+    def accept(self, visitor):
+        pass

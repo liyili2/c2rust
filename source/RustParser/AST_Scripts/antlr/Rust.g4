@@ -79,6 +79,7 @@ statement
     : letStmt
     | staticVarDecl
     | assignStmt
+    | callStmt
     | Identifier ';'
     | compoundAssignment
     | forStmt
@@ -94,6 +95,7 @@ statement
     | unsafeBlock
     ;
 
+callStmt: Identifier '(' expression (',' expression)* ')' ';' ;
 compoundOp: '+=' | '-=' | '*=' | '/=' | '%=' | '&=' | '|=' | '^=' ;
 compoundAssignment: expression compoundOp expression ';' ;
 matchStmt: 'match' expression '{' matchArm+ '}' ;
@@ -128,7 +130,7 @@ expression
     | expression '[' expression ']'
     | '!' expression
     | expression ('*' | '/' | '%' | '+' | '-' | '>>' | '&' | '>=' | '<=') expression
-    | expression ('==' | '!=' | '>' | '<' | '||' | '&&') expression
+    | expression ('==' | '!=' | '>>' | '>' | '<<' | '<' | '||' | '&&') expression
     | expression '..' expression
     | expression ('+=' | '-=' | '*=' | '/=' | '%=' | '&=' | '|=' | '^=') expression
     | Identifier '!' '(' argumentList? ')'
@@ -181,8 +183,8 @@ macroInner: expression (';' expression)?;  // supports [value; count] form
 TRUE: 'true';
 FALSE: 'false';
 
-literal: arrayLiteral | HexNumber | Number | SignedNumber | BYTE_STRING_LITERAL | 
-         Binary | STRING_LITERAL | booleanLiteral | CHAR_LITERAL;
+literal: Binary | arrayLiteral | HexNumber | Number | SignedNumber | BYTE_STRING_LITERAL | 
+          STRING_LITERAL | booleanLiteral | CHAR_LITERAL;
 booleanLiteral: TRUE | FALSE;
 Binary: '0b' [0-1]+;
 arrayLiteral: '[' expression (',' expression)* ']' | '[' expression ';' expression ']';

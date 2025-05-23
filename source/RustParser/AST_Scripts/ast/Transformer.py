@@ -1,6 +1,6 @@
 from antlr4 import TerminalNode
 import re
-from AST_Scripts.ast.Expression import ArrayLiteral, BinaryExpr, BoolLiteral, BorrowExpr, CastExpr, CharLiteralExpr, DereferenceExpr, FieldAccessExpr, IdentifierExpr, IndexExpr, IntLiteral, MethodCallExpr, ParenExpr, RepeatArrayLiteral, StrLiteral, StructLiteralExpr, StructLiteralField, UnaryExpr
+from AST_Scripts.ast.Expression import ArrayLiteral, BinaryExpr, BoolLiteral, BorrowExpr, CastExpr, CharLiteralExpr, DereferenceExpr, FieldAccessExpr, IdentifierExpr, IndexExpr, IntLiteral, MacroCall, MethodCallExpr, ParenExpr, RangeExpression, RepeatArrayLiteral, StrLiteral, StructLiteralExpr, StructLiteralField, UnaryExpr
 from AST_Scripts.ast.Statement import AssignStmt, BreakStmt, CompoundAssignment, ContinueStmt, ExpressionStmt, ForStmt, IfStmt, LetStmt, LoopStmt, MatchArm, MatchPattern, MatchStmt, ReturnStmt, StaticVarDecl, WhileStmt
 from AST_Scripts.antlr.RustVisitor import RustVisitor
 from AST_Scripts.ast.TopLevel import ExternBlock, ExternFunctionDecl, ExternStaticVarDecl, ExternTypeDecl, FunctionDef, StructDef, Attribute, TypeAliasDecl, UnionDef
@@ -78,40 +78,30 @@ class Transformer(RustVisitor):
         return current
 
     def visitPostfixExpression(self, ctx):
-        print("in postfix visitor")
         expr = self.visit(ctx.primaryExpression())
         i = 1
         while i < ctx.getChildCount():
             token = ctx.getChild(i).getText()
 
             if token == '(':
-                print("1111111111")
                 arg_list_ctx = ctx.getChild(i + 1)
                 if hasattr(arg_list_ctx, 'expression'):
-                    print("22222222222: ", arg_list_ctx.expression()[0].__class__)
                     args = [self.visit(e) for e in arg_list_ctx.expression()]
-                    print("args are ", args)
                 else:
-                    print("33333333333")
                     args = []
                 expr = MethodCallExpr(receiver=expr, method_name=None, args=args)
                 i += 3
 
             elif token == '.':
-                print("44444444444")
                 next_token = ctx.getChild(i + 1)
                 method_or_field = next_token.getText()
                 if (i + 2 < ctx.getChildCount() and ctx.getChild(i + 2).getText() in ['(', '()']):
-                    print("5555555555")
                     if ctx.getChild(i + 2).getText() == '()':
-                        print("666666666666")
                         args = []
                         i += 3
                     else:
-                        print("77777777777")
                         arg_list_ctx = ctx.getChild(i + 3)
                         if hasattr(arg_list_ctx, 'expression'):
-                            print("88888888888")
                             args = [self.visit(e) for e in arg_list_ctx.expression()]
                         else:
                             args = []
@@ -478,24 +468,32 @@ class Transformer(RustVisitor):
             visibility=visibility,
             initial_value=initializer)
 
-    binary_operators = {'==', '!=', '<', '>', '<=', '>=', '+', '-', '*', '/', '%', '&&', '||'}
+    binary_operators = {'==', '!=', '<', '>', '<=', '>=', '+', '-', '*', '/', '%', '&&', '||', '<<', '>>', '&'}
 
     def visitExpression(self, ctx):
         text = ctx.getText()
         print("text is ", text, ctx.__class__, ctx.getChildCount())
-        for i in range(ctx.getChildCount()):
-            child = ctx.getChild(i)
-            print(f"child {i}: text = {child.getText()}, type = {child.__class__}")
+        # for i in range(ctx.getChildCount()):
+        #     child = ctx.getChild(i)
+        #     print(f"child {i}: text = {child.getText()}, type = {child.__class__}")
 
         if ctx.dereferenceExpression():
             return self.visit(ctx.dereferenceExpression())
 
         if ctx.postfixExpression() is not None:
-            print("postfix detection")
             return self.visit(ctx.postfixExpression())
 
         if ctx.primaryExpression() is not None:
             return self.visit(ctx.primaryExpression())
+
+        if ctx.macroCall():
+            return self.visitMacroCall(ctx.macroCall())
+
+        elif '&' in text and ctx.getChildCount() == 1:
+            print("----------------------", ctx.getChild(0).__class__)
+            expr = self.visit(ctx.getChild(0))
+            print("----------------------", expr)
+            return BorrowExpr(name=expr, mutable=True)
 
         if ctx.dereferenceExpression() is not None:
             return self.visit(ctx.dereferenceExpression())
@@ -608,9 +606,37 @@ class Transformer(RustVisitor):
             print("Path:", path)
             print("Type args:", type_args)
             self.visitQualifiedFunctionCall(ctx=ctx)
-            
+
+        elif text.startswith('0b'):
+            return LiteralExpr(value = int(text[2:], 2))
+
+        elif '..' in text:
+            start = self.visit(ctx.getChild(0))
+            end = self.visit(ctx.getChild(2))
+            return RangeExpression(start=start, end=end, inclusive=False)
 
         raise Exception(f"❌ Unsupported literal expression: {text}")
+
+    def visitMacroCall(self, ctx):
+        name = ctx.Identifier().getText()
+        args = []
+        delimiter = ""
+
+        macro_args_ctx = ctx.macroArgs()
+        if macro_args_ctx.LBRACK():
+            delimiter = "[]"
+        elif macro_args_ctx.LPAREN():
+            delimiter = "()"
+
+        macro_inner = macro_args_ctx.macroInner()
+        if macro_inner:
+            first_expr = self.visit(macro_inner.expression(0))
+            args.append(first_expr)
+            if len(macro_inner.expression()) > 1:
+                second_expr = self.visit(macro_inner.expression(1))
+                args.append(second_expr)
+
+        return MacroCall(name=name, args=args, delimiter=delimiter)
 
     def visitPrimaryExpression(self, ctx):
         if ctx.literal():
