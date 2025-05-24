@@ -20,7 +20,7 @@ impl Node {
     // looks like Box is helpful here
     fn insert(& mut self, key: i32, value: String) {
         // if key < self.key {
-            if let Some(ref mut left) = self {
+            if let Some(ref mut left) = self.left {
                 left.insert(key, value);
             } 
             // else {

@@ -501,6 +501,7 @@ class Transformer(RustVisitor):
     def visitExpression(self, ctx):
         print("expression is ", ctx.getText(), ctx.__class__)
         if ctx.primaryExpression():
+            print("in primary")
             return self.visit(ctx.primaryExpression())
 
         elif ctx.mutableExpression():
@@ -571,6 +572,7 @@ class Transformer(RustVisitor):
 
         elif ctx.patternPrefix():
             expr = self.visit(ctx.expression(0))
+            print("expr is ", ctx.expression(0).__class__)
             pattern = self.visit(ctx.patternPrefix().pattern())
             print("pattern is ", ctx.patternPrefix().pattern().__class__, pattern.name)
             return PatternExpr(expr, pattern.name)
@@ -578,9 +580,11 @@ class Transformer(RustVisitor):
         raise Exception(f"Unrecognized expression structure: {ctx.getText()}")
 
     def visitPrimaryExpression(self, ctx):
+        print("priamry #######")
         if ctx.literal():
             return self.visit(ctx.literal())
         elif ctx.Identifier():
+            print("ID#################", ctx.Identifier().getText())
             return IdentifierExpr(ctx.Identifier().getText())
         else:
             raise Exception(f"Unknown primary expression: {ctx.getText()}")
@@ -622,8 +626,8 @@ class Transformer(RustVisitor):
         return CastExpr(expr=expr, type=target_type)
 
     def visitPattern(self, ctx):
-        print("--------------------", ctx.Identifier())
-        return Pattern(ctx.Identifier())
+        name = ctx.Identifier().getText() if ctx.Identifier() else "<missing>"
+        return Pattern(name)
 
     def visitType(self, ctx):
         type_str = ctx.getText()
