@@ -42,7 +42,7 @@ structLiteral: Identifier '{' structLiteralField* '}' ;
 
 functionDef: visibility? unsafeModifier? externAbi? 'fn' Identifier ('()' | '(' paramList? ')') '->'? type? block;
 paramList: param (',' param)* (',')?;
-param: 'mut'? Identifier ':' type;
+param: '&'? 'mut'? Identifier (':' type)?;
 
 constDef: visibility? 'const' Identifier ':' type '=' expression ';';
 unionDef: visibility? 'union' Identifier  ((':' type '=' expression ';') | '{' unionField* '}');
@@ -59,6 +59,7 @@ basicType
     | '()'
     | typePath ('<' type (',' type)* '>')?
     | Identifier ('<' type (',' type)* '>')?
+    | Identifier '<' type '>'
     | '&' type
     | typePath? '[' type ';' Number ']'
     | '[' type ']'
@@ -96,14 +97,13 @@ staticVarDecl: visibility? 'static' 'mut'? Identifier ':' (type | Identifier) '=
 initBlock: '{' (Identifier ':' expression ',')* '}' ';' expression;
 assignStmt: expression '=' expression ';';
 forStmt: 'for' Identifier 'in' expression block;
-ifStmt: 'if' expression block ('else' block)?;
+ifStmt: 'if' expression block ('else if' expression block)* ('else' block)?;
 exprStmt: expression ';';
 returnStmt: 'return' (expression)? ';' | Identifier;
 loopStmt: 'loop' block;
 
 expression
-    : patternPrefix expression
-    | mutableExpression expression
+    : mutableExpression expression
     | primaryExpression
     | dereferenceExpression
     | parenExpression
@@ -118,7 +118,7 @@ expression
     | expression compoundOps expression
     | expression castExpressionPostFix
     | expressionBlock
-    | callExpression
+    | expression callExpressionPostFix
     ;
 
 patternPrefix: 'let'? pattern '=' ;
@@ -130,20 +130,18 @@ conditionalOps: '==' | '!=' | '>' | '<' | '||' | '&&';
 booleanOps: '>>' | '&' | '>=' | '<=';
 binaryOps: '*' | '/' | '%' | '+' | '-' ;
 structFieldDec: Identifier '{' structLiteralField (',' structLiteralField)* ','? '}' ;
-mutableExpression: 'mut';
+mutableExpression: 'mut';  
 unaryOpes: '!' | '+' | '-';
 parenExpression: '(' expression ')';
 referenceExpression: '&' expression;
 dereferenceExpression: '*' expression;
 expressionBlock: '{' statement* expression '}';
 borrowExpression: '&' expression;
-primaryExpression
-    : literal
-    | Identifier
-    ;
+primaryExpression: literal | Identifier;
 
 fieldAccessPostFix: '[' primaryExpression ']' | ('.' primaryExpression)+;
-callExpression: postfixExpression;
+callExpressionPostFix: functionCallArgs | (DOUBLE_COLON Identifier)* functionCallArgs ;
+functionCallArgs: '(' expression (',' expression)* ')' ;
 postfixExpression
   : primaryExpression
     (

@@ -1,6 +1,6 @@
 from antlr4 import TerminalNode
 import re
-from AST_Scripts.ast.Expression import ArrayLiteral, BinaryExpr, BoolLiteral, BorrowExpr, CastExpr, CharLiteralExpr, DereferenceExpr, FieldAccessExpr, IdentifierExpr, IndexExpr, IntLiteral, MethodCallExpr, ParenExpr, Pattern, PatternExpr, RepeatArrayLiteral, StrLiteral, StructLiteralExpr, StructLiteralField, UnaryExpr
+from AST_Scripts.ast.Expression import ArrayLiteral, BinaryExpr, BoolLiteral, BorrowExpr, CastExpr, CharLiteralExpr, DereferenceExpr, FieldAccessExpr, FunctionCallExpr, IdentifierExpr, IndexExpr, IntLiteral, MethodCallExpr, ParenExpr, Pattern, PatternExpr, RepeatArrayLiteral, StrLiteral, StructLiteralExpr, StructLiteralField, UnaryExpr
 from AST_Scripts.ast.Statement import AssignStmt, BreakStmt, CompoundAssignment, ContinueStmt, ExpressionStmt, ForStmt, IfStmt, LetStmt, LoopStmt, MatchArm, MatchPattern, MatchStmt, ReturnStmt, StaticVarDecl, StructLiteral, WhileStmt
 from AST_Scripts.antlr.RustVisitor import RustVisitor
 from AST_Scripts.ast.TopLevel import ExternBlock, ExternFunctionDecl, ExternStaticVarDecl, ExternTypeDecl, FunctionDef, InterfaceDef, StructDef, Attribute, TypeAliasDecl, UnionDef
@@ -230,15 +230,16 @@ class Transformer(RustVisitor):
         name = ctx.Identifier().getText()
         fields = [self.visit(f) for f in ctx.structField()]
         field_types = {}
-
-        for field_ctx in fields:
-            field_name = field_ctx[0]
-            field_type = field_ctx[1]
+        for field_name, field_type in fields:
             field_types[field_name] = field_type
-
         self.struct_defs[name] = field_types
         return StructDef(name=name, fields=fields)
-    
+
+    def visitStructField(self, ctx):
+        name = ctx.Identifier().getText()
+        typ = self.visit(ctx.type_())
+        return (name, typ)
+
     def visitStructLiteral(self, ctx):
         type_name = ctx.Identifier().getText()
         fields = [self.visit(field_ctx) for field_ctx in ctx.structLiteralField()]
@@ -389,11 +390,34 @@ class Transformer(RustVisitor):
         return VarDef(name=name, type=declared_type, mutable=False)
 
     def visitIfStmt(self, ctx):
-        condition = self.visit(ctx.expression())
+        condition = self.visit(ctx.expression(0))
         then_branch = self.visit(ctx.block(0))
         else_branch = None
-        if ctx.block(1):
-            else_branch = self.visit(ctx.block(1))
+        num_elseif = len(ctx.expression()) - 1
+        current_else = None
+        for i in range(num_elseif):
+            elseif_condition = self.visit(ctx.expression(i + 1))
+            elseif_block = self.visit(ctx.block(i + 1))
+            new_if = IfStmt(condition=elseif_condition, then_branch=elseif_block)
+            if current_else is None:
+                current_else = new_if
+            else:
+                last = current_else
+                while last.else_branch is not None:
+                    last = last.else_branch
+                last.else_branch = new_if
+
+        if ctx.block() and len(ctx.block()) > num_elseif + 1:
+            final_else_block = self.visit(ctx.block()[-1])
+            if current_else:
+                last = current_else
+                while last.else_branch is not None:
+                    last = last.else_branch
+                last.else_branch = final_else_block
+            else:
+                else_branch = final_else_block
+        else:
+            else_branch = current_else
         return IfStmt(condition=condition, then_branch=then_branch, else_branch=else_branch)
 
     def visitAssignStmt(self, ctx):
@@ -423,13 +447,13 @@ class Transformer(RustVisitor):
 
     def visitStatement(self, ctx):
         print("stmt is ", ctx.__class__, ctx.getText())
-        # if ctx.Identifier():
-        #     name = ctx.Identifier().getText()
-        #     return ExpressionStmt(expr=IdentifierExpr(name=name), line=ctx.start.line, column=ctx.start.column)
         if ctx.letStmt():
             return self.visit(ctx.letStmt())
         elif ctx.ifStmt():
             return self.visit(ctx.ifStmt())
+        elif ctx.structLiteral():
+            print("struct literal stmt")
+            return self.visit(ctx.structLiteral())
         elif ctx.assignStmt():
             return self.visit(ctx.assignStmt())
         elif ctx.forStmt():
@@ -450,9 +474,6 @@ class Transformer(RustVisitor):
             return BreakStmt()
         elif ctx.getText() == "continue;":
             return ContinueStmt()
-        elif ctx.structLiteral():
-            print("struct literal stmt")
-            return self.visit(ctx.structLiteral())
         else:
             print("⚠️ Unknown statement:", ctx.getText())
             return None
@@ -501,7 +522,6 @@ class Transformer(RustVisitor):
     def visitExpression(self, ctx):
         print("expression is ", ctx.getText(), ctx.__class__)
         if ctx.primaryExpression():
-            print("in primary")
             return self.visit(ctx.primaryExpression())
 
         elif ctx.mutableExpression():
@@ -552,8 +572,8 @@ class Transformer(RustVisitor):
             cast = self.visit(ctx.castExpressionPostFix())
             return CastExpr(expr, cast)
 
-        elif ctx.callExpression():
-            return self.visit(ctx.callExpression())
+        elif ctx.callExpressionPostFix():
+            return self.visit(ctx.callExpressionPostFix())
 
         elif ctx.parenExpression():
             return self.visit(ctx.parenExpression())
@@ -571,20 +591,29 @@ class Transformer(RustVisitor):
             return self.visit(ctx.expressionBlock())
 
         elif ctx.patternPrefix():
-            expr = self.visit(ctx.expression(0))
-            print("expr is ", ctx.expression(0).__class__)
-            pattern = self.visit(ctx.patternPrefix().pattern())
-            print("pattern is ", ctx.patternPrefix().pattern().__class__, pattern.name)
-            return PatternExpr(expr, pattern.name)
+            value_expr = self.visit(ctx.expression(0))
+            pattern_ctx = ctx.patternPrefix().pattern()
+            pattern_node = self.visit(pattern_ctx)
+            return PatternExpr(value_expr, pattern_node)
 
         raise Exception(f"Unrecognized expression structure: {ctx.getText()}")
 
+    def visitCallExpression(self, ctx):
+        print("in call expression")
+        path = [ctx.Identifier(0).getText()]
+        for ident in ctx.Identifier()[1:]:
+            path.append(ident.getText())
+        expr_nodes = []
+        if ctx.expression():
+            expr_nodes.append(self.visit(ctx.expression(0)))
+            for i in range(1, len(ctx.expression())):
+                expr_nodes.append(self.visit(ctx.expression(i)))
+        return FunctionCallExpr(path=path, arguments=expr_nodes)
+
     def visitPrimaryExpression(self, ctx):
-        print("priamry #######")
         if ctx.literal():
             return self.visit(ctx.literal())
         elif ctx.Identifier():
-            print("ID#################", ctx.Identifier().getText())
             return IdentifierExpr(ctx.Identifier().getText())
         else:
             raise Exception(f"Unknown primary expression: {ctx.getText()}")
@@ -729,31 +758,6 @@ class Transformer(RustVisitor):
         else:
             print("Unhandled initializer kind")
             return None
-        
-    # def visitInitBlock(self, ctx):
-    #     fields = {}
-    #     for field_ctx in ctx.fields:
-    #         name = field_ctx.Identifier().getText()
-    #         value = self.visit(field_ctx.expression())
-    #         fields[name] = value
-
-    #     return_expr = self.visit(ctx.expression())
-    #     struct_literal = StructLiteralExpr(
-    #         typename="",  # can't tell from this rule; probably passed in letStmt
-    #         fields=fields
-    #     )
-
-    #     let_stmt = LetStmt(
-    #         name="init",  # hardcoded unless inferred from outer rule
-    #         var_type=None,
-    #         value=struct_literal,
-    #         mutable=True  # again, hardcoded unless inferred
-    #     )
-
-    #     return InitBlock(
-    #         statements=[let_stmt],
-    #         return_expr=return_expr
-    #     )
 
     def visitWhileStmt(self, ctx):
         condition = self.visit(ctx.expression())

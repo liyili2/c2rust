@@ -354,8 +354,13 @@ class RustVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by RustParser#callExpression.
-    def visitCallExpression(self, ctx:RustParser.CallExpressionContext):
+    # Visit a parse tree produced by RustParser#callExpressionPostFix.
+    def visitCallExpressionPostFix(self, ctx:RustParser.CallExpressionPostFixContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#functionCallArgs.
+    def visitFunctionCallArgs(self, ctx:RustParser.FunctionCallArgsContext):
         return self.visitChildren(ctx)
 
 

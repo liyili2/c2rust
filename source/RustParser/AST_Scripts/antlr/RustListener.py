@@ -629,12 +629,21 @@ class RustListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by RustParser#callExpression.
-    def enterCallExpression(self, ctx:RustParser.CallExpressionContext):
+    # Enter a parse tree produced by RustParser#callExpressionPostFix.
+    def enterCallExpressionPostFix(self, ctx:RustParser.CallExpressionPostFixContext):
         pass
 
-    # Exit a parse tree produced by RustParser#callExpression.
-    def exitCallExpression(self, ctx:RustParser.CallExpressionContext):
+    # Exit a parse tree produced by RustParser#callExpressionPostFix.
+    def exitCallExpressionPostFix(self, ctx:RustParser.CallExpressionPostFixContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#functionCallArgs.
+    def enterFunctionCallArgs(self, ctx:RustParser.FunctionCallArgsContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#functionCallArgs.
+    def exitFunctionCallArgs(self, ctx:RustParser.FunctionCallArgsContext):
         pass
 
 
