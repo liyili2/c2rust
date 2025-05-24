@@ -102,7 +102,8 @@ returnStmt: 'return' (expression)? ';' | Identifier;
 loopStmt: 'loop' block;
 
 expression
-    : mutableExpression expression
+    : patternPrefix expression
+    | mutableExpression expression
     | primaryExpression
     | dereferenceExpression
     | parenExpression
@@ -120,6 +121,8 @@ expression
     | callExpression
     ;
 
+patternPrefix: 'let'? pattern '=' ;
+pattern: 'ref'? 'mut'? Identifier | 'Some' '(' 'ref'? 'mut'? Identifier ')' ;
 castExpressionPostFix: 'as' type ('as' type)*;
 compoundOps: '+=' | '-=' | '*=' | '/=' | '%=' | '&=' | '|=' | '^=';
 patternSymbol: '..';

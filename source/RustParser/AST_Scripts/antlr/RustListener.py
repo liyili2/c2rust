@@ -467,6 +467,24 @@ class RustListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by RustParser#patternPrefix.
+    def enterPatternPrefix(self, ctx:RustParser.PatternPrefixContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#patternPrefix.
+    def exitPatternPrefix(self, ctx:RustParser.PatternPrefixContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#pattern.
+    def enterPattern(self, ctx:RustParser.PatternContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#pattern.
+    def exitPattern(self, ctx:RustParser.PatternContext):
+        pass
+
+
     # Enter a parse tree produced by RustParser#castExpressionPostFix.
     def enterCastExpressionPostFix(self, ctx:RustParser.CastExpressionPostFixContext):
         pass

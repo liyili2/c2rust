@@ -193,3 +193,18 @@ class StructLiteralExpr(Expression):
 
     def accept(self, visitor):
         return visitor.visitStructLiteralExpr(self)
+
+class Pattern(Expression):
+    def __init__(self, name):
+        self.name = name
+
+    def accept(self, visitor):
+        return visitor.visitPattern(self)
+
+class PatternExpr(Expression):
+    def __init__(self, expression, pattern):
+        self.expression = expression
+        self.pattern = pattern
+
+    def accept(self, visitor):
+        return self

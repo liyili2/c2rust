@@ -1,6 +1,6 @@
 from antlr4 import TerminalNode
 import re
-from AST_Scripts.ast.Expression import ArrayLiteral, BinaryExpr, BoolLiteral, BorrowExpr, CastExpr, CharLiteralExpr, DereferenceExpr, FieldAccessExpr, IdentifierExpr, IndexExpr, IntLiteral, MethodCallExpr, ParenExpr, RepeatArrayLiteral, StrLiteral, StructLiteralExpr, StructLiteralField, UnaryExpr
+from AST_Scripts.ast.Expression import ArrayLiteral, BinaryExpr, BoolLiteral, BorrowExpr, CastExpr, CharLiteralExpr, DereferenceExpr, FieldAccessExpr, IdentifierExpr, IndexExpr, IntLiteral, MethodCallExpr, ParenExpr, Pattern, PatternExpr, RepeatArrayLiteral, StrLiteral, StructLiteralExpr, StructLiteralField, UnaryExpr
 from AST_Scripts.ast.Statement import AssignStmt, BreakStmt, CompoundAssignment, ContinueStmt, ExpressionStmt, ForStmt, IfStmt, LetStmt, LoopStmt, MatchArm, MatchPattern, MatchStmt, ReturnStmt, StaticVarDecl, StructLiteral, WhileStmt
 from AST_Scripts.antlr.RustVisitor import RustVisitor
 from AST_Scripts.ast.TopLevel import ExternBlock, ExternFunctionDecl, ExternStaticVarDecl, ExternTypeDecl, FunctionDef, InterfaceDef, StructDef, Attribute, TypeAliasDecl, UnionDef
@@ -501,7 +501,6 @@ class Transformer(RustVisitor):
     def visitExpression(self, ctx):
         print("expression is ", ctx.getText(), ctx.__class__)
         if ctx.primaryExpression():
-            print("in primary")
             return self.visit(ctx.primaryExpression())
 
         elif ctx.mutableExpression():
@@ -570,7 +569,12 @@ class Transformer(RustVisitor):
         elif ctx.expressionBlock():
             return self.visit(ctx.expressionBlock())
 
-        print("??????????????")
+        elif ctx.patternPrefix():
+            expr = self.visit(ctx.expression(0))
+            pattern = self.visit(ctx.patternPrefix().pattern())
+            print("pattern is ", ctx.patternPrefix().pattern().__class__, pattern.name)
+            return PatternExpr(expr, pattern.name)
+
         raise Exception(f"Unrecognized expression structure: {ctx.getText()}")
 
     def visitPrimaryExpression(self, ctx):
@@ -611,11 +615,15 @@ class Transformer(RustVisitor):
         if not isinstance(expr, IdentifierExpr):
             raise Exception("Can only borrow variables (identifiers).")
         return BorrowExpr(expr.name)
-    
+
     def visitCastExpr(self, node):
         expr = self.visit(node.expr)
         target_type = node.type
         return CastExpr(expr=expr, type=target_type)
+
+    def visitPattern(self, ctx):
+        print("--------------------", ctx.Identifier())
+        return Pattern(ctx.Identifier())
 
     def visitType(self, ctx):
         type_str = ctx.getText()

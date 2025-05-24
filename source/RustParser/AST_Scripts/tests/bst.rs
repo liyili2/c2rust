@@ -8,24 +8,26 @@
 // }
 
 impl Node {
-    fn new(key: i32, value: String) -> Self {
-        Node {
-            key,
-            value,
-            left: None,
-            right: None,
-        }
-    }
+    // fn new(key: i32, value: String) -> Self {
+    //     Node {
+    //         key,
+    //         value,
+    //         left: None,
+    //         right: None,
+    //     }
+    // }
 
     // looks like Box is helpful here
-    // fn insert(& mut self, key: i32, value: String) {
+    fn insert(& mut self, key: i32, value: String) {
         // if key < self.key {
-        //     if let Some(ref mut left) = self.left {
-        //         left.insert(key, value);
-        //     } else {
-        //         self.left = Some(Box::new(Node::new(key, value)));
-        //     }
-        // } else if key > self.key {
+            if let Some(ref mut left) = self {
+                left.insert(key, value);
+            } 
+            // else {
+                // self.left = Some(Box::new(Node::new(key, value)));
+            // }
+        // }
+        // else if key > self.key {
         //     if let Some(ref mut right) = self.right {
         //         right.insert(key, value);
         //     } else {
@@ -34,7 +36,7 @@ impl Node {
         // } else {
         //     self.value = value;
         // }
-    // }
+    }
 
     // self.left is owned by current function
     // but looks like left in Some(ref mut left) is something can be passed to other functions

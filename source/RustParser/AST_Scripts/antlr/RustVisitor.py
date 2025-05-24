@@ -264,6 +264,16 @@ class RustVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by RustParser#patternPrefix.
+    def visitPatternPrefix(self, ctx:RustParser.PatternPrefixContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#pattern.
+    def visitPattern(self, ctx:RustParser.PatternContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by RustParser#castExpressionPostFix.
     def visitCastExpressionPostFix(self, ctx:RustParser.CastExpressionPostFixContext):
         return self.visitChildren(ctx)
