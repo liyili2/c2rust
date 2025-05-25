@@ -11,7 +11,7 @@ class IdentifierExpr(Expression):
         self.name = name
 
     def accept(self, visitor):
-        return visitor.visit_identifier_expr(self)
+        return visitor.visitPrimaryExpression(self)
 
 class BinaryExpr(Expression):
     def __init__(self, left, op, right):
@@ -31,6 +31,7 @@ class LiteralExpr(Expression):
         return visitor.visit_LiteralExpr(self)
 
     def get_type(self):
+        print("literal val is ", self.value)
         if isinstance(self.value, int):
             return IntType()
         elif isinstance(self.value, float):
@@ -48,7 +49,7 @@ class FunctionCallExpr(Expression):
         self.args = args
 
     def accept(self, visitor):
-        return visitor.visit_FunctionCallExpr(self)
+        return visitor.visitCallExpression(self)
 
 class BorrowExpr(Expression):
     def __init__(self, name, mutable=False):
@@ -192,23 +193,38 @@ class StructLiteralExpr(Expression):
 
     def accept(self, visitor):
         return visitor.visitStructLiteralExpr(self)
-    
-class MacroCall(Expression):
-    def __init__(self, name, args, delimiter):
-        self.kind = "MacroCall"
+
+class Pattern(Expression):
+    def __init__(self, name):
         self.name = name
-        self.args = args
-        self.delimiter = delimiter
 
     def accept(self, visitor):
-        return visitor.visitMacroCall(visitor)
+        return visitor.visitPattern(self)
 
-class RangeExpression(Expression):
-    def __init__(self, start, end, inclusive=False):
-        self.kind = "RangeExpression"
-        self.start = start  # AST node for the left side, e.g., Literal(0)
-        self.end = end      # AST node for the right side, e.g., Identifier("len")
-        self.inclusive = inclusive
+class PatternExpr(Expression):
+    def __init__(self, expression, pattern):
+        self.expression = expression
+        self.pattern = pattern
+        print("accept: ", self.pattern, self.expression)
 
     def accept(self, visitor):
-        pass
+        print("accept: ", self.pattern, self.expression)
+        return self
+
+class TypePathExpression(Expression):
+    def __init__(self, type_path):
+        self.type_path = type_path  # list of strings
+
+    def accept(self, visitor):
+        return visitor.visitTypePathExpression(self)
+
+    # def __repr__(self):
+    #     return f"TypePathExpression(type_path={self.type_path}, value_expr={self.value_expr})"
+
+class TypePathFullExpr(Expression):
+    def __init__(self, type_path, value_expr):
+        self.type_path = type_path
+        self.value_expr = value_expr
+
+    def accept(self, visitor):
+        return visitor.visitExpression(self)

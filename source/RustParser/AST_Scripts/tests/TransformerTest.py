@@ -22,29 +22,20 @@ def pretty_print_ast(node, indent=0):
     else:
         return f"{spacer}{repr(node)}"
 
-TEST_DIR = os.path.join(os.path.dirname(__file__), "test_inputs")
-def main():
-    test_files = ["bst.rs", "aggregate.rs"]
-    for filename in test_files:
-        try:
-            print(f"Testing {filename}")
-            file_path = os.path.join(os.path.dirname(__file__), filename)
-            with open(file_path, "r", encoding="utf-8") as f:
-                rust_code = f.read()
-
-            lexer = RustLexer(InputStream(rust_code))
-            tokens = CommonTokenStream(lexer)
-            parser = RustParser(tokens)
-            tree = parser.program()
-            print(pretty_print_ast(tree))
-
-            builder = Transformer()
-            custom_ast = builder.visit_Program(tree)
-            print(pretty_print_ast(custom_ast))
-
-        except Exception as e:
-            print(f"❌ Error processing {filename}: {e}")
-            raise
-
-if __name__ == "__main__":
-    main()
+#TODO: test the assignment of negative numbers to integers
+# lexer = RustLexer(InputStream("fn main(){let a : i32 = 1; a=12;let b = true;if b " \
+# "{a=2;}else{a=1;}let nums: [i32; 3] = [1,2,3];let n : i32 = 0; for n in nums { a = n;} }"))
+file_path = os.path.join(os.path.dirname(__file__), "bst.rs")
+with open(file_path, "r", encoding="utf-8") as f:
+    rust_code = f.read()
+lexer = RustLexer(InputStream(rust_code))
+tokens = CommonTokenStream(lexer)
+parser = RustParser(tokens)
+tree = parser.program()
+print(pretty_print_ast(tree))
+builder = Transformer()
+custom_ast = builder.visit_Program(tree)
+checker = TypeChecker()
+# checker.visit(custom_ast)
+print("Pretty AST:")
+print(pretty_print_ast(custom_ast))

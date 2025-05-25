@@ -97,3 +97,11 @@ class UnionDef:
         self.name = name
         self.fields = fields
         self.visibility = visibility
+
+class InterfaceDef:
+    def __init__(self, name: str, functions: list):
+        self.name = name
+        self.functions = functions or []
+
+    def __repr__(self):
+        return f"InterfaceDef(name={self.name}, functions={self.functions})"
