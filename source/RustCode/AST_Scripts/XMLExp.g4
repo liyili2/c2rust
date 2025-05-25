@@ -4,7 +4,7 @@ program: stmt+;
 
 stmt: letstmt | exp | printstmt | blockstmt | ifstmt | breakstmt | returnstmt | loopstmt | forstmt | matchstmt | functionstmt;
 
-blockstmt: '<blockstmt' 'type' '=' '\'' Block '\'' '>' program '</blockstmt>' ;
+blockstmt: '<blockstmt' 'type' '=' '\'' Block '\'' ('unsafe' '=' 'yes')? '>' program '</blockstmt>' ;
 
 letstmt : '<letstmt' 'type' '=' '\'' Let '\'' (Mut ID)? '=' '\'' Identifier '\'' (':' atype)? '>' (exp | arrayexp) '</letstmt>' ;
 
@@ -38,7 +38,7 @@ numexp: Number | Minus Number | HexLiteral | BinaryLiteral;
 
 arrayexp: '[' (numexp (',' numexp)*)? ']';
 
-atype: Int | Bool;
+atype: Int | Bool | 'ref' atype | 'pointer' atype;
 
 idexp : '<' VEXP OP '=' '\'' ID '\'' ('type' '=' '\'' atype '\'')? '>' Identifier '</' VEXP '>' ;
 
