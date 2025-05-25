@@ -200,12 +200,19 @@ class QXFor(QXStmt):
 class QXRef(QXVExp):
     def __init__(self, v: QXVExp):
         self._v = v
+        self._index = 0
 
     def accept(self, visitor: AbstractProgramVisitor):
         visitor.visitRef(self) #Not exist
 
     def next(self):
         return self._v
+
+    def index(self):
+        return self._index
+
+    def setIndex(self, a:int):
+        self._index = a
 
 
 class QXBin(QXVExp):
