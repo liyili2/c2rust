@@ -476,6 +476,15 @@ class RustListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by RustParser#typePathExpression.
+    def enterTypePathExpression(self, ctx:RustParser.TypePathExpressionContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#typePathExpression.
+    def exitTypePathExpression(self, ctx:RustParser.TypePathExpressionContext):
+        pass
+
+
     # Enter a parse tree produced by RustParser#patternPrefix.
     def enterPatternPrefix(self, ctx:RustParser.PatternPrefixContext):
         pass

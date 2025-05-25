@@ -108,6 +108,7 @@ expression
     : mutableExpression expression
     | primaryExpression
     | dereferenceExpression
+    | typePathExpression
     | parenExpression
     | structFieldDec
     | unaryOpes expression
@@ -123,6 +124,7 @@ expression
     | expression callExpressionPostFix
     ;
 
+typePathExpression: (Identifier DOUBLE_COLON)+ ;
 patternPrefix: 'let'? pattern '=' ;
 pattern: 'ref'? 'mut'? Identifier | 'Some' '(' 'ref'? 'mut'? Identifier ')' ;
 castExpressionPostFix: 'as' type ('as' type)*;
@@ -142,7 +144,7 @@ borrowExpression: '&' expression;
 primaryExpression: literal | Identifier;
 
 fieldAccessPostFix: '[' primaryExpression ']' | ('.' primaryExpression)+;
-callExpressionPostFix: functionCallArgs | (DOUBLE_COLON Identifier)* functionCallArgs ;
+callExpressionPostFix: expression functionCallArgs;
 functionCallArgs: '(' expression (',' expression)* ')' ;
 postfixExpression
   : primaryExpression

@@ -171,9 +171,9 @@ class StructLiteral(Statement):
         return f"StructLiteral(type_name={self.type_name}, fields={self.fields})"
 
 class CallStmt(Statement):
-    def __init__(self, function_expr, args):
-        self.function_expr = function_expr
-        self.args = args
+    def __init__(self, callee, args):
+        self.callee = callee  # Could be an IdentifierExpr or a MethodCallExpr
+        self.args = args      # List of expressions
 
     def accept(self, visitor):
         return visitor.visitCallStmt(self)

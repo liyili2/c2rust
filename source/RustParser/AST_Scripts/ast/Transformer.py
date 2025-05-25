@@ -388,34 +388,24 @@ class Transformer(RustVisitor):
         return VarDef(name=name, type=declared_type, mutable=False)
 
     def visitIfStmt(self, ctx):
+        # Initial "if" condition and block
         condition = self.visit(ctx.expression(0))
         then_branch = self.visit(ctx.block(0))
         else_branch = None
-        num_elseif = len(ctx.expression()) - 1
-        current_else = None
-        for i in range(num_elseif):
-            elseif_condition = self.visit(ctx.expression(i + 1))
-            elseif_block = self.visit(ctx.block(i + 1))
-            new_if = IfStmt(condition=elseif_condition, then_branch=elseif_block)
-            if current_else is None:
-                current_else = new_if
-            else:
-                last = current_else
-                while last.else_branch is not None:
-                    last = last.else_branch
-                last.else_branch = new_if
 
-        if ctx.block() and len(ctx.block()) > num_elseif + 1:
-            final_else_block = self.visit(ctx.block()[-1])
-            if current_else:
-                last = current_else
-                while last.else_branch is not None:
-                    last = last.else_branch
-                last.else_branch = final_else_block
-            else:
-                else_branch = final_else_block
-        else:
-            else_branch = current_else
+        # Build the chain of "else if" clauses in reverse order
+        n_elseif = len(ctx.expression()) - 1  # excludes the first `if` expression
+
+        # If there is a final `else` block
+        if len(ctx.block()) > n_elseif + 1:
+            else_branch = self.visit(ctx.block()[-1])  # final else block
+
+        # Build "else if" chain from last to first
+        for i in reversed(range(n_elseif)):
+            elseif_condition = self.visit(ctx.expression(i + 1))
+            elseif_then = self.visit(ctx.block(i + 1))
+            else_branch = IfStmt(condition=elseif_condition, then_branch=elseif_then, else_branch=else_branch)
+
         return IfStmt(condition=condition, then_branch=then_branch, else_branch=else_branch)
 
     def visitAssignStmt(self, ctx):
@@ -442,7 +432,7 @@ class Transformer(RustVisitor):
     def visitExpressionStatement(self, ctx):
         expr = self.visit(ctx.expression())
         return ExpressionStmt(expr=expr, line=ctx.start.line, column=ctx.start.column)
-    
+
     def visitCallStmt(self, ctx):
         function_expr = self.visit(ctx.expression())
         postfix = ctx.callExpressionPostFix()
@@ -452,7 +442,7 @@ class Transformer(RustVisitor):
         else:
             print("⚠️ callExpressionPostFix not recognized format")
             args = []
-        return CallStmt(function_expr=function_expr, args=args)
+        return CallStmt(callee=function_expr, args=args)
 
     def visitStatement(self, ctx):
         print("stmt is ", ctx.callStmt(), ctx.__class__, ctx.getText())
@@ -583,6 +573,7 @@ class Transformer(RustVisitor):
             return CastExpr(expr, cast)
 
         elif ctx.callExpressionPostFix():
+            print("call is ", ctx.expression(0).getText())
             return self.visit(ctx.callExpressionPostFix())
 
         elif ctx.parenExpression():

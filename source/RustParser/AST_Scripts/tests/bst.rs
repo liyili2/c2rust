@@ -23,19 +23,19 @@ impl Node {
             if self.left {
                 left.insert(key, value);
             }
-            // else {
-            //     self.left = Some(Box::new(Node::new(key, value)));
-            // }
+            else {
+                self.left = Some(Box::new(Node::new(key, value)));
+            }
         }
-        // else if key > self.key {
-        //     if self.right {
-        //         right.insert(key, value);
-        //     } else {
-        //         self.right = Some(Box::new(Node::new(key, value)));
-        //     }
-        // } else {
-        //     self.value = value;
-        // }
+        else if key > self.key {
+            if self.right {
+                right.insert(key, value);
+            } else {
+                self.right = Some(Box::new(Node::new(key, value)));
+            }
+        } else {
+            self.value = value;
+        }
     }
 
     // self.left is owned by current function
