@@ -144,7 +144,7 @@ borrowExpression: '&' expression;
 primaryExpression: literal | Identifier;
 
 fieldAccessPostFix: '[' primaryExpression ']' | ('.' primaryExpression)+;
-callExpressionPostFix: functionCallArgs;
+callExpressionPostFix: '!'? functionCallArgs;
 functionCallArgs: '(' expression (',' expression)* ')' ;
 postfixExpression
   : primaryExpression
