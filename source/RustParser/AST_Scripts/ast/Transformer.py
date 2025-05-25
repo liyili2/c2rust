@@ -591,11 +591,11 @@ class Transformer(RustVisitor):
         elif ctx.expressionBlock():
             return self.visit(ctx.expressionBlock())
 
-        elif ctx.patternPrefix():
-            value_expr = self.visit(ctx.expression(0))
-            pattern_ctx = ctx.patternPrefix().pattern()
-            pattern_node = self.visit(pattern_ctx)
-            return PatternExpr(value_expr, pattern_node)
+        # elif ctx.patternPrefix():
+        #     value_expr = self.visit(ctx.expression(0))
+        #     pattern_ctx = ctx.patternPrefix().pattern()
+        #     pattern_node = self.visit(pattern_ctx)
+        #     return PatternExpr(value_expr, pattern_node)
 
         raise Exception(f"Unrecognized expression structure: {ctx.getText()}")
 

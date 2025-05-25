@@ -24,14 +24,14 @@ impl Node {
                 left.insert(key, value);
             }
             else {
-                self.left = Some(Box::new(Node::new(key, value)));
+                // self.left = Some(Box::new(Node::new(key, value)));
             }
         }
         else if key > self.key {
             if self.right {
                 right.insert(key, value);
             } else {
-                self.right = Some(Box::new(Node::new(key, value)));
+                // self.right = Some(Box::new(Node::new(key, value)));
             }
         } else {
             self.value = value;
