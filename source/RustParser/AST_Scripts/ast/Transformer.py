@@ -1,7 +1,7 @@
 from antlr4 import TerminalNode
 import re
 from AST_Scripts.ast.Expression import ArrayLiteral, BinaryExpr, BoolLiteral, BorrowExpr, CastExpr, CharLiteralExpr, DereferenceExpr, FieldAccessExpr, FunctionCallExpr, IdentifierExpr, IndexExpr, IntLiteral, MethodCallExpr, ParenExpr, Pattern, PatternExpr, RepeatArrayLiteral, StrLiteral, StructLiteralExpr, StructLiteralField, UnaryExpr
-from AST_Scripts.ast.Statement import AssignStmt, BreakStmt, CompoundAssignment, ContinueStmt, ExpressionStmt, ForStmt, IfStmt, LetStmt, LoopStmt, MatchArm, MatchPattern, MatchStmt, ReturnStmt, StaticVarDecl, StructLiteral, WhileStmt
+from AST_Scripts.ast.Statement import AssignStmt, BreakStmt, CallStmt, CompoundAssignment, ContinueStmt, ExpressionStmt, ForStmt, IfStmt, LetStmt, LoopStmt, MatchArm, MatchPattern, MatchStmt, ReturnStmt, StaticVarDecl, StructLiteral, WhileStmt
 from AST_Scripts.antlr.RustVisitor import RustVisitor
 from AST_Scripts.ast.TopLevel import ExternBlock, ExternFunctionDecl, ExternStaticVarDecl, ExternTypeDecl, FunctionDef, InterfaceDef, StructDef, Attribute, TypeAliasDecl, UnionDef
 from AST_Scripts.ast.Program import Program
@@ -442,20 +442,32 @@ class Transformer(RustVisitor):
     def visitExpressionStatement(self, ctx):
         expr = self.visit(ctx.expression())
         return ExpressionStmt(expr=expr, line=ctx.start.line, column=ctx.start.column)
+    
+    def visitCallStmt(self, ctx):
+        function_expr = self.visit(ctx.expression())
+        postfix = ctx.callExpressionPostFix()
+        if postfix.functionCallArgs():
+            args_ctx = postfix.functionCallArgs().expression()
+            args = [self.visit(arg) for arg in args_ctx]
+        else:
+            print("⚠️ callExpressionPostFix not recognized format")
+            args = []
+        return CallStmt(function_expr=function_expr, args=args)
 
     def visitStatement(self, ctx):
-        print("stmt is ", ctx.__class__, ctx.getText())
+        print("stmt is ", ctx.callStmt(), ctx.__class__, ctx.getText())
         if ctx.letStmt():
             return self.visit(ctx.letStmt())
         elif ctx.ifStmt():
             return self.visit(ctx.ifStmt())
+        elif ctx.callStmt():
+            return self.visit(ctx.callStmt())
         elif ctx.structLiteral():
-            print("struct literal stmt")
             return self.visit(ctx.structLiteral())
         elif ctx.assignStmt():
             return self.visit(ctx.assignStmt())
         elif ctx.forStmt():
-            return self.visit(ctx.forStmt()) 
+            return self.visit(ctx.forStmt())
         elif ctx.staticVarDecl():
             return self.visit(ctx.staticVarDecl())
         elif ctx.whileStmt():
@@ -475,7 +487,7 @@ class Transformer(RustVisitor):
         else:
             print("⚠️ Unknown statement:", ctx.getText())
             return None
-        
+
     def visitLoopStmt(self, ctx):
         block = self.visit(ctx.block())
         return LoopStmt(body=block)

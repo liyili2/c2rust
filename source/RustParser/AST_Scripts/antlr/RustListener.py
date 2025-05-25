@@ -323,6 +323,15 @@ class RustListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by RustParser#callStmt.
+    def enterCallStmt(self, ctx:RustParser.CallStmtContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#callStmt.
+    def exitCallStmt(self, ctx:RustParser.CallStmtContext):
+        pass
+
+
     # Enter a parse tree produced by RustParser#letStmt.
     def enterLetStmt(self, ctx:RustParser.LetStmtContext):
         pass

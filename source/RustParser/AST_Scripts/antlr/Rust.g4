@@ -70,6 +70,7 @@ block: '{' statement* returnStmt? '}';
 unsafeBlock: 'unsafe' block;
 statement
     : letStmt
+    | callStmt
     | structLiteral
     | staticVarDecl
     | assignStmt
@@ -86,6 +87,7 @@ statement
     | qualifiedFunctionCall ('.' qualifiedFunctionCall)* ';'
     ;
 
+callStmt: expression callExpressionPostFix ';' ;
 letStmt: 'let' varDef '=' expression ';' | 'let' 'mut'? Identifier ':' (type | Identifier) '=' initializer ';' | 'let' varDef initBlock ;
 varDef: 'ref' 'mut'? Identifier (':' type)? | 'mut' Identifier ((':' | '=') type)? | Identifier (':' type)?;
 compoundOp: '+=' | '-=' | '*=' | '/=' | '%=' | '&=' | '|=' | '^=' ;
