@@ -17,10 +17,10 @@ impl Node {
         }
     }
 
-    looks like Box is helpful here
-    fn insert(&mut self, key: i32, value: string) {
+    // looks like Box is helpful here
+    fn insert() {
         if key < self.key {
-            if self.left {
+            if let some(ref mut left) = self.left {
                 left.insert(key, value);
             }
             else {
@@ -28,9 +28,10 @@ impl Node {
             }
         }
         else if key > self.key {
-            if self.right {
+            if let Some(ref mut right) = self.right {
                 right.insert(key, value);
-            } else {
+            } 
+        else {
                 self.right = Some(Box::new(Node::new(key, value)));
             }
         } else {
@@ -42,13 +43,13 @@ impl Node {
     // but looks like left in Some(ref mut left) is something can be passed to other functions
     fn search(&mut self, key: i32) -> Option<&string> {
         if key < self.key {
-            if self.left {
+            if let Some(ref mut left) = self.left {
                 return left.search(key);
             } else {
                 return None;
             }
         } else if key > self.key {
-            if let self.right {
+            if let Some(ref mut right) = self.right {
                 return right.search(key);
             } else {
                 return None;

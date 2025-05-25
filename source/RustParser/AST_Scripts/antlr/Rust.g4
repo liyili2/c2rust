@@ -122,6 +122,7 @@ expression
     | expression castExpressionPostFix
     | expressionBlock
     | expression callExpressionPostFix
+    | patternPrefix expression
     ;
 
 typePathExpression: (Identifier DOUBLE_COLON)+ ;

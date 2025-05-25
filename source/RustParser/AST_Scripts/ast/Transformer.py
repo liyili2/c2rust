@@ -597,16 +597,14 @@ class Transformer(RustVisitor):
 
         elif ctx.typePathExpression():
             typePath = self.visit(ctx.typePathExpression())
-            # print("---------------- ", ctx.expression(0).__class__)
             identifier = self.visit(ctx.expression(0))
-            # print("+++++++++++++ ", identifier, ctx.expression(0).__class__)
             return  TypePathFullExpr(type_path=typePath, value_expr=identifier)
 
-        # elif ctx.patternPrefix():
-        #     value_expr = self.visit(ctx.expression(0))
-        #     pattern_ctx = ctx.patternPrefix().pattern()
-        #     pattern_node = self.visit(pattern_ctx)
-        #     return PatternExpr(value_expr, pattern_node)
+        elif ctx.patternPrefix():
+            value_expr = self.visit(ctx.expression(0))
+            pattern_ctx = ctx.patternPrefix().pattern()
+            pattern_node = self.visit(pattern_ctx)
+            return PatternExpr(value_expr, pattern_node)
 
         raise Exception(f"Unrecognized expression structure: {ctx.getText()}")
 
@@ -681,12 +679,13 @@ class Transformer(RustVisitor):
         return CastExpr(expr=expr, type=target_type)
 
     def visitPattern(self, ctx):
-        name = ctx.Identifier().getText() if ctx.Identifier() else "<missing>"
-        return Pattern(name)
+        ids = []
+        for id in ctx.Identifier():
+            ids.append(id.getText())
+        return Pattern(ids)
 
     def visitType(self, ctx):
         type_str = ctx.getText()
-        # print("in visit type: ", type_str)
         if type_str.startswith('[') and ';' in type_str and type_str.endswith(']'):
             inner_type_str, size_str = type_str[1:-1].split(';')
             inner_type = self._basic_type_from_str(inner_type_str.strip())
