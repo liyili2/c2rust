@@ -21,21 +21,21 @@ impl Node {
     fn insert(&mut self, key: i32, value: String) {
         if key < self.key {
             if self.left {
-                left.insert(key, value);
+                // left.insert(key, value);
             }
             else {
-                // self.left = Some(Box::new(Node::new(key, value)));
+                self.left = Some(Box::new(Node::new(key, value)));
             }
         }
-        else if key > self.key {
-            if self.right {
-                right.insert(key, value);
-            } else {
+        // else if key > self.key {
+        //     if self.right {
+                // right.insert(key, value);
+            // } else {
                 // self.right = Some(Box::new(Node::new(key, value)));
-            }
-        } else {
-            self.value = value;
-        }
+            // }
+        // } else {
+        //     self.value = value;
+        // }
     }
 
     // self.left is owned by current function

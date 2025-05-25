@@ -49,7 +49,7 @@ class FunctionCallExpr(Expression):
         self.args = args
 
     def accept(self, visitor):
-        return visitor.visit_FunctionCallExpr(self)
+        return visitor.visitCallExpression(self)
 
 class BorrowExpr(Expression):
     def __init__(self, name, mutable=False):
@@ -210,3 +210,21 @@ class PatternExpr(Expression):
     def accept(self, visitor):
         print("accept: ", self.pattern, self.expression)
         return self
+
+class TypePathExpression(Expression):
+    def __init__(self, type_path):
+        self.type_path = type_path  # list of strings
+
+    def accept(self, visitor):
+        return visitor.visitTypePathExpression(self)
+
+    # def __repr__(self):
+    #     return f"TypePathExpression(type_path={self.type_path}, value_expr={self.value_expr})"
+
+class TypePathFullExpr(Expression):
+    def __init__(self, type_path, value_expr):
+        self.type_path = type_path
+        self.value_expr = value_expr
+
+    def accept(self, visitor):
+        pass

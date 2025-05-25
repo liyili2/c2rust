@@ -1,6 +1,6 @@
 from antlr4 import TerminalNode
 import re
-from AST_Scripts.ast.Expression import ArrayLiteral, BinaryExpr, BoolLiteral, BorrowExpr, CastExpr, CharLiteralExpr, DereferenceExpr, FieldAccessExpr, FunctionCallExpr, IdentifierExpr, IndexExpr, IntLiteral, MethodCallExpr, ParenExpr, Pattern, PatternExpr, RepeatArrayLiteral, StrLiteral, StructLiteralExpr, StructLiteralField, UnaryExpr
+from AST_Scripts.ast.Expression import ArrayLiteral, BinaryExpr, BoolLiteral, BorrowExpr, CastExpr, CharLiteralExpr, DereferenceExpr, FieldAccessExpr, FunctionCallExpr, IdentifierExpr, IndexExpr, IntLiteral, MethodCallExpr, ParenExpr, Pattern, PatternExpr, RepeatArrayLiteral, StrLiteral, StructLiteralExpr, StructLiteralField, TypePathExpression, TypePathFullExpr, UnaryExpr
 from AST_Scripts.ast.Statement import AssignStmt, BreakStmt, CallStmt, CompoundAssignment, ContinueStmt, ExpressionStmt, ForStmt, IfStmt, LetStmt, LoopStmt, MatchArm, MatchPattern, MatchStmt, ReturnStmt, StaticVarDecl, StructLiteral, WhileStmt
 from AST_Scripts.antlr.RustVisitor import RustVisitor
 from AST_Scripts.ast.TopLevel import ExternBlock, ExternFunctionDecl, ExternStaticVarDecl, ExternTypeDecl, FunctionDef, InterfaceDef, StructDef, Attribute, TypeAliasDecl, UnionDef
@@ -411,6 +411,7 @@ class Transformer(RustVisitor):
     def visitAssignStmt(self, ctx):
         target_expr = self.visit(ctx.expression(0))
         value_expr = self.visit(ctx.expression(1))
+        print("ass val is ", value_expr, ctx.expression(1).__class__)
         if isinstance(target_expr, (IdentifierExpr, FieldAccessExpr, IndexExpr, DereferenceExpr)):
             return AssignStmt(target=target_expr, value=value_expr)
         else:
@@ -573,8 +574,13 @@ class Transformer(RustVisitor):
             return CastExpr(expr, cast)
 
         elif ctx.callExpressionPostFix():
-            print("call is ", ctx.expression(0).getText())
-            return self.visit(ctx.callExpressionPostFix())
+            # a = self.visitCallExpression(ctx=ctx)
+            # print("callexpressionpostfix is ", a)
+            # return a
+            # return self.visit(ctx.callExpression())
+            # func = self.visit(ctx.expression(0))  # left expression
+            return self.visit(ctx.callExpressionPostFix())  # postfix
+            # return self.visit(FunctionCallExpr(func=func, args=args))
 
         elif ctx.parenExpression():
             return self.visit(ctx.parenExpression())
@@ -591,6 +597,13 @@ class Transformer(RustVisitor):
         elif ctx.expressionBlock():
             return self.visit(ctx.expressionBlock())
 
+        elif ctx.typePathExpression():
+            typePath = self.visit(ctx.typePathExpression())
+            # print("---------------- ", ctx.expression(0).__class__)
+            identifier = self.visit(ctx.expression(0))
+            # print("+++++++++++++ ", identifier, ctx.expression(0).__class__)
+            return  TypePathFullExpr(type_path=typePath, value_expr=identifier)
+
         # elif ctx.patternPrefix():
         #     value_expr = self.visit(ctx.expression(0))
         #     pattern_ctx = ctx.patternPrefix().pattern()
@@ -599,17 +612,25 @@ class Transformer(RustVisitor):
 
         raise Exception(f"Unrecognized expression structure: {ctx.getText()}")
 
+    def visitCallExpressionPostFix(self, ctx):
+        print("in callpostfix expression")
+        args_ctx = ctx.functionCallArgs()
+        if args_ctx is None:
+            return []
+        return [self.visit(expr) for expr in args_ctx.expression()]
+
     def visitCallExpression(self, ctx):
         print("in call expression")
-        path = [ctx.Identifier(0).getText()]
-        for ident in ctx.Identifier()[1:]:
-            path.append(ident.getText())
-        expr_nodes = []
-        if ctx.expression():
-            expr_nodes.append(self.visit(ctx.expression(0)))
-            for i in range(1, len(ctx.expression())):
-                expr_nodes.append(self.visit(ctx.expression(i)))
-        return FunctionCallExpr(path=path, arguments=expr_nodes)
+        # callee = self.visit(ctx.expression(0))  # the function being called
+        # postfix = ctx.callExpressionPostFix()   # the arguments (ctx)
+        # args = self.visit(postfix)  # returns a list of expressions
+        print("call exp result: ", ctx.func, ctx.args)
+        return FunctionCallExpr(func=ctx.func, args=ctx.args)
+
+    def visitTypePathExpression(self, ctx):
+            type_path = [id.getText() for id in ctx.Identifier()]
+            print("type path is ", type_path)
+            return TypePathExpression(type_path)
 
     def visitPrimaryExpression(self, ctx):
         if ctx.literal():

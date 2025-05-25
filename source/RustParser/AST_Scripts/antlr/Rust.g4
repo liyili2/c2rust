@@ -108,7 +108,7 @@ expression
     : mutableExpression expression
     | primaryExpression
     | dereferenceExpression
-    | typePathExpression
+    | typePathExpression expression
     | parenExpression
     | structFieldDec
     | unaryOpes expression
