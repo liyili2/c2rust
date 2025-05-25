@@ -227,4 +227,4 @@ class TypePathFullExpr(Expression):
         self.value_expr = value_expr
 
     def accept(self, visitor):
-        pass
+        return visitor.visitExpression(self)

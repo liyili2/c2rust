@@ -7,7 +7,7 @@
 //     right: Option<Box<Node> >,
 // }
 
-impl Node {
+// impl Node {
     // fn new(key: i32, value: String) -> Self {
     //     Node {
     //         key,
@@ -18,13 +18,14 @@ impl Node {
     // }
 
     // looks like Box is helpful here
-    fn insert(&mut self, key: i32, value: String) {
-        if key < self.key {
-            if self.left {
+    fn insert() {
+        // if key < self.key {
+        //     if self.left {
                 // left.insert(key, value);
-            }
-            else {
+            // }
+            if a {
                 self.left = Some(Box::new(Node::new(key, value)));
+                // self.left = new(key, value);
             }
         }
         // else if key > self.key {
@@ -36,7 +37,7 @@ impl Node {
         // } else {
         //     self.value = value;
         // }
-    }
+    // }
 
     // self.left is owned by current function
     // but looks like left in Some(ref mut left) is something can be passed to other functions
@@ -57,7 +58,7 @@ impl Node {
 //             return Some(&self.value);
 //         }
 //     }
-}
+// }
 
 // fn main() {
 //     let mut root = Node::new(5, String::from("five"));

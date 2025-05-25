@@ -409,9 +409,9 @@ class Transformer(RustVisitor):
         return IfStmt(condition=condition, then_branch=then_branch, else_branch=else_branch)
 
     def visitAssignStmt(self, ctx):
-        target_expr = self.visit(ctx.expression(0))
         value_expr = self.visit(ctx.expression(1))
-        print("ass val is ", value_expr, ctx.expression(1).__class__)
+        target_expr = self.visit(ctx.expression(0))
+        print("ass val is ", value_expr, target_expr, ctx.expression(0).__class__)
         if isinstance(target_expr, (IdentifierExpr, FieldAccessExpr, IndexExpr, DereferenceExpr)):
             return AssignStmt(target=target_expr, value=value_expr)
         else:
@@ -574,13 +574,11 @@ class Transformer(RustVisitor):
             return CastExpr(expr, cast)
 
         elif ctx.callExpressionPostFix():
-            # a = self.visitCallExpression(ctx=ctx)
-            # print("callexpressionpostfix is ", a)
-            # return a
-            # return self.visit(ctx.callExpression())
-            # func = self.visit(ctx.expression(0))  # left expression
-            return self.visit(ctx.callExpressionPostFix())  # postfix
-            # return self.visit(FunctionCallExpr(func=func, args=args))
+            print("callexpressionpostfix is ", ctx.callExpressionPostFix())
+            func = self.visit(ctx.expression(0))
+            args = self.visit(ctx.callExpressionPostFix())
+            print("a is ", args.__class__, func.__class__)            
+            return FunctionCallExpr(func, args)
 
         elif ctx.parenExpression():
             return self.visit(ctx.parenExpression())
@@ -617,15 +615,21 @@ class Transformer(RustVisitor):
         args_ctx = ctx.functionCallArgs()
         if args_ctx is None:
             return []
-        return [self.visit(expr) for expr in args_ctx.expression()]
+        args = []
+        for expr in args_ctx.expression():
+            print("args exp is ", expr.getText())
+            args.append(self.visit(expr))
 
-    def visitCallExpression(self, ctx):
-        print("in call expression")
+        print("arg list is ", args)
+        return args
+
+    # def visitCallExpression(self, ctx):
+    #     print("in call expression")
         # callee = self.visit(ctx.expression(0))  # the function being called
         # postfix = ctx.callExpressionPostFix()   # the arguments (ctx)
         # args = self.visit(postfix)  # returns a list of expressions
-        print("call exp result: ", ctx.func, ctx.args)
-        return FunctionCallExpr(func=ctx.func, args=ctx.args)
+        # print("call exp result: ", ctx.func, ctx.args)
+        # return FunctionCallExpr(func=ctx.func, args=ctx.args)
 
     def visitTypePathExpression(self, ctx):
             type_path = [id.getText() for id in ctx.Identifier()]

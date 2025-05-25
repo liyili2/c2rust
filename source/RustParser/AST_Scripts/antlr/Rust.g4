@@ -126,7 +126,7 @@ expression
 
 typePathExpression: (Identifier DOUBLE_COLON)+ ;
 patternPrefix: 'let'? pattern '=' ;
-pattern: 'ref'? 'mut'? Identifier | 'Some' '(' 'ref'? 'mut'? Identifier ')' ;
+pattern: 'ref'? 'mut'? Identifier | Identifier '(' 'ref'? 'mut'? Identifier ')' ;
 castExpressionPostFix: 'as' type ('as' type)*;
 compoundOps: '+=' | '-=' | '*=' | '/=' | '%=' | '&=' | '|=' | '^=';
 patternSymbol: '..';
