@@ -1,0 +1,2 @@
+Here's the parsing result:
+(program (topLevelItem (attributes (innerAttribute # [ (attribute derive ( (attrArgs (attrArg Debug)) )) ]))) (topLevelItem (structDef struct Node { (structField key : (type (basicType i32)) ,) (structField value : (type (basicType String)) ,) (structField left : (type (basicType (typePath Option) < (type (basicType (typePath Box) < (type (basicType (typePath Node))) >)) >)) ,) (structField right : (type (basicType (typePath Option) < (type (basicType (typePath Box) < (type (basicType (typePath Node))) >)) >)) ,) })))

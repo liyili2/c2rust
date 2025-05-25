@@ -6,7 +6,7 @@ stmt: letstmt | exp | printstmt | blockstmt | ifstmt | breakstmt | returnstmt | 
 
 blockstmt: '<blockstmt' 'type' '=' '\'' Block '\'' ('unsafe' '=' 'yes')? '>' program '</blockstmt>' ;
 
-letstmt : '<letstmt' 'type' '=' '\'' Let '\'' (Mut ID)? '=' '\'' Identifier '\'' (':' atype)? '>' (exp | arrayexp) '</letstmt>' ;
+letstmt : '<letstmt' 'type' '=' '\'' Let '\'' 'id' '=' '\'' Identifier '\'' ('Mut')? (':' atype)? '>' (exp | arrayexp) '</letstmt>' ;
 
 matchstmt: '<matchstmt' 'type' '=' '\'' Match '\'' '\'' Identifier '\'' '>' blockstmt '</matchstmt>';
 
@@ -30,6 +30,9 @@ functionstmt: '<functionstmt' 'type' '=' '\'' Function '\'' ID '=' '\'' Identifi
 
 parameters: '<parameters>' (idexp (',' idexp)*)? '</parameters>' ;
 
+method: '<method>' Identifier '</method>';
+
+
 exp: vexp | funccallexp | macroexp;
 
 stringval : '<' VEXP OP '=' '\'' String '\'' '>' (StrLiteral | Identifier) '</' VEXP '>';
@@ -38,13 +41,13 @@ numexp: Number | Minus Number | HexLiteral | BinaryLiteral;
 
 arrayexp: '[' (numexp (',' numexp)*)? ']';
 
-atype: Int | Bool | 'ref' atype | 'pointer' atype;
+atype: Int | Bool | '&' '[' Identifier ']';  // Allow `&[i32]`
 
 idexp : '<' VEXP OP '=' '\'' ID '\'' ('type' '=' '\'' atype '\'')? '>' Identifier '</' VEXP '>' ;
 
-funccallexp: '<' VEXP OP '=' '\'' Call '\'' '>' Identifier '(' (vexp (',' vexp)*)? ')' '</' VEXP '>';
+funccallexp: '<' VEXP OP '=' '\'' CALL '\'' '>' Identifier '(' (vexp (',' vexp)*)? ')' '</' VEXP '>';
 
-macroexp: '<' VEXP OP '=' '\'' Macro '\'' '>' Identifier '(' (vexp (',' vexp)*)? ')' '</' VEXP '>';
+macroexp: '<' VEXP OP '=' '\'' MACRO '\'' '>' Identifier '(' (vexp (',' vexp)*)? ')' '</' VEXP '>';
 
 vexp: idexp
     | stringval
@@ -52,12 +55,18 @@ vexp: idexp
     | '<' VEXP OP '=' '\'' Bool '\'' '>' (TrueLiteral | FalseLiteral) '</' VEXP '>'
     | '<' VEXP OP '=' '\'' op '\'' '>' vexp vexp '</' VEXP '>'
     | '<' VEXP OP '=' '\'' sinop '\'' '>' vexp '</' VEXP '>'
-    | '<' VEXP OP '=' '\'' Index '\'' '>' vexp '[' vexp ']' '</' VEXP '>';
+    | '<' VEXP OP '=' '\'' METHODCALL '\'' '>' idexp method '</' VEXP '>'  // Fixed rule
+    | '<' VEXP OP '=' '\'' VECINIT '\'' '>' idexp '[' vexp ';' vexp ']' '</' VEXP '>'
+    | '<' VEXP OP '=' '\'' INDEX '\'' '>' idexp '<index>' vexp '</index>' '</' VEXP '>'
+    | '<' VEXP OP '=' '\'' CALL '\'' '>' Identifier '(' (vexp (',' vexp)*)? ')' '</' VEXP '>'
+    | '<' VEXP OP '=' '\'' MACRO '\'' '>' Identifier '(' (vexp (',' vexp)*)? ')' '</' VEXP '>' ;
+
 
 range_expr: vexp '..' vexp;
 
 // Lexical Specification of this Programming Language
-op: Plus | Minus | Times | Div | Mod | Exp | And | Less | Equal | Or | Range | '>>' | '<<' | '&';
+op: Plus | Minus | Times | Div | Mod | Exp | And | Less | Equal | Or | Range | '>>' | '<<' | '&' | '+=' | '=' ;
+
 
 sinop : Reference;
 
@@ -143,6 +152,17 @@ Print : 'print';
 Number : DIGIT+ ;
 
 NUM: 'num';
+
+CALL       : 'call';
+
+MACRO      : 'macro';
+
+VECINIT    : 'vecinit';
+
+METHODCALL : 'methodcall';
+
+INDEX      : 'index';
+
 
 Identifier : Letter LetterOrDigit*;
 

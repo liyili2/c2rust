@@ -2,10 +2,17 @@
     <parameters>
         <vexp op='id' type='int'>list</vexp>
     </parameters>
+
+
     <blockstmt type='block'>
+    <letstmt type='let' id='j' >
+                <vexp op='num'>0</vexp>
+            </letstmt>
+
         <printstmt type='print'>
             <vexp op='string'>"["</vexp>
         </printstmt>
+        
         <forstmt type='for' id='i'>
             <range> 
                 <vexp op='num'> 0 </vexp>..<vexp op='string'> "list.len()" </vexp>

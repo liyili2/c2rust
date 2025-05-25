@@ -1,0 +1,39 @@
+<functionstmt type='fn' id='sumlist'>
+    <parameters>
+        <vexp op='id' type='int'>list</vexp>
+    </parameters>
+
+    <blockstmt type='block'>
+        <letstmt type='let' id='sum'>
+            <vexp op='num'>0</vexp>
+        </letstmt>
+
+        <forstmt type='for' id='i'>
+            <range>
+                <vexp op='num'>0</vexp>..<vexp op='string'>"list.len()"</vexp>
+            </range>
+            <blockstmt type='block'>
+                <letstmt type='let' id='new_sum'>
+                    <vexp op='+'>
+                        <vexp op='id'>sum</vexp>
+                        <vexp op='index'>
+                            <vexp op='id'>list</vexp>
+                            <index>
+                                <vexp op='id'>i</vexp>
+                            </index>
+                        </vexp>
+                    </vexp>
+                </letstmt>
+
+                <letstmt type='let' id='sum'>
+                    <vexp op='id'>new_sum</vexp>
+                </letstmt>
+            </blockstmt>
+        </forstmt>
+
+        <printstmt type='print'>
+            <vexp op='string'>"Sum: {}"</vexp>
+            <vexp op='id'>sum</vexp>
+        </printstmt>
+    </blockstmt>
+</functionstmt>
