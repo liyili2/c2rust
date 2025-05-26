@@ -108,7 +108,7 @@ loopStmt: 'loop' block;
 expression
     : mutableExpression expression
     | primaryExpression
-    | dereferenceExpression
+    | expression castExpressionPostFix
     | typePathExpression expression
     | parenExpression
     | structFieldDec
@@ -120,11 +120,11 @@ expression
     | expression binaryOps expression
     | expression conditionalOps expression
     | expression compoundOps expression
-    | expression castExpressionPostFix
     | expressionBlock
     | expression callExpressionPostFix
     | patternPrefix expression
     | arrayDeclaration
+    | dereferenceExpression
     ;
 
 arrayDeclaration: Identifier '!'? '[' Number ';' expression ']' ;

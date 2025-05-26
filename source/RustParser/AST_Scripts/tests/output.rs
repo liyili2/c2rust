@@ -50,15 +50,15 @@
 // pub type FILE = _IO_FILE;
 // #[derive(Copy, Clone)]
 // #[repr(C)]
-pub struct C2RustUnnamed {
-    pub nalt: libc::c_int,
-    pub natom: libc::c_int,
-}
-pub type C2RustUnnamed_0 = libc::c_uint;
-pub const Split: C2RustUnnamed_0 = 257;
-pub const Match: C2RustUnnamed_0 = 256;
-#[derive(Copy, Clone)]
-#[repr(C)]
+// pub struct C2RustUnnamed {
+//     pub nalt: libc::c_int,
+//     pub natom: libc::c_int,
+// }
+// pub type C2RustUnnamed_0 = libc::c_uint;
+// pub const Split: C2RustUnnamed_0 = 257;
+// pub const Match: C2RustUnnamed_0 = 256;
+// #[derive(Copy, Clone)]
+// #[repr(C)]
 // pub struct State {
 //     pub c: libc::c_int,
 //     pub out: *mut State,
@@ -95,12 +95,11 @@ pub const Match: C2RustUnnamed_0 = 256;
 //     dst = buf.as_mut_ptr();
 //     nalt = 0 as libc::c_int;
 //     natom = 0 as libc::c_int;
-//     // if strlen(re)
-//     //     >= (::core::mem::size_of::<[libc::c_char; 8000]>() as libc::c_ulong)
-//     //         .wrapping_div(2 as libc::c_int as libc::c_ulong)
-//     // {
-//     //     return 0 as *mut libc::c_char;
-//     // }
+//     if strlen(re) >= (::core::mem::size_of::<[libc::c_char; 8000]>() as libc::c_ulong)
+//             .wrapping_div(2 as libc::c_int as libc::c_ulong)
+//     {
+//         return 0 as *mut libc::c_char;
+//     }
 //     while *re != 0 {
 //         match *re as libc::c_int {
 //             40 => {
@@ -193,38 +192,38 @@ pub const Match: C2RustUnnamed_0 = 256;
 //         re = re.offset(1);
 //         re;
 //     }
-//     if p != paren.as_mut_ptr() {
-//         return 0 as *mut libc::c_char;
-//     }
-//     loop {
-//         natom -= 1;
-//         if !(natom > 0 as libc::c_int) {
-//             break;
-//         }
-//         let fresh7 = dst;
-//         dst = dst.offset(1);
-//         *fresh7 = '.' as i32 as libc::c_char;
-//     }
-//     while nalt > 0 as libc::c_int {
-//         let fresh8 = dst;
-//         dst = dst.offset(1);
-//         *fresh8 = '|' as i32 as libc::c_char;
-//         nalt -= 1;
-//         nalt;
-//     }
-//     *dst = 0 as libc::c_int as libc::c_char;
-//     return buf.as_mut_ptr();
+//     // if p != paren.as_mut_ptr() {
+//     //     return 0 as *mut libc::c_char;
+//     // }
+//     // loop {
+//     //     natom -= 1;
+//     //     if !(natom > 0 as libc::c_int) {
+//     //         break;
+//     //     }
+//     //     let fresh7 = dst;
+//     //     dst = dst.offset(1);
+//     //     *fresh7 = '.' as i32 as libc::c_char;
+//     // }
+//     // while nalt > 0 as libc::c_int {
+//     //     let fresh8 = dst;
+//     //     dst = dst.offset(1);
+//     //     *fresh8 = '|' as i32 as libc::c_char;
+//     //     nalt -= 1;
+//     //     nalt;
+//     // }
+//     // *dst = 0 as libc::c_int as libc::c_char;
+//     // return buf.as_mut_ptr();
 // }
-// #[no_mangle]
-// pub static mut matchstate: State = {
-//     let mut init = State {
-//         c: Match as libc::c_int,
-//         out: 0 as *const State as *mut State,
-//         out1: 0 as *const State as *mut State,
-//         lastlist: 0,
-//     };
-//     init
-// };
+#[no_mangle]
+pub static mut matchstate: State = {
+    let mut init = State {
+        c: Match as libc::c_int,
+        out: 0 as *const State as *mut State,
+        out1: 0 as *const State as *mut State,
+        lastlist: 0,
+    };
+    init
+};
 // #[no_mangle]
 // pub static mut nstate: libc::c_int = 0;
 // #[no_mangle]
