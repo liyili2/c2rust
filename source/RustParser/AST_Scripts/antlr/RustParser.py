@@ -3283,6 +3283,14 @@ class RustParser ( Parser ):
                 self.match(RustParser.GT)
                 pass
 
+            elif la_ == 8:
+                self.enterOuterAlt(localctx, 8)
+                self.state = 512
+                self.match(RustParser.T__15)
+                self.state = 513
+                self.type_()
+                pass
+
             elif la_ == 9:
                 self.enterOuterAlt(localctx, 9)
                 self.state = 511
@@ -7864,9 +7872,6 @@ class RustParser ( Parser ):
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
             super().__init__(parent, invokingState)
             self.parser = parser
-
-        def Identifier(self):
-            return self.getToken(RustParser.Identifier, 0)
 
         def LBRACK(self):
             return self.getToken(RustParser.LBRACK, 0)
