@@ -33,7 +33,7 @@ class Transformer(RustVisitor):
     def _basic_type_from_str(self, s: str):
         s = s.lstrip()
         if s in {"i32", "u32", "f64", "bool", "char", "usize", "isize", "FILE"}:
-            return Type()
+            return s
         if s.startswith("*mut "):
             pointee_type = self._basic_type_from_str(s[5:].strip())
             return PointerType(mutability="mut", pointee_type=pointee_type)
@@ -330,11 +330,13 @@ class Transformer(RustVisitor):
         raise Exception("❌ Unsupported externItem structure")
 
     def visitLetStmt(self, ctx):
+        print("vardef is ", ctx.varDef())
         var_def = self.visit(ctx.varDef())
         value = self.visit(ctx.expression()) if ctx.expression() else None
         return LetStmt(var_def, value)
-    
+
     def visitVarDef(self, ctx):
+        print("in visit vardef")
         by_ref = False
         mutable = False
         name = None
@@ -356,7 +358,7 @@ class Transformer(RustVisitor):
             name = tokens[0]
 
         if ':' in tokens:
-            type_index = tokens.index(':') + 1
+            print("found the :::::::::::::", ctx.type_().__class__)
             var_type = self.visit(ctx.type_())
 
         return VarDef(name=name, mutable=mutable, by_ref=by_ref, var_type=var_type)
@@ -676,7 +678,7 @@ class Transformer(RustVisitor):
     def visitCharLiteralExpr(self, ctx):
         return ctx.value
 
-    def visit_borrowExpression(self, ctx):
+    def visitBorrowExpression(self, ctx):
         expr = self.visit(ctx.expression())
         if not isinstance(expr, IdentifierExpr):
             raise Exception("Can only borrow variables (identifiers).")
@@ -695,9 +697,11 @@ class Transformer(RustVisitor):
 
     def visitType(self, ctx):
         type_str = ctx.getText()
+        print("in visit type!", type_str)
         if type_str.startswith('[') and ';' in type_str and type_str.endswith(']'):
             inner_type_str, size_str = type_str[1:-1].split(';')
             inner_type = self._basic_type_from_str(inner_type_str.strip())
+            print("inner type is ", inner_type_str.strip(), inner_type)
             size = int(size_str.strip())
             return ArrayType(inner_type, size)
 
@@ -735,6 +739,7 @@ class Transformer(RustVisitor):
 
     def visitLiteral(self, ctx):
         if ctx.arrayLiteral():
+            print("in array literal case")
             return self.visit(ctx.arrayLiteral())
         elif ctx.booleanLiteral():
             return self.visit(ctx.booleanLiteral())
@@ -764,6 +769,7 @@ class Transformer(RustVisitor):
         return result
 
     def visitArrayLiteral(self, ctx):
+        print("in array literal visitor")
         if ctx.Identifier():
             name = ctx.Identifier().getText()
             index_exprs = [self.visit(ctx.expression(0))]
@@ -773,6 +779,9 @@ class Transformer(RustVisitor):
                 name=IdentifierExpr(name=name),
                 elements=index_exprs
             )
+        
+        element_exprs = [self.visit(expr) for expr in ctx.expression()]
+        return ArrayLiteral(name=None, elements=element_exprs)
 
         # else:  # Case: [value; size] constructor
         #     value = self.visit(ctx.expression(0))
