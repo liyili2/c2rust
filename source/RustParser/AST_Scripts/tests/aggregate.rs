@@ -7,9 +7,9 @@ fn aggregate(list: &[i32]) -> Vec<i32> {
         if i % 2 == 1 {
             ret[i / 2] += list[i];
         }
-        // else {
-        //     ret[i / 2] = list[i];
-        // }
+        else {
+            ret[i / 2] = list[i];
+        }
     }
     // ret
 }
