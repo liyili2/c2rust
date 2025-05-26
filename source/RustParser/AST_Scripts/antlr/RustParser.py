@@ -7867,6 +7867,9 @@ class RustParser ( Parser ):
             super().__init__(parent, invokingState)
             self.parser = parser
 
+        def Identifier(self):
+            return self.getToken(RustParser.Identifier, 0)
+
         def LBRACK(self):
             return self.getToken(RustParser.LBRACK, 0)
 
