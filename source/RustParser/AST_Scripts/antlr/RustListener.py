@@ -296,6 +296,15 @@ class RustListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by RustParser#arrayType.
+    def enterArrayType(self, ctx:RustParser.ArrayTypeContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#arrayType.
+    def exitArrayType(self, ctx:RustParser.ArrayTypeContext):
+        pass
+
+
     # Enter a parse tree produced by RustParser#block.
     def enterBlock(self, ctx:RustParser.BlockContext):
         pass
@@ -599,15 +608,6 @@ class RustListener(ParseTreeListener):
 
     # Exit a parse tree produced by RustParser#parenExpression.
     def exitParenExpression(self, ctx:RustParser.ParenExpressionContext):
-        pass
-
-
-    # Enter a parse tree produced by RustParser#referenceExpression.
-    def enterReferenceExpression(self, ctx:RustParser.ReferenceExpressionContext):
-        pass
-
-    # Exit a parse tree produced by RustParser#referenceExpression.
-    def exitReferenceExpression(self, ctx:RustParser.ReferenceExpressionContext):
         pass
 
 

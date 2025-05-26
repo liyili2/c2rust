@@ -56,15 +56,16 @@ basicType
     | 'String'
     | 'bool'
     | 'u8'
-    | '()'
     | typePath ('<' type (',' type)* '>')?
     | Identifier ('<' type (',' type)* '>')?
     | Identifier '<' type '>'
     | '&' type
-    | typePath? '[' type ';' Number ']'
+    | arrayType
     | '[' type ']'
     | Identifier;
+
 typePath: Identifier DOUBLE_COLON | DOUBLE_COLON? Identifier (DOUBLE_COLON Identifier)* ;
+arrayType: '[' basicType ';' Number ']' ;
 
 block: '{' statement* returnStmt? '}';
 unsafeBlock: 'unsafe' block;
@@ -88,8 +89,8 @@ statement
     ;
 
 callStmt: expression callExpressionPostFix ';' ;
-letStmt: 'let' varDef '=' expression ';' | 'let' 'mut'? Identifier ':' (type | Identifier) '=' initializer ';' | 'let' varDef initBlock ;
-varDef: Identifier (':' type)? | 'ref' 'mut'? Identifier (':' type)? | 'mut' Identifier ((':' | '=') type)?;
+letStmt: 'let' varDef '=' expression ';' | 'let' varDef initBlock ;
+varDef: 'ref'? 'mut'? Identifier (':' type)?;
 compoundOp: '+=' | '-=' | '*=' | '/=' | '%=' | '&=' | '|=' | '^=' ;
 compoundAssignment: expression compoundOp expression ';' ;
 matchStmt: 'match' expression '{' matchArm+ '}' ;
@@ -140,7 +141,6 @@ structFieldDec: Identifier '{' structLiteralField (',' structLiteralField)* ','?
 mutableExpression: 'mut';
 unaryOpes: '!' | '+' | '-';
 parenExpression: '(' expression ')';
-referenceExpression: '&' expression;
 dereferenceExpression: '*' expression;
 expressionBlock: '{' statement* expression '}';
 borrowExpression: '&' expression;
@@ -179,7 +179,7 @@ literal: arrayLiteral | HexNumber | Number | SignedNumber | BYTE_STRING_LITERAL 
          Binary | STRING_LITERAL | booleanLiteral | CHAR_LITERAL | NONE;
 booleanLiteral: TRUE | FALSE;
 Binary: '0b' [0-1]+;
-arrayLiteral: Identifier '[' expression (',' expression)* ']' | Identifier '[' expression ';' expression ']';
+arrayLiteral: Identifier? '[' expression (',' expression)* ']' | Identifier? '[' expression ';' expression ']';
 STRING_LITERAL: '"' (~["\\] | '\\' .)* '"';
 stringLiteral: '"' .*? '"';
 Identifier: [a-zA-Z_][a-zA-Z0-9_]*;
