@@ -409,14 +409,9 @@ class Transformer(RustVisitor):
         return IfStmt(condition=condition, then_branch=then_branch, else_branch=else_branch)
 
     def visitAssignStmt(self, ctx):
-        print("in assignment stmt")
         value_expr = self.visit(ctx.expression(1))
         target_expr = self.visit(ctx.expression(0))
-        print("ass val is ", value_expr, target_expr, ctx.expression(0).__class__)
-        if isinstance(target_expr, (IdentifierExpr, FieldAccessExpr, IndexExpr, DereferenceExpr)):
-            return AssignStmt(target=target_expr, value=value_expr)
-        else:
-            raise Exception(f"❌ Unsupported assignment LHS node: {type(target_expr)}")
+        return AssignStmt(target=target_expr, value=value_expr)
 
     def visitForStmt(self, ctx):
         var_name = ctx.Identifier().getText()
