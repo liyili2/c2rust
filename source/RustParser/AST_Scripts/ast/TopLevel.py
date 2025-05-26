@@ -92,11 +92,12 @@ class TypeAliasDecl:
         self.type = type
         self.visibility = visibility
 
-class UnionDef:
-    def __init__(self, name, fields, visibility=None):
+class TopLevelVarDef:
+    def __init__(self, name, fields, type, visibility=None):
         self.name = name
         self.fields = fields
         self.visibility = visibility
+        self.type_ = type
 
 class InterfaceDef:
     def __init__(self, name: str, functions: list):

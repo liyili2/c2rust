@@ -3,7 +3,7 @@ import re
 from AST_Scripts.ast.Expression import ArrayDeclaration, ArrayLiteral, BinaryExpr, BoolLiteral, BorrowExpr, CastExpr, CharLiteralExpr, DereferenceExpr, FieldAccessExpr, FunctionCallExpr, IdentifierExpr, IndexExpr, IntLiteral, MethodCallExpr, ParenExpr, Pattern, PatternExpr, RangeExpression, RepeatArrayLiteral, StrLiteral, StructLiteralExpr, StructLiteralField, TypePathExpression, TypePathFullExpr, UnaryExpr
 from AST_Scripts.ast.Statement import AssignStmt, BreakStmt, CallStmt, CompoundAssignment, ContinueStmt, ExpressionStmt, ForStmt, IfStmt, LetStmt, LoopStmt, MatchArm, MatchPattern, MatchStmt, ReturnStmt, StaticVarDecl, StructLiteral, WhileStmt
 from AST_Scripts.antlr.RustVisitor import RustVisitor
-from AST_Scripts.ast.TopLevel import ExternBlock, ExternFunctionDecl, ExternStaticVarDecl, ExternTypeDecl, FunctionDef, InterfaceDef, StructDef, Attribute, TypeAliasDecl, UnionDef
+from AST_Scripts.ast.TopLevel import ExternBlock, ExternFunctionDecl, ExternStaticVarDecl, ExternTypeDecl, FunctionDef, InterfaceDef, StructDef, Attribute, TopLevelVarDef, TypeAliasDecl
 from AST_Scripts.ast.Program import Program
 from AST_Scripts.ast.Expression import LiteralExpr
 from AST_Scripts.ast.Type import ArrayType, BoolType, IntType, PathType, PointerType, StringType, Type
@@ -830,3 +830,27 @@ class Transformer(RustVisitor):
         return CompoundAssignment(
             target=target, op=op, value=value,
             line=ctx.start.line, column=ctx.start.column)
+
+    def visitUnionDef(self, ctx):
+        visibility = ctx.visibility().getText() if ctx.visibility() else None
+        name = ctx.Identifier().getText()
+        if ctx.type():
+            typ = self.visit(ctx.type())
+            value = self.visit(ctx.expression())
+            return TopLevelVarDef(visibility=visibility, name=name, type=typ, value=value)
+        else:
+            fields = [self.visit(field) for field in ctx.unionField()]
+            return TopLevelVarDef(visibility=visibility, name=name, fields=fields)
+        
+    def visitConstDef(self, ctx):
+        return self._visit_simple_definition(ctx, TopLevelVarDef)
+
+    def visitUnsafeDef(self, ctx):
+        return self._visit_simple_definition(ctx, TopLevelVarDef)
+
+    def _visit_simple_definition(self, ctx, node_type):
+        visibility = ctx.visibility().getText() if ctx.visibility() else None
+        name = ctx.Identifier().getText()
+        typ = self.visit(ctx.type_())
+        value = self.visit(ctx.expression())
+        return node_type(visibility=visibility, name=name, type=typ, fields=value)
