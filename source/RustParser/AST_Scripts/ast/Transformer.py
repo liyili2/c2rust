@@ -204,8 +204,9 @@ class Transformer(RustVisitor):
             field_type = self.visit(field_ctx.type_())
             fields.append((field_name, field_type, field_visibility))
 
-        return UnionDef(name=name, fields=fields, visibility=visibility)
+        return TopLevelVarDef(name=name, fields=fields, visibility=visibility)
 
+    # Add isUnsafe field
     def visitFunctionDef(self, ctx):
         name = ctx.Identifier().getText()
         params = self.visit(ctx.paramList()) if ctx.paramList() else []
@@ -720,6 +721,7 @@ class Transformer(RustVisitor):
             return type_str
 
     def visitPointerType(self, ctx):
+        print("in pointer visitor")
         mut_token = ctx.getChild(1).getText()
         mutable = (mut_token == "mut")
         pointee_type_ctxs = ctx.type_()
@@ -834,13 +836,13 @@ class Transformer(RustVisitor):
     def visitUnionDef(self, ctx):
         visibility = ctx.visibility().getText() if ctx.visibility() else None
         name = ctx.Identifier().getText()
-        if ctx.type():
+        if ctx.type_():
             typ = self.visit(ctx.type())
             value = self.visit(ctx.expression())
             return TopLevelVarDef(visibility=visibility, name=name, type=typ, value=value)
         else:
             fields = [self.visit(field) for field in ctx.unionField()]
-            return TopLevelVarDef(visibility=visibility, name=name, fields=fields)
+            return TopLevelVarDef(visibility=visibility, name=name, fields=fields, type=None)
         
     def visitConstDef(self, ctx):
         return self._visit_simple_definition(ctx, TopLevelVarDef)
