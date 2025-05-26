@@ -476,6 +476,15 @@ class RustListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by RustParser#arrayDeclaration.
+    def enterArrayDeclaration(self, ctx:RustParser.ArrayDeclarationContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#arrayDeclaration.
+    def exitArrayDeclaration(self, ctx:RustParser.ArrayDeclarationContext):
+        pass
+
+
     # Enter a parse tree produced by RustParser#typePathExpression.
     def enterTypePathExpression(self, ctx:RustParser.TypePathExpressionContext):
         pass
@@ -521,12 +530,12 @@ class RustListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by RustParser#patternSymbol.
-    def enterPatternSymbol(self, ctx:RustParser.PatternSymbolContext):
+    # Enter a parse tree produced by RustParser#rangeSymbol.
+    def enterRangeSymbol(self, ctx:RustParser.RangeSymbolContext):
         pass
 
-    # Exit a parse tree produced by RustParser#patternSymbol.
-    def exitPatternSymbol(self, ctx:RustParser.PatternSymbolContext):
+    # Exit a parse tree produced by RustParser#rangeSymbol.
+    def exitRangeSymbol(self, ctx:RustParser.RangeSymbolContext):
         pass
 
 

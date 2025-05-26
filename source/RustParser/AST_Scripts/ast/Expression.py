@@ -44,7 +44,8 @@ class LiteralExpr(Expression):
             raise Exception("Unknown literal type")
 
 class FunctionCallExpr(Expression):
-    def __init__(self, func, args):
+    def __init__(self, func, args, caller=None,):
+        self.caller = caller
         self.func = func
         self.args = args
 
@@ -88,7 +89,8 @@ class StrLiteral:
         return visitor.visit_StrLiteral(self)
 
 class ArrayLiteral:
-    def __init__(self, elements):
+    def __init__(self, name, elements):
+        self.name = name
         self.elements = elements
         # self.line = None
         # self.column = None
@@ -228,3 +230,21 @@ class TypePathFullExpr(Expression):
 
     def accept(self, visitor):
         return visitor.visitExpression(self)
+
+class ArrayDeclaration(Expression):
+    def __init__(self, identifier, size, force, value):
+        self.identifier = identifier
+        self.size = size
+        self.force = force
+        self.value = value
+
+    def accept(self, visitor):
+        pass
+
+class RangeExpression(Expression):
+    def __init__(self, initial, last):
+        self.initial = initial
+        self.last = last
+
+    def accept(self, visitor):
+        pass

@@ -269,6 +269,11 @@ class RustVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by RustParser#arrayDeclaration.
+    def visitArrayDeclaration(self, ctx:RustParser.ArrayDeclarationContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by RustParser#typePathExpression.
     def visitTypePathExpression(self, ctx:RustParser.TypePathExpressionContext):
         return self.visitChildren(ctx)
@@ -294,8 +299,8 @@ class RustVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by RustParser#patternSymbol.
-    def visitPatternSymbol(self, ctx:RustParser.PatternSymbolContext):
+    # Visit a parse tree produced by RustParser#rangeSymbol.
+    def visitRangeSymbol(self, ctx:RustParser.RangeSymbolContext):
         return self.visitChildren(ctx)
 
 

@@ -1,6 +1,6 @@
 from antlr4 import TerminalNode
 import re
-from AST_Scripts.ast.Expression import ArrayLiteral, BinaryExpr, BoolLiteral, BorrowExpr, CastExpr, CharLiteralExpr, DereferenceExpr, FieldAccessExpr, FunctionCallExpr, IdentifierExpr, IndexExpr, IntLiteral, MethodCallExpr, ParenExpr, Pattern, PatternExpr, RepeatArrayLiteral, StrLiteral, StructLiteralExpr, StructLiteralField, TypePathExpression, TypePathFullExpr, UnaryExpr
+from AST_Scripts.ast.Expression import ArrayDeclaration, ArrayLiteral, BinaryExpr, BoolLiteral, BorrowExpr, CastExpr, CharLiteralExpr, DereferenceExpr, FieldAccessExpr, FunctionCallExpr, IdentifierExpr, IndexExpr, IntLiteral, MethodCallExpr, ParenExpr, Pattern, PatternExpr, RangeExpression, RepeatArrayLiteral, StrLiteral, StructLiteralExpr, StructLiteralField, TypePathExpression, TypePathFullExpr, UnaryExpr
 from AST_Scripts.ast.Statement import AssignStmt, BreakStmt, CallStmt, CompoundAssignment, ContinueStmt, ExpressionStmt, ForStmt, IfStmt, LetStmt, LoopStmt, MatchArm, MatchPattern, MatchStmt, ReturnStmt, StaticVarDecl, StructLiteral, WhileStmt
 from AST_Scripts.antlr.RustVisitor import RustVisitor
 from AST_Scripts.ast.TopLevel import ExternBlock, ExternFunctionDecl, ExternStaticVarDecl, ExternTypeDecl, FunctionDef, InterfaceDef, StructDef, Attribute, TypeAliasDecl, UnionDef
@@ -409,6 +409,7 @@ class Transformer(RustVisitor):
         return IfStmt(condition=condition, then_branch=then_branch, else_branch=else_branch)
 
     def visitAssignStmt(self, ctx):
+        print("in assignment stmt")
         value_expr = self.visit(ctx.expression(1))
         target_expr = self.visit(ctx.expression(0))
         print("ass val is ", value_expr, target_expr, ctx.expression(0).__class__)
@@ -539,16 +540,17 @@ class Transformer(RustVisitor):
             return FieldAccessExpr(base, postfix)
 
         elif ctx.booleanOps():
-            left = self.visit(ctx.expression(0))
             op = ctx.booleanOps().getText()
+            left = self.visit(ctx.expression(0))
             right = self.visit(ctx.expression(1))
-            return BinaryExpr(op, left, right)
+            return BinaryExpr(op=op, left=left, right=right)
 
         elif ctx.binaryOps():
-            left = self.visit(ctx.expression(0))
+            print("binary op is ", ctx.binaryOps().getText())
             op = ctx.binaryOps().getText()
+            left = self.visit(ctx.expression(0))
             right = self.visit(ctx.expression(1))
-            return BinaryExpr(op, left, right)
+            return BinaryExpr(op=op, left=left, right=right)
 
         elif ctx.conditionalOps():
             left = self.visit(ctx.expression(0))
@@ -556,11 +558,11 @@ class Transformer(RustVisitor):
             right = self.visit(ctx.expression(1))
             return BinaryExpr(op, left, right)
 
-        elif ctx.patternSymbol():
+        elif ctx.rangeSymbol():
             left = self.visit(ctx.expression(0))
-            op = ctx.patternSymbol().getText()
+            op = ctx.rangeSymbol().getText()
             right = self.visit(ctx.expression(1))
-            return BinaryExpr(op, left, right)
+            return RangeExpression(left, right)
 
         elif ctx.compoundOps():
             left = self.visit(ctx.expression(0))
@@ -573,15 +575,14 @@ class Transformer(RustVisitor):
             cast = self.visit(ctx.castExpressionPostFix())
             return CastExpr(expr, cast)
 
+        # Add caller and callee
         elif ctx.callExpressionPostFix():
-            print("callexpressionpostfix is ", ctx.callExpressionPostFix())
             func = self.visit(ctx.expression(0))
             args = self.visit(ctx.callExpressionPostFix())
-            print("a is ", args.__class__, func.__class__)            
-            return FunctionCallExpr(func, args)
+            return FunctionCallExpr(func, args, id)
 
         elif ctx.parenExpression():
-            return self.visit(ctx.parenExpression())
+            return self.visit(ctx.parenExpression().expression())
 
         elif ctx.structFieldDec():
             return self.visit(ctx.structFieldDec())
@@ -605,20 +606,33 @@ class Transformer(RustVisitor):
             pattern_ctx = ctx.patternPrefix().pattern()
             pattern_node = self.visit(pattern_ctx)
             return PatternExpr(value_expr, pattern_node)
+        
+        elif ctx.arrayDeclaration():
+            return self.visit(ctx.arrayDeclaration())
 
         raise Exception(f"Unrecognized expression structure: {ctx.getText()}")
+    
+    def visitArrayDeclaration(self, ctx):
+        identifier = ctx.Identifier().getText()
+        force = ctx.getChild(1).getText() == "!" if ctx.getChildCount() > 1 else False
+        size = int(ctx.Number().getText())
+        value_expr = self.visit(ctx.expression())
+        
+        return ArrayDeclaration(
+            identifier=identifier,
+            force=force,
+            size=size,
+            value=value_expr
+        )
 
     def visitCallExpressionPostFix(self, ctx):
-        print("in callpostfix expression")
         args_ctx = ctx.functionCallArgs()
         if args_ctx is None:
             return []
         args = []
         for expr in args_ctx.expression():
-            print("args exp is ", expr.getText())
             args.append(self.visit(expr))
 
-        print("arg list is ", args)
         return args
 
     # def visitCallExpression(self, ctx):
@@ -755,20 +769,20 @@ class Transformer(RustVisitor):
         return result
 
     def visitArrayLiteral(self, ctx):
-        if ctx.getChildCount() == 5 and ctx.getChild(2).getText() == ';':
-            value_expr = self.visit(ctx.expression(0))
-            count_expr = self.visit(ctx.expression(1))
-            return RepeatArrayLiteral(
-                value=value_expr,
-                count=count_expr,
-                line=self._get_line(ctx),
-                column=self._get_column(ctx))
-        else:
-            elements = [self.visit(expr) for expr in ctx.expression()]
+        if ctx.Identifier():
+            name = ctx.Identifier().getText()
+            index_exprs = [self.visit(ctx.expression(0))]
+            if ctx.expression(1):
+                index_exprs += [self.visit(expr) for expr in ctx.expression()[1:]]
             return ArrayLiteral(
-                elements=elements,
-                line=self._get_line(ctx),
-                column=self._get_column(ctx))
+                name=IdentifierExpr(name=name),
+                elements=index_exprs
+            )
+
+        # else:  # Case: [value; size] constructor
+        #     value = self.visit(ctx.expression(0))
+        #     size = self.visit(ctx.expression(1))
+        #     return ArrayConstructor(value=value, size=size)
 
     def visitInitializer(self, ctx):
         if ctx.expression():
