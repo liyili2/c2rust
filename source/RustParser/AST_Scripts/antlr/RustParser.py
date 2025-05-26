@@ -4027,43 +4027,6 @@ class RustParser ( Parser ):
                 self.type_()
 
 
-                pass
-            elif token in [9]:
-                self.enterOuterAlt(localctx, 3)
-                self.state = 634
-                self.match(RustParser.T__8)
-                self.state = 635
-                self.match(RustParser.Identifier)
-                self.state = 638
-                self._errHandler.sync(self)
-                la_ = self._interp.adaptivePredict(self._input,69,self._ctx)
-                if la_ == 1:
-                    self.state = 636
-                    _la = self._input.LA(1)
-                    if not(_la==2 or _la==84):
-                        self._errHandler.recoverInline(self)
-                    else:
-                        self._errHandler.reportMatch(self)
-                        self.consume()
-                    self.state = 630
-                    self.type_()
-
-
-                pass
-            elif token in [68]:
-                self.enterOuterAlt(localctx, 3)
-                self.state = 633
-                self.match(RustParser.Identifier)
-                self.state = 636
-                self._errHandler.sync(self)
-                _la = self._input.LA(1)
-                if _la==84:
-                    self.state = 634
-                    self.match(RustParser.COLON)
-                    self.state = 635
-                    self.type_()
-
-
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
