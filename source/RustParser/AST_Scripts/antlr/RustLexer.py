@@ -272,7 +272,6 @@ class RustLexer(Lexer):
     T__61 = 62
     TRUE = 63
     FALSE = 64
-
     NONE = 65
     Binary = 66
     STRING_LITERAL = 67
