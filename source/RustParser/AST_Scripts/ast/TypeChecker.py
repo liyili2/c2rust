@@ -1,18 +1,22 @@
 from ast import FunctionDef
 from AST_Scripts.ast.Type import ArrayType, BoolType, IntType, RefType, StringType
 from AST_Scripts.ast.TypeEnv import TypeEnv
-from AST_Scripts.ast.Expression import BorrowExpr, IdentifierExpr, LiteralExpr 
+from AST_Scripts.ast.Expression import BorrowExpr, FunctionCallExpr, IdentifierExpr, LiteralExpr 
 
 class TypeChecker:
     def __init__(self):
         self.env = TypeEnv()
         self.symbol_table = {}
+        self.error_count = 0
+
+    def increase_error_count(self):
+        self.error_count = self.error_count + 1
 
     def resolve_function_return_type(self, node):
         func_name = node.func
         func_info = self.env.lookup_function(func_name)
         if func_info["kind"] != "function":
-            return False
+            self.increase_error_count()
         return func_info["return_type"]
 
     def get_literal_type(self, value):
@@ -23,7 +27,7 @@ class TypeChecker:
         elif isinstance(value, bool):
             return BoolType()
         else:
-            raise Exception(f"❌ Unknown literal type for value: {repr(value)}")
+            self.increase_error_count()
 
     def visit_Type(self, ctx):
         type_str = ctx.getText()
@@ -34,25 +38,192 @@ class TypeChecker:
         elif type_str == "String":
             return StringType()
         else:
-            raise Exception(f"Unknown type: {type_str}")
+            self.increase_error_count()
 
     def visit(self, node):
         if node is None:
-            raise Exception("❌ TypeChecker received None as a node — check your Transformer.")
+            self.increase_error_count()
         if isinstance(node, list):
             return [self.visit(n) for n in node]
         if hasattr(node, 'accept'):
             return node.accept(self)
         return node
 
-    def generic_visit(self, node):
-        raise Exception(f"No visit method for {node.__class__.__name__}")
-
     def visit_Program(self, node):
         for item in node.items:
             if not self.visit(item):
-                return False
+                self.increase_error_count()
         return True
+
+    def visit_FunctionDef(self, ctx):
+        name = ctx.Identifier
+        if len(ctx.params) != 0:
+            params = self.visit(ctx.params)
+        else:
+            params = []
+
+        param_types = [typ for (name, typ) in params]
+        if ctx.return_type != None:
+            return_type = self.visit(ctx.return_type)
+        else:
+            return_type = None
+
+        self.env.declare_function(name, param_types, return_type)
+        body = self.visit(ctx.body)
+        return FunctionDef(name=name, params=params, return_type=return_type, body=body)
+    
+    def visit_LetStmt(self, node):
+        expr_type = self.visit(node.value)
+        if node.declared_type is not None:
+            declared_type = self.visit(node.declared_type)
+            if type(declared_type) != type(expr_type) and not isinstance(expr_type, RefType):
+                self.increase_error_count()
+        else:
+            declared_type = expr_type
+
+        self.env.declare(node.name, declared_type)
+        self.symbol_table[node.name] = declared_type
+
+        if isinstance(node.value, IdentifierExpr):
+            try:
+                value_info = self.env.lookup(node.value.name)
+            except Exception:
+                self.increase_error_count()
+                value_info = None
+
+            if value_info:
+                if value_info["borrowed"]:
+                    self.increase_error_count()
+                if not value_info["owned"]:
+                    self.increase_error_count()
+                value_info["owned"] = False
+
+        elif isinstance(node.value, BorrowExpr):
+            try:
+                value_info = self.env.lookup(node.value.name)
+            except Exception:
+                self.increase_error_count()
+                value_info = None
+
+            if value_info:
+                if node.value.mutable and not value_info["mutable"]:
+                    self.increase_error_count()
+                if value_info["borrowed"]:
+                    self.increase_error_count()
+                value_info["borrowed"] = True
+        return True        
+
+    def visit_Assignment(self, node):
+        try:
+            info = self.env.lookup(node.target)
+        except Exception:
+            self.increase_error_count()
+            return
+
+        if not info["owned"]:
+            self.increase_error_count()
+        if info["borrowed"]:
+            self.increase_error_count()
+
+        expr_type = self.visit(node.value)
+
+        if type(info["type"]) != type(expr_type):
+            self.increase_error_count()
+
+        if isinstance(node.value, IdentifierExpr):
+            try:
+                value_info = self.env.lookup(node.value.name)
+            except Exception:
+                self.increase_error_count()
+                value_info = None
+
+            if value_info:
+                if not value_info["owned"]:
+                    self.increase_error_count()
+                value_info["owned"] = False
+
+        if isinstance(node.value, BorrowExpr):
+            try:
+                value_info = self.env.lookup(node.value.name)
+            except Exception:
+                self.increase_error_count()
+                value_info = None
+
+            if value_info:
+                if node.value.mutable and not value_info["mutable"]:
+                    self.increase_error_count()
+                if value_info["borrowed"]:
+                    self.increase_error_count()
+                value_info["borrowed"] = True
+        return True
+
+    def visit_IfStmt(self, node):
+        condition_type = self.visit(node.condition)
+
+        if not isinstance(condition_type, BoolType):
+            self.increase_error_count()
+
+        for stmt in node.then_branch:
+            self.visit(stmt)
+
+        if node.else_branch:
+            for stmt in node.else_branch:
+                self.visit(stmt)
+
+        return True
+
+    def visit_ForStmt(self, node):
+        iterable_type = self.visit(node.iterable)
+
+        if not isinstance(iterable_type, ArrayType):
+            self.increase_error_count()
+            return
+
+        self.env.define(node.var, {
+            "type": iterable_type.elem_type,
+            "owned": True, "borrowed": False})
+
+        for stmt in node.body:
+            self.visit(stmt)
+
+        return True
+
+    def visit_FunctionCallExpr(self, node):
+        func_info = self.env.lookup_function(node.func)
+        if not func_info or func_info["kind"] != "function":
+            self.increase_error_count()
+            return None
+
+        for arg in node.args:
+            if isinstance(arg, IdentifierExpr):
+                try:
+                    info = self.env.lookup(arg.name)
+                except Exception:
+                    self.increase_error_count()
+                    continue
+
+                if not info["owned"] or info["borrowed"]:
+                    self.increase_error_count()
+
+                info["borrowed"] = True
+
+        arg_types = [self.visit(arg) for arg in node.args]
+        expected_types = func_info["param_types"]
+
+        if len(arg_types) != len(expected_types):
+            self.increase_error_count()
+        else:
+            for actual, expected in zip(arg_types, expected_types):
+                if type(actual) != type(expected):
+                    self.increase_error_count()
+
+        for arg in node.args:
+            if isinstance(arg, IdentifierExpr):
+                info = self.env.lookup(arg.name)
+                info["borrowed"] = False
+                info["owned"] = False
+
+        return func_info["return_type"]
 
     def visit_IntType(self, node):
         return node
@@ -70,144 +241,37 @@ class TypeChecker:
         if isinstance(node.value, bool):
             return BoolType()
         else:
-            return False
+            self.increase_error_count()
 
-    def visit_FunctionDef(self, ctx):
-        name = ctx.Identifier
-        if len(ctx.params) != 0:
-            params = self.visit(ctx.params)  # should return List[(name, type)]
-        else:
-            params = []
-
-        param_types = [typ for (name, typ) in params]
-        if ctx.return_type != None:
-            return_type = self.visit(ctx.return_type)
-        else:
-            return_type = None
-
-        self.env.declare_function(name, param_types, return_type)
-        body = self.visit(ctx.body)
-        return FunctionDef(name=name, params=params, return_type=return_type, body=body)
-
-    def visit_FunctionCallExpr(self, node):
-        for arg in node.args:
-            if isinstance(arg, IdentifierExpr):
-                info = self.env.lookup(arg.name)
-                if not info["owned"]:
-                    return False
-                if info["borrowed"] :
-                    return False
-                info["borrowed"] = True
-
-        result = self.resolve_function_return_type(node)
-
-        for arg in node.args:
-            if isinstance(arg, IdentifierExpr):
-                info = self.env.lookup(arg.name)
-                if info["borrowed"]:
-                    info["borrowed"] = False
-
-        return result
-
-    def visit_LetStmt(self, node):
-        expr_type = self.visit(node.value)
-        if node.declared_type is not None:
-            declared_type = self.visit(node.declared_type)
-            if declared_type.__class__ != expr_type.__class__ and not isinstance(expr_type, RefType):
-                return False
-        else:
-            declared_type = expr_type
-
-        self.env.declare(node.name, expr_type)
-        self.symbol_table[node.name] = expr_type
-        if isinstance(node.value, IdentifierExpr):
-            try:
-                value_info = self.env.lookup(node.value.name)
-            except Exception:
-                return False
-            if value_info["borrowed"]:
-                return False
-            if not value_info["owned"]:
-                return False
-            value_info["owned"] = False
-
-        if isinstance(node.value, BorrowExpr):
-            try:
-                value_info = self.env.lookup(node.value.name)
-            except Exception:
-                return False
-            if node.value.mutable and not value_info["mutable"]:
-                return False
-        return True
-
-    def visit_Assignment(self, node):
-        try:
-            info = self.env.lookup(node.target)
-        except Exception:
-            return False
-        if not info["owned"]:
-            return False
-        if info["borrowed"] :
-            return False
-        expr_type = self.visit(node.value)
-        if type(info["type"]) != type(expr_type):
-            return False
-        if isinstance(node.value, IdentifierExpr):
-            try:
-                value_info = self.env.lookup(node.value.name)
-            except Exception:
-                return False
-            if not value_info["owned"]:
-                return False
-            value_info["owned"] = False
-
-        return True
-
-    def visit_IfStmt(self, node):
-        condition_type = self.visit(node.condition)
-        if not isinstance(condition_type, BoolType):
-            return False
-        for stmt in node.then_branch:
-            self.visit(stmt)
-        if node.else_branch:
-            for stmt in node.else_branch:
-                self.visit(stmt)
-        return True
-
-    def visit_ForStmt(self, node):
-        iterable_type = self.visit(node.iterable)
-        if not isinstance(iterable_type, ArrayType):
-            return False
-
-        self.env.define(node.var, {"type": iterable_type.elem_type, "owned": True, "borrowed": False})
-        for stmt in node.body:
-            self.visit(stmt)
-        return True
-
-    def visit_identifier_expr(self, node):
+    def visit_IdentifierExpr(self, node):
         try:
             info = self.env.lookup(node.name)
         except Exception:
-            return False
+            self.increase_error_count()
+            return None
+
         if not info["owned"]:
-            return False
+            self.increase_error_count()
+
         if node.name not in self.symbol_table:
-            return False
+            self.increase_error_count()
+            return None
+
         return self.symbol_table[node.name]
 
     def visit_BorrowExpr(self, node):
         info = self.env.lookup(node.name)
         if not info["owned"]:
-            return False
+            self.increase_error_count()
 
-        if node.mutable:  # ← You'll need to add this to BorrowExpr
+        if node.mutable:
             if not info["mutable"]:
-                return False  # Can't mutably borrow an immutable variable
+                self.increase_error_count()
             if info["borrowed"]:
-                return False  # Can't mutably borrow if already borrowed
+                self.increase_error_count()
         else:
             if info["borrowed"]:
-                return False
+                self.increase_error_count()
 
         info["borrowed"] = True
         return RefType(info["type"])
@@ -224,3 +288,10 @@ class TypeChecker:
 
     def visit_StrLiteral(self, node):
         return StringType()
+
+    def visit_CallExpression(self, node):
+        pass
+        # return FunctionCallExpr(func=node.func, args=node.args)
+
+    def visit_PrimaryExpression(self, node):
+        pass

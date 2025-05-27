@@ -1,6 +1,6 @@
 from antlr4 import TerminalNode
 import re
-from AST_Scripts.ast.Expression import ArrayDeclaration, ArrayLiteral, BinaryExpr, BoolLiteral, BorrowExpr, CastExpr, CharLiteralExpr, DereferenceExpr, FieldAccessExpr, FunctionCallExpr, IdentifierExpr, IndexExpr, IntLiteral, MethodCallExpr, ParenExpr, Pattern, PatternExpr, RangeExpression, RepeatArrayLiteral, StrLiteral, StructLiteralExpr, StructLiteralField, TypePathExpression, TypePathFullExpr, UnaryExpr
+from AST_Scripts.ast.Expression import ArrayDeclaration, ArrayLiteral, BinaryExpr, BoolLiteral, BorrowExpr, CastExpr, CharLiteralExpr, DereferenceExpr, FieldAccessExpr, FunctionCallExpr, IdentifierExpr, IndexExpr, IntLiteral, MethodCallExpr, ParenExpr, Pattern, PatternExpr, RangeExpression, RepeatArrayLiteral, StrLiteral, StructDefInit, StructLiteralExpr, StructLiteralField, TypePathExpression, TypePathFullExpr, UnaryExpr
 from AST_Scripts.ast.Statement import AssignStmt, BreakStmt, CallStmt, CompoundAssignment, ContinueStmt, ExpressionStmt, ForStmt, IfStmt, LetStmt, LoopStmt, MatchArm, MatchPattern, MatchStmt, ReturnStmt, StaticVarDecl, StructLiteral, WhileStmt
 from AST_Scripts.antlr.RustVisitor import RustVisitor
 from AST_Scripts.ast.TopLevel import ExternBlock, ExternFunctionDecl, ExternStaticVarDecl, ExternTypeDecl, FunctionDef, InterfaceDef, StructDef, Attribute, TopLevelVarDef, TypeAliasDecl
@@ -246,7 +246,7 @@ class Transformer(RustVisitor):
 
     def visitStructLiteralField(self, ctx):
         field_name = ctx.Identifier().getText()
-        expr = self.visit(ctx.expression()) if ctx.expression() else None
+        expr = self.visit(ctx.expression()) or None
         return (field_name, expr)
 
     def visitAttributes(self, ctx):
@@ -569,8 +569,10 @@ class Transformer(RustVisitor):
             return BinaryExpr(op, left, right)
 
         elif ctx.castExpressionPostFix():
+            print("in cast postfix case")
             expr = self.visit(ctx.expression(0))
             cast = self.visit(ctx.castExpressionPostFix())
+            print("cast result: ", expr, " and ", cast)
             return CastExpr(expr, cast)
 
         # Add caller and callee
@@ -604,18 +606,29 @@ class Transformer(RustVisitor):
             pattern_ctx = ctx.patternPrefix().pattern()
             pattern_node = self.visit(pattern_ctx)
             return PatternExpr(value_expr, pattern_node)
-        
+
         elif ctx.arrayDeclaration():
             return self.visit(ctx.arrayDeclaration())
 
+        elif ctx.structLiteral():
+            return self.visit(ctx.structLiteral())
+
+        elif ctx.structDefInit():
+            return self.visit(ctx.structDefInit())
+
         raise Exception(f"Unrecognized expression structure: {ctx.getText()}")
-    
+
+    def visitStructDefInit(self, ctx):
+        name = ctx.Identifier().getText()
+        expr = self.visit(ctx.expression())
+        return StructDefInit(name, expr)
+
     def visitArrayDeclaration(self, ctx):
         identifier = ctx.Identifier().getText()
         force = ctx.getChild(1).getText() == "!" if ctx.getChildCount() > 1 else False
         size = int(ctx.Number().getText())
         value_expr = self.visit(ctx.expression())
-        
+
         return ArrayDeclaration(
             identifier=identifier,
             force=force,
@@ -650,6 +663,7 @@ class Transformer(RustVisitor):
         if ctx.literal():
             return self.visit(ctx.literal())
         elif ctx.Identifier():
+            print("in id primary case", ctx.Identifier().getText())
             return IdentifierExpr(ctx.Identifier().getText())
         else:
             raise Exception(f"Unknown primary expression: {ctx.getText()}")
@@ -741,7 +755,6 @@ class Transformer(RustVisitor):
 
     def visitLiteral(self, ctx):
         if ctx.arrayLiteral():
-            print("in array literal case")
             return self.visit(ctx.arrayLiteral())
         elif ctx.booleanLiteral():
             return self.visit(ctx.booleanLiteral())
@@ -843,7 +856,7 @@ class Transformer(RustVisitor):
         else:
             fields = [self.visit(field) for field in ctx.unionField()]
             return TopLevelVarDef(visibility=visibility, name=name, fields=fields, type=None)
-        
+
     def visitConstDef(self, ctx):
         return self._visit_simple_definition(ctx, TopLevelVarDef)
 
@@ -851,8 +864,9 @@ class Transformer(RustVisitor):
         return self._visit_simple_definition(ctx, TopLevelVarDef)
 
     def _visit_simple_definition(self, ctx, node_type):
+        print("**************************** ", node_type, ctx.__class__)
         visibility = ctx.visibility().getText() if ctx.visibility() else None
         name = ctx.Identifier().getText()
-        typ = self.visit(ctx.type_())
-        value = self.visit(ctx.expression())
-        return node_type(visibility=visibility, name=name, type=typ, fields=value)
+        # typ = self.visit(ctx.type_())
+        # value = self.visit(ctx.expression())
+        # return node_type(visibility=visibility, name=name, type=typ, fields=value)
