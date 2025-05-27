@@ -296,6 +296,15 @@ class RustListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by RustParser#arrayType.
+    def enterArrayType(self, ctx:RustParser.ArrayTypeContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#arrayType.
+    def exitArrayType(self, ctx:RustParser.ArrayTypeContext):
+        pass
+
+
     # Enter a parse tree produced by RustParser#block.
     def enterBlock(self, ctx:RustParser.BlockContext):
         pass
@@ -476,6 +485,24 @@ class RustListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by RustParser#structDefInit.
+    def enterStructDefInit(self, ctx:RustParser.StructDefInitContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#structDefInit.
+    def exitStructDefInit(self, ctx:RustParser.StructDefInitContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#arrayDeclaration.
+    def enterArrayDeclaration(self, ctx:RustParser.ArrayDeclarationContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#arrayDeclaration.
+    def exitArrayDeclaration(self, ctx:RustParser.ArrayDeclarationContext):
+        pass
+
+
     # Enter a parse tree produced by RustParser#typePathExpression.
     def enterTypePathExpression(self, ctx:RustParser.TypePathExpressionContext):
         pass
@@ -521,12 +548,12 @@ class RustListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by RustParser#patternSymbol.
-    def enterPatternSymbol(self, ctx:RustParser.PatternSymbolContext):
+    # Enter a parse tree produced by RustParser#rangeSymbol.
+    def enterRangeSymbol(self, ctx:RustParser.RangeSymbolContext):
         pass
 
-    # Exit a parse tree produced by RustParser#patternSymbol.
-    def exitPatternSymbol(self, ctx:RustParser.PatternSymbolContext):
+    # Exit a parse tree produced by RustParser#rangeSymbol.
+    def exitRangeSymbol(self, ctx:RustParser.RangeSymbolContext):
         pass
 
 
@@ -590,15 +617,6 @@ class RustListener(ParseTreeListener):
 
     # Exit a parse tree produced by RustParser#parenExpression.
     def exitParenExpression(self, ctx:RustParser.ParenExpressionContext):
-        pass
-
-
-    # Enter a parse tree produced by RustParser#referenceExpression.
-    def enterReferenceExpression(self, ctx:RustParser.ReferenceExpressionContext):
-        pass
-
-    # Exit a parse tree produced by RustParser#referenceExpression.
-    def exitReferenceExpression(self, ctx:RustParser.ReferenceExpressionContext):
         pass
 
 

@@ -56,15 +56,16 @@ basicType
     | 'String'
     | 'bool'
     | 'u8'
-    | '()'
     | typePath ('<' type (',' type)* '>')?
     | Identifier ('<' type (',' type)* '>')?
     | Identifier '<' type '>'
     | '&' type
-    | typePath? '[' type ';' Number ']'
+    | arrayType
     | '[' type ']'
     | Identifier;
+
 typePath: Identifier DOUBLE_COLON | DOUBLE_COLON? Identifier (DOUBLE_COLON Identifier)* ;
+arrayType: '[' basicType ';' Number ']' ;
 
 block: '{' statement* returnStmt? '}';
 unsafeBlock: 'unsafe' block;
@@ -88,8 +89,8 @@ statement
     ;
 
 callStmt: expression callExpressionPostFix ';' ;
-letStmt: 'let' varDef '=' expression ';' | 'let' 'mut'? Identifier ':' (type | Identifier) '=' initializer ';' | 'let' varDef initBlock ;
-varDef: 'ref' 'mut'? Identifier (':' type)? | 'mut' Identifier ((':' | '=') type)? | Identifier (':' type)?;
+letStmt: 'let' varDef '=' expression ';' | 'let' varDef initBlock ;
+varDef: 'ref'? 'mut'? Identifier (':' type)?;
 compoundOp: '+=' | '-=' | '*=' | '/=' | '%=' | '&=' | '|=' | '^=' ;
 compoundAssignment: expression compoundOp expression ';' ;
 matchStmt: 'match' expression '{' matchArm+ '}' ;
@@ -107,38 +108,42 @@ loopStmt: 'loop' block;
 expression
     : mutableExpression expression
     | primaryExpression
-    | dereferenceExpression
+    | expression castExpressionPostFix
     | typePathExpression expression
     | parenExpression
+    | structLiteral
     | structFieldDec
+    | structDefInit 
     | unaryOpes expression
     | borrowExpression
     | expression fieldAccessPostFix
+    | expression rangeSymbol expression
     | expression booleanOps expression
     | expression binaryOps expression
     | expression conditionalOps expression
-    | expression patternSymbol expression
     | expression compoundOps expression
-    | expression castExpressionPostFix
     | expressionBlock
     | expression callExpressionPostFix
     | patternPrefix expression
+    | arrayDeclaration
+    | dereferenceExpression
     ;
 
+structDefInit: Identifier '=' '{' expression '}' ';' ;
+arrayDeclaration: Identifier '!'? '[' Number ';' expression ']' ;
 typePathExpression: (Identifier DOUBLE_COLON)+ ;
 patternPrefix: 'let'? pattern '=' ;
 pattern: 'ref'? 'mut'? Identifier | Identifier '(' 'ref'? 'mut'? Identifier ')' ;
 castExpressionPostFix: 'as' type ('as' type)*;
 compoundOps: '+=' | '-=' | '*=' | '/=' | '%=' | '&=' | '|=' | '^=';
-patternSymbol: '..';
+rangeSymbol: '..';
 conditionalOps: '==' | '!=' | '>' | '<' | '||' | '&&';
 booleanOps: '>>' | '&' | '>=' | '<=';
 binaryOps: '*' | '/' | '%' | '+' | '-' ;
 structFieldDec: Identifier '{' structLiteralField (',' structLiteralField)* ','? '}' ;
-mutableExpression: 'mut';  
+mutableExpression: 'mut';
 unaryOpes: '!' | '+' | '-';
 parenExpression: '(' expression ')';
-referenceExpression: '&' expression;
 dereferenceExpression: '*' expression;
 expressionBlock: '{' statement* expression '}';
 borrowExpression: '&' expression;
@@ -146,7 +151,7 @@ primaryExpression: literal | Identifier;
 
 fieldAccessPostFix: '[' primaryExpression ']' | ('.' primaryExpression)+;
 callExpressionPostFix: '!'? functionCallArgs;
-functionCallArgs: '(' expression (',' expression)* ')' ;
+functionCallArgs: '()' | '(' expression (',' expression)* ')' ;
 postfixExpression
   : primaryExpression
     (
@@ -165,7 +170,7 @@ macroArgs: '[' macroInner? ']' | '(' macroInner? ')';
 macroInner: expression (';' expression)?;  // supports [value; count] form
 
 genericArgs: '<' type (',' type)* '>';
-structLiteralField: Identifier (':' expression)? ',' ;
+structLiteralField: Identifier (':' expression)? ','? ;
 matchArm: matchPattern ('|' matchPattern)* '=>' block;
 matchPattern: Number | UNDERSCORE | Identifier;
 argumentList: (qualifiedFunctionCall | expression) (',' (qualifiedFunctionCall | expression))* (',')? | (DOUBLE_COLON Identifier)+ ('()' | '(' argumentList ')');
@@ -177,7 +182,7 @@ literal: arrayLiteral | HexNumber | Number | SignedNumber | BYTE_STRING_LITERAL 
          Binary | STRING_LITERAL | booleanLiteral | CHAR_LITERAL | NONE;
 booleanLiteral: TRUE | FALSE;
 Binary: '0b' [0-1]+;
-arrayLiteral: '[' expression (',' expression)* ']' | '[' expression ';' expression ']';
+arrayLiteral: Identifier? '[' expression (',' expression)* ']' | Identifier? '[' expression ';' expression ']';
 STRING_LITERAL: '"' (~["\\] | '\\' .)* '"';
 stringLiteral: '"' .*? '"';
 Identifier: [a-zA-Z_][a-zA-Z0-9_]*;
