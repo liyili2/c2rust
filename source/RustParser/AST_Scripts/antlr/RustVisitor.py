@@ -274,6 +274,11 @@ class RustVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by RustParser#structDefInit.
+    def visitStructDefInit(self, ctx:RustParser.StructDefInitContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by RustParser#arrayDeclaration.
     def visitArrayDeclaration(self, ctx:RustParser.ArrayDeclarationContext):
         return self.visitChildren(ctx)

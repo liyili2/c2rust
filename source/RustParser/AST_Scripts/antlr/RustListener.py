@@ -485,6 +485,15 @@ class RustListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by RustParser#structDefInit.
+    def enterStructDefInit(self, ctx:RustParser.StructDefInitContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#structDefInit.
+    def exitStructDefInit(self, ctx:RustParser.StructDefInitContext):
+        pass
+
+
     # Enter a parse tree produced by RustParser#arrayDeclaration.
     def enterArrayDeclaration(self, ctx:RustParser.ArrayDeclarationContext):
         pass

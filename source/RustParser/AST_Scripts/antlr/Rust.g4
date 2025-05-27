@@ -111,7 +111,9 @@ expression
     | expression castExpressionPostFix
     | typePathExpression expression
     | parenExpression
+    | structLiteral
     | structFieldDec
+    | structDefInit 
     | unaryOpes expression
     | borrowExpression
     | expression fieldAccessPostFix
@@ -127,6 +129,7 @@ expression
     | dereferenceExpression
     ;
 
+structDefInit: Identifier '=' '{' expression '}' ';' ;
 arrayDeclaration: Identifier '!'? '[' Number ';' expression ']' ;
 typePathExpression: (Identifier DOUBLE_COLON)+ ;
 patternPrefix: 'let'? pattern '=' ;
@@ -167,7 +170,7 @@ macroArgs: '[' macroInner? ']' | '(' macroInner? ')';
 macroInner: expression (';' expression)?;  // supports [value; count] form
 
 genericArgs: '<' type (',' type)* '>';
-structLiteralField: Identifier (':' expression)? ',' ;
+structLiteralField: Identifier (':' expression)? ','? ;
 matchArm: matchPattern ('|' matchPattern)* '=>' block;
 matchPattern: Number | UNDERSCORE | Identifier;
 argumentList: (qualifiedFunctionCall | expression) (',' (qualifiedFunctionCall | expression))* (',')? | (DOUBLE_COLON Identifier)+ ('()' | '(' argumentList ')');

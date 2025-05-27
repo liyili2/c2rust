@@ -20,7 +20,7 @@ class TestTypeChecker(unittest.TestCase):
             value=LiteralExpr(42)
         )
 
-        assert(checker.visit(stmt))
+        checker.visit(stmt)
         self.assertIn("x", checker.env.scopes[-1])
         self.assertIsInstance(checker.env.scopes[-1]["x"]["type"], IntType)
 
@@ -31,7 +31,8 @@ class TestTypeChecker(unittest.TestCase):
             value=LiteralExpr("hello!")  # Not an int!
         )
 
-        assert(not checker.visit(stmt))
+        checker.visit(stmt)
+        assert(checker.error_count == 1)
 
     def test_valid_if_stmt(self):
         checker = TypeChecker()
@@ -45,23 +46,25 @@ class TestTypeChecker(unittest.TestCase):
             else_branch=[AssignStmt("a", LiteralExpr(2))]
         )
 
-        assert(checker.visit(let_a))
-        assert(checker.visit(stmt))
+        checker.visit(let_a)
+        checker.visit(stmt)
+        assert(checker.error_count == 0)
 
     def test_if_stmt_with_non_bool_condition(self):
         checker = TypeChecker()
-        checker.env.define("a", IntType())
+        checker.env.declare("a", IntType(), mutable=False)
 
         stmt = IfStmt(
-            condition=LiteralExpr(42),  # Not a BoolLiteral!
+            condition=LiteralExpr(42),
             then_branch=[AssignStmt("a", LiteralExpr(1))],
             else_branch=[AssignStmt("a", LiteralExpr(2))]
         )
 
-        assert(not checker.visit(stmt))
+        checker.visit(stmt)
+        assert checker.error_count == 1
 
     def test_use_after_move_raises_error(self):
-        checker = TypeChecker()      
+        checker = TypeChecker()
         let_x = LetStmt(
             var_def=VarDef(name="x", var_type=IntType()),
             value=LiteralExpr(42)
@@ -77,27 +80,26 @@ class TestTypeChecker(unittest.TestCase):
 
         checker.visit(let_x)
         checker.visit(let_y)
-        assert(not checker.visit(reassign_x))
+        checker.visit(reassign_x)
+        assert(checker.error_count == 2)
 
     def test_pass_moved_value_to_function(self):
         checker = TypeChecker()
         checker.env.declare_function("foo", [IntType()], None)
         let_x = LetStmt(
             var_def=VarDef(name="x", var_type=IntType()),
-            value=LiteralExpr(42)
-        )
+            value=LiteralExpr(42))
         let_y = LetStmt(
             var_def=VarDef(name="y", var_type=IntType()),
-            value=IdentifierExpr("x")
-        )
+            value=IdentifierExpr("x"))
         call_foo_with_x = FunctionCallExpr(
             func="foo",
-            args=[IdentifierExpr("x")]
-        )
+            args=[IdentifierExpr("x")])
 
         checker.visit(let_x)
-        checker.visit(let_y)
-        assert(not checker.visit(call_foo_with_x))
+        checker.visit(let_y)        
+        checker.visit(call_foo_with_x)        
+        assert checker.error_count > 0
 
     def test_use_after_move_to_function(self):
         checker = TypeChecker()
@@ -154,8 +156,8 @@ class TestTypeChecker(unittest.TestCase):
             target="x",
             value=LiteralExpr(100)
         )
-        result = checker.visit(assign_stmt)
-        self.assertFalse(result, "Assignment to a borrowed variable should fail!")
+        checker.visit(assign_stmt)
+        assert checker.error_count > 0
 
     def test_move_borrowed_variable_should_fail(self):
         checker = TypeChecker()
@@ -173,9 +175,10 @@ class TestTypeChecker(unittest.TestCase):
             value=IdentifierExpr("x")
         )
 
-        assert(checker.visit(let_x))
-        assert(checker.visit(borrow_x))
-        assert(not checker.visit(move_x))
+        checker.visit(let_x)
+        checker.visit(borrow_x)
+        checker.visit(move_x)
+        assert checker.error_count > 0
 
     def test_borrowed_variable_is_reset_after_function_call(self):
         checker = TypeChecker()
@@ -210,9 +213,10 @@ class TestTypeChecker(unittest.TestCase):
             value=IdentifierExpr("x")
         )
 
-        assert checker.visit(let_x)
-        assert checker.visit(borrow1)
-        assert not checker.visit(borrow2)
+        checker.visit(let_x)
+        checker.visit(borrow1)
+        checker.visit(borrow2)
+        assert checker.error_count > 0
 
     def test_mutable_borrow_of_immutable_variable(self):
         checker = TypeChecker()
@@ -226,8 +230,9 @@ class TestTypeChecker(unittest.TestCase):
             value=BorrowExpr(name="x", mutable=True)
         )
 
-        assert checker.visit(let_stmt)
-        assert not checker.visit(borrow_stmt)
+        checker.visit(let_stmt)
+        checker.visit(borrow_stmt)
+        assert checker.error_count > 0
 
     def test_mutable_borrow_while_immutable_exists(self):
         checker = TypeChecker()
@@ -243,9 +248,10 @@ class TestTypeChecker(unittest.TestCase):
             var_def=VarDef(name="z", var_type=IntType()),
             value=BorrowExpr(name="x", mutable=True)
         )
-        assert checker.visit(let_x)
-        assert checker.visit(borrow_y)
-        assert not checker.visit(borrow_z)
+        checker.visit(let_x)
+        checker.visit(borrow_y)
+        checker.visit(borrow_z)
+        assert checker.error_count > 0
 
 if __name__ == "__main__":
     unittest.main()
