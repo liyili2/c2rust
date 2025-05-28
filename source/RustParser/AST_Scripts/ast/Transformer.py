@@ -331,13 +331,12 @@ class Transformer(RustVisitor):
         raise Exception("❌ Unsupported externItem structure")
 
     def visitLetStmt(self, ctx):
-        print("vardef is ", ctx.varDef())
+        # print("vardef is ", ctx.varDef())
         var_def = self.visit(ctx.varDef())
         value = self.visit(ctx.expression()) if ctx.expression() else None
         return LetStmt(var_def, value)
 
     def visitVarDef(self, ctx):
-        print("in visit vardef")
         by_ref = False
         mutable = False
         name = None
@@ -445,7 +444,7 @@ class Transformer(RustVisitor):
         return CallStmt(callee=function_expr, args=args)
 
     def visitStatement(self, ctx):
-        print("stmt is ", ctx.callStmt(), ctx.__class__, ctx.getText())
+        # print("stmt is ", ctx.callStmt(), ctx.__class__, ctx.getText())
         if ctx.letStmt():
             return self.visit(ctx.letStmt())
         elif ctx.ifStmt():
@@ -656,14 +655,14 @@ class Transformer(RustVisitor):
 
     def visitTypePathExpression(self, ctx):
             type_path = [id.getText() for id in ctx.Identifier()]
-            print("type path is ", type_path)
+            # print("type path is ", type_path)
             return TypePathExpression(type_path)
 
     def visitPrimaryExpression(self, ctx):
         if ctx.literal():
             return self.visit(ctx.literal())
         elif ctx.Identifier():
-            print("in id primary case", ctx.Identifier().getText())
+            # print("in id primary case", ctx.Identifier().getText())
             return IdentifierExpr(ctx.Identifier().getText())
         else:
             raise Exception(f"Unknown primary expression: {ctx.getText()}")
@@ -695,7 +694,7 @@ class Transformer(RustVisitor):
 
     def visitBorrowExpression(self, ctx):
         expr = self.visit(ctx.expression())
-        print("borrow expr is ", expr.__class__, expr)
+        # print("borrow expr is ", expr.__class__, expr)
         # if not isinstance(expr, IdentifierExpr):
         #     raise Exception("Can only borrow variables (identifiers).")
         return BorrowExpr(expr.name)
@@ -713,7 +712,7 @@ class Transformer(RustVisitor):
 
     def visitType(self, ctx):
         type_str = ctx.getText()
-        print("in visit type!", type_str)
+        # print("in visit type!", type_str)
         if type_str.startswith('[') and ';' in type_str and type_str.endswith(']'):
             inner_type_str, size_str = type_str[1:-1].split(';')
             inner_type = self._basic_type_from_str(inner_type_str.strip())

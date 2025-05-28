@@ -206,10 +206,10 @@ class PatternExpr(Expression):
     def __init__(self, expression, pattern):
         self.expression = expression
         self.pattern = pattern
-        print("accept: ", self.pattern, self.expression)
+        # print("accept: ", self.pattern, self.expression)
 
     def accept(self, visitor):
-        print("accept: ", self.pattern, self.expression)
+        # print("accept: ", self.pattern, self.expression)
         return self
 
 class TypePathExpression(Expression):

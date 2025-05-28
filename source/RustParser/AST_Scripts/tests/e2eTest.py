@@ -7,7 +7,7 @@ from RustParser.AST_Scripts.ast.Transformer import Transformer
 from RustParser.AST_Scripts.ast.TypeChecker import TypeChecker
 
 def parse_rust_code():
-    file_path = os.path.join(os.path.dirname(__file__), "bst.rs")
+    file_path = os.path.join(os.path.dirname(__file__), "output.rs")
     with open(file_path, "r", encoding="utf-8") as f:
         rust_code = f.read()
     lexer = RustLexer(InputStream(rust_code))
