@@ -95,7 +95,7 @@ class ArrayLiteral:
         # self.column = None
 
     def accept(self, visitor):
-        return visitor.visitArrayLiteral(self)
+        return visitor.visit_ArrayLiteral(self)
 
     def __repr__(self):
         return f"ArrayLiteral({self.elements})"
@@ -155,10 +155,10 @@ class CharLiteralExpr(Expression):
 class FieldAccessExpr(Expression):
     def __init__(self, receiver, field_name):
         self.receiver = receiver
-        self.field_name = field_name
+        self.name = field_name
 
     def accept(self, visitor):
-        return visitor.visitFieldAccessExpr(self)
+        return visitor.visit_FieldAccessExpr(self)
 
 class IndexExpr(Expression):
     def __init__(self, target, index):

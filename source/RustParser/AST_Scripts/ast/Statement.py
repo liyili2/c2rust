@@ -176,4 +176,4 @@ class CallStmt(Statement):
         self.args = args      # List of expressions
 
     def accept(self, visitor):
-        return visitor.visitCallStmt(self)
+        return visitor.visit_CallStmt(self)

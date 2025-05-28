@@ -118,7 +118,7 @@ class Transformer(RustVisitor):
                         i += 5
                     expr = MethodCallExpr(receiver=expr, method_name=method_or_field, args=args)
                 else:
-                    expr = FieldAccessExpr(receiver=expr, field_name=method_or_field)
+                    expr = FieldAccessExpr(receiver=expr, name=method_or_field)
                     i += 2
             elif token == '[':
                 index_expr = self.visit(ctx.getChild(i + 1))
@@ -246,8 +246,8 @@ class Transformer(RustVisitor):
 
     def visitStructLiteralField(self, ctx):
         field_name = ctx.Identifier().getText()
-        expr = self.visit(ctx.expression()) or None
-        return (field_name, expr)
+        # expr = self.visit(ctx.expression()) or None
+        return (field_name, None)
 
     def visitAttributes(self, ctx):
         return [self.visit(inner) for inner in ctx.innerAttribute()]
@@ -520,7 +520,7 @@ class Transformer(RustVisitor):
     binary_operators = {'==', '!=', '<', '>', '<=', '>=', '+', '-', '*', '/', '%', '&&', '||'}
 
     def visitExpression(self, ctx):
-        print("expression is ", ctx.getText(), ctx.__class__)
+        # print("expression is ", ctx.getText(), ctx.__class__)
         if ctx.primaryExpression():
             return self.visit(ctx.primaryExpression())
 
@@ -695,8 +695,9 @@ class Transformer(RustVisitor):
 
     def visitBorrowExpression(self, ctx):
         expr = self.visit(ctx.expression())
-        if not isinstance(expr, IdentifierExpr):
-            raise Exception("Can only borrow variables (identifiers).")
+        print("borrow expr is ", expr.__class__, expr)
+        # if not isinstance(expr, IdentifierExpr):
+        #     raise Exception("Can only borrow variables (identifiers).")
         return BorrowExpr(expr.name)
 
     def visitCastExpr(self, node):

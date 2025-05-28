@@ -1,5 +1,5 @@
 from ast import FunctionDef
-from AST_Scripts.ast.Type import ArrayType, BoolType, IntType, RefType, StringType
+from AST_Scripts.ast.Type import ArrayType, BoolType, IntType, RefType, StringType, StructType
 from AST_Scripts.ast.TypeEnv import TypeEnv
 from AST_Scripts.ast.Expression import BorrowExpr, FunctionCallExpr, IdentifierExpr, LiteralExpr 
 
@@ -11,6 +11,9 @@ class TypeChecker:
 
     def increase_error_count(self):
         self.error_count = self.error_count + 1
+
+    def generic_visit(self, node):
+        raise NotImplementedError(f"No visit_{type(node).__name__} method defined.")
 
     def resolve_function_return_type(self, node):
         func_name = node.func
@@ -277,8 +280,102 @@ class TypeChecker:
         return RefType(info["type"])
 
     def visit_ArrayLiteral(self, node):
-        first_elem = node.elements[0]
-        return ArrayType(first_elem.__class__)
+        if not node.elements:
+            self.increase_error_count()
+            return None
+
+        elem_types = [self.visit(elem) for elem in node.elements]
+
+        first_type = elem_types[0]
+        for t in elem_types[1:]:
+            if type(t) != type(first_type):
+                self.increase_error_count()
+
+        return ArrayType(first_type)
+    
+    def visit_CallStmt(self, node):
+        expr_type = self.visit(node.callee)
+        if not hasattr(node, 'call_postfix') or node.call_postfix is None:
+            self.increase_error_count()
+            return
+
+        self.visit_callExpressionPostFix(node.call_postfix, node.expression)
+
+    def visit_callExpressionPostFix(self, node, func_expr):
+        if not hasattr(node, 'args'):
+            self.increase_error_count()
+            return
+
+        args = self.visit(node.args) if hasattr(node, 'args') else []
+        if isinstance(func_expr, IdentifierExpr):
+            func_name = func_expr.name
+        else:
+            self.increase_error_count()
+            return
+
+        func_info = self.env.lookup_function(func_name)
+        if not func_info or func_info["kind"] != "function":
+            self.increase_error_count()
+            return
+
+        param_types = func_info["param_types"]
+        if len(args) != len(param_types):
+            self.increase_error_count()
+            return
+
+        for arg, expected_type in zip(args, param_types):
+            if type(arg) != type(expected_type):
+                self.increase_error_count()
+
+        for arg in node.args:
+            if isinstance(arg, IdentifierExpr):
+                try:
+                    info = self.env.lookup(arg.name)
+                except Exception:
+                    self.increase_error_count()
+                    continue
+                if not info["owned"] or info["borrowed"]:
+                    self.increase_error_count()
+                info["borrowed"] = True
+
+        for arg in node.args:
+            if isinstance(arg, IdentifierExpr):
+                try:
+                    info = self.env.lookup(arg.name)
+                    info["borrowed"] = False
+                except Exception:
+                    self.increase_error_count()
+
+    def visit_FieldAccessExpr(self, node):
+        base_type = self.visit(node.receiver)
+
+        if not isinstance(base_type, StructType):
+            self.increase_error_count()
+            return None
+
+        struct_name = base_type.name
+        struct_info = self.env.lookup_struct(struct_name)
+
+        if struct_info is None:
+            self.increase_error_count()
+            return None
+
+        field_type = struct_info.get(node.field)
+        if field_type is None:
+            self.increase_error_count()
+            return None
+
+        if isinstance(node.base, IdentifierExpr):
+            try:
+                var_info = self.env.lookup(node.base.name)
+            except Exception:
+                self.increase_error_count()
+                return None
+
+            if not var_info["owned"] or var_info["borrowed"]:
+                self.increase_error_count()
+
+        return field_type
 
     def visit_BoolLiteral(self, node):
         return BoolType()
