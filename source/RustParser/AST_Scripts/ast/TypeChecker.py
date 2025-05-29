@@ -132,6 +132,10 @@ class TypeChecker:
                 self.increase_error_count()
 
         return struct_type
+    
+    def visit_UnsafeBlock(self, node):
+        result = self.visit(node.block)
+        return result
 
     def visit_LetStmt(self, node):
         expr_type = self.visit(node.value)

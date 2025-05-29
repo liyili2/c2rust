@@ -177,3 +177,10 @@ class CallStmt(Statement):
 
     def accept(self, visitor):
         return visitor.visit_CallStmt(self)
+
+class UnsafeBlock(Statement):
+    def __init__(self, block):
+        self.block = block
+
+    def accept(self, visitor):
+        return visitor.visit_UnsafeBlock(self)

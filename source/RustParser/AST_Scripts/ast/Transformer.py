@@ -1,7 +1,7 @@
 from antlr4 import TerminalNode
 import re
 from AST_Scripts.ast.Expression import ArrayDeclaration, ArrayLiteral, BinaryExpr, BoolLiteral, BorrowExpr, CastExpr, CharLiteralExpr, DereferenceExpr, FieldAccessExpr, FunctionCallExpr, IdentifierExpr, IndexExpr, IntLiteral, MethodCallExpr, MutableExpr, ParenExpr, Pattern, PatternExpr, QualifiedExpression, RangeExpression, RepeatArrayLiteral, StrLiteral, StructDefInit, StructLiteralExpr, StructLiteralField, TypePathExpression, TypePathFullExpr, UnaryExpr
-from AST_Scripts.ast.Statement import AssignStmt, BreakStmt, CallStmt, CompoundAssignment, ContinueStmt, ExpressionStmt, ForStmt, IfStmt, LetStmt, LoopStmt, MatchArm, MatchPattern, MatchStmt, ReturnStmt, StaticVarDecl, StructLiteral, WhileStmt
+from AST_Scripts.ast.Statement import AssignStmt, BreakStmt, CallStmt, CompoundAssignment, ContinueStmt, ExpressionStmt, ForStmt, IfStmt, LetStmt, LoopStmt, MatchArm, MatchPattern, MatchStmt, ReturnStmt, StaticVarDecl, StructLiteral, UnsafeBlock, WhileStmt
 from AST_Scripts.antlr.RustVisitor import RustVisitor
 from AST_Scripts.ast.TopLevel import ExternBlock, ExternFunctionDecl, ExternStaticVarDecl, ExternTypeDecl, FunctionDef, InterfaceDef, StructDef, Attribute, TopLevelVarDef, TypeAliasDecl
 from AST_Scripts.ast.Program import Program
@@ -259,7 +259,7 @@ class Transformer(RustVisitor):
         name = ctx.Identifier().getText()
         if ctx.attrValue():
             value = self.visit(ctx.attrValue())
-            return Attribute(name=name, value=value)
+            return Attribute(name=name, args=value)
         elif ctx.attrArgs():
             args = self.visit(ctx.attrArgs())
             return Attribute(name=name, args=args)
@@ -442,10 +442,16 @@ class Transformer(RustVisitor):
             print("⚠️ callExpressionPostFix not recognized format")
             args = []
         return CallStmt(callee=function_expr, args=args)
+    
+    def visitUnsafeBlock(self, ctx):
+        block = self.visit(ctx.block())
+        return UnsafeBlock(block)
 
     def visitStatement(self, ctx):
         # print("stmt is ", ctx.callStmt(), ctx.__class__, ctx.getText())
-        if ctx.letStmt():
+        if ctx.unsafeBlock():
+            return self.visit(ctx.unsafeBlock())
+        elif ctx.letStmt():
             return self.visit(ctx.letStmt())
         elif ctx.ifStmt():
             return self.visit(ctx.ifStmt())
@@ -519,7 +525,7 @@ class Transformer(RustVisitor):
     binary_operators = {'==', '!=', '<', '>', '<=', '>=', '+', '-', '*', '/', '%', '&&', '||'}
 
     def visitExpression(self, ctx):
-        print("expression is ", ctx.getText(), ctx.__class__)
+        # print("expression is ", ctx.getText(), ctx.__class__)
         if ctx.primaryExpression():
             return self.visit(ctx.primaryExpression())
 
@@ -544,7 +550,7 @@ class Transformer(RustVisitor):
             return BinaryExpr(op=op, left=left, right=right)
 
         elif ctx.binaryOps():
-            print("binary op is ", ctx.binaryOps().getText())
+            # print("binary op is ", ctx.binaryOps().getText())
             op = ctx.binaryOps().getText()
             left = self.visit(ctx.expression(0))
             right = self.visit(ctx.expression(1))
@@ -570,10 +576,9 @@ class Transformer(RustVisitor):
             return BinaryExpr(op, left, right)
 
         elif ctx.castExpressionPostFix():
-            print("in cast postfix case")
             expr = self.visit(ctx.expression(0))
             cast = self.visit(ctx.castExpressionPostFix())
-            print("cast result: ", expr, " and ", cast)
+            # print("cast result: ", expr, " and ", cast)
             return CastExpr(expr, cast)
 
         # Add caller and callee
@@ -743,7 +748,6 @@ class Transformer(RustVisitor):
             return type_str
 
     def visitPointerType(self, ctx):
-        print("in pointer visitor")
         mut_token = ctx.getChild(1).getText()
         mutable = (mut_token == "mut")
         pointee_type_ctxs = ctx.type_()
@@ -872,9 +876,10 @@ class Transformer(RustVisitor):
         return self._visit_simple_definition(ctx, TopLevelVarDef)
 
     def _visit_simple_definition(self, ctx, node_type):
-        print("**************************** ", node_type, ctx.__class__)
-        visibility = ctx.visibility().getText() if ctx.visibility() else None
-        name = ctx.Identifier().getText()
+        pass
+        # print("**************************** ", node_type, ctx.__class__)
+        # visibility = ctx.visibility().getText() if ctx.visibility() else None
+        # name = ctx.Identifier().getText()
         # typ = self.visit(ctx.type_())
         # value = self.visit(ctx.expression())
         # return node_type(visibility=visibility, name=name, type=typ, fields=value)

@@ -68,10 +68,11 @@ basicType
 typePath: Identifier DOUBLE_COLON | DOUBLE_COLON? Identifier (DOUBLE_COLON Identifier)* ;
 arrayType: '[' basicType ';' Number ']' ;
 
-block: '{' statement* returnStmt? '}';
-unsafeBlock: 'unsafe' block;
+block: '{' statement* returnStmt? '}' ;
+unsafeBlock: unsafeModifier block;
 statement
-    : letStmt
+    : unsafeBlock
+    | letStmt
     | callStmt
     | structLiteral
     | staticVarDecl
