@@ -6058,7 +6058,6 @@ class RustParser ( Parser ):
             super().__init__(parent, invokingState)
             self.parser = parser
 
-
         def getRuleIndex(self):
             return RustParser.RULE_mutableExpression
 

@@ -134,7 +134,7 @@ class TestTypeChecker(unittest.TestCase):
         )
         checker.visit(let_stmt)
 
-        borrow_expr = BorrowExpr(name="x")
+        borrow_expr = BorrowExpr(expr="x")
         typ = checker.visit(borrow_expr)
 
         self.assertIsInstance(typ, RefType)
@@ -149,7 +149,7 @@ class TestTypeChecker(unittest.TestCase):
         )
         checker.visit(let_stmt)
 
-        borrow_expr = BorrowExpr(name="x")
+        borrow_expr = BorrowExpr(expr="x")
         checker.visit(borrow_expr)
 
         assign_stmt = AssignStmt(
@@ -227,7 +227,7 @@ class TestTypeChecker(unittest.TestCase):
 
         borrow_stmt = LetStmt(
             var_def=VarDef(name="y", var_type=None, mutable=False),
-            value=BorrowExpr(name="x", mutable=True)
+            value=BorrowExpr(expr="x", mutable=True)
         )
 
         checker.visit(let_stmt)
@@ -242,11 +242,11 @@ class TestTypeChecker(unittest.TestCase):
         )
         borrow_y = LetStmt(
             var_def=VarDef(name="y", var_type=IntType()),
-            value=BorrowExpr(name="x", mutable=False)
+            value=BorrowExpr(expr="x", mutable=False)
         )
         borrow_z = LetStmt(
             var_def=VarDef(name="z", var_type=IntType()),
-            value=BorrowExpr(name="x", mutable=True)
+            value=BorrowExpr(expr="x", mutable=True)
         )
         checker.visit(let_x)
         checker.visit(borrow_y)

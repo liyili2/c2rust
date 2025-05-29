@@ -17,34 +17,34 @@
 // #[repr(C)]
 // pub struct _IO_FILE {
 //     pub _flags: libc::c_int,
-    // pub _IO_read_ptr: *mut libc::c_char,
-    // pub _IO_read_end: *mut libc::c_char,
-    // pub _IO_read_base: *mut libc::c_char,
-    // pub _IO_write_base: *mut libc::c_char,
-    // pub _IO_write_ptr: *mut libc::c_char,
-    // pub _IO_write_end: *mut libc::c_char,
-    // pub _IO_buf_base: *mut libc::c_char,
-    // pub _IO_buf_end: *mut libc::c_char,
-    // pub _IO_save_base: *mut libc::c_char,
-    // pub _IO_backup_base: *mut libc::c_char,
-    // pub _IO_save_end: *mut libc::c_char,
-    // pub _markers: *mut _IO_marker,
-    // pub _chain: *mut _IO_FILE,
-    // pub _fileno: libc::c_int,
-    // pub _flags2: libc::c_int,
-    // pub _old_offset: __off_t,
-    // pub _cur_column: libc::c_ushort,
-    // pub _vtable_offset: libc::c_schar,
-    // pub _shortbuf: [libc::c_char; 1],
-    // pub _lock: *mut libc::c_void,
-    // pub _offset: __off64_t,
-    // pub _codecvt: *mut _IO_codecvt,
-    // pub _wide_data: *mut _IO_wide_data,
-    // pub _freeres_list: *mut _IO_FILE,
-    // pub _freeres_buf: *mut libc::c_void,
-    // pub __pad5: size_t,
-    // pub _mode: libc::c_int,
-    // pub _unused2: [libc::c_char; 20],
+//     pub _IO_read_ptr: *mut libc::c_char,
+//     pub _IO_read_end: *mut libc::c_char,
+//     pub _IO_read_base: *mut libc::c_char,
+//     pub _IO_write_base: *mut libc::c_char,
+//     pub _IO_write_ptr: *mut libc::c_char,
+//     pub _IO_write_end: *mut libc::c_char,
+//     pub _IO_buf_base: *mut libc::c_char,
+//     pub _IO_buf_end: *mut libc::c_char,
+//     pub _IO_save_base: *mut libc::c_char,
+//     pub _IO_backup_base: *mut libc::c_char,
+//     pub _IO_save_end: *mut libc::c_char,
+//     pub _markers: *mut _IO_marker,
+//     pub _chain: *mut _IO_FILE,
+//     pub _fileno: libc::c_int,
+//     pub _flags2: libc::c_int,
+//     pub _old_offset: __off_t,
+//     pub _cur_column: libc::c_ushort,
+//     pub _vtable_offset: libc::c_schar,
+//     pub _shortbuf: [libc::c_char; 1],
+//     pub _lock: *mut libc::c_void,
+//     pub _offset: __off64_t,
+//     pub _codecvt: *mut _IO_codecvt,
+//     pub _wide_data: *mut _IO_wide_data,
+//     pub _freeres_list: *mut _IO_FILE,
+//     pub _freeres_buf: *mut libc::c_void,
+//     pub __pad5: size_t,
+//     pub _mode: libc::c_int,
+//     pub _unused2: [libc::c_char; 20],
 // }
 // pub type _IO_lock_t = ();
 // pub type FILE = _IO_FILE;
@@ -244,16 +244,16 @@
 //     return s;
 // }
 // #[no_mangle]
-pub unsafe extern "C" fn frag(mut start: *mut State, mut out: *mut Ptrlist) -> Frag {
-    let mut n: Frag = {
-        let mut init = Frag {
-             start: start,
-             out: out
-            };
-        init
-    };
-    return n;
-}
+// pub unsafe extern "C" fn frag(mut start: *mut State, mut out: *mut Ptrlist) -> Frag {
+//     let mut n: Frag = {
+//         let mut init = Frag {
+//              start: start,
+//              out: out
+//             };
+//         init
+//     };
+//     return n;
+// }
 // #[no_mangle]
 // pub unsafe extern "C" fn list1(mut outp: *mut *mut State) -> *mut Ptrlist {
 //     let mut l: *mut Ptrlist = 0 as *mut Ptrlist;
@@ -284,97 +284,97 @@ pub unsafe extern "C" fn frag(mut start: *mut State, mut out: *mut Ptrlist) -> F
 //     return oldl1;
 // }
 // #[no_mangle]
-// pub unsafe extern "C" fn post2nfa(mut postfix: *mut libc::c_char) -> *mut State {
-//     let mut p: *mut libc::c_char = 0 as *mut libc::c_char;
-//     let mut stack: [Frag; 1000] = [Frag {
-//         start: 0 as *mut State,
-//         out: 0 as *mut Ptrlist,
-//     }; 1000];
-//     let mut stackp: *mut Frag = 0 as *mut Frag;
-//     let mut e1: Frag = Frag {
-//         start: 0 as *mut State,
-//         out: 0 as *mut Ptrlist,
-//     };
-//     let mut e2: Frag = Frag {
-//         start: 0 as *mut State,
-//         out: 0 as *mut Ptrlist,
-//     };
-//     let mut e: Frag = Frag {
-//         start: 0 as *mut State,
-//         out: 0 as *mut Ptrlist,
-//     };
-//     let mut s: *mut State = 0 as *mut State;
-//     if postfix.is_null() {
-//         return 0 as *mut State;
-//     }
-//     stackp = stack.as_mut_ptr();
-//     p = postfix;
-//     while *p != 0 {
-//         match *p as libc::c_int {
-//             46 => {
-//                 stackp = stackp.offset(-1);
-//                 e2 = *stackp;
-//                 stackp = stackp.offset(-1);
-//                 e1 = *stackp;
-//                 patch(e1.out, e2.start);
-//                 let fresh10 = stackp;
-//                 stackp = stackp.offset(1);
-//                 *fresh10 = frag(e1.start, e2.out);
-//             }
-//             124 => {
-//                 stackp = stackp.offset(-1);
-//                 e2 = *stackp;
-//                 stackp = stackp.offset(-1);
-//                 e1 = *stackp;
-//                 s = state(Split as libc::c_int, e1.start, e2.start);
-//                 let fresh11 = stackp;
-//                 stackp = stackp.offset(1);
-//                 *fresh11 = frag(s, append(e1.out, e2.out));
-//             }
-//             63 => {
-//                 stackp = stackp.offset(-1);
-//                 e = *stackp;
-//                 s = state(Split as libc::c_int, e.start, 0 as *mut State);
-//                 let fresh12 = stackp;
-//                 stackp = stackp.offset(1);
-//                 *fresh12 = frag(s, 1);
-//             }
-//             42 => {
-//                 stackp = stackp.offset(-1);
-//                 e = *stackp;
-//                 s = state(Split as libc::c_int, e.start, 0 as *mut State);
-//                 patch(e.out, s);
-//                 let fresh13 = stackp;
-//                 stackp = stackp.offset(1);
-//                 *fresh13 = frag(s, list1(&mut (*s).out1));
-//             }
-//             43 => {
-//                 stackp = stackp.offset(-1);
-//                 e = *stackp;
-//                 s = state(Split as libc::c_int, e.start, 0 as *mut State);
-//                 patch(e.out, s);
-//                 let fresh14 = stackp;
-//                 stackp = stackp.offset(1);
-//                 *fresh14 = frag(e.start, list1(&mut (*s).out1));
-//             }
-//             _ => {
-//                 s = state(*p as libc::c_int, 0 as *mut State, 0 as *mut State);
-//                 let fresh9 = stackp;
-//                 stackp = stackp.offset(1);
-//                 *fresh9 = frag(s, list1(&mut (*s).out));
-//             }
-//         }
-//         p = p.offset(1);
-//         p;
-//     }
-//     stackp = stackp.offset(-1);
-//     e = *stackp;
-//     if stackp != stack.as_mut_ptr() {
-//         return 0 as *mut State;
-//     }
-//     patch(e.out, &mut matchstate);
-//     return e.start;
-// }
+pub unsafe extern "C" fn post2nfa(mut postfix: *mut libc::c_char) -> *mut State {
+    // let mut p: *mut libc::c_char = 0 as *mut libc::c_char;
+    // let mut stack: [Frag; 1000] = [Frag {
+    //     start: 0 as *mut State,
+    //     out: 0 as *mut Ptrlist,
+    // }; 1000];
+    // let mut stackp: *mut Frag = 0 as *mut Frag;
+    // let mut e1: Frag = Frag {
+    //     start: 0 as *mut State,
+    //     out: 0 as *mut Ptrlist,
+    // };
+    // let mut e2: Frag = Frag {
+    //     start: 0 as *mut State,
+    //     out: 0 as *mut Ptrlist,
+    // };
+    // let mut e: Frag = Frag {
+    //     start: 0 as *mut State,
+    //     out: 0 as *mut Ptrlist,
+    // };
+    // let mut s: *mut State = 0 as *mut State;
+    // if postfix.is_null() {
+    //     return 0 as *mut State;
+    // }
+    // stackp = stack.as_mut_ptr();
+    // p = postfix;
+    // while *p != 0 {
+    //     match *p as libc::c_int {
+    //         46 => {
+    //             stackp = stackp.offset(-1);
+    //             e2 = *stackp;
+    //             stackp = stackp.offset(-1);
+    //             e1 = *stackp;
+    //             patch(e1.out, e2.start);
+    //             let fresh10 = stackp;
+    //             stackp = stackp.offset(1);
+    //             *fresh10 = frag(e1.start, e2.out);
+    //         }
+    //         124 => {
+    //             stackp = stackp.offset(-1);
+    //             e2 = *stackp;
+    //             stackp = stackp.offset(-1);
+    //             e1 = *stackp;
+    //             s = state(Split as libc::c_int, e1.start, e2.start);
+    //             let fresh11 = stackp;
+    //             stackp = stackp.offset(1);
+    //             *fresh11 = frag(s, append(e1.out, e2.out));
+    //         }
+    //         63 => {
+    //             stackp = stackp.offset(-1);
+    //             e = *stackp;
+    //             s = state(Split as libc::c_int, e.start, 0 as *mut State);
+    //             let fresh12 = stackp;
+    //             stackp = stackp.offset(1);
+    //             *fresh12 = frag(s, 1);
+    //         }
+    //         42 => {
+    //             stackp = stackp.offset(-1);
+    //             e = *stackp;
+    //             s = state(Split as libc::c_int, e.start, 0 as *mut State);
+    //             patch(e.out, s);
+    //             let fresh13 = stackp;
+    //             stackp = stackp.offset(1);
+    //             *fresh13 = frag(s, list1(&mut (*s).out1));
+    //         }
+    //         43 => {
+    //             stackp = stackp.offset(-1);
+    //             e = *stackp;
+    //             s = state(Split as libc::c_int, e.start, 0 as *mut State);
+    //             patch(e.out, s);
+    //             let fresh14 = stackp;
+    //             stackp = stackp.offset(1);
+    //             *fresh14 = frag(e.start, list1(&mut (*s).out1));
+    //         }
+    //         _ => {
+    //             s = state(*p as libc::c_int, 0 as *mut State, 0 as *mut State);
+    //             let fresh9 = stackp;
+    //             stackp = stackp.offset(1);
+    //             *fresh9 = frag(s, list1(&mut (*s).out));
+    //         }
+    //     }
+    //     p = p.offset(1);
+    //     p;
+    // }
+    // stackp = stackp.offset(-1);
+    // e = *stackp;
+    // if stackp != stack.as_mut_ptr() {
+        // return 0 as *mut State;
+    // }
+    patch(e.out, &mut matchstate);
+    // return e.start;
+}
 // #[no_mangle]
 // pub static mut l1: List = List {
 //     s: 0 as *const *mut State as *mut *mut State,
@@ -457,7 +457,7 @@ pub unsafe extern "C" fn frag(mut start: *mut State, mut out: *mut Ptrlist) -> F
 //     let mut clist: *mut List = 0 as *mut List;
 //     let mut nlist: *mut List = 0 as *mut List;
 //     let mut t: *mut List = 0 as *mut List;
-//     clist = startlist(start, &mut l1);
+//     // clist = startlist(start, &mut l1);
 //     nlist = &mut l2;
 //     while *s != 0 {
 //         c = *s as libc::c_int & 0xff as libc::c_int;

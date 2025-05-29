@@ -1,6 +1,6 @@
 from antlr4 import TerminalNode
 import re
-from AST_Scripts.ast.Expression import ArrayDeclaration, ArrayLiteral, BinaryExpr, BoolLiteral, BorrowExpr, CastExpr, CharLiteralExpr, DereferenceExpr, FieldAccessExpr, FunctionCallExpr, IdentifierExpr, IndexExpr, IntLiteral, MethodCallExpr, ParenExpr, Pattern, PatternExpr, RangeExpression, RepeatArrayLiteral, StrLiteral, StructDefInit, StructLiteralExpr, StructLiteralField, TypePathExpression, TypePathFullExpr, UnaryExpr
+from AST_Scripts.ast.Expression import ArrayDeclaration, ArrayLiteral, BinaryExpr, BoolLiteral, BorrowExpr, CastExpr, CharLiteralExpr, DereferenceExpr, FieldAccessExpr, FunctionCallExpr, IdentifierExpr, IndexExpr, IntLiteral, MethodCallExpr, MutableExpr, ParenExpr, Pattern, PatternExpr, RangeExpression, RepeatArrayLiteral, StrLiteral, StructDefInit, StructLiteralExpr, StructLiteralField, TypePathExpression, TypePathFullExpr, UnaryExpr
 from AST_Scripts.ast.Statement import AssignStmt, BreakStmt, CallStmt, CompoundAssignment, ContinueStmt, ExpressionStmt, ForStmt, IfStmt, LetStmt, LoopStmt, MatchArm, MatchPattern, MatchStmt, ReturnStmt, StaticVarDecl, StructLiteral, WhileStmt
 from AST_Scripts.antlr.RustVisitor import RustVisitor
 from AST_Scripts.ast.TopLevel import ExternBlock, ExternFunctionDecl, ExternStaticVarDecl, ExternTypeDecl, FunctionDef, InterfaceDef, StructDef, Attribute, TopLevelVarDef, TypeAliasDecl
@@ -246,8 +246,8 @@ class Transformer(RustVisitor):
 
     def visitStructLiteralField(self, ctx):
         field_name = ctx.Identifier().getText()
-        # expr = self.visit(ctx.expression()) or None
-        return (field_name, None)
+        value = self.visit(ctx.expression()) if ctx.expression() else None
+        return StructLiteralField(field_name, value)
 
     def visitAttributes(self, ctx):
         return [self.visit(inner) for inner in ctx.innerAttribute()]
@@ -519,12 +519,13 @@ class Transformer(RustVisitor):
     binary_operators = {'==', '!=', '<', '>', '<=', '>=', '+', '-', '*', '/', '%', '&&', '||'}
 
     def visitExpression(self, ctx):
-        # print("expression is ", ctx.getText(), ctx.__class__)
+        print("expression is ", ctx.getText(), ctx.__class__)
         if ctx.primaryExpression():
             return self.visit(ctx.primaryExpression())
 
         elif ctx.mutableExpression():
-            return self.visit(ctx.mutableExpression())
+            expr = self.visit(ctx.expression(0))
+            return MutableExpr(expr=expr)
 
         elif ctx.unaryOpes():
             op = ctx.unaryOpes().getText()
@@ -632,8 +633,7 @@ class Transformer(RustVisitor):
             identifier=identifier,
             force=force,
             size=size,
-            value=value_expr
-        )
+            value=value_expr)
 
     def visitCallExpressionPostFix(self, ctx):
         args_ctx = ctx.functionCallArgs()
@@ -693,11 +693,11 @@ class Transformer(RustVisitor):
         return ctx.value
 
     def visitBorrowExpression(self, ctx):
-        expr = self.visit(ctx.expression())
-        # print("borrow expr is ", expr.__class__, expr)
-        # if not isinstance(expr, IdentifierExpr):
-        #     raise Exception("Can only borrow variables (identifiers).")
-        return BorrowExpr(expr.name)
+        mutable = ctx.getChild(1).getText() == "mut"
+        expr_index = 2 if mutable else 1
+        expr = self.visit(ctx.getChild(expr_index))
+        mutable = isinstance(expr, MutableExpr)
+        return BorrowExpr(expr=expr, mutable=mutable)
 
     def visitCastExpr(self, node):
         expr = self.visit(node.expr)

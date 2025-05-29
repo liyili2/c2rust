@@ -20,14 +20,15 @@ class Param(ASTNode):
         return f"ParamNode(name={self.name}, type={self.typ}, is_mut={self.is_mut})"
     
     def accept(self, visitor):
-        return visitor.visitParamNode(self)
+        return visitor.visit_ParamNode(self)
 
 class FunctionParamList(ASTNode):
     def __init__(self, params):
-        self.params = params              # List[ParamNode]
+        self.params = params
+        self.param_len = len(self.params)
 
     def __repr__(self):
         return f"FunctionParamListNode(params={self.params})"
     
     def accept(self, visitor):
-        return visitor.visitFunctionParamList(self)
+        return visitor.visit_FunctionParamList(self)

@@ -5,6 +5,16 @@ class Expression(ASTNode):
     def __init__(self, type=None):
         self.type = type
 
+class MutableExpr(Expression):
+    def __init__(self, expr):
+        self.expr = expr
+
+    def accept(self, visitor):
+        return visitor.visit_MutableExpr(self)
+
+    def __repr__(self):
+        return f"MutableExpr(expr={self.expr})"
+
 class IdentifierExpr(Expression):
     def __init__(self, name, type=None):
         super().__init__(type)
@@ -52,8 +62,8 @@ class FunctionCallExpr(Expression):
         return visitor.visit_CallExpression(self)
 
 class BorrowExpr(Expression):
-    def __init__(self, name, mutable=False):
-        self.name = name
+    def __init__(self, expr, mutable=False):
+        self.expr = expr
         self.mutable = mutable
 
     def accept(self, visitor):
@@ -114,7 +124,7 @@ class CastExpr(Expression):
         self.type = type
 
     def accept(self, visitor):
-        return visitor.visitCastExpr(self)
+        return visitor.visit_CastExpr(self)
 
 class UnaryExpr(Expression):
     def __init__(self, op, expr):
@@ -185,7 +195,7 @@ class StructLiteralField:
         self.field_type = field_type
 
     def accept(self, visitor):
-        return visitor.visitStructLiteralField(self)
+        return visitor.visit_StructLiteralField(self)
 
 class StructLiteralExpr(Expression):
     def __init__(self, struct_name, fields):

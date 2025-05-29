@@ -1,6 +1,5 @@
 from RustParser.AST_Scripts.ast import Type
 
-
 class FunctionDef:
     def __init__(self, identifier, params, return_type, body):
         self.Identifier = identifier

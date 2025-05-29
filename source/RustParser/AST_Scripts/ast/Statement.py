@@ -165,7 +165,7 @@ class StructLiteral(Statement):
         self.fields = fields
 
     def accept(self, visitor):
-        return visitor.visitStructLiteral(self)
+        return visitor.visit_StructLiteral(self)
 
     def __repr__(self):
         return f"StructLiteral(type_name={self.type_name}, fields={self.fields})"
