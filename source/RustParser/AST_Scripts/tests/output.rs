@@ -84,7 +84,7 @@
 //     pub n: libc::c_int,
 // }
 // #[no_mangle]
-// pub unsafe extern "C" fn re2post(mut re: *mut libc::c_char) -> *mut libc::c_char {
+pub unsafe extern "C" fn re2post(mut re: *mut libc::c_char) -> *mut libc::c_char {
 //     let mut nalt: libc::c_int = 0;
 //     let mut natom: libc::c_int = 0;
 //     static mut buf: [libc::c_char; 8000] = [0; 8000];
@@ -95,11 +95,10 @@
 //     dst = buf.as_mut_ptr();
 //     nalt = 0 as libc::c_int;
 //     natom = 0 as libc::c_int;
-//     if strlen(re) >= (::core::mem::size_of::<[libc::c_char; 8000]>() as libc::c_ulong)
-//             .wrapping_div(2 as libc::c_int as libc::c_ulong)
-//     {
-//         return 0 as *mut libc::c_char;
-//     }
+    // if strlen(re) >= (::core::mem::size_of::[libc::c_char; 8000]() as libc::c_ulong).wrapping_div(2 as libc::c_int as libc::c_ulong)
+    // {
+    //     return 0 as *mut libc::c_char;
+    // }
 //     while *re != 0 {
 //         match *re as libc::c_int {
 //             40 => {
@@ -213,7 +212,7 @@
 //     // }
 //     // *dst = 0 as libc::c_int as libc::c_char;
 //     // return buf.as_mut_ptr();
-// }
+}
 // #[no_mangle]
 // pub static mut matchstate: State = {
 //     let mut init = State {
@@ -284,7 +283,7 @@
 //     return oldl1;
 // }
 // #[no_mangle]
-pub unsafe extern "C" fn post2nfa(mut postfix: *mut libc::c_char) -> *mut State {
+// pub unsafe extern "C" fn post2nfa(mut postfix: *mut libc::c_char) -> *mut State {
     // let mut p: *mut libc::c_char = 0 as *mut libc::c_char;
     // let mut stack: [Frag; 1000] = [Frag {
     //     start: 0 as *mut State,
@@ -372,9 +371,9 @@ pub unsafe extern "C" fn post2nfa(mut postfix: *mut libc::c_char) -> *mut State 
     // if stackp != stack.as_mut_ptr() {
         // return 0 as *mut State;
     // }
-    patch(e.out, &mut matchstate);
+    // patch(e.out, &mut matchstate);
     // return e.start;
-}
+// }
 // #[no_mangle]
 // pub static mut l1: List = List {
 //     s: 0 as *const *mut State as *mut *mut State,

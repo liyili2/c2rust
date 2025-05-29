@@ -553,6 +553,7 @@ class Transformer(RustVisitor):
         elif ctx.conditionalOps():
             left = self.visit(ctx.expression(0))
             op = ctx.conditionalOps().getText()
+            print("right is ", ctx.expression(1).getText(), ctx.expression(1))
             right = self.visit(ctx.expression(1))
             return BinaryExpr(op, left, right)
 

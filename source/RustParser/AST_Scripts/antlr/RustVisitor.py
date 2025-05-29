@@ -384,36 +384,6 @@ class RustVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by RustParser#postfixExpression.
-    def visitPostfixExpression(self, ctx:RustParser.PostfixExpressionContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by RustParser#qualifiedFunctionCall.
-    def visitQualifiedFunctionCall(self, ctx:RustParser.QualifiedFunctionCallContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by RustParser#macroCall.
-    def visitMacroCall(self, ctx:RustParser.MacroCallContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by RustParser#macroArgs.
-    def visitMacroArgs(self, ctx:RustParser.MacroArgsContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by RustParser#macroInner.
-    def visitMacroInner(self, ctx:RustParser.MacroInnerContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by RustParser#genericArgs.
-    def visitGenericArgs(self, ctx:RustParser.GenericArgsContext):
-        return self.visitChildren(ctx)
-
-
     # Visit a parse tree produced by RustParser#structLiteralField.
     def visitStructLiteralField(self, ctx:RustParser.StructLiteralFieldContext):
         return self.visitChildren(ctx)
@@ -426,11 +396,6 @@ class RustVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by RustParser#matchPattern.
     def visitMatchPattern(self, ctx:RustParser.MatchPatternContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by RustParser#argumentList.
-    def visitArgumentList(self, ctx:RustParser.ArgumentListContext):
         return self.visitChildren(ctx)
 
 

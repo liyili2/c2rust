@@ -56,11 +56,12 @@ basicType
     | 'String'
     | 'bool'
     | 'u8'
-    | typePath ('<' type (',' type)* '>')?
+    | arrayType
+    | typePath basicType
+    | ('<' type (',' type)* '>' '()'? )
     | Identifier ('<' type (',' type)* '>')?
     | Identifier '<' type '>'
     | '&' type
-    | arrayType
     | '[' type ']'
     | Identifier;
 
@@ -85,7 +86,6 @@ statement
     | 'break' ';'
     | 'continue' ';'
     | matchStmt
-    | qualifiedFunctionCall ('.' qualifiedFunctionCall)* ';'
     ;
 
 callStmt: expression callExpressionPostFix ';' ;
@@ -152,28 +152,10 @@ primaryExpression: literal | Identifier;
 fieldAccessPostFix: '[' primaryExpression ']' | ('.' primaryExpression)+;
 callExpressionPostFix: '!'? functionCallArgs;
 functionCallArgs: '()' | '(' expression (',' expression)* ')' ;
-postfixExpression
-  : primaryExpression
-    (
-      ('()' | '('argumentList?')')
-    |  ('.' Identifier)+
-    | '.' Identifier ( '(' argumentList? ')' | '()' )
-    )+
-  ;
 
-qualifiedFunctionCall
-  : DOUBLE_COLON typePath Identifier DOUBLE_COLON genericArgs? ('()' | '(' argumentList? ')') 
-  | Identifier ('.' Identifier)* (DOUBLE_COLON Identifier)* ('()' | '(' ( Identifier '(' STRING_LITERAL ')' | argumentList)* ')')
-  ;
-macroCall: Identifier '!' macroArgs;
-macroArgs: '[' macroInner? ']' | '(' macroInner? ')';
-macroInner: expression (';' expression)?;  // supports [value; count] form
-
-genericArgs: '<' type (',' type)* '>';
 structLiteralField: Identifier (':' expression)? ','? ;
 matchArm: matchPattern ('|' matchPattern)* '=>' block;
 matchPattern: Number | UNDERSCORE | Identifier;
-argumentList: (qualifiedFunctionCall | expression) (',' (qualifiedFunctionCall | expression))* (',')? | (DOUBLE_COLON Identifier)+ ('()' | '(' argumentList ')');
 
 TRUE: 'true';
 FALSE: 'false';
