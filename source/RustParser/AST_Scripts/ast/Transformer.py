@@ -1,6 +1,6 @@
 from antlr4 import TerminalNode
 import re
-from AST_Scripts.ast.Expression import ArrayDeclaration, ArrayLiteral, BinaryExpr, BoolLiteral, BorrowExpr, CastExpr, CharLiteralExpr, DereferenceExpr, FieldAccessExpr, FunctionCallExpr, IdentifierExpr, IndexExpr, IntLiteral, MethodCallExpr, MutableExpr, ParenExpr, Pattern, PatternExpr, RangeExpression, RepeatArrayLiteral, StrLiteral, StructDefInit, StructLiteralExpr, StructLiteralField, TypePathExpression, TypePathFullExpr, UnaryExpr
+from AST_Scripts.ast.Expression import ArrayDeclaration, ArrayLiteral, BinaryExpr, BoolLiteral, BorrowExpr, CastExpr, CharLiteralExpr, DereferenceExpr, FieldAccessExpr, FunctionCallExpr, IdentifierExpr, IndexExpr, IntLiteral, MethodCallExpr, MutableExpr, ParenExpr, Pattern, PatternExpr, QualifiedExpression, RangeExpression, RepeatArrayLiteral, StrLiteral, StructDefInit, StructLiteralExpr, StructLiteralField, TypePathExpression, TypePathFullExpr, UnaryExpr
 from AST_Scripts.ast.Statement import AssignStmt, BreakStmt, CallStmt, CompoundAssignment, ContinueStmt, ExpressionStmt, ForStmt, IfStmt, LetStmt, LoopStmt, MatchArm, MatchPattern, MatchStmt, ReturnStmt, StaticVarDecl, StructLiteral, WhileStmt
 from AST_Scripts.antlr.RustVisitor import RustVisitor
 from AST_Scripts.ast.TopLevel import ExternBlock, ExternFunctionDecl, ExternStaticVarDecl, ExternTypeDecl, FunctionDef, InterfaceDef, StructDef, Attribute, TopLevelVarDef, TypeAliasDecl
@@ -617,7 +617,14 @@ class Transformer(RustVisitor):
         elif ctx.structDefInit():
             return self.visit(ctx.structDefInit())
 
+        elif ctx.qualifiedExpression():
+            return self.visit(ctx.qualifiedExpression())
+
         raise Exception(f"Unrecognized expression structure: {ctx.getText()}")
+    
+    def visitQualifiedExpression(self, ctx):
+        expr = self.visit(ctx.expression())
+        return QualifiedExpression(expr)
 
     def visitStructDefInit(self, ctx):
         name = ctx.Identifier().getText()

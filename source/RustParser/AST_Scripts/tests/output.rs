@@ -226,16 +226,16 @@ pub unsafe extern "C" fn re2post(mut re: *mut libc::c_char) -> *mut libc::c_char
 // #[no_mangle]
 // pub static mut nstate: libc::c_int = 0;
 // #[no_mangle]
-// pub unsafe extern "C" fn state(
-//     mut c: libc::c_int,
-//     mut out: *mut State,
-//     mut out1: *mut State,
-// ) -> *mut State  {
+pub unsafe extern "C" fn state(
+    mut c: libc::c_int,
+    mut out: *mut State,
+    mut out1: *mut State,
+) -> *mut State  {
 //     let mut s: *mut State = 0 as *mut State;
 //     nstate += 1;
 //     nstate;
 //     //not handled yet
-//     s = malloc(::core::mem::size_of::<State>() as libc::c_ulong) as *mut State;
+    s = malloc(core::mem::size_of:: <State> () as libc::c_ulong) as *mut State;
 //     (*s).lastlist = 0 as libc::c_int;
 //     (*s).c = c;
 //     (*s).out = out;
@@ -252,7 +252,7 @@ pub unsafe extern "C" fn re2post(mut re: *mut libc::c_char) -> *mut libc::c_char
 //         init
 //     };
 //     return n;
-// }
+}
 // #[no_mangle]
 // pub unsafe extern "C" fn list1(mut outp: *mut *mut State) -> *mut Ptrlist {
 //     let mut l: *mut Ptrlist = 0 as *mut Ptrlist;

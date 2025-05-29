@@ -345,6 +345,10 @@ class TypeChecker:
 
         return self.symbol_table[node.name]
     
+    def visit_QualifiedExpression(self, node):
+        inner_type = self.visit(node.inner_expr)
+        return inner_type
+    
     def visit_MutableExpr(self, node):
         inner_expr = self.visit(node.expr)
         if not isinstance(node.expr, IdentifierExpr):

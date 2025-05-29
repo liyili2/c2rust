@@ -14,6 +14,13 @@ class MutableExpr(Expression):
 
     def __repr__(self):
         return f"MutableExpr(expr={self.expr})"
+    
+class QualifiedExpression(Expression):
+    def __init__(self, inner_expr):
+        self.inner_expr = inner_expr
+
+    def accept(self, visitor):
+        return visitor.visit_QualifiedExpression(self)
 
 class IdentifierExpr(Expression):
     def __init__(self, name, type=None):

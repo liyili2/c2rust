@@ -485,6 +485,15 @@ class RustListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by RustParser#qualifiedExpression.
+    def enterQualifiedExpression(self, ctx:RustParser.QualifiedExpressionContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#qualifiedExpression.
+    def exitQualifiedExpression(self, ctx:RustParser.QualifiedExpressionContext):
+        pass
+
+
     # Enter a parse tree produced by RustParser#structDefInit.
     def enterStructDefInit(self, ctx:RustParser.StructDefInitContext):
         pass

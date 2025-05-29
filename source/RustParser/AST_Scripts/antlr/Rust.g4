@@ -123,12 +123,14 @@ expression
     | expression conditionalOps expression
     | expression compoundOps expression
     | expressionBlock
+    | qualifiedExpression
     | expression callExpressionPostFix
     | patternPrefix expression
     | arrayDeclaration
     | dereferenceExpression
     ;
 
+qualifiedExpression: '<' expression '>' ;
 structDefInit: Identifier '=' '{' expression '}' ';' ;
 arrayDeclaration: Identifier '!'? '[' Number ';' expression ']' ;
 typePathExpression: (Identifier DOUBLE_COLON)+ ;
