@@ -5,9 +5,11 @@ from RustParser.AST_Scripts.antlr.RustLexer import RustLexer
 from RustParser.AST_Scripts.antlr.RustParser import RustParser
 from RustParser.AST_Scripts.ast.Transformer import Transformer
 from RustParser.AST_Scripts.ast.TypeChecker import TypeChecker
+from dataclasses import asdict
+import json
 
 def parse_rust_code():
-    file_path = os.path.join(os.path.dirname(__file__), "output.rs")
+    file_path = os.path.join(os.path.dirname(__file__), "bst.rs")
     with open(file_path, "r", encoding="utf-8") as f:
         rust_code = f.read()
     lexer = RustLexer(InputStream(rust_code))
@@ -24,9 +26,12 @@ def transform(tree):
 def test_pipeline():
     tree = parse_rust_code()
     ast = transform(tree)
-    checker = TypeChecker()
-    checker.visit(ast)
-    print(f"Type Errors: {checker.error_count}")
+    json_obj = ast.to_dict()
+    json_Str = json.dumps(json_obj, indent=2)
+    print("json is ", json_Str)
+    # checker = TypeChecker()
+    # checker.visit(ast)
+    # print(f"Type Errors: {checker.error_count}")
 
 if __name__ == "__main__":
     test_pipeline()

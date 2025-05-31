@@ -1,27 +1,39 @@
 from RustParser.AST_Scripts.ast import Type
+from RustParser.AST_Scripts.ast.ASTNode import ASTNode
 
-class FunctionDef:
-    def __init__(self, identifier, params, return_type, body):
-        self.Identifier = identifier
-        self.params = params  # list of (name, type)
-        self.return_type = return_type
-        self.body = body      # list of statements
-
-    def accept(self, visitor):
-        method_Identifier = f'visit_{self.__class__.__name__}'
-        return getattr(visitor, method_Identifier, visitor.generic_visit)(self)
-
-class StructDef:
-    def __init__(self, name, fields):
-        self.name = name
-        self.fields = fields  # list of (name, type)
+class TopLevel(ASTNode):
+    def __init__(self):
+        pass
 
     def accept(self, visitor):
         method_name = f'visit_{self.__class__.__name__}'
         return getattr(visitor, method_name, visitor.generic_visit)(self)
 
-class Attribute:
+class FunctionDef(TopLevel):
+    def __init__(self, identifier, params, return_type, body):
+        super().__init__()
+        self.identifier = identifier
+        self.params = params
+        self.return_type = return_type
+        self.body = body
+
+    def accept(self, visitor):
+        method_Identifier = f'visit_{self.__class__.__name__}'
+        return getattr(visitor, method_Identifier, visitor.generic_visit)(self)
+
+class StructDef(TopLevel):
+    def __init__(self, name, fields):
+        super().__init__()
+        self.name = name
+        self.fields = fields
+
+    def accept(self, visitor):
+        method_name = f'visit_{self.__class__.__name__}'
+        return getattr(visitor, method_name, visitor.generic_visit)(self)
+
+class Attribute(TopLevel):
     def __init__(self, name, args=None):
+        super().__init__()
         self.name = name
         self.args = args or []
 
@@ -29,19 +41,21 @@ class Attribute:
         method_name = f'visit_{self.__class__.__name__}'
         return getattr(visitor, method_name, visitor.generic_visit)(self)
 
-class ExternBlock:
+class ExternBlock(TopLevel):
     def __init__(self, abi: str, items: list):
+        super().__init__()
         self.abi = abi
         self.items = items
 
     def __repr__(self):
         return f"<ExternBlock abi={self.abi}, items={self.items}>"
 
-class ExternItem:
+class ExternItem(ASTNode):
     pass    
 
 class ExternTypeDecl(ExternItem):
     def __init__(self, name: str, visibility: str = None):
+        super().__init__()
         self.name = name
         self.visibility = visibility  # e.g., "pub" or None
 
@@ -70,7 +84,7 @@ class ExternFnDecl(ExternItem):
     def __repr__(self):
         return f"<ExternFnDecl {self.visibility or ''} fn {self.name}({self.params}) -> {self.return_type}>"
 
-class ExternFunctionDecl:
+class ExternFunctionDecl(TopLevel):
     def __init__(self, name, params, return_type=None, variadic=False, visibility=None):
         self.name = name  # function name (string)
         self.params = params  # list of parameter types (AST nodes or strings)
@@ -85,21 +99,22 @@ class ExternFunctionDecl:
             f"visibility={self.visibility})"
         )
 
-class TypeAliasDecl:
+class TypeAliasDecl(TopLevel):
     def __init__(self, name, type, visibility=None):
         self.name = name
         self.type = type
         self.visibility = visibility
 
-class TopLevelVarDef:
+class TopLevelVarDef(TopLevel):
     def __init__(self, name, fields, type, visibility=None):
         self.name = name
         self.fields = fields
         self.visibility = visibility
         self.type_ = type
 
-class InterfaceDef:
+class InterfaceDef(TopLevel):
     def __init__(self, name: str, functions: list):
+        super().__init__()
         self.name = name
         self.functions = functions or []
 

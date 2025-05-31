@@ -1,10 +1,8 @@
 from RustParser.AST_Scripts.ast.ASTNode import ASTNode
 
-class Statement(ASTNode):
-    pass
-
 class InitBlock(ASTNode):
     def __init__(self, attrList, returnExpr):
+        super().__init__()
         self.attrList = attrList
         self.returnExpr = returnExpr
 

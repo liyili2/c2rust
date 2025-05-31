@@ -71,7 +71,7 @@ class TypeChecker:
         return True
 
     def visit_FunctionDef(self, ctx):
-        name = ctx.Identifier
+        name = ctx.identifier
 
         if ctx.params is not None:
             params = self.visit(ctx.params)
@@ -253,6 +253,13 @@ class TypeChecker:
 
         return True
 
+    def visit_ReturnStmt(self, node):
+        if node.value is None:
+            return_type = "unit"  # or "void", depending on your type system
+        else:
+            return_type = self.visit(node.value)
+        return return_type
+
     def visit_FunctionCallExpr(self, node):
         func_info = self.env.lookup_function(node.func)
         if not func_info or func_info["kind"] != "function":
@@ -320,6 +327,40 @@ class TypeChecker:
 
     def visit_BoolType(self, node):
         return BoolType()
+    
+    def visit_binaryExpr(self, node):
+        left_type = self.visit(node.left)
+        right_type = self.visit(node.right)
+
+        if left_type != right_type:
+            self.error(f"Type mismatch: cannot apply '{node.op}' to '{left_type}' and '{right_type}'")
+            node.type = "error"
+            return "error"
+
+        if node.op in {"+", "-", "*", "/"}:
+            if left_type != "int":
+                self.error(f"Arithmetic operator '{node.op}' requires 'int' operands, got '{left_type}'")
+                node.type = "error"
+                return "error"
+            node.type = "int"
+            return "int"
+
+        elif node.op in {"==", "!=", "<", ">", "<=", ">="}:
+            node.type = "bool"
+            return "bool"
+
+        elif node.op in {"&&", "||"}:
+            if left_type != "bool":
+                self.error(f"Logical operator '{node.op}' requires 'bool' operands, got '{left_type}'")
+                node.type = "error"
+                return "error"
+            node.type = "bool"
+            return "bool"
+
+        else:
+            self.error(f"Unknown binary operator '{node.op}'")
+            node.type = "error"
+            return "error"
 
     def visit_LiteralExpr(self, node):
         if isinstance(node.value, int):
@@ -373,7 +414,7 @@ class TypeChecker:
         return var_type
 
     def visit_BorrowExpr(self, node):
-        info = self.env.lookup(node.name)
+        info = self.env.lookup(node.expr)
         if not info["owned"]:
             self.increase_error_count()
 
