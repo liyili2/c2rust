@@ -73,7 +73,7 @@ class LiteralExpr(Expression):
 class FunctionCallExpr(Expression):
     def __init__(self, func, args, caller=None,):
         super().__init__()
-        self.caller = caller
+        # self.caller = caller
         self.func = func
         self.args = args
 
@@ -222,7 +222,7 @@ class ParenExpr(Expression):
     def __repr__(self):
         return f"ParenExpr({self.inner_expr})"
     
-class StructLiteralField:
+class StructLiteralField(Expression):
     def __init__(self, name, value, field_type=None):
         super().__init__()
         self.name = name

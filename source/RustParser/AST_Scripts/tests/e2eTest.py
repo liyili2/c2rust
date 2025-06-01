@@ -23,9 +23,24 @@ def transform(tree):
     ast = transformer.visit(tree)
     return ast
 
+def pretty_print_ast(node, indent=0):
+    spacer = '  ' * indent
+    if isinstance(node, list):
+        return '\n'.join(pretty_print_ast(n, indent) for n in node)
+
+    if hasattr(node, '__dict__'):
+        lines = [f"{spacer}{node.__class__.__name__}:"]
+        for key, value in vars(node).items():
+            lines.append(f"{spacer}  {key}:")
+            lines.append(pretty_print_ast(value, indent + 2))
+        return '\n'.join(lines)
+    else:
+        return f"{spacer}{repr(node)}"
+
 def test_pipeline():
     tree = parse_rust_code()
     ast = transform(tree)
+    # print(pretty_print_ast(ast))
     json_obj = ast.to_dict()
     json_Str = json.dumps(json_obj, indent=2)
     print("json is ", json_Str)

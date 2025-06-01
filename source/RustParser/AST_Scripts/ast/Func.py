@@ -1,4 +1,4 @@
-from AST_Scripts.ast.ASTNode import ASTNode
+from RustParser.AST_Scripts.ast.ASTNode import ASTNode
 
 class FunctionDef(ASTNode):
     def __init__(self, name, params, return_type, body):
@@ -20,7 +20,7 @@ class Param(ASTNode):
 
     def __repr__(self):
         return f"ParamNode(name={self.name}, type={self.typ}, is_mut={self.is_mut})"
-    
+
     def accept(self, visitor):
         return visitor.visit_ParamNode(self)
 
@@ -31,7 +31,7 @@ class FunctionParamList(ASTNode):
         self.param_len = len(self.params)
 
     def __repr__(self):
-        return f"FunctionParamListNode(params={self.params})"
-    
+        return f"FunctionParamList(params={self.params})"
+
     def accept(self, visitor):
         return visitor.visit_FunctionParamList(self)

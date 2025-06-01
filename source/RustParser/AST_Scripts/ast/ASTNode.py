@@ -6,15 +6,23 @@ class ASTNode(ABC):
         pass
 
     def to_dict(self):
-        result = {"type": self.__class__.__name__}
-        for key, value in vars(self).items():
+        def convert(value):
             if isinstance(value, ASTNode):
-                result[key] = value.to_dict()
+                # print("********************1")
+                return value.to_dict()
             elif isinstance(value, list):
-                result[key] = [
-                    item.to_dict() if isinstance(item, ASTNode) else item
-                    for item in value
-                ]
+                # print("********************2")
+                # print("list is ", len(value), value[0].__class__)
+                return [convert(item) for item in value]
+            elif isinstance(value, dict):
+                # print("********************3")
+                return {k: convert(v) for k, v in value.items()}
             else:
-                result[key] = value
-        return result
+                # print("*********************4", value)
+                return value
+
+        # print("********************5", self.__class__)
+        return {
+            "type": self.__class__.__name__,
+            **{k: convert(v) for k, v in self.__dict__.items() if not k.startswith('_')}
+        }

@@ -1,11 +1,11 @@
 // easy for debugging / knowing what is inside
-#[derive(Debug)]
-struct Node {
-    key: i32,
-    value: string,
-    left: Option<Box<Node> >,
-    right: Option<Box<Node> >,
-}
+// #[derive(Debug)]
+// struct Node {
+//     key: i32,
+//     value: string,
+//     left: Option<Box<Node> >,
+//     right: Option<Box<Node> >,
+// }
 
 impl Node {
     fn new(key: i32, value: string) -> Self {
@@ -60,26 +60,26 @@ impl Node {
     }
 }
 
-// fn main() {
-//     let mut root = Node::new(5, string::from("five"));
-//     println!("{:?}", root.search(5));
-//     println!("{:?}", root.search(3));
-//     root.insert(3, string::from("three"));
-//     println!("{:?}", root.search(3));
-//     println!("{:?}", root.search(7));
-//     root.insert(7, string::from("seven"));
-//     println!("{:?}", root.search(7));
-//     println!("{:?}", root.search(4));
-//     root.insert(4, string::from("four"));
-//     println!("{:?}", root.search(4));
-//     println!("{:?}", root.search(2));
-//     root.insert(2, string::from("two"));
-//     println!("{:?}", root.search(2));
-//     println!("{:?}", root.search(6));
-//     root.insert(6, string::from("six"));
-//     println!("{:?}", root.search(6));
-//     println!("{:?}", root.search(8));
-//     root.insert(8, string::from("eight"));
-//     println!("{:?}", root.search(8));
-//     println!("{:?}", root);
-// }
+fn main() {
+    let mut root = Node::new(5, string::from("five"));
+    println!("{:?}", root.search(5));
+    println!("{:?}", root.search(3));
+    root.insert(3, string::from("three"));
+    println!("{:?}", root.search(3));
+    println!("{:?}", root.search(7));
+    root.insert(7, string::from("seven"));
+    println!("{:?}", root.search(7));
+    println!("{:?}", root.search(4));
+    root.insert(4, string::from("four"));
+    println!("{:?}", root.search(4));
+    println!("{:?}", root.search(2));
+    root.insert(2, string::from("two"));
+    println!("{:?}", root.search(2));
+    println!("{:?}", root.search(6));
+    root.insert(6, string::from("six"));
+    println!("{:?}", root.search(6));
+    println!("{:?}", root.search(8));
+    root.insert(8, string::from("eight"));
+    println!("{:?}", root.search(8));
+    println!("{:?}", root);
+}
