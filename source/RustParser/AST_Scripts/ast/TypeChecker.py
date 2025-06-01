@@ -361,6 +361,23 @@ class TypeChecker:
             self.error(f"Unknown binary operator '{node.op}'")
             node.type = "error"
             return "error"
+        
+    def visit_ArrayType(self, node):
+        elem_type = self.visit(node.elem_type)
+        if node.size is not None:
+            size_type = self.visit(node.size)
+            if size_type != "i32":
+                self.error(f"Array size must be of type i32, got {size_type}")
+            if not isinstance(node.size, IntType):
+                self.warning("Array size is not a constant literal — might be dynamic")
+        return f"[{elem_type}; {node.size.value if hasattr(node.size, 'value') else '?'}]"
+    
+    def visit_MatchPattern(self, node):
+        pattern_type = self.visit(node.value)
+        if pattern_type not in ["i32", "bool", "char", "String", "enum_variant"]:
+            self.error(f"Unsupported match pattern type: {pattern_type}")
+
+        return pattern_type
 
     def visit_LiteralExpr(self, node):
         if isinstance(node.value, int):

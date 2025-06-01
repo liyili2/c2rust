@@ -9,7 +9,7 @@ from dataclasses import asdict
 import json
 
 def parse_rust_code():
-    file_path = os.path.join(os.path.dirname(__file__), "bst.rs")
+    file_path = os.path.join(os.path.dirname(__file__), "output.rs")
     with open(file_path, "r", encoding="utf-8") as f:
         rust_code = f.read()
     lexer = RustLexer(InputStream(rust_code))

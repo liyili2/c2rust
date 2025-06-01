@@ -31,7 +31,7 @@ class StaticVarDecl:
             f"visibility={self.visibility}, "
             f"initial_value={self.initial_value})")
 
-class ForStmt:
+class ForStmt(Statement):
     def __init__(self, var, iterable, body):
         super().__init__()
         self.var = var
@@ -90,6 +90,9 @@ class ExternStaticVarDecl(Statement):
     def __repr__(self):
         return f"ExternStaticVarDecl(name={self.name}, type={self.var_type}, mutable={self.mutable}, visibility={self.visibility}, init={self.initial_value})"
 
+    def accept(self, visitor):
+        pass
+
 class WhileStmt(Statement):
     def __init__(self, condition, body, line=None, column=None):
         super().__init__()
@@ -118,10 +121,16 @@ class MatchArm(Statement):
         self.patterns = patterns
         self.body = body
 
+    def accept(self, visitor):
+        return super().accept(visitor)
+
 class MatchPattern(Statement):
     def __init__(self, value):
         super().__init__()
         self.value = value
+
+    def accept(self, visitor):
+        return visitor.visit_MatchPattern()
 
 class CompoundAssignment(Statement):
     def __init__(self, target, op, value, line, column):

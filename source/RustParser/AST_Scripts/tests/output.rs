@@ -55,8 +55,8 @@ pub struct C2RustUnnamed {
     pub natom: libc::c_int,
 }
 pub type C2RustUnnamed_0 = libc::c_uint;
-pub const Split: C2RustUnnamed_0 = 257;
-pub const Match: C2RustUnnamed_0 = 256;
+// pub const Split: C2RustUnnamed_0 = 257;
+// pub const Match: C2RustUnnamed_0 = 256;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct State {
@@ -477,28 +477,17 @@ unsafe fn main_0(
     let mut post: *mut libc::c_char = 0 as *mut libc::c_char;
     let mut start: *mut State = 0 as *mut State;
     if argc < 3 as libc::c_int {
-        fprintf(
-            stderr,
-            b"usage: nfa regexp string...\n\0" as *const u8 as *const libc::c_char,
-        );
+        fprintf(stderr, b"usage: nfa regexp string...\n\0" as *const u8 as *const libc::c_char);
         return 1 as libc::c_int;
     }
     post = re2post(*argv.offset(1 as libc::c_int as isize));
     if post.is_null() {
-        fprintf(
-            stderr,
-            b"bad regexp %s\n\0" as *const u8 as *const libc::c_char,
-            *argv.offset(1 as libc::c_int as isize),
-        );
+        fprintf(stderr,b"bad regexp %s\n\0" as *const u8 as *const libc::c_char,*argv.offset(1 as libc::c_int as isize) );
         return 1 as libc::c_int;
     }
     start = post2nfa(post);
     if start.is_null() {
-        fprintf(
-            stderr,
-            b"error in post2nfa %s\n\0" as *const u8 as *const libc::c_char,
-            post,
-        );
+        fprintf(stderr,b"error in post2nfa %s\n\0" as *const u8 as *const libc::c_char,post);
         return 1 as libc::c_int;
     }
     l1.s = malloc( (nstate as libc::c_ulong).wrapping_mul(core::mem::size_of:: <*mut State> () as libc::c_ulong) ) as *mut State;
@@ -508,7 +497,7 @@ unsafe fn main_0(
         if match_0(start, *argv.offset(i as isize)) != 0 {
             printf(
                 b"%s\n\0" as *const as *const libc::c_char,
-                *argv.offset(i as isize),
+                *argv.offset(i as isize)
             );
         }
         i += 1;

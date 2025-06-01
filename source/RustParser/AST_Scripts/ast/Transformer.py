@@ -78,40 +78,30 @@ class Transformer(RustVisitor):
         return current
 
     def visitPostfixExpression(self, ctx):
-        print("in postfix visitor")
         expr = self.visit(ctx.primaryExpression())
         i = 1
         while i < ctx.getChildCount():
             token = ctx.getChild(i).getText()
 
             if token == '(':
-                print("1111111111")
                 arg_list_ctx = ctx.getChild(i + 1)
                 if hasattr(arg_list_ctx, 'expression'):
-                    print("22222222222: ", arg_list_ctx.expression()[0].__class__)
                     args = [self.visit(e) for e in arg_list_ctx.expression()]
-                    print("args are ", args)
                 else:
-                    print("33333333333")
                     args = []
                 expr = MethodCallExpr(receiver=expr, method_name=None, args=args)
                 i += 3
 
             elif token == '.':
-                print("44444444444")
                 next_token = ctx.getChild(i + 1)
                 method_or_field = next_token.getText()
                 if (i + 2 < ctx.getChildCount() and ctx.getChild(i + 2).getText() in ['(', '()']):
-                    print("5555555555")
                     if ctx.getChild(i + 2).getText() == '()':
-                        print("666666666666")
                         args = []
                         i += 3
                     else:
-                        print("77777777777")
                         arg_list_ctx = ctx.getChild(i + 3)
                         if hasattr(arg_list_ctx, 'expression'):
-                            print("88888888888")
                             args = [self.visit(e) for e in arg_list_ctx.expression()]
                         else:
                             args = []
@@ -358,7 +348,7 @@ class Transformer(RustVisitor):
             name = tokens[0]
 
         if ':' in tokens:
-            print("found the :::::::::::::", ctx.type_().__class__)
+            # print("found the :::::::::::::", ctx.type_().__class__)
             var_type = self.visit(ctx.type_())
 
         return VarDef(name=name, mutable=mutable, by_ref=by_ref, var_type=var_type)
@@ -479,6 +469,8 @@ class Transformer(RustVisitor):
             return BreakStmt()
         elif ctx.getText() == "continue;":
             return ContinueStmt()
+        elif ctx.exprStmt():
+            return self.visit(ctx.exprStmt())
         else:
             print("⚠️ Unknown statement:", ctx.getText())
             return None
@@ -729,7 +721,7 @@ class Transformer(RustVisitor):
         if type_str.startswith('[') and ';' in type_str and type_str.endswith(']'):
             inner_type_str, size_str = type_str[1:-1].split(';')
             inner_type = self._basic_type_from_str(inner_type_str.strip())
-            print("inner type is ", inner_type_str.strip(), inner_type)
+            # print("inner type is ", inner_type_str.strip(), inner_type)
             size = int(size_str.strip())
             return ArrayType(inner_type, size)
 
@@ -796,7 +788,7 @@ class Transformer(RustVisitor):
         return result
 
     def visitArrayLiteral(self, ctx):
-        print("in array literal visitor")
+        # print("in array literal visitor")
         if ctx.Identifier():
             name = ctx.Identifier().getText()
             index_exprs = [self.visit(ctx.expression(0))]
@@ -817,13 +809,13 @@ class Transformer(RustVisitor):
 
     def visitInitializer(self, ctx):
         if ctx.expression():
-            print("1")
+            # print("1")
             return self.visit(ctx.expression())
         elif ctx.block():
-            print("2")
+            # print("2")
             return self.visit(ctx.block())
         elif ctx.initBlock():
-            print("3")
+            # print("3")
             return self.visit(ctx.initBlock())
         else:
             print("Unhandled initializer kind")

@@ -61,6 +61,9 @@ class ExternTypeDecl(ExternItem):
 
     def __repr__(self):
         return f"<ExternTypeDecl {self.visibility or ''} type {self.name}>"
+    
+    def accept(self, visitor):
+        pass
 
 class ExternStaticVarDecl(ExternItem):
     def __init__(self, name: str, var_type: Type, mutable: bool, initial_value, visibility: str = None):
@@ -73,6 +76,9 @@ class ExternStaticVarDecl(ExternItem):
     def __repr__(self):
         mut = "mut " if self.mutable else ""
         return f"<ExternStaticVarDecl {self.visibility or ''} static {mut}{self.name}: {self.var_type}>"
+
+    def accept(self, visitor):
+        pass
 
 class ExternFnDecl(ExternItem):
     def __init__(self, name: str, params: list, return_type: Type = None, visibility: str = None):
