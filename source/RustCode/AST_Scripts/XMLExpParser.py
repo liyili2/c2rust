@@ -947,11 +947,7 @@ class XMLExpParser ( Parser ):
             if hasattr( listener, "exitPrintstmt" ):
                 listener.exitPrintstmt(self)
 
-
-
-
     def printstmt(self):
-
         localctx = XMLExpParser.PrintstmtContext(self, self._ctx, self.state)
         self.enterRule(localctx, 10, self.RULE_printstmt)
         self._la = 0 # Token type
