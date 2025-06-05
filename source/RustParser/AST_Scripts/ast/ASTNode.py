@@ -5,23 +5,36 @@ class ASTNode(ABC):
     def accept(self, visitor):
         pass
 
+    def replace_node(self, target, replacement):
+        for attr_name in vars(self):
+            attr = getattr(self, attr_name)
+
+            if isinstance(attr, ASTNode):
+                if attr is target:
+                    setattr(self, attr_name, replacement)
+                    return True
+                elif attr.replace_node(target, replacement):
+                    return True
+            elif isinstance(attr, list):
+                for i, item in enumerate(attr):
+                    if isinstance(item, ASTNode):
+                        if item is target:
+                            attr[i] = replacement
+                            return True
+                        elif item.replace_node(target, replacement):
+                            return True
+        return False
+
     def to_dict(self):
         def convert(value):
             if isinstance(value, ASTNode):
-                # print("********************1")
                 return value.to_dict()
             elif isinstance(value, list):
-                # print("********************2")
-                # print("list is ", len(value), value[0].__class__)
                 return [convert(item) for item in value]
             elif isinstance(value, dict):
-                # print("********************3")
                 return {k: convert(v) for k, v in value.items()}
             else:
-                # print("*********************4", value)
                 return value
-
-        # print("********************5", self.__class__)
         return {
             "type": self.__class__.__name__,
             **{k: convert(v) for k, v in self.__dict__.items() if not k.startswith('_')}

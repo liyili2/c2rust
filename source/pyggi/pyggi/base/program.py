@@ -17,9 +17,9 @@ import copy
 import difflib
 import signal
 from abc import ABC, abstractmethod
+from distutils.dir_util import copy_tree
 from .. import PYGGI_DIR
 from ..utils import Logger, weighted_choice
-import xml.etree.ElementTree as ET
 
 class RunResult:
     def __init__(self, status, fitness=None):
@@ -206,8 +206,8 @@ class AbstractProgram(ABC):
         :param str tmp_path: The path of directory to clean.
         :return: None
         """
-        #pathlib.Path(self.tmp_path).mkdir(parents=True, exist_ok=True)
-        shutil.copytree(self.path, self.tmp_path)
+        pathlib.Path(self.tmp_path).mkdir(parents=True, exist_ok=True)
+        copy_tree(self.path, self.tmp_path)
 
     def remove_tmp_variant(self):
         shutil.rmtree(self.tmp_path)
@@ -235,16 +235,6 @@ class AbstractProgram(ABC):
         :rtype: str
         """
         return self.engines[file_name].dump(contents[file_name])
-    
-    def Xmlret(self, contents, file_name):
-        """
-        Convert contents of file to the source code
-        :param contents_of_file: The contents of the file which is the parsed form of source code
-        :type contents_of_file: ?
-        :return: The source code
-        :rtype: str
-        """
-        return self.engines[file_name].Xmlret(contents[file_name])
 
     def get_modified_contents(self, patch):
         target_files = self.contents.keys()
@@ -293,7 +283,7 @@ class AbstractProgram(ABC):
             start = time.time()
             stdout, stderr = sprocess.communicate(timeout=timeout)
             end = time.time()
-            return (sprocess.returncode, stdout.decode("utf-8"), stderr.decode("utf-8"), end-start)
+            return (sprocess.returncode, stdout.decode("ascii"), stderr.decode("ascii"), end-start)
         except subprocess.TimeoutExpired:
             if os.name == 'posix':
                 os.killpg(os.getpgid(sprocess.pid), signal.SIGKILL)
@@ -334,11 +324,7 @@ class AbstractProgram(ABC):
         diffs = ''
         new_contents = self.get_modified_contents(patch)
         for file_name in self.target_files:
-
-            original_xml = self.Xmlret(self.contents,file_name)
             orig = self.dump(self.contents, file_name)
-
-            modified_xml = self.Xmlret(new_contents,file_name)
             modi = self.dump(new_contents, file_name)
             orig_list = list(map(lambda s: s+'\n', orig.splitlines()))
             modi_list = list(map(lambda s: s+'\n', modi.splitlines()))
@@ -346,16 +332,4 @@ class AbstractProgram(ABC):
                                              fromfile="before: " + file_name,
                                              tofile="after: " + file_name):
                 diffs += diff
-            print("\n:::::::::::::::::::Original Xml:::::::::::::::::::::::",original_xml)
-            print("\n:::::::::::::::::::Modified Xml:::::::::::::::::::::::",modified_xml)
-            i=0
-            output_path='/home/saitejavinash/Desktop/ProjectC2Rust/c2rust/Benchmarks/Aggregate/rust2xml/output.xml'
-            i= i+1
-            # Save the modified XML to the specified path
-            with open(output_path, 'w') as xml_file:
-                xml_file.write(modified_xml)
-
-            print(f"\nModified XML has been saved to {output_path}")
-
         return diffs
-
