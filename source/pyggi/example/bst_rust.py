@@ -1,22 +1,20 @@
 """
 Improving non-functional properties ::
 """
-import os 
+import os
 import sys
 import random
 import argparse
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
-from pyggi.base.program import AbstractProgram
-from pyggi.line import LineProgram
-from pyggi.line import LineReplacement, LineInsertion, LineDeletion
-from pyggi.tree import TreeProgram, XmlEngine
-from pyggi.tree import StmtReplacement, StmtInsertion, StmtDeletion
-from pyggi.algorithms import LocalSearch
 from RustParser.AST_Scripts.antlr.RustLexer import RustLexer
 from antlr4 import CommonTokenStream, InputStream
 from RustParser.AST_Scripts.antlr.RustParser import RustParser
-# from pyggi.tree.rust_engine import RustEngine
+from pyggi.algorithms.local_search import LocalSearch
+from pyggi.base.program import AbstractProgram
+from pyggi.line.line import LineDeletion, LineInsertion, LineProgram, LineReplacement
+from pyggi.tree.tree import StmtDeletion, StmtInsertion, StmtReplacement, TreeProgram
+from pyggi.tree.xml_engine import XmlEngine
 
 weighted_choice = lambda s : random.choice(sum(([v] * wt for v,wt in s),[]))
 
@@ -120,7 +118,7 @@ if __name__ == "__main__":
 
     if args.mode == 'line':
         config = {
-            "target_files": ["bst.rs.py"],
+            "target_files": ["bst.rs"],
             "test_command": "./run.sh"
         }
         program = MyLineProgram(args.project_path, config=config)
@@ -130,7 +128,7 @@ if __name__ == "__main__":
         print("in tree mode!!")
         #TODO: check the target file
         config = {
-            "target_files": ["bst.rs.py"],
+            "target_files": ["bst.rs"],
             "test_command": "./run.sh"
         }
         program = MyTreeProgram(args.project_path, config=config)
