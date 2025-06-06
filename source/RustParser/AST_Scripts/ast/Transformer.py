@@ -1,5 +1,6 @@
-from antlr4 import TerminalNode
-import re
+import sys, os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+
 from AST_Scripts.ast.Expression import ArrayDeclaration, ArrayLiteral, BinaryExpr, BoolLiteral, BorrowExpr, CastExpr, CharLiteralExpr, DereferenceExpr, FieldAccessExpr, FunctionCallExpr, IdentifierExpr, IndexExpr, IntLiteral, MethodCallExpr, MutableExpr, ParenExpr, Pattern, PatternExpr, QualifiedExpression, RangeExpression, RepeatArrayLiteral, StrLiteral, StructDefInit, StructLiteralExpr, StructLiteralField, TypePathExpression, TypePathFullExpr, UnaryExpr
 from AST_Scripts.ast.Statement import AssignStmt, BreakStmt, CallStmt, CompoundAssignment, ContinueStmt, ExpressionStmt, ForStmt, IfStmt, LetStmt, LoopStmt, MatchArm, MatchPattern, MatchStmt, ReturnStmt, StaticVarDecl, StructLiteral, UnsafeBlock, WhileStmt
 from AST_Scripts.antlr.RustVisitor import RustVisitor
@@ -17,6 +18,7 @@ class Transformer(RustVisitor):
     def __init__(self):
         super().__init__()
         self.struct_defs = {}
+        self.path = "./"
 
     def _expr_from_text(self, text):
         text = text.strip()
@@ -142,7 +144,7 @@ class Transformer(RustVisitor):
         for item in ctx.topLevelItem():
             result = self.visit(item)
             items.append(result)
-        return Program(items)
+        return Program(items=items, path=self.path)
 
     def get_literal_type(self, value):
         if isinstance(value, IntLiteral):

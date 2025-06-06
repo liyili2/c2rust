@@ -1,7 +1,7 @@
 
-from c2rust.source.RustParser.AST_Scripts.antlr.RustLexer import RustLexer
+from RustParser.AST_Scripts.antlr.RustLexer import RustLexer
 from antlr4 import CommonTokenStream, InputStream
-from c2rust.source.RustParser.AST_Scripts.antlr.RustParser import RustParser
+from RustParser.AST_Scripts.antlr.RustParser import RustParser
 
 def pretty_print_ast(node, indent=0):
     spacer = '  ' * indent

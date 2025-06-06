@@ -1,7 +1,5 @@
 """
-
 This module contains GranularityLevel and Program class.
-
 """
 import os
 import shutil
@@ -18,9 +16,10 @@ import difflib
 import signal
 from abc import ABC, abstractmethod
 from distutils.dir_util import copy_tree
-from .. import PYGGI_DIR
+# from .. import PYGGI_DIR
 from ..utils import Logger, weighted_choice
 
+PYGGI_DIR = "./"
 class RunResult:
     def __init__(self, status, fitness=None):
         self.status = status
@@ -131,8 +130,8 @@ class AbstractProgram(ABC):
         self.modification_weights = dict()
         for file_name in self.target_files:
             engine = self.engines[file_name]
-            self.contents[file_name] = engine.get_contents(os.path.join(self.path, file_name))
-            self.modification_points[file_name] = engine.get_modification_points(self.contents[file_name])
+            self.contents[file_name] = engine.get_contents(file_path=os.path.join(self.path, file_name))
+            self.modification_points[file_name] = engine.get_modification_points(contents_of_file=self.contents[file_name])
 
     def set_weight(self, file_name, index, weight):
         """
