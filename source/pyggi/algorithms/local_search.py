@@ -121,6 +121,7 @@ class LocalSearch(Algorithm):
 
             start = time.time()
             for cur_iter in range(1, max_iter + 1):
+                print("current patch is ", self.program)
                 patch = self.get_neighbour(best_patch.clone())
                 run = self.program.evaluate_patch(patch, timeout=timeout)
                 cur_result['FitnessEval'] += 1

@@ -79,6 +79,7 @@ if __name__ == "__main__":
         local_search = MyLocalSearch(program)
         local_search.operators = [StmtReplacement, StmtInsertion, StmtDeletion]
 
+    
     result = local_search.run(warmup_reps=5, epoch=args.epoch, max_iter=args.iter, timeout=15)
     print("======================RESULT======================")
     for epoch in range(len(result)):

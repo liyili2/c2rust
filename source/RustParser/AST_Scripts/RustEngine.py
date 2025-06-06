@@ -2,6 +2,8 @@ from antlr4 import CommonTokenStream, InputStream
 import os, sys
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+from RustParser.AST_Scripts.ast.Transformer import Transformer
+from RustParser.AST_Scripts.tests.e2eTest import transform
 from pyggi.tree.abstract_engine import AbstractTreeEngine
 from RustParser.AST_Scripts.antlr.RustLexer import RustLexer
 from RustParser.AST_Scripts.antlr.RustParser import RustParser
@@ -31,14 +33,41 @@ class RustEngine(AbstractTreeEngine):
 
     def to_source_code(self, tree):
         return pretty_print_ast(tree)
-    
+
     @classmethod
-    def get_contents(cls, file_path):
+    def process_tree(cls, tree):
+        # No processing needed for now
         pass
 
     @classmethod
+    def get_contents(cls, file_path):
+        with open(file_path, 'r') as target_file:
+            source_code = target_file.read()
+        lexer = RustLexer(InputStream(source_code))
+        token_stream = CommonTokenStream(lexer)
+        parser = RustParser(token_stream)
+        tree = parser.program()
+        builder = Transformer()
+        ast = builder.visit_Program(tree)
+        # cls.process_tree(tree)
+        # print("****************", pretty_print_ast(ast))
+        return ast
+
+    @classmethod
     def get_modification_points(cls, contents_of_file):
-        pass
+        print("happy happy!!")
+        def aux(accu, prefix, root):
+            tags = dict()
+            for child in root:
+                if child.tag in tags:
+                    tags[child.tag] += 1
+                else:
+                    tags[child.tag] = 1
+                s = '{}/{}[{}]'.format(prefix, child.tag, tags[child.tag])
+                accu.append(s)
+                accu = aux(accu, s, child)
+            return accu
+        return aux([], '.', contents_of_file)
 
     @classmethod
     def get_source(cls, program, file_name, index):
