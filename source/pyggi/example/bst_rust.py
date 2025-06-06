@@ -7,6 +7,7 @@ import random
 import argparse
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+from RustParser.AST_Scripts.RustEngine import MyRustProgram
 from RustParser.AST_Scripts.antlr.RustLexer import RustLexer
 from antlr4 import CommonTokenStream, InputStream
 from RustParser.AST_Scripts.antlr.RustParser import RustParser
@@ -17,30 +18,6 @@ from pyggi.tree.tree import StmtDeletion, StmtInsertion, StmtReplacement, TreePr
 from pyggi.tree.xml_engine import XmlEngine
 
 weighted_choice = lambda s : random.choice(sum(([v] * wt for v,wt in s),[]))
-
-def get_file_extension(file_path):
-    """
-    :param file_path: The path of file
-    :type file_path: str
-    :return: file extension
-    :rtype: str
-    """
-    _, file_extension = os.path.splitext(file_path)
-    return file_extension
-
-def pretty_print_ast(node, indent=0):
-    spacer = '  ' * indent
-    if isinstance(node, list):
-        return '\n'.join(pretty_print_ast(n, indent) for n in node)
-
-    if hasattr(node, '__dict__'):
-        lines = [f"{spacer}{node.__class__.__name__}:"]
-        for key, value in vars(node).items():
-            lines.append(f"{spacer}  {key}:")
-            lines.append(pretty_print_ast(value, indent + 2))
-        return '\n'.join(lines)
-    else:
-        return f"{spacer}{repr(node)}"
 
 class MyProgram(AbstractProgram):
     def compute_fitness(self, result, return_code, stdout, stderr, elapsed_time):
@@ -57,16 +34,6 @@ class MyProgram(AbstractProgram):
 class MyLineProgram(LineProgram, MyProgram):
     pass
 
-class MyTreeProgram(TreeProgram, MyProgram):
-    def setup(self):
-        # if not os.path.exists(os.path.join(self.tmp_path, "bst.rs.xml")):
-        #     self.exec_cmd("srcml Triangle.java -o Triangle.java.xml")
-        pass
-
-    # @classmethod
-    # def get_engine(cls, file_name):
-    #     return MyXmlEngine
-
 class MyLocalSearch(LocalSearch):
     def get_neighbour(self, patch):
         if len(patch) > 0 and random.random() < 0.5:
@@ -78,34 +45,9 @@ class MyLocalSearch(LocalSearch):
 
     def stopping_criterion(self, iter, fitness):
         return fitness < 100
-    
-class RustEngine():
-    def parse(self, src_code):
-        lexer = RustLexer(InputStream(src_code))
-        tokens = CommonTokenStream(lexer)
-        parser = RustParser(tokens)
-        tree = parser.program()
-        return tree  # Use your AST node visitor if needed
-
-    def to_source_code(self, tree):
-        return pretty_print_ast(tree)
-
-class MyRustProgram(TreeProgram):
-    @classmethod
-    def get_engine(cls, file_name):
-        if file_name.endswith(".rs"):
-            return RustEngine
-        print("detecting engine!")
-        extension = get_file_extension(file_name)
-        print("ext is ", extension)
-        if extension in ['.xml']:
-            return XmlEngine
-        elif extension in ['.rs']:
-            return RustEngine
-        else:
-            raise Exception('{} file is not supporteddddd'.format(extension))
 
 if __name__ == "__main__":
+    print("running pyggi!!!!!!")
     parser = argparse.ArgumentParser(description='PYGGI Improvement Example')
     parser.add_argument('--project_path', type=str, default='../sample/bst_rust')
     parser.add_argument('--mode', type=str, default='line')
@@ -131,7 +73,9 @@ if __name__ == "__main__":
             "target_files": ["bst.rs"],
             "test_command": "./run.sh"
         }
-        program = MyTreeProgram(args.project_path, config=config)
+        program = MyRustProgram(args.project_path, config=config)
+        print("Registered engines and files:")
+        print(program.__class__, program.files)
         local_search = MyLocalSearch(program)
         local_search.operators = [StmtReplacement, StmtInsertion, StmtDeletion]
 

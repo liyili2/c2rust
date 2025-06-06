@@ -8,10 +8,7 @@ from AST_Scripts.ast.TopLevel import ExternBlock, ExternFunctionDecl, ExternStat
 from AST_Scripts.ast.Program import Program
 from AST_Scripts.ast.Expression import LiteralExpr
 from AST_Scripts.ast.Type import ArrayType, BoolType, IntType, PathType, PointerType, StringType, Type
-from AST_Scripts.antlr import RustLexer, RustParser
 from AST_Scripts.ast.VarDef import VarDef
-from AST_Scripts.antlr import RustParser
-from AST_Scripts.ast.Block import InitBlock
 from AST_Scripts.ast.Func import FunctionParamList, Param
 
 class Transformer(RustVisitor):
