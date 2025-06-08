@@ -29,7 +29,6 @@ def get_file_extension(file_path):
 class MyRustProgram(TreeProgram):
     def __init__(self, path, config):
         super().__init__(path, config)
-        print("\n#1\n")
         self.files = "./"
         self.engine_classes = {
             '.rs': RustEngine
@@ -111,7 +110,6 @@ if __name__ == "__main__":
         print(program.__class__, program.files)
         local_search = MyLocalSearch(program)
         local_search.operators = [StmtReplacement, StmtInsertion, StmtDeletion]
-
 
     result = local_search.run(warmup_reps=5, epoch=args.epoch, max_iter=args.iter, timeout=15)
     print("======================RESULT======================")

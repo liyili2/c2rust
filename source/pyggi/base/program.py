@@ -87,7 +87,6 @@ class AbstractProgram(ABC):
         print("after load contents")
         assert self.modification_points
         assert self.contents
-        print("#2")
         self.logger.info("Path to the temporal program variants: {}".format(self.tmp_path))
 
     def __str__(self):
@@ -137,7 +136,7 @@ class AbstractProgram(ABC):
             print("engine is ", engine, file_name)
             self.contents[file_name] = engine.get_contents(file_path=os.path.join(self.path, file_name))
             print("contents of file is ",  self.contents[file_name])
-            self.modification_points[file_name] = engine.get_modification_points(contents_of_file=self.contents[file_name])
+            self.modification_points[file_name] = engine.get_modification_points(self.contents[file_name])
             print("self mods are ", self.modification_points[file_name], engine.__class__)
 
     def set_weight(self, file_name, index, weight):
