@@ -1,5 +1,5 @@
 #[derive(Debug)]
-struct Node {
+pub struct Node {
     key: i32,
     value: String,
     left: Option<Box<Node>>,
@@ -7,7 +7,7 @@ struct Node {
 }
 
 impl Node {
-    fn new(key: i32, value: String) -> Self {
+    pub fn new(key: i32, value: String) -> Self {
         Node {
             key,
             value,
@@ -16,7 +16,7 @@ impl Node {
         }
     }
 
-    fn insert(&mut self, key: i32, value: String) {
+    pub fn insert(&mut self, key: i32, value: String) {
         if key < self.key {
             if let Some(ref mut left) = self.left {
                 left.insert(key, value);
@@ -34,7 +34,7 @@ impl Node {
         }
     }
 
-    fn search(&self, key: i32) -> Option<&String> {
+    pub fn search(&self, key: i32) -> Option<&String> {
         if key < self.key {
             if let Some(ref left) = self.left {
                 left.search(key)
@@ -53,7 +53,6 @@ impl Node {
     }
 }
 
-// === ✅ Put test module directly after code ===
 #[cfg(test)]
 mod tests {
     use super::*;

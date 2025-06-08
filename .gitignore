@@ -50,6 +50,8 @@ source/RustCode/AST_Scripts/__pycache__/simulator.cpython-311.pyc
 source/RustCode/AST_Scripts/__pycache__/ExpVisitor.cpython-311.pyc
 source/RustCode/AST_Scripts/__pycache__/ExpParser.cpython-311.pyc
 
+source/pyggi/sample/bst_rust/target/*
+
 # Ignore logs
 logs/
 

@@ -1,4 +1,3 @@
-
 import os
 from RustParser.AST_Scripts.antlr.RustLexer import RustLexer
 from antlr4 import CommonTokenStream, InputStream
@@ -6,7 +5,8 @@ from RustParser.AST_Scripts.antlr.RustParser import RustParser
 from RustParser.AST_Scripts.ast.Transformer import Transformer
 from RustParser.AST_Scripts.ast.Expression import Expression
 from RustParser.AST_Scripts.ast.Statement import Statement
-from RustParser.AST_Scripts.ast.TopLevel import Attribute, ExternBlock, ExternFunctionDecl, FunctionDef, InterfaceDef, TopLevel, TopLevelVarDef, TypeAliasDecl
+from RustParser.AST_Scripts.ast.TopLevel import Attribute, ExternBlock, ExternFunctionDecl, FunctionDef, InterfaceDef, StructDef, TopLevel, TopLevelVarDef, TypeAliasDecl
+from RustParser.AST_Scripts.ast.TopLevel import FunctionDef
 from pyggi.tree.abstract_engine import AbstractTreeEngine
 from typing import List, Tuple
 
@@ -61,39 +61,45 @@ class RustEngine(AbstractTreeEngine):
         modification_points = []
 
         for item in ast_root.items:
-            if isinstance(item, TopLevel):
-                if isinstance(item, FunctionDef):
-                    body = item.body
-                    for stmt in body:
-                        modification_points.extend(collect_expressions(stmt, path=[item]))
-                elif isinstance(item, TopLevelVarDef):
-                    if hasattr(item, 'fields'):
-                        for field in item.fields:
-                            modification_points.extend(collect_expressions(field, path=[item]))
-                    if hasattr(item, 'type_'):
-                        modification_points.extend(collect_expressions(item.type_, path=[item]))
+            print("top level item is ", item.__class__)
+            if isinstance(item, FunctionDef):
+                print("functiondef")
+                body = item.body
+                for stmt in body:
+                    modification_points.append(collect_expressions(stmt, path=[item]))
+            elif isinstance(item, TopLevelVarDef):
+                if hasattr(item, 'fields'):
+                    for field in item.fields:
+                        modification_points.append(collect_expressions(field, path=[item]))
+                if hasattr(item, 'type_'):
+                    modification_points.append(collect_expressions(item.type_, path=[item]))
 
-                elif isinstance(item, ExternBlock):
-                    for extern_item in item.items:
-                        modification_points.extend(collect_expressions(extern_item, path=[item]))
+            elif isinstance(item, StructDef):
+                print("structdef")
+                modification_points.append(field, path=[item])
+            elif isinstance(item, ExternBlock):
+                for extern_item in item.items:
+                    modification_points.append(collect_expressions(extern_item, path=[item]))
 
-                elif isinstance(item, Attribute):
-                    for arg in item.args:
-                        modification_points.extend(collect_expressions(arg, path=[item]))
+            elif isinstance(item, Attribute):
+                for arg in item.args:
+                    modification_points.append(collect_expressions(arg, path=[item]))
 
-                elif isinstance(item, TypeAliasDecl):
-                    modification_points.extend(collect_expressions(item.type, path=[item]))
+            elif isinstance(item, TypeAliasDecl):
+                modification_points.append(collect_expressions(item.type, path=[item]))
 
-                elif isinstance(item, InterfaceDef):
-                    for func in item.functions:
-                        modification_points.extend(collect_expressions(func, path=[item]))
+            elif isinstance(item, InterfaceDef):
+                print("interfaceDef")
+                for func in item.functions:
+                    modification_points.append(collect_expressions(func, path=[item]))
 
-                elif isinstance(item, ExternFunctionDecl):
-                    if item.return_type:
-                        modification_points.extend(collect_expressions(item.return_type, path=[item]))
-                    for param in item.params:
-                        modification_points.extend(collect_expressions(param, path=[item]))
+            elif isinstance(item, ExternFunctionDecl):
+                if item.return_type:
+                    modification_points.append(collect_expressions(item.return_type, path=[item]))
+                for param in item.params:
+                    modification_points.append(collect_expressions(param, path=[item]))
 
+        print("00000000000000000", len(modification_points))
         return modification_points
 
     @classmethod
