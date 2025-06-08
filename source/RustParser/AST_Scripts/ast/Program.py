@@ -1,24 +1,10 @@
-import os
-from RustParser.AST_Scripts.ast.ASTNode import ASTNode
-from pyggi.base.program import AbstractProgram
-from RustParser.AST_Scripts.antlr.RustLexer import RustLexer
-from antlr4 import CommonTokenStream, InputStream
-from RustParser.AST_Scripts.antlr.RustParser import RustParser
+import os, sys
 
-class RustEngine():
-    def parse(self, src_code):
-        lexer = RustLexer(InputStream(src_code))
-        tokens = CommonTokenStream(lexer)
-        parser = RustParser(tokens)
-        tree = parser.program()
-        return tree  # Use your AST node visitor if needed
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
-    def to_source_code(self, tree):
-        print("reached pretty-printed ast!!")
-
-class Program(AbstractProgram):
-    def __init__(self, items, path):
-        super().__init__(path=path)
+class Program():
+    def __init__(self, items, path=None):
+        # super().__init__(path=path)
         self.items = items  # A list of FunctionDef, StructDef, etc.
         self.path = path
 
@@ -37,7 +23,12 @@ class Program(AbstractProgram):
 
     @classmethod
     def get_engine(cls, file_name):
-        _, extension = os.path.splitext(file_name)
-        if extension == '.rs':
-            return RustEngine
-        raise Exception(f'Unsupported file extension: {extension}')
+        pass
+    #     _, extension = os.path.splitext(file_name)
+    #     if extension == '.rs':
+    #         return RustEngine
+    #     elif extension in ['.py']:
+    #         return AstorEngine
+    #     elif extension in ['.xml']:
+    #         return XmlEngine
+        # raise Exception(f'Unsupported file extension: {extension}')

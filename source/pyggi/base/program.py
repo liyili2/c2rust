@@ -84,9 +84,10 @@ class AbstractProgram(ABC):
 
         # Load actual contents using the engines
         self.load_contents()
+        print("after load contents")
         assert self.modification_points
         assert self.contents
-
+        print("#2")
         self.logger.info("Path to the temporal program variants: {}".format(self.tmp_path))
 
     def __str__(self):
@@ -107,6 +108,7 @@ class AbstractProgram(ABC):
             config_file_name = AbstractProgram.CONFIG_FILE_NAME
             from_file = True
         if from_file:
+            print("000000000000000000000", self.path)
             with open(os.path.join(self.path, config_file_name)) as config_file:
                 config = json.load(config_file)
         self.test_command = config['test_command']
@@ -120,9 +122,11 @@ class AbstractProgram(ABC):
 
     def load_engines(self):
         # Associate each file to its engine
+        print("in load engine")
         self.engines = dict()
         for file_name in self.target_files:
             self.engines[file_name] = self.__class__.get_engine(file_name)
+            print("engine dict is ", file_name, self.engines[file_name], len(self.target_files), self.target_files)
 
     def load_contents(self):
         self.contents = {}
@@ -130,6 +134,7 @@ class AbstractProgram(ABC):
         self.modification_weights = dict()
         for file_name in self.target_files:
             engine = self.engines[file_name]
+            print("engine is ", engine, file_name)
             self.contents[file_name] = engine.get_contents(file_path=os.path.join(self.path, file_name))
             print("contents of file is ",  self.contents[file_name])
             self.modification_points[file_name] = engine.get_modification_points(contents_of_file=self.contents[file_name])
@@ -209,8 +214,11 @@ class AbstractProgram(ABC):
         :param str tmp_path: The path of directory to clean.
         :return: None
         """
-        pathlib.Path(self.tmp_path).mkdir(parents=True, exist_ok=True)
-        copy_tree(self.path, self.tmp_path)
+        if os.path.exists(self.tmp_path):
+            shutil.rmtree(self.tmp_path)
+
+        shutil.copytree(self.path, self.tmp_path,
+            ignore=shutil.ignore_patterns('tmp_variants', '__pycache__'))
 
     def remove_tmp_variant(self):
         shutil.rmtree(self.tmp_path)

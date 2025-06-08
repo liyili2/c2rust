@@ -7,10 +7,7 @@ import random
 import argparse
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
-from RustParser.AST_Scripts.RustEngine import MyRustProgram
-from RustParser.AST_Scripts.antlr.RustLexer import RustLexer
-from antlr4 import CommonTokenStream, InputStream
-from RustParser.AST_Scripts.antlr.RustParser import RustParser
+from pyggi.tree.rust_engine import RustEngine
 from pyggi.algorithms.local_search import LocalSearch
 from pyggi.base.program import AbstractProgram
 from pyggi.line.line import LineDeletion, LineInsertion, LineProgram, LineReplacement
@@ -18,6 +15,37 @@ from pyggi.tree.tree import StmtDeletion, StmtInsertion, StmtReplacement, TreePr
 from pyggi.tree.xml_engine import XmlEngine
 
 weighted_choice = lambda s : random.choice(sum(([v] * wt for v,wt in s),[]))
+
+def get_file_extension(file_path):
+    """
+    :param file_path: The path of file
+    :type file_path: str
+    :return: file extension
+    :rtype: str
+    """
+    _, file_extension = os.path.splitext(file_path)
+    return file_extension
+
+class MyRustProgram(TreeProgram):
+    def __init__(self, path, config):
+        super().__init__(path, config)
+        print("\n#1\n")
+        self.files = "./"
+        self.engine_classes = {
+            '.rs': RustEngine
+        }
+
+    @classmethod
+    def get_engine(cls, file_name):
+        if file_name.endswith(".rs"):
+            return RustEngine
+        print("detecting engine!")
+        extension = get_file_extension(file_name)
+        print("ext is ", extension)
+        if extension in ['.rs']:
+            return RustEngine
+        else:
+            raise Exception('{} file is not supporteddddd'.format(extension))
 
 class MyProgram(AbstractProgram):
     def compute_fitness(self, result, return_code, stdout, stderr, elapsed_time):
@@ -30,6 +58,10 @@ class MyProgram(AbstractProgram):
                 result.fitness = runtime
         except:
             result.status = 'PARSE_ERROR'
+
+    @classmethod
+    def get_engine(cls, file_name):
+        return RustEngine
 
 class MyLineProgram(LineProgram, MyProgram):
     pass
@@ -73,13 +105,14 @@ if __name__ == "__main__":
             "target_files": ["bst.rs"],
             "test_command": "./run.sh"
         }
+        print("path is ", args.project_path)
         program = MyRustProgram(args.project_path, config=config)
         print("Registered engines and files:")
         print(program.__class__, program.files)
         local_search = MyLocalSearch(program)
         local_search.operators = [StmtReplacement, StmtInsertion, StmtDeletion]
 
-    
+
     result = local_search.run(warmup_reps=5, epoch=args.epoch, max_iter=args.iter, timeout=15)
     print("======================RESULT======================")
     for epoch in range(len(result)):
