@@ -3,8 +3,8 @@ from RustParser.AST_Scripts.antlr.RustLexer import RustLexer
 from antlr4 import CommonTokenStream, InputStream
 from RustParser.AST_Scripts.antlr.RustParser import RustParser
 from RustParser.AST_Scripts.ast.Transformer import Transformer
-from RustParser.AST_Scripts.ast.Expression import Expression
-from RustParser.AST_Scripts.ast.Statement import Statement
+from AST_Scripts.ast.Expression import Expression
+from AST_Scripts.ast.Statement import Statement, IfStmt
 from AST_Scripts.ast.TopLevel import Attribute, ExternBlock, ExternFunctionDecl, FunctionDef, InterfaceDef, StructDef, TopLevel, TopLevelVarDef, TypeAliasDecl
 from pyggi.tree.abstract_engine import AbstractTreeEngine
 from typing import List, Tuple
@@ -33,11 +33,10 @@ class RustEngine(AbstractTreeEngine):
         return tree  # Use your AST node visitor if needed
 
     def to_source_code(self, tree):
-        print("reached pretty-printed ast!!")
+        pass
 
     @classmethod
     def get_contents(cls, file_path):
-        print("in rust engine get contents")
         with open(file_path, 'r') as target_file:
             source_code = target_file.read()
         lexer = RustLexer(InputStream(source_code))
@@ -50,22 +49,64 @@ class RustEngine(AbstractTreeEngine):
 
     @classmethod
     def process_tree(cls, tree):
-        # No processing needed for now
         pass
 
     @classmethod
-    def get_modification_points(self, ast_root):
+    def get_modification_points(cls, ast_root):
         modification_points = []
 
         for item in ast_root.items:
             if isinstance(item, list):
-                for i in range(0, len(item)):
-                    modification_points.append(find_out_top_level_instance(item[i]))
+                for subitem in item:
+                    modification_points.extend(cls._extract_points_from_top_level(subitem))
             else:
-                modification_points.append(find_out_top_level_instance(item))
+                modification_points.extend(cls._extract_points_from_top_level(item))
 
-        print("00000000000000000", len(modification_points))
+        # print("00000000000000000", len(modification_points))
         return modification_points
+
+    @classmethod
+    def _extract_points_from_top_level(cls, item):
+        points = []
+
+        if isinstance(item, FunctionDef):
+            for stmt in item.body:
+                points.extend(collect_expressions(stmt, path=[item]))
+
+        elif isinstance(item, TopLevelVarDef):
+            if hasattr(item, 'fields'):
+                for field in item.fields:
+                    points.extend(collect_expressions(field, path=[item]))
+            if hasattr(item, 'type_'):
+                points.extend(collect_expressions(item.type_, path=[item]))
+
+        elif isinstance(item, StructDef):
+            if hasattr(item, 'fields'):
+                for field in item.fields:
+                    points.extend(collect_expressions(field, path=[item]))
+
+        elif isinstance(item, ExternBlock):
+            for extern_item in item.items:
+                points.extend(collect_expressions(extern_item, path=[item]))
+
+        elif isinstance(item, Attribute):
+            for arg in item.args:
+                points.extend(collect_expressions(arg, path=[item]))
+
+        elif isinstance(item, TypeAliasDecl):
+            points.extend(collect_expressions(item.type, path=[item]))
+
+        elif isinstance(item, InterfaceDef):
+            for func in item.functions:
+                points.extend(collect_expressions(func, path=[item]))
+
+        elif isinstance(item, ExternFunctionDecl):
+            if item.return_type:
+                points.extend(collect_expressions(item.return_type, path=[item]))
+            for param in item.params:
+                points.extend(collect_expressions(param, path=[item]))
+
+        return points
 
     @classmethod
     def get_source(cls, program, file_name, index):
@@ -89,32 +130,6 @@ def get_file_extension(file_path):
     _, file_extension = os.path.splitext(file_path)
     return file_extension
 
-def find_out_top_level_instance(item):
-    if isinstance(item, FunctionDef):
-        print("functiondef")
-        return FunctionDef
-    elif isinstance(item, TopLevelVarDef):
-        print("top level var def")
-        return TopLevelVarDef
-    elif isinstance(item, StructDef):
-        print("structdef")
-        return StructDef
-    elif isinstance(item, ExternBlock):
-        print("external block")
-        return ExternBlock
-    elif isinstance(item, Attribute):
-        print("attribute")
-        return Attribute
-    elif isinstance(item, TypeAliasDecl):
-        print("type alias decl")
-        return TypeAliasDecl
-    elif isinstance(item, InterfaceDef):
-        print("interfaceDef")
-        return InterfaceDef
-    elif isinstance(item, ExternFunctionDecl):
-        print("extern function decl")
-        return ExternFunctionDecl
-
 def collect_expressions(node, path="./", index_map=None) -> List[Tuple[str, object]]:
     if index_map is None:
         index_map = {}
@@ -136,6 +151,9 @@ def collect_expressions(node, path="./", index_map=None) -> List[Tuple[str, obje
 
         if isinstance(field_value, Expression):
             results.append((full_path, field_value))
+
+        if isinstance(field_value, Statement):
+            results += collect_expressions(item, f"{full_path}[{i}]/", index_map)
 
         elif isinstance(field_value, list):
             for i, item in enumerate(field_value):

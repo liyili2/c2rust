@@ -152,4 +152,6 @@ class LocalSearch(Algorithm):
                 cur_result['diff'] = self.program.diff(best_patch)
 
             result.append(cur_result)
+            print("=== PATCHED CODE ===", self.program.path)
+
         return result

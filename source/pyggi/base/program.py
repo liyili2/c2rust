@@ -136,7 +136,6 @@ class AbstractProgram(ABC):
             self.contents[file_name] = engine.get_contents(file_path=os.path.join(self.path, file_name))
             print("contents of file is ",  self.contents[file_name])
             self.modification_points[file_name] = engine.get_modification_points(self.contents[file_name])
-            print("self mods are ", self.modification_points[file_name], engine.__class__)
 
     def set_weight(self, file_name, index, weight):
         """
@@ -185,7 +184,6 @@ class AbstractProgram(ABC):
         assert method in ['random', 'weighted']
         #bug
         candidates = self.modification_points[target_file]
-        print("target file is ", target_file, " candy is ", candidates.__class__ )
         if method == 'random' or target_file not in self.modification_weights:
             return (target_file, random.randrange(len(candidates)))
         elif method == 'weighted':
