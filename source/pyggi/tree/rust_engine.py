@@ -5,8 +5,7 @@ from RustParser.AST_Scripts.antlr.RustParser import RustParser
 from RustParser.AST_Scripts.ast.Transformer import Transformer
 from RustParser.AST_Scripts.ast.Expression import Expression
 from RustParser.AST_Scripts.ast.Statement import Statement
-from RustParser.AST_Scripts.ast.TopLevel import Attribute, ExternBlock, ExternFunctionDecl, FunctionDef, InterfaceDef, StructDef, TopLevel, TopLevelVarDef, TypeAliasDecl
-from RustParser.AST_Scripts.ast.TopLevel import FunctionDef
+from AST_Scripts.ast.TopLevel import Attribute, ExternBlock, ExternFunctionDecl, FunctionDef, InterfaceDef, StructDef, TopLevel, TopLevelVarDef, TypeAliasDecl
 from pyggi.tree.abstract_engine import AbstractTreeEngine
 from typing import List, Tuple
 
@@ -47,8 +46,6 @@ class RustEngine(AbstractTreeEngine):
         tree = parser.program()
         builder = Transformer()
         ast = builder.visit_Program(tree)
-        # cls.process_tree(tree)
-        # print("****************", pretty_print_ast(ast))
         return ast
 
     @classmethod
@@ -61,43 +58,11 @@ class RustEngine(AbstractTreeEngine):
         modification_points = []
 
         for item in ast_root.items:
-            print("top level item is ", item.__class__)
-            if isinstance(item, FunctionDef):
-                print("functiondef")
-                body = item.body
-                for stmt in body:
-                    modification_points.append(collect_expressions(stmt, path=[item]))
-            elif isinstance(item, TopLevelVarDef):
-                if hasattr(item, 'fields'):
-                    for field in item.fields:
-                        modification_points.append(collect_expressions(field, path=[item]))
-                if hasattr(item, 'type_'):
-                    modification_points.append(collect_expressions(item.type_, path=[item]))
-
-            elif isinstance(item, StructDef):
-                print("structdef")
-                modification_points.append(field, path=[item])
-            elif isinstance(item, ExternBlock):
-                for extern_item in item.items:
-                    modification_points.append(collect_expressions(extern_item, path=[item]))
-
-            elif isinstance(item, Attribute):
-                for arg in item.args:
-                    modification_points.append(collect_expressions(arg, path=[item]))
-
-            elif isinstance(item, TypeAliasDecl):
-                modification_points.append(collect_expressions(item.type, path=[item]))
-
-            elif isinstance(item, InterfaceDef):
-                print("interfaceDef")
-                for func in item.functions:
-                    modification_points.append(collect_expressions(func, path=[item]))
-
-            elif isinstance(item, ExternFunctionDecl):
-                if item.return_type:
-                    modification_points.append(collect_expressions(item.return_type, path=[item]))
-                for param in item.params:
-                    modification_points.append(collect_expressions(param, path=[item]))
+            if isinstance(item, list):
+                for i in range(0, len(item)):
+                    modification_points.append(find_out_top_level_instance(item[i]))
+            else:
+                modification_points.append(find_out_top_level_instance(item))
 
         print("00000000000000000", len(modification_points))
         return modification_points
@@ -123,6 +88,32 @@ def get_file_extension(file_path):
     """
     _, file_extension = os.path.splitext(file_path)
     return file_extension
+
+def find_out_top_level_instance(item):
+    if isinstance(item, FunctionDef):
+        print("functiondef")
+        return FunctionDef
+    elif isinstance(item, TopLevelVarDef):
+        print("top level var def")
+        return TopLevelVarDef
+    elif isinstance(item, StructDef):
+        print("structdef")
+        return StructDef
+    elif isinstance(item, ExternBlock):
+        print("external block")
+        return ExternBlock
+    elif isinstance(item, Attribute):
+        print("attribute")
+        return Attribute
+    elif isinstance(item, TypeAliasDecl):
+        print("type alias decl")
+        return TypeAliasDecl
+    elif isinstance(item, InterfaceDef):
+        print("interfaceDef")
+        return InterfaceDef
+    elif isinstance(item, ExternFunctionDecl):
+        print("extern function decl")
+        return ExternFunctionDecl
 
 def collect_expressions(node, path="./", index_map=None) -> List[Tuple[str, object]]:
     if index_map is None:

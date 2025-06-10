@@ -107,7 +107,6 @@ class AbstractProgram(ABC):
             config_file_name = AbstractProgram.CONFIG_FILE_NAME
             from_file = True
         if from_file:
-            print("000000000000000000000", self.path)
             with open(os.path.join(self.path, config_file_name)) as config_file:
                 config = json.load(config_file)
         self.test_command = config['test_command']
