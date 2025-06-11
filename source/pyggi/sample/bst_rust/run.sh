@@ -2,4 +2,4 @@
 set -e
 
 # Run the Rust test suite
-pytest bstTest.py
+cargo test 

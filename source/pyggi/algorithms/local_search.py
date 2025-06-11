@@ -90,8 +90,10 @@ class LocalSearch(Algorithm):
 
         warmup = list()
         empty_patch = Patch(self.program)
+        print("****************** empty patch is ", self.program.__class__, self.program)
         for i in range(warmup_reps):
             result = self.program.evaluate_patch(empty_patch, timeout=timeout)
+            print("***********result is ", result)
             if result.status is 'SUCCESS':
                 warmup.append(result.fitness)
         original_fitness = float(sum(warmup)) / len(warmup) if warmup else None

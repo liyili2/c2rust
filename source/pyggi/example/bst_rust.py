@@ -38,9 +38,7 @@ class MyRustProgram(TreeProgram):
     def get_engine(cls, file_name):
         if file_name.endswith(".rs"):
             return RustEngine
-        print("detecting engine!")
         extension = get_file_extension(file_name)
-        print("ext is ", extension)
         if extension in ['.rs']:
             return RustEngine
         else:
@@ -49,14 +47,11 @@ class MyRustProgram(TreeProgram):
 class MyProgram(AbstractProgram):
     def compute_fitness(self, result, return_code, stdout, stderr, elapsed_time):
         try:
-            runtime, pass_all = stdout.strip().split(',')
-            runtime = float(runtime)
-            if not pass_all == 'true':
-                result.status = 'PARSE_ERROR'
-            else:
-                result.fitness = runtime
+            passed = "test result: ok" in stdout
+            result.fitness = elapsed_time
+            result.status = 'SUCCESS' if passed else 'PARSE_ERROR3'
         except:
-            result.status = 'PARSE_ERROR'
+            result.status = 'PARSE_ERROR4'
 
     @classmethod
     def get_engine(cls, file_name):
@@ -78,7 +73,6 @@ class MyLocalSearch(LocalSearch):
         return fitness < 100
 
 if __name__ == "__main__":
-    print("running pyggi!!!!!!")
     parser = argparse.ArgumentParser(description='PYGGI Improvement Example')
     parser.add_argument('--project_path', type=str, default='../sample/bst_rust')
     parser.add_argument('--mode', type=str, default='line')

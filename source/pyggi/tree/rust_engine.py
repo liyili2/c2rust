@@ -62,7 +62,6 @@ class RustEngine(AbstractTreeEngine):
             else:
                 modification_points.extend(cls._extract_points_from_top_level(item))
 
-        # print("00000000000000000", len(modification_points))
         return modification_points
 
     @classmethod
