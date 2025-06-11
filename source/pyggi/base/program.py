@@ -240,7 +240,7 @@ class AbstractProgram(ABC):
         :return: The source code
         :rtype: str
         """
-        return self.engines[file_name].dump(contents[file_name])
+        return self.engines[file_name].dump(contents[file_name], file_name)
 
     def get_modified_contents(self, patch):
         target_files = self.contents.keys()
@@ -302,9 +302,9 @@ class AbstractProgram(ABC):
             os.chdir(cwd)
 
     def compute_fitness(self, result, return_code, stdout, stderr, elapsed_time):
-        try:
-            result.fitness = float(stdout.strip())
-        except:
+        if "test result: ok" in stdout:
+            result.fitness = elapsed_time  # or use 0.0, or another logic
+        else:
             result.status = 'PARSE_ERROR2'
 
     def evaluate_patch(self, patch, timeout=15):
@@ -317,7 +317,6 @@ class AbstractProgram(ABC):
             return RunResult('TIMEOUT')
         else:
             result = RunResult('SUCCESS', None)
-            print("***********called!")
             self.compute_fitness(result, return_code, stdout, stderr, elapsed_time)
             assert not (result.status == 'SUCCESS' and result.fitness is None)
             return result

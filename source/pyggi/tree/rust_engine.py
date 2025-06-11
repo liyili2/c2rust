@@ -6,6 +6,7 @@ from RustParser.AST_Scripts.ast.Transformer import Transformer
 from AST_Scripts.ast.Expression import Expression
 from AST_Scripts.ast.Statement import Statement, IfStmt
 from AST_Scripts.ast.TopLevel import Attribute, ExternBlock, ExternFunctionDecl, FunctionDef, InterfaceDef, StructDef, TopLevel, TopLevelVarDef, TypeAliasDecl
+from pyggi.tree.rust_unparser import RustUnparser
 from pyggi.tree.abstract_engine import AbstractTreeEngine
 from typing import List, Tuple
 
@@ -116,8 +117,10 @@ class RustEngine(AbstractTreeEngine):
         pass
 
     @classmethod
-    def dump(cls, contents_of_file):
-        pass
+    def dump(cls, contents_of_file, file_name):
+        program_ctx = contents_of_file  # or tree.root or similar depending on your parser wrapper
+        unparser = RustUnparser(program_ctx)
+        return unparser.visitProgram(program_ctx)
 
 def get_file_extension(file_path):
     """

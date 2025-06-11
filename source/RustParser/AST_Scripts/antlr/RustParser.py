@@ -622,9 +622,6 @@ class RustParser ( Parser ):
         self._interp = ParserATNSimulator(self, self.atn, self.decisionsToDFA, self.sharedContextCache)
         self._predicates = None
 
-
-
-
     class ProgramContext(ParserRuleContext):
         __slots__ = 'parser'
 
@@ -637,7 +634,6 @@ class RustParser ( Parser ):
                 return self.getTypedRuleContexts(RustParser.TopLevelItemContext)
             else:
                 return self.getTypedRuleContext(RustParser.TopLevelItemContext,i)
-
 
         def getRuleIndex(self):
             return RustParser.RULE_program
