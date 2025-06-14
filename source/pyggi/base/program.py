@@ -90,8 +90,7 @@ class AbstractProgram(ABC):
         self.logger.info("Path to the temporal program variants: {}".format(self.tmp_path))
 
     def __str__(self):
-        return "{}({}):{}".format(self.__class__.__name__,
-                                  self.path, ",".join(self.target_files))
+        return "{}({}):{}".format(self.__class__.__name__, self.path, ",".join(self.target_files))
 
     def setup(self):
         pass
@@ -131,10 +130,9 @@ class AbstractProgram(ABC):
         self.modification_points = dict()
         self.modification_weights = dict()
         for file_name in self.target_files:
+            self.file_name = file_name
             engine = self.engines[file_name]
-            # print("engine is ", engine, file_name)
             self.contents[file_name] = engine.get_contents(file_path=os.path.join(self.path, file_name))
-            # print("contents of file is ",  self.contents[file_name])
             self.modification_points[file_name] = engine.get_modification_points(self.contents[file_name])
 
     def set_weight(self, file_name, index, weight):
@@ -302,8 +300,9 @@ class AbstractProgram(ABC):
             os.chdir(cwd)
 
     def compute_fitness(self, result, return_code, stdout, stderr, elapsed_time):
+        print("fit1", self.engines["bst.rs"])
         if "test result: ok" in stdout:
-            result.fitness = elapsed_time  # or use 0.0, or another logic
+            result.fitness = elapsed_time
         else:
             result.status = 'PARSE_ERROR2'
 

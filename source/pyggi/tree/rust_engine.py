@@ -4,8 +4,9 @@ from antlr4 import CommonTokenStream, InputStream
 from RustParser.AST_Scripts.antlr.RustParser import RustParser
 from RustParser.AST_Scripts.ast.Transformer import Transformer
 from AST_Scripts.ast.Expression import Expression
-from AST_Scripts.ast.Statement import Statement, IfStmt
+from AST_Scripts.ast.Statement import LetStmt, Statement
 from AST_Scripts.ast.TopLevel import Attribute, ExternBlock, ExternFunctionDecl, FunctionDef, InterfaceDef, StructDef, TopLevel, TopLevelVarDef, TypeAliasDecl
+from AST_Scripts.ast.TypeChecker import TypeChecker
 from pyggi.tree.rust_unparser import RustUnparser
 from pyggi.tree.abstract_engine import AbstractTreeEngine
 from typing import List, Tuple
@@ -26,6 +27,10 @@ def pretty_print_ast(node, indent=0):
 
 
 class RustEngine(AbstractTreeEngine):
+    def __init__(self):
+        # super().__init__()
+        self.currentAst = None
+
     def parse(self, src_code):
         lexer = RustLexer(InputStream(src_code))
         tokens = CommonTokenStream(lexer)
@@ -46,6 +51,10 @@ class RustEngine(AbstractTreeEngine):
         tree = parser.program()
         builder = Transformer()
         ast = builder.visit_Program(tree)
+        cls.ast = ast
+        typeChecker = TypeChecker()
+        typeChecker.visit(ast)
+        print("typCheckResult is ", typeChecker.error_count)
         return ast
 
     @classmethod
@@ -57,25 +66,30 @@ class RustEngine(AbstractTreeEngine):
         modification_points = []
 
         for item in ast_root.items:
+            print("888888", item.__class__)
             if isinstance(item, list):
                 for subitem in item:
                     modification_points.extend(cls._extract_points_from_top_level(subitem))
             else:
                 modification_points.extend(cls._extract_points_from_top_level(item))
 
+        print("mod points are ", len(modification_points))
         return modification_points
 
     @classmethod
     def _extract_points_from_top_level(cls, item):
+        print("in top levellll", item.__class__, FunctionDef.__class__)
         points = []
 
         if isinstance(item, FunctionDef):
+            print("got a func def")
             for stmt in item.body:
                 points.extend(collect_expressions(stmt, path=[item]))
 
         elif isinstance(item, TopLevelVarDef):
             if hasattr(item, 'fields'):
                 for field in item.fields:
+                    print("#0")
                     points.extend(collect_expressions(field, path=[item]))
             if hasattr(item, 'type_'):
                 points.extend(collect_expressions(item.type_, path=[item]))
@@ -120,7 +134,6 @@ class RustEngine(AbstractTreeEngine):
     def dump(cls, contents_of_file, file_name):
         program_ctx = contents_of_file  # or tree.root or similar depending on your parser wrapper
         unparser = RustUnparser()
-        print("/////////////////", program_ctx.__class__, len(program_ctx.items))
         return unparser.visitProgram(program_ctx)
 
 def get_file_extension(file_path):
@@ -134,10 +147,12 @@ def get_file_extension(file_path):
     return file_extension
 
 def collect_expressions(node, path="./", index_map=None) -> List[Tuple[str, object]]:
+    print("#1")
     if index_map is None:
         index_map = {}
     results = []
 
+    print("node is ", node.__class__)
     if isinstance(node, Expression):
         results.append((path.rstrip("/"), node))
 
@@ -145,25 +160,30 @@ def collect_expressions(node, path="./", index_map=None) -> List[Tuple[str, obje
         return results
 
     node_type = type(node).__name__
+    print("type is ", node_type)
     index_map.setdefault(node_type, 0)
     current_index = index_map[node_type]
     index_map[node_type] += 1
 
     for field_name, field_value in vars(node).items():
         full_path = f"{path}{node_type}[{current_index}]/{field_name}"
+        print("full path is ", node.__class__)
 
-        if isinstance(field_value, Expression):
+        if isinstance(node, Expression):
+            print("got an expr")
             results.append((full_path, field_value))
 
-        if isinstance(field_value, Statement):
-            results += collect_expressions(item, f"{full_path}[{i}]/", index_map)
+        # print(">>>>>>", isinstance(node, LetStmt))
+        if isinstance(node, Statement):
+            print("got a stmt")
+            results.append((full_path, field_value))
 
-        elif isinstance(field_value, list):
+        elif isinstance(node, list):
             for i, item in enumerate(field_value):
                 if isinstance(item, (Expression, Statement)):
                     results += collect_expressions(item, f"{full_path}[{i}]/", index_map)
 
-        elif hasattr(field_value, "__dict__"):
+        elif hasattr(node, "__dict__"):
             results += collect_expressions(field_value, f"{full_path}/", index_map)
 
     return results

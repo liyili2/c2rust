@@ -5,7 +5,7 @@ import os
 import sys
 import random
 import argparse
-
+from antlr4 import CommonTokenStream, InputStream
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 from pyggi.tree.rust_engine import RustEngine
 from pyggi.algorithms.local_search import LocalSearch
@@ -13,6 +13,10 @@ from pyggi.base.program import AbstractProgram
 from pyggi.line.line import LineDeletion, LineInsertion, LineProgram, LineReplacement
 from pyggi.tree.tree import StmtDeletion, StmtInsertion, StmtReplacement, TreeProgram
 from pyggi.tree.xml_engine import XmlEngine
+from RustParser.AST_Scripts.antlr.RustLexer import RustLexer
+from RustParser.AST_Scripts.antlr.RustParser import RustParser
+from RustParser.AST_Scripts.ast.Transformer import Transformer
+from RustParser.AST_Scripts.ast.TypeChecker import TypeChecker
 
 weighted_choice = lambda s : random.choice(sum(([v] * wt for v,wt in s),[]))
 
@@ -28,6 +32,8 @@ def get_file_extension(file_path):
 
 class MyRustProgram(TreeProgram):
     def __init__(self, path, config):
+        self.ast = None
+        self.file_name = None
         super().__init__(path, config)
         self.files = "./"
         self.engine_classes = {
@@ -46,6 +52,7 @@ class MyRustProgram(TreeProgram):
 
 class MyProgram(AbstractProgram):
     def compute_fitness(self, result, return_code, stdout, stderr, elapsed_time):
+        print("fit2")
         try:
             passed = "test result: ok" in stdout
             result.fitness = elapsed_time
@@ -71,6 +78,20 @@ class MyLocalSearch(LocalSearch):
 
     def stopping_criterion(self, iter, fitness):
         return fitness < 100
+
+def pretty_print_ast(node, indent=0):
+    spacer = '  ' * indent
+    if isinstance(node, list):
+        return '\n'.join(pretty_print_ast(n, indent) for n in node)
+
+    if hasattr(node, '__dict__'):
+        lines = [f"{spacer}{node.__class__.__name__}:"]
+        for key, value in vars(node).items():
+            lines.append(f"{spacer}  {key}:")
+            lines.append(pretty_print_ast(value, indent + 2))
+        return '\n'.join(lines)
+    else:
+        return f"{spacer}{repr(node)}"
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='PYGGI Improvement Example')
@@ -98,14 +119,28 @@ if __name__ == "__main__":
             "target_files": ["bst.rs"],
             "test_command": "./run.sh"
         }
-        print("path is ", args.project_path)
+
         program = MyRustProgram(args.project_path, config=config)
-        print("Registered engines and files:")
-        print(program.__class__, program.files)
+        file_path = os.path.join(os.path.dirname(__file__), program.file_name)
+        with open(file_path, "r", encoding="utf-8") as f:
+            rust_code = f.read()
+        lexer = RustLexer(InputStream(rust_code))
+        tokens = CommonTokenStream(lexer)
+        parser = RustParser(tokens)
+        tree = parser.program()
+        print(pretty_print_ast(tree))
+        builder = Transformer()
+        custom_ast = builder.visit_Program(tree)
+        # checker = TypeChecker()
+        # checker.visit(custom_ast)
+        # print("Pretty AST:")
+        # print(pretty_print_ast(custom_ast))
+
         local_search = MyLocalSearch(program)
+        local_search.file_name = program.file_name
         local_search.operators = [StmtReplacement, StmtInsertion, StmtDeletion]
 
-    result = local_search.run(warmup_reps=5, epoch=args.epoch, max_iter=args.iter, timeout=15)
+    result = local_search.run(ast=custom_ast, warmup_reps=5, epoch=args.epoch, max_iter=args.iter, timeout=15)
     print("======================RESULT======================")
     for epoch in range(len(result)):
         print("Epoch {}".format(epoch))

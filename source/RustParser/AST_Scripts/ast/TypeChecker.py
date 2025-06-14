@@ -26,6 +26,15 @@ class TypeChecker:
 
     def generic_visit(self, node):
         raise NotImplementedError(f"No visit_{type(node).__name__} method defined.")
+    
+    def visit_Attribute(self, node):
+        pass
+
+    def visit_StructDef(self, node):
+        pass
+
+    def visit_InterfaceDef(self, node):
+        pass
 
     def resolve_function_return_type(self, node):
         func_name = node.func
