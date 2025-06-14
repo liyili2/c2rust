@@ -119,7 +119,8 @@ class RustEngine(AbstractTreeEngine):
     @classmethod
     def dump(cls, contents_of_file, file_name):
         program_ctx = contents_of_file  # or tree.root or similar depending on your parser wrapper
-        unparser = RustUnparser(program_ctx)
+        unparser = RustUnparser()
+        print("/////////////////", program_ctx.__class__, len(program_ctx.items))
         return unparser.visitProgram(program_ctx)
 
 def get_file_extension(file_path):
