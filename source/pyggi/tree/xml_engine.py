@@ -3,7 +3,6 @@ import re
 import os
 from . import AbstractTreeEngine
 from xml.etree import ElementTree
-import xml.etree.ElementTree as ET
 
 class XmlEngine(AbstractTreeEngine):
     @classmethod
@@ -43,17 +42,10 @@ class XmlEngine(AbstractTreeEngine):
         assert ext == '.xml'
         with open(root, 'w') as tmp_file:
             tmp_file.write(cls.dump(contents_of_file))
-        
-        with open(f"{root}_u{ext}", "w") as tmp_xml_file:
-            tmp_xml_file.write(ET.tostring(contents_of_file, "unicode"))
 
     @classmethod
     def dump(cls, contents_of_file):
         return cls.strip_xml_from_tree(contents_of_file)
-    
-    @classmethod
-    def Xmlret(cls, contents_of_file):
-        return cls.take_xml_from_tree(contents_of_file)
 
     @staticmethod
     def string_to_tree(s):
@@ -72,15 +64,6 @@ class XmlEngine(AbstractTreeEngine):
     def strip_xml_from_tree(tree):
         return ''.join(tree.itertext())
 
-    @staticmethod
-    def take_xml_from_tree(tree):
-
-        #Convert element tree into string
-        xml_str = ET.tostring(tree, encoding='unicode')
-
-        #return the xml_string 
-        return xml_str
-    
     @staticmethod
     def split_xpath(xpath, prefix=None):
         assert xpath != '.'

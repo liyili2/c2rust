@@ -1,6 +1,26 @@
 import time
 from abc import ABCMeta, abstractmethod
+
+from antlr4 import CommonTokenStream, InputStream
+from AST_Scripts.antlr.RustLexer import RustLexer
+from AST_Scripts.antlr.RustParser import RustParser
+from AST_Scripts.ast.Transformer import Transformer
+from AST_Scripts.ast.TypeChecker import TypeChecker
 from ..base import Patch, Algorithm
+
+def pretty_print_ast(node, indent=0):
+    spacer = '  ' * indent
+    if isinstance(node, list):
+        return '\n'.join(pretty_print_ast(n, indent) for n in node)
+
+    if hasattr(node, '__dict__'):
+        lines = [f"{spacer}{node.__class__.__name__}:"]
+        for key, value in vars(node).items():
+            lines.append(f"{spacer}  {key}:")
+            lines.append(pretty_print_ast(value, indent + 2))
+        return '\n'.join(lines)
+    else:
+        return f"{spacer}{repr(node)}"
 
 class LocalSearch(Algorithm):
     """
@@ -67,7 +87,7 @@ class LocalSearch(Algorithm):
         """
         pass
 
-    def run(self, warmup_reps=1, epoch=5, max_iter=100, timeout=15, verbose=True):
+    def run(self, ast, warmup_reps=1, epoch=5, max_iter=100, timeout=15, verbose=True):
         """
         It starts from a randomly generated candidate solution
         and iteratively moves to its neighbouring solution with
@@ -90,8 +110,10 @@ class LocalSearch(Algorithm):
 
         warmup = list()
         empty_patch = Patch(self.program)
+        print("****************** empty patch is ", self.program.__class__, self.program)
         for i in range(warmup_reps):
             result = self.program.evaluate_patch(empty_patch, timeout=timeout)
+            print("***********result is ", result)
             if result.status is 'SUCCESS':
                 warmup.append(result.fitness)
         original_fitness = float(sum(warmup)) / len(warmup) if warmup else None
@@ -113,7 +135,7 @@ class LocalSearch(Algorithm):
             best_fitness = original_fitness
 
             # Result Initilization
-            cur_result['BestPatch'] = None
+            cur_result['BestPatch'] =None
             cur_result['Success'] = False
             cur_result['FitnessEval'] = 0
             cur_result['InvalidPatch'] = 0
@@ -123,7 +145,9 @@ class LocalSearch(Algorithm):
             for cur_iter in range(1, max_iter + 1):
                 patch = self.get_neighbour(best_patch.clone())
                 run = self.program.evaluate_patch(patch, timeout=timeout)
-                cur_result['FitnessEval'] += 1
+                typeChecker = TypeChecker()
+                typeChecker.visit(ast)
+                cur_result['FitnessEval'] += 1 / (typeChecker.error_count + 1)
 
                 if run.status is not 'SUCCESS':
                     cur_result['InvalidPatch'] += 1
@@ -151,4 +175,6 @@ class LocalSearch(Algorithm):
                 cur_result['diff'] = self.program.diff(best_patch)
 
             result.append(cur_result)
+            print("=== PATCHED CODE ===", self.program.path)
+
         return result

@@ -6,7 +6,7 @@ This module contains Logger class.
 import os
 import pathlib
 import logging
-from .. import PYGGI_DIR
+# from .. import PYGGI_DIR
 
 class Logger(object):
     """
@@ -16,7 +16,7 @@ class Logger(object):
     5 logging levels are available: debug, info, warning, error, critial.
     For more information, see https://docs.python.org/3.6/library/logging.html .
     """
-    LOG_DIR = os.path.join(PYGGI_DIR, 'logs')
+    LOG_DIR = os.path.join("./", 'logs')
 
     def __init__(self, name):
         import time

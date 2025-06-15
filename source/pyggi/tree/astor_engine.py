@@ -6,6 +6,7 @@ from . import AbstractTreeEngine
 class AstorEngine(AbstractTreeEngine):
     @classmethod
     def get_contents(cls, file_path):
+        print("file path is ", file_path)
         return astor.parse_file(file_path)
 
     @classmethod

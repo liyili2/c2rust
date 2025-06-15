@@ -17,3 +17,7 @@ python -m RustParser.AST_Scripts.tests.TransformerTest
 
 Run the Parser tests:
 python ParserTest.py
+
+Run Pyggi(go to example dir):
+chmod +x ./run.sh
+python3 bst_rust.py --project_path ../sample/bst_rust --mode tree --epoch 2 --iter 5
