@@ -192,7 +192,7 @@ class TypeChecker:
                 if value_info["borrowed"]:
                     self.increase_error_count()
                 value_info["borrowed"] = True
-        return True        
+        return True
 
     def visit_Assignment(self, node):
         try:
@@ -339,11 +339,11 @@ class TypeChecker:
         return params
 
     def visit_IntType(self, node):
-        return node
+        return IntType()
 
     def visit_BoolType(self, node):
         return BoolType()
-    
+
     def visit_binaryExpr(self, node):
         left_type = self.visit(node.left)
         right_type = self.visit(node.right)
@@ -351,12 +351,14 @@ class TypeChecker:
         if left_type != right_type:
             self.error(f"Type mismatch: cannot apply '{node.op}' to '{left_type}' and '{right_type}'")
             node.type = "error"
+            self.increase_error_count()
             return "error"
 
         if node.op in {"+", "-", "*", "/"}:
             if left_type != "int":
                 self.error(f"Arithmetic operator '{node.op}' requires 'int' operands, got '{left_type}'")
                 node.type = "error"
+                self.increase_error_count()
                 return "error"
             node.type = "int"
             return "int"
@@ -369,6 +371,7 @@ class TypeChecker:
             if left_type != "bool":
                 self.error(f"Logical operator '{node.op}' requires 'bool' operands, got '{left_type}'")
                 node.type = "error"
+                self.increase_error_count()
                 return "error"
             node.type = "bool"
             return "bool"
@@ -376,8 +379,9 @@ class TypeChecker:
         else:
             self.error(f"Unknown binary operator '{node.op}'")
             node.type = "error"
+            self.increase_error_count()
             return "error"
-        
+
     def visit_ArrayType(self, node):
         elem_type = self.visit(node.var_type)
         if node.size is not None:
@@ -422,7 +426,7 @@ class TypeChecker:
             return None
 
         return self.symbol_table[node.name]
-    
+
     def visit_QualifiedExpression(self, node):
         inner_type = self.visit(node.inner_expr)
         return inner_type
@@ -571,8 +575,42 @@ class TypeChecker:
         return StringType()
 
     def visit_CallExpression(self, node):
-        pass
-        # return FunctionCallExpr(func=node.func, args=node.args)
+        self.visit(node.func)
+        for arg in node.arguments:
+            arg_type = self.visit(arg)
+            if isinstance(arg, IdentifierExpr):
+                try:
+                    var_info = self.env.lookup(arg.name)
+                except Exception:
+                    self.increase_error_count()
+                    continue
+                if not var_info["owned"]:
+                    print(f"Error: variable '{arg.name}' has been moved.")
+                    self.increase_error_count()
+
+                if var_info["borrowed"]:
+                    print(f"Error: variable '{arg.name}' is borrowed and cannot be passed.")
+                    self.increase_error_count()
+
+                var_info["owned"] = False
+
+            elif isinstance(arg, BorrowExpr):
+                try:
+                    var_info = self.env.lookup(arg.name)
+                except Exception:
+                    self.increase_error_count()
+                    continue
+                if arg.mutable and not var_info["mutable"]:
+                    print(f"Error: cannot mutably borrow immutable variable '{arg.name}'.")
+                    self.increase_error_count()
+                if var_info["borrowed"]:
+                    print(f"Error: variable '{arg.name}' is already borrowed.")
+                    self.increase_error_count()
+                var_info["borrowed"] = True
+            else:
+                self.visit(arg)
+
+        return True
 
     def visit_PrimaryExpression(self, node):
         pass
