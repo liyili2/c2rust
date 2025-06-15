@@ -28,7 +28,6 @@ def pretty_print_ast(node, indent=0):
 
 class RustEngine(AbstractTreeEngine):
     def __init__(self):
-        # super().__init__()
         self.currentAst = None
 
     def parse(self, src_code):
@@ -74,18 +73,15 @@ class RustEngine(AbstractTreeEngine):
 
     @classmethod
     def _extract_points_from_top_level(cls, item):
-        print("in top levellll", item.__class__, FunctionDef.__class__)
         points = []
 
         if isinstance(item, FunctionDef):
-            print("got a func def")
             for stmt in item.body:
                 points.extend(collect_expressions(stmt, path=[item]))
 
         elif isinstance(item, TopLevelVarDef):
             if hasattr(item, 'fields'):
                 for field in item.fields:
-                    print("#0")
                     points.extend(collect_expressions(field, path=[item]))
             if hasattr(item, 'type_'):
                 points.extend(collect_expressions(item.type_, path=[item]))

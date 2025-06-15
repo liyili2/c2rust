@@ -300,7 +300,6 @@ class AbstractProgram(ABC):
             os.chdir(cwd)
 
     def compute_fitness(self, result, return_code, stdout, stderr, elapsed_time):
-        print("fit1", self.engines["bst.rs"])
         if "test result: ok" in stdout:
             result.fitness = elapsed_time
         else:

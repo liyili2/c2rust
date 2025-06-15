@@ -18,6 +18,10 @@ class TypeChecker:
         self.errors.append(error_msg)
         self.increase_error_count()
 
+    def warning(self, message):
+        error_msg = f"Type warning: {message}"
+        print(error_msg)
+
     def increase_error_count(self):
         self.error_count = self.error_count + 1
     
@@ -372,11 +376,11 @@ class TypeChecker:
             return "error"
         
     def visit_ArrayType(self, node):
-        elem_type = self.visit(node.elem_type)
+        elem_type = self.visit(node.var_type)
         if node.size is not None:
             size_type = self.visit(node.size)
             if size_type != "i32":
-                self.error(f"Array size must be of type i32, got {size_type}")
+                self.error(node, f"Array size must be of type i32, got {size_type}")
             if not isinstance(node.size, IntType):
                 self.warning("Array size is not a constant literal — might be dynamic")
         return f"[{elem_type}; {node.size.value if hasattr(node.size, 'value') else '?'}]"

@@ -94,7 +94,7 @@ def pretty_print_ast(node, indent=0):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='PYGGI Improvement Example')
-    parser.add_argument('--project_path', type=str, default='../sample/bst_rust')
+    parser.add_argument('--project_path', type=str, default='../sample/aggregate_rust')
     parser.add_argument('--mode', type=str, default='line')
     parser.add_argument('--epoch', type=int, default=30,
         help='total epoch(default: 30)')
@@ -105,7 +105,7 @@ if __name__ == "__main__":
 
     if args.mode == 'line':
         config = {
-            "target_files": ["bst.rs"],
+            "target_files": ["aggregate.rs"],
             "test_command": "./run.sh"
         }
         program = MyLineProgram(args.project_path, config=config)
@@ -114,7 +114,7 @@ if __name__ == "__main__":
     elif args.mode == 'tree':
         #TODO: check the target file
         config = {
-            "target_files": ["bst.rs"],
+            "target_files": ["aggregate.rs"],
             "test_command": "./run.sh"
         }
 
