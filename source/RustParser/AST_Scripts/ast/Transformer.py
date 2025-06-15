@@ -1,10 +1,11 @@
 import sys, os
+from typing import List
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
 from AST_Scripts.ast.Expression import ArrayDeclaration, ArrayLiteral, BinaryExpr, BoolLiteral, BorrowExpr, CastExpr, CharLiteralExpr, DereferenceExpr, FieldAccessExpr, FunctionCallExpr, IdentifierExpr, IndexExpr, IntLiteral, MethodCallExpr, MutableExpr, ParenExpr, Pattern, PatternExpr, QualifiedExpression, RangeExpression, RepeatArrayLiteral, StrLiteral, StructDefInit, StructLiteralExpr, StructLiteralField, TypePathExpression, TypePathFullExpr, UnaryExpr
 from AST_Scripts.ast.Statement import AssignStmt, BreakStmt, CallStmt, CompoundAssignment, ContinueStmt, ExpressionStmt, ForStmt, IfStmt, LetStmt, LoopStmt, MatchArm, MatchPattern, MatchStmt, ReturnStmt, StaticVarDecl, StructLiteral, UnsafeBlock, WhileStmt
 from AST_Scripts.antlr.RustVisitor import RustVisitor
-from AST_Scripts.ast.TopLevel import ExternBlock, ExternFunctionDecl, ExternStaticVarDecl, ExternTypeDecl, FunctionDef, InterfaceDef, StructDef, Attribute, TopLevelVarDef, TypeAliasDecl
+from AST_Scripts.ast.TopLevel import ExternBlock, ExternFunctionDecl, ExternStaticVarDecl, ExternTypeDecl, FunctionDef, InterfaceDef, StructDef, Attribute, TopLevelVarDef, TypeAliasDecl, UseDecl, UseTree
 from AST_Scripts.ast.Program import Program
 from AST_Scripts.ast.Expression import LiteralExpr
 from AST_Scripts.ast.Type import ArrayType, BoolType, IntType, PathType, PointerType, StringType, Type
@@ -137,11 +138,15 @@ class Transformer(RustVisitor):
             raise Exception(f"Indexing error: {e}")
 
     def visit_Program(self, ctx):
+        print("Visiting Program")
+        print(f"Top level count: {len(ctx.topLevelItem())}")
         items = []
-        for item in ctx.topLevelItem():
-            result = self.visit(item)
+        for child in ctx.topLevelItem():
+            print(f"Visiting child: {child.getText()[:30]}", child.__class__)
+            result = self.visit(child)
+            print(f"Result: {result}")
             items.append(result)
-        return Program(items=items, path=self.path)
+        return Program(items=items)
 
     def get_literal_type(self, value):
         if isinstance(value, IntLiteral):
@@ -156,6 +161,7 @@ class Transformer(RustVisitor):
             raise Exception(f"❌ Unknown literal type for value: {repr(value)}")
 
     def visitTopLevelItem(self, ctx):
+        print("***top level***", ctx.__class__, len(ctx.getChildren()))
         for child in ctx.getChildren():
             result = self.visit(child)
             if result is not None:
@@ -192,8 +198,26 @@ class Transformer(RustVisitor):
             field_visibility = field_ctx.visibility().getText() if field_ctx.visibility() else None
             field_type = self.visit(field_ctx.type_())
             fields.append((field_name, field_type, field_visibility))
-
         return TopLevelVarDef(name=name, fields=fields, visibility=visibility)
+    
+    def visitUseDecl(self, ctx):
+        print("***********in use")
+        tree = self.visit(ctx.useTree())
+        alias = ctx.Identifier().getText() if ctx.Identifier() else None
+        return UseDecl(tree, alias)
+
+    def visitUseTree(self, ctx):
+        if ctx.getChildCount() == 1 or ctx.getChild(1).getText() == "as":
+            type_path = self.visit(ctx.typePath())
+            alias = ctx.Identifier().getText() if ctx.Identifier() else None
+            return UseTree(path=type_path, alias=alias)
+
+        type_path = self.visit(ctx.typePath())
+        nested = self.visit(ctx.useTreeList())
+        return UseTree(path=type_path, nested=nested)
+
+    def visitUseTreeList(self, ctx):
+        return [self.visit(use_tree) for use_tree in ctx.useTree()]
 
     # Add isUnsafe field
     def visitFunctionDef(self, ctx):

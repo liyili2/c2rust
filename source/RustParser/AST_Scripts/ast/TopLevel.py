@@ -1,3 +1,4 @@
+from typing import List, Optional
 from RustParser.AST_Scripts.ast import Type
 from RustParser.AST_Scripts.ast.ASTNode import ASTNode
 
@@ -126,3 +127,16 @@ class InterfaceDef(TopLevel):
 
     def __repr__(self):
         return f"InterfaceDef(name={self.name}, functions={self.functions})"
+
+class UseDecl(TopLevel):
+    def __init__(self, tree: 'UseTree', alias: Optional[str] = None):
+        super().__init__()
+        self.tree = tree
+        self.alias = alias
+
+class UseTree(TopLevel):
+    def __init__(self, path: List[str], alias: Optional[str] = None, nested: Optional[List['UseTree']] = None):
+        super().__init__()
+        self.path = path                  # e.g., ['std', 'ptr']
+        self.alias = alias                # e.g., "X" in `use std as X`
+        self.nested = nested or []        # e.g., [UseTree(...), UseTree(...)]

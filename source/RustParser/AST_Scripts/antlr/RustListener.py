@@ -26,6 +26,33 @@ class RustListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by RustParser#useDecl.
+    def enterUseDecl(self, ctx:RustParser.UseDeclContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#useDecl.
+    def exitUseDecl(self, ctx:RustParser.UseDeclContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#useTree.
+    def enterUseTree(self, ctx:RustParser.UseTreeContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#useTree.
+    def exitUseTree(self, ctx:RustParser.UseTreeContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#useTreeList.
+    def enterUseTreeList(self, ctx:RustParser.UseTreeListContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#useTreeList.
+    def exitUseTreeList(self, ctx:RustParser.UseTreeListContext):
+        pass
+
+
     # Enter a parse tree produced by RustParser#topLevelDef.
     def enterTopLevelDef(self, ctx:RustParser.TopLevelDefContext):
         pass
@@ -260,12 +287,12 @@ class RustListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by RustParser#type.
-    def enterType(self, ctx:RustParser.TypeContext):
+    # Enter a parse tree produced by RustParser#typeExpr.
+    def enterTypeExpr(self, ctx:RustParser.TypeExprContext):
         pass
 
-    # Exit a parse tree produced by RustParser#type.
-    def exitType(self, ctx:RustParser.TypeContext):
+    # Exit a parse tree produced by RustParser#typeExpr.
+    def exitTypeExpr(self, ctx:RustParser.TypeExprContext):
         pass
 
 

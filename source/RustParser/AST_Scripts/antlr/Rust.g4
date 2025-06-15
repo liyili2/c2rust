@@ -7,20 +7,25 @@ topLevelItem
     | staticVarDecl
     | attributes
     | externBlock
+    | useDecl
     | typeAlias;
 
+useDecl: 'use' typePath '{' typePath Identifier ','?  '}' ';';
+useTree: typePath ('as' Identifier)? | typePath '::' '{' useTreeList '}';
+useTreeList: useTree (',' useTree)* ','?;
+
 topLevelDef: functionDef | structDef | interfaceDef |constDef | unionDef | unsafeDef;
-typeAlias: visibility? 'type' Identifier '=' type ';';
+typeAlias: visibility? 'type' Identifier '=' typeExpr ';';
 interfaceDef: 'impl' Identifier '{' functionDef+ '}' ;
 
 externBlock: 'extern' STRING_LITERAL '{' externItem* '}';
 externItem
     : visibility? 'type' Identifier ';'
-    | visibility? 'static' 'mut'? Identifier ':' type ';'
+    | visibility? 'static' 'mut'? Identifier ':' typeExpr ';'
     | visibility? 'fn' Identifier '(' externParams? ')' 
-        ('->' type)? ';';
+        ('->' typeExpr)? ';';
 externParams: externParam (',' externParam)* (',' '...')? | '...';
-externParam: (UNDERSCORE | Identifier)? ':' (type | ELLIPSIS);
+externParam: (UNDERSCORE | Identifier)? ':' (typeExpr | ELLIPSIS);
 
 visibility: 'pub';
 unsafeModifier: 'unsafe';
@@ -37,20 +42,20 @@ attrArg: Identifier ('=' attrValue)?;
 attrValue: STRING_LITERAL | Number | Identifier;
 
 structDef: visibility? 'struct' Identifier '{' structField* '}';
-structField: visibility? Identifier ':' type ','?;
+structField: visibility? Identifier ':' typeExpr ','?;
 structLiteral: Identifier '{' structLiteralField* '}' ;
 
-functionDef: visibility? unsafeModifier? externAbi? 'fn' Identifier ('()' | '(' paramList? ')') '->'? type? block;
+functionDef: visibility? unsafeModifier? externAbi? 'fn' Identifier ('()' | '(' paramList? ')') '->'? typeExpr? block;
 paramList: param (',' param)* (',')?;
-param: '&'? 'mut'? Identifier (':' type)?;
+param: '&'? 'mut'? Identifier (':' typeExpr)?;
 
-constDef: visibility? 'const' Identifier ':' type '=' expression ';';
-unionDef: visibility? 'union' Identifier  ((':' type '=' expression ';') | '{' unionField* '}');
-unionField: visibility? Identifier ':' type ','?;
-unsafeDef: visibility? 'unsafe' Identifier ':' type '=' expression ';';
+constDef: visibility? 'const' Identifier ':' typeExpr '=' expression ';';
+unionDef: visibility? 'union' Identifier  ((':' typeExpr '=' expression ';') | '{' unionField* '}');
+unionField: visibility? Identifier ':' typeExpr ','?;
+unsafeDef: visibility? 'unsafe' Identifier ':' typeExpr '=' expression ';';
 
-type: basicType | pointerType;
-pointerType: '*' ('mut' | 'const') (type)?;
+typeExpr: basicType | pointerType;
+pointerType: '*' ('mut' | 'const') (typeExpr)?;
 basicType
     : 'i32'
     | 'String'
@@ -58,11 +63,11 @@ basicType
     | 'u8'
     | arrayType
     | typePath basicType
-    | ('<' type (',' type)* '>' '()'? )
-    | Identifier ('<' type (',' type)* '>')?
-    | Identifier '<' type '>'
-    | '&' type
-    | '[' type ']'
+    | ('<' typeExpr (',' typeExpr)* '>' '()'? )
+    | Identifier ('<' typeExpr (',' typeExpr)* '>')?
+    | Identifier '<' typeExpr '>'
+    | '&' typeExpr
+    | '[' typeExpr ']'
     | Identifier;
 
 typePath: Identifier DOUBLE_COLON | DOUBLE_COLON? Identifier (DOUBLE_COLON Identifier)* ;
@@ -75,6 +80,7 @@ statement
     | letStmt
     | callStmt
     | structLiteral
+    | structDef
     | staticVarDecl
     | assignStmt
     | compoundAssignment
@@ -91,13 +97,13 @@ statement
 
 callStmt: expression callExpressionPostFix ';' ;
 letStmt: 'let' varDef '=' expression ';' | 'let' varDef initBlock ;
-varDef: 'ref'? 'mut'? Identifier (':' type)?;
+varDef: 'ref'? 'mut'? Identifier (':' typeExpr)?;
 compoundOp: '+=' | '-=' | '*=' | '/=' | '%=' | '&=' | '|=' | '^=' ;
 compoundAssignment: expression compoundOp expression ';' ;
 matchStmt: 'match' expression '{' matchArm+ '}' ;
 whileStmt: 'while' expression block;
 initializer: initBlock | block | expression ;
-staticVarDecl: visibility? 'static' 'mut'? Identifier ':' (type | Identifier) '=' initializer ';';
+staticVarDecl: visibility? 'static' 'mut'? Identifier ':' (typeExpr | Identifier) '=' initializer ';';
 initBlock: '{' (Identifier ':' expression ',')* '}' ';' expression;
 assignStmt: expression '=' expression ';';
 forStmt: 'for' Identifier 'in' expression block;
@@ -137,7 +143,7 @@ arrayDeclaration: Identifier '!'? '[' Number ';' expression ']' ;
 typePathExpression: (Identifier DOUBLE_COLON)+ ;
 patternPrefix: 'let'? pattern '=' ;
 pattern: 'ref'? 'mut'? Identifier | Identifier '(' 'ref'? 'mut'? Identifier ')' ;
-castExpressionPostFix: 'as' type ('as' type)*;
+castExpressionPostFix: 'as' typeExpr ('as' typeExpr)*;
 compoundOps: '+=' | '-=' | '*=' | '/=' | '%=' | '&=' | '|=' | '^=';
 rangeSymbol: '..';
 conditionalOps: '==' | '!=' | '>' | '<' | '||' | '&&';

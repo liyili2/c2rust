@@ -1,6 +1,6 @@
-# Generated from Rust.g4 by ANTLR 4.13.1
+# Generated from Rust.g4 by ANTLR 4.7.2
 from antlr4 import *
-if "." in __name__:
+if __name__ is not None and "." in __name__:
     from .RustParser import RustParser
 else:
     from RustParser import RustParser
@@ -16,6 +16,21 @@ class RustVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by RustParser#topLevelItem.
     def visitTopLevelItem(self, ctx:RustParser.TopLevelItemContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#useDecl.
+    def visitUseDecl(self, ctx:RustParser.UseDeclContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#useTree.
+    def visitUseTree(self, ctx:RustParser.UseTreeContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#useTreeList.
+    def visitUseTreeList(self, ctx:RustParser.UseTreeListContext):
         return self.visitChildren(ctx)
 
 
@@ -149,8 +164,8 @@ class RustVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by RustParser#type.
-    def visitType(self, ctx:RustParser.TypeContext):
+    # Visit a parse tree produced by RustParser#typeExpr.
+    def visitTypeExpr(self, ctx:RustParser.TypeExprContext):
         return self.visitChildren(ctx)
 
 
