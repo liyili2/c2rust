@@ -65,6 +65,8 @@ class TypeChecker:
             return BoolType()
         elif type_str == "String":
             return StringType()
+        elif self.struct_type_exists(type_str):
+            return StructType(name=type_str)
         else:
             self.increase_error_count()
 
@@ -145,8 +147,9 @@ class TypeChecker:
                 self.increase_error_count()
 
         return struct_type
-    
+
     def visit_UnsafeBlock(self, node):
+        self.error(node, "unsafe blcok observed")
         result = self.visit(node.block)
         return result
 
