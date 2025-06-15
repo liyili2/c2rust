@@ -11,12 +11,13 @@ class RustUnparser(RustVisitor):
                     if item_text:
                         lines.append(item_text)
             else:
-                item_text = self.visit(item_group)
-                if item_text:
-                    lines.append(item_text)
+                if item_group is not None:
+                    item_text = self.visit(item_group)
+                    if item_text:
+                        lines.append(item_text)
 
         return '\n\n'.join(lines)
-    
+
     def generic_visit(self, node):
         print(f"[Unparser] No specific visit method for: {type(node)}")
         parts = []

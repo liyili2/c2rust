@@ -141,25 +141,12 @@ class LocalSearch(Algorithm):
             cur_result['InvalidPatch'] = 0
             cur_result['diff'] = None
 
-            print("pretty AST: \n", pretty_print_ast(ast))
             start = time.time()
             for cur_iter in range(1, max_iter + 1):
-                print("current patch is ", self.program)
                 patch = self.get_neighbour(best_patch.clone())
                 run = self.program.evaluate_patch(patch, timeout=timeout)
-
-                # print("file name is ", ast)
-                # lexer = RustLexer(InputStream(ast))
-                # tokens = CommonTokenStream(lexer)
-                # parser = RustParser(tokens)
-                # tree = parser.program()
-                # print("///////////////////////////", tree)
-                # builder = Transformer()
-                # custom_ast = builder.visit_Program(tree)
-                # print("pretty AST: \n", pretty_print_ast(custom_ast))
                 typeChecker = TypeChecker()
                 typeChecker.visit(ast)
-                print("000000000000000", typeChecker.error_count)
                 cur_result['FitnessEval'] += 1 / (typeChecker.error_count + 1)
 
                 if run.status is not 'SUCCESS':

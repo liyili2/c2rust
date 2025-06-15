@@ -52,9 +52,6 @@ class RustEngine(AbstractTreeEngine):
         builder = Transformer()
         ast = builder.visit_Program(tree)
         cls.ast = ast
-        typeChecker = TypeChecker()
-        typeChecker.visit(ast)
-        print("typCheckResult is ", typeChecker.error_count)
         return ast
 
     @classmethod
@@ -66,14 +63,13 @@ class RustEngine(AbstractTreeEngine):
         modification_points = []
 
         for item in ast_root.items:
-            print("888888", item.__class__)
             if isinstance(item, list):
                 for subitem in item:
                     modification_points.extend(cls._extract_points_from_top_level(subitem))
             else:
                 modification_points.extend(cls._extract_points_from_top_level(item))
 
-        print("mod points are ", len(modification_points))
+        print("modification points' number is ", len(modification_points))
         return modification_points
 
     @classmethod
@@ -147,12 +143,10 @@ def get_file_extension(file_path):
     return file_extension
 
 def collect_expressions(node, path="./", index_map=None) -> List[Tuple[str, object]]:
-    print("#1")
     if index_map is None:
         index_map = {}
     results = []
 
-    print("node is ", node.__class__)
     if isinstance(node, Expression):
         results.append((path.rstrip("/"), node))
 
@@ -160,22 +154,16 @@ def collect_expressions(node, path="./", index_map=None) -> List[Tuple[str, obje
         return results
 
     node_type = type(node).__name__
-    print("type is ", node_type)
     index_map.setdefault(node_type, 0)
     current_index = index_map[node_type]
     index_map[node_type] += 1
 
     for field_name, field_value in vars(node).items():
         full_path = f"{path}{node_type}[{current_index}]/{field_name}"
-        print("full path is ", node.__class__)
-
         if isinstance(node, Expression):
-            print("got an expr")
             results.append((full_path, field_value))
 
-        # print(">>>>>>", isinstance(node, LetStmt))
         if isinstance(node, Statement):
-            print("got a stmt")
             results.append((full_path, field_value))
 
         elif isinstance(node, list):
