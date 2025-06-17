@@ -139,7 +139,6 @@ class Simulator(ProgramVisitor):
     def visitString(self, ctx: XMLProgrammer.QXString):
         return ctx.str()
 
-
     def visitNum(self, ctx: XMLProgrammer.QXNum):
         return ctx.num()
 
@@ -179,6 +178,11 @@ class Simulator(ProgramVisitor):
             #return result
 
         return None
+
+    def visitVexp(self, ctx: XMLExpParser.VexpContext):
+        if ctx.idexp() is not None:
+            return self.visitIDExp(ctx)
+        return
 
     def visitBoolexp(self, ctx: XMLExpParser.BoolexpContext):
         if ctx.TrueLiteral() is not None:
