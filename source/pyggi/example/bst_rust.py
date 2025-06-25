@@ -119,20 +119,13 @@ if __name__ == "__main__":
         }
 
         program = MyRustProgram(args.project_path, config=config)
-        file_path = os.path.join(os.path.dirname(__file__), program.file_name)
-        with open(file_path, "r", encoding="utf-8") as f:
-            rust_code = f.read()
-        lexer = RustLexer(InputStream(rust_code))
-        tokens = CommonTokenStream(lexer)
-        parser = RustParser(tokens)
-        tree = parser.program()
-        builder = Transformer()
-        custom_ast = builder.visit_Program(tree)
+
         local_search = MyLocalSearch(program)
         local_search.file_name = program.file_name
         local_search.operators = [StmtReplacement, StmtInsertion, StmtDeletion]
+        print("local search program is ", local_search.program.__class__)
 
-    result = local_search.run(ast=custom_ast, warmup_reps=5, epoch=args.epoch, max_iter=args.iter, timeout=15)
+    result = local_search.run(warmup_reps=5, epoch=args.epoch, max_iter=args.iter, timeout=15)
     print("======================RESULT======================")
     for epoch in range(len(result)):
         print("Epoch {}".format(epoch))

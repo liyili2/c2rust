@@ -1,4 +1,4 @@
-from AST_Scripts.antlr.RustVisitor import RustVisitor
+from RustParser.AST_Scripts.antlr.RustVisitor import RustVisitor
 
 class RustUnparser(RustVisitor):
     def visitProgram(self, ctx):

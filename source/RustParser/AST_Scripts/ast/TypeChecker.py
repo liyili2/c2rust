@@ -1,7 +1,7 @@
 from ast import FunctionDef
-from AST_Scripts.ast.Type import ArrayType, BoolType, FloatType, IntType, RefType, StringType, StructType
-from AST_Scripts.ast.TypeEnv import TypeEnv
-from AST_Scripts.ast.Expression import BorrowExpr, CastExpr, FunctionCallExpr, IdentifierExpr, LiteralExpr 
+from RustParser.AST_Scripts.ast.Type import ArrayType, BoolType, FloatType, IntType, RefType, StringType, StructType
+from RustParser.AST_Scripts.ast.TypeEnv import TypeEnv
+from RustParser.AST_Scripts.ast.Expression import BorrowExpr, CastExpr, FunctionCallExpr, IdentifierExpr, LiteralExpr 
 
 class TypeChecker:
     def __init__(self):
@@ -18,10 +18,6 @@ class TypeChecker:
         self.errors.append(error_msg)
         self.increase_error_count()
 
-    def warning(self, message):
-        error_msg = f"Type warning: {message}"
-        print(error_msg)
-
     def increase_error_count(self):
         self.error_count = self.error_count + 1
     
@@ -30,14 +26,14 @@ class TypeChecker:
 
     def generic_visit(self, node):
         raise NotImplementedError(f"No visit_{type(node).__name__} method defined.")
-    
+
+    def visit_InterfaceDef(self, node):
+        pass
+
     def visit_Attribute(self, node):
         pass
 
     def visit_StructDef(self, node):
-        pass
-
-    def visit_InterfaceDef(self, node):
         pass
 
     def resolve_function_return_type(self, node):
@@ -65,8 +61,6 @@ class TypeChecker:
             return BoolType()
         elif type_str == "String":
             return StringType()
-        elif self.struct_type_exists(type_str):
-            return StructType(name=type_str)
         else:
             self.increase_error_count()
 
@@ -147,52 +141,52 @@ class TypeChecker:
                 self.increase_error_count()
 
         return struct_type
-
+    
     def visit_UnsafeBlock(self, node):
-        self.error(node, "unsafe blcok observed")
         result = self.visit(node.block)
         return result
 
     def visit_LetStmt(self, node):
-        expr_type = self.visit(node.value)
-        if node.declared_type is not None:
-            declared_type = self.visit(node.declared_type)
-            if type(declared_type) != type(expr_type) and not isinstance(expr_type, RefType):
-                self.increase_error_count()
-        else:
-            declared_type = expr_type
+        pass
+        # expr_type = self.visit(node.values)
+        # if node.var_defs[0].type is not None:
+        #     declared_type = self.visit(node.var_defs[0].type)
+        #     if type(declared_type) != type(expr_type) and not isinstance(expr_type, RefType):
+        #         self.increase_error_count()
+        # else:
+        #     declared_type = expr_type
 
-        self.env.declare(node.name, declared_type)
-        self.symbol_table[node.name] = declared_type
+        # self.env.declare(node.name, declared_type)
+        # self.symbol_table[node.name] = declared_type
 
-        if isinstance(node.value, IdentifierExpr):
-            try:
-                value_info = self.env.lookup(node.value.name)
-            except Exception:
-                self.increase_error_count()
-                value_info = None
+        # if isinstance(node.value, IdentifierExpr):
+        #     try:
+        #         value_info = self.env.lookup(node.value.name)
+        #     except Exception:
+        #         self.increase_error_count()
+        #         value_info = None
 
-            if value_info:
-                if value_info["borrowed"]:
-                    self.increase_error_count()
-                if not value_info["owned"]:
-                    self.increase_error_count()
-                value_info["owned"] = False
+        #     if value_info:
+        #         if value_info["borrowed"]:
+        #             self.increase_error_count()
+        #         if not value_info["owned"]:
+        #             self.increase_error_count()
+        #         value_info["owned"] = False
 
-        elif isinstance(node.value, BorrowExpr):
-            try:
-                value_info = self.env.lookup(node.value.name)
-            except Exception:
-                self.increase_error_count()
-                value_info = None
+        # elif isinstance(node.value, BorrowExpr):
+        #     try:
+        #         value_info = self.env.lookup(node.value.name)
+        #     except Exception:
+        #         self.increase_error_count()
+        #         value_info = None
 
-            if value_info:
-                if node.value.mutable and not value_info["mutable"]:
-                    self.increase_error_count()
-                if value_info["borrowed"]:
-                    self.increase_error_count()
-                value_info["borrowed"] = True
-        return True
+        #     if value_info:
+        #         if node.value.mutable and not value_info["mutable"]:
+        #             self.increase_error_count()
+        #         if value_info["borrowed"]:
+        #             self.increase_error_count()
+        #         value_info["borrowed"] = True
+        # return True        
 
     def visit_Assignment(self, node):
         try:
@@ -339,11 +333,11 @@ class TypeChecker:
         return params
 
     def visit_IntType(self, node):
-        return IntType()
+        return node
 
     def visit_BoolType(self, node):
         return BoolType()
-
+    
     def visit_binaryExpr(self, node):
         left_type = self.visit(node.left)
         right_type = self.visit(node.right)
@@ -351,14 +345,12 @@ class TypeChecker:
         if left_type != right_type:
             self.error(f"Type mismatch: cannot apply '{node.op}' to '{left_type}' and '{right_type}'")
             node.type = "error"
-            self.increase_error_count()
             return "error"
 
         if node.op in {"+", "-", "*", "/"}:
             if left_type != "int":
                 self.error(f"Arithmetic operator '{node.op}' requires 'int' operands, got '{left_type}'")
                 node.type = "error"
-                self.increase_error_count()
                 return "error"
             node.type = "int"
             return "int"
@@ -371,7 +363,6 @@ class TypeChecker:
             if left_type != "bool":
                 self.error(f"Logical operator '{node.op}' requires 'bool' operands, got '{left_type}'")
                 node.type = "error"
-                self.increase_error_count()
                 return "error"
             node.type = "bool"
             return "bool"
@@ -379,15 +370,14 @@ class TypeChecker:
         else:
             self.error(f"Unknown binary operator '{node.op}'")
             node.type = "error"
-            self.increase_error_count()
             return "error"
-
+        
     def visit_ArrayType(self, node):
-        elem_type = self.visit(node.var_type)
+        elem_type = self.visit(node.elem_type)
         if node.size is not None:
             size_type = self.visit(node.size)
             if size_type != "i32":
-                self.error(node, f"Array size must be of type i32, got {size_type}")
+                self.error(f"Array size must be of type i32, got {size_type}")
             if not isinstance(node.size, IntType):
                 self.warning("Array size is not a constant literal — might be dynamic")
         return f"[{elem_type}; {node.size.value if hasattr(node.size, 'value') else '?'}]"
@@ -426,7 +416,7 @@ class TypeChecker:
             return None
 
         return self.symbol_table[node.name]
-
+    
     def visit_QualifiedExpression(self, node):
         inner_type = self.visit(node.inner_expr)
         return inner_type
@@ -575,42 +565,8 @@ class TypeChecker:
         return StringType()
 
     def visit_CallExpression(self, node):
-        self.visit(node.func)
-        for arg in node.arguments:
-            arg_type = self.visit(arg)
-            if isinstance(arg, IdentifierExpr):
-                try:
-                    var_info = self.env.lookup(arg.name)
-                except Exception:
-                    self.increase_error_count()
-                    continue
-                if not var_info["owned"]:
-                    print(f"Error: variable '{arg.name}' has been moved.")
-                    self.increase_error_count()
-
-                if var_info["borrowed"]:
-                    print(f"Error: variable '{arg.name}' is borrowed and cannot be passed.")
-                    self.increase_error_count()
-
-                var_info["owned"] = False
-
-            elif isinstance(arg, BorrowExpr):
-                try:
-                    var_info = self.env.lookup(arg.name)
-                except Exception:
-                    self.increase_error_count()
-                    continue
-                if arg.mutable and not var_info["mutable"]:
-                    print(f"Error: cannot mutably borrow immutable variable '{arg.name}'.")
-                    self.increase_error_count()
-                if var_info["borrowed"]:
-                    print(f"Error: variable '{arg.name}' is already borrowed.")
-                    self.increase_error_count()
-                var_info["borrowed"] = True
-            else:
-                self.visit(arg)
-
-        return True
+        pass
+        # return FunctionCallExpr(func=node.func, args=node.args)
 
     def visit_PrimaryExpression(self, node):
         pass

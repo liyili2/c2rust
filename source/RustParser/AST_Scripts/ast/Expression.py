@@ -67,8 +67,10 @@ class LiteralExpr(Expression):
             return StringType()
         elif isinstance(self.value, bool):
             return BoolLiteral()
+        elif isinstance(self.value, bytes):
+            return bytes()
         else:
-            raise Exception("Unknown literal type")
+            return None
 
 class FunctionCallExpr(Expression):
     def __init__(self, func, args, caller=None,):
@@ -79,6 +81,48 @@ class FunctionCallExpr(Expression):
 
     def accept(self, visitor):
         return visitor.visit_CallExpression(self)
+
+class UnsafeExpression(Expression):
+    def __init__(self, expr):
+        super().__init__()
+        self.expr = expr
+
+    def accept(self, visitor):
+        return super().accept(visitor)
+
+class BasicTypeCastExpr(Expression):
+    def __init__(self, basicType, typePath):
+        self.basicType = basicType
+        self.typePath = typePath
+
+    def accept(self, visitor):
+        return super().accept(visitor)
+
+class TypeAccessExpr(Expression):
+    def __init__(self, expr, typeExpr):
+        super().__init__(type)
+        self.expr = expr
+        self.type = typeExpr
+
+    def accept(self, visitor):
+        return super().accept(visitor)
+    
+class TypeWrapperExpr(Expression):
+    def __init__(self, expr):
+        super().__init__(type)
+        self.expr = expr
+
+    def accept(self, visitor):
+        return super().accept(visitor)
+
+class BoxWrapperExpr(Expression):
+    def __init__(self, expr, path):
+        super().__init__(type)
+        self.expr = expr
+        self.path = path
+
+    def accept(self, visitor):
+        return super().accept(visitor)
 
 class BorrowExpr(Expression):
     def __init__(self, expr, mutable=False):

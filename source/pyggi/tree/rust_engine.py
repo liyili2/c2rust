@@ -3,10 +3,10 @@ from RustParser.AST_Scripts.antlr.RustLexer import RustLexer
 from antlr4 import CommonTokenStream, InputStream
 from RustParser.AST_Scripts.antlr.RustParser import RustParser
 from RustParser.AST_Scripts.ast.Transformer import Transformer
-from AST_Scripts.ast.Expression import Expression
-from AST_Scripts.ast.Statement import LetStmt, Statement
-from AST_Scripts.ast.TopLevel import Attribute, ExternBlock, ExternFunctionDecl, FunctionDef, InterfaceDef, StructDef, TopLevel, TopLevelVarDef, TypeAliasDecl
-from AST_Scripts.ast.TypeChecker import TypeChecker
+from RustParser.AST_Scripts.ast.Expression import Expression
+from RustParser.AST_Scripts.ast.Statement import LetStmt, Statement
+from RustParser.AST_Scripts.ast.TopLevel import Attribute, ExternBlock, ExternFunctionDecl, FunctionDef, InterfaceDef, StructDef, TopLevel, TopLevelVarDef, TypeAliasDecl
+from RustParser.AST_Scripts.ast.TypeChecker import TypeChecker
 from pyggi.tree.rust_unparser import RustUnparser
 from pyggi.tree.abstract_engine import AbstractTreeEngine
 from typing import List, Tuple
@@ -59,6 +59,7 @@ class RustEngine(AbstractTreeEngine):
 
     @classmethod
     def get_modification_points(cls, ast_root):
+        print("in get_modification_points")
         modification_points = []
 
         for item in ast_root.items:
@@ -75,11 +76,14 @@ class RustEngine(AbstractTreeEngine):
     def _extract_points_from_top_level(cls, item):
         points = []
 
+        print("point class ", item.__class__)
         if isinstance(item, FunctionDef):
+            print("1")
             for stmt in item.body:
                 points.extend(collect_expressions(stmt, path=[item]))
 
         elif isinstance(item, TopLevelVarDef):
+            print("2")
             if hasattr(item, 'fields'):
                 for field in item.fields:
                     points.extend(collect_expressions(field, path=[item]))
@@ -87,6 +91,7 @@ class RustEngine(AbstractTreeEngine):
                 points.extend(collect_expressions(item.type_, path=[item]))
 
         elif isinstance(item, StructDef):
+            print("3")
             if hasattr(item, 'fields'):
                 for field in item.fields:
                     points.extend(collect_expressions(field, path=[item]))
@@ -103,6 +108,7 @@ class RustEngine(AbstractTreeEngine):
             points.extend(collect_expressions(item.type, path=[item]))
 
         elif isinstance(item, InterfaceDef):
+            print("54")
             for func in item.functions:
                 points.extend(collect_expressions(func, path=[item]))
 
@@ -111,6 +117,8 @@ class RustEngine(AbstractTreeEngine):
                 points.extend(collect_expressions(item.return_type, path=[item]))
             for param in item.params:
                 points.extend(collect_expressions(param, path=[item]))
+
+        print("points are ", len(points))
 
         return points
 
@@ -143,6 +151,7 @@ def collect_expressions(node, path="./", index_map=None) -> List[Tuple[str, obje
         index_map = {}
     results = []
 
+    # print("collect_expressions", node.__class__)
     if isinstance(node, Expression):
         results.append((path.rstrip("/"), node))
 
@@ -156,18 +165,25 @@ def collect_expressions(node, path="./", index_map=None) -> List[Tuple[str, obje
 
     for field_name, field_value in vars(node).items():
         full_path = f"{path}{node_type}[{current_index}]/{field_name}"
+        print("full path is ", full_path)
         if isinstance(node, Expression):
+            print("0000")
             results.append((full_path, field_value))
 
         if isinstance(node, Statement):
+            print("1111")
             results.append((full_path, field_value))
 
         elif isinstance(node, list):
+            print("2222")
             for i, item in enumerate(field_value):
                 if isinstance(item, (Expression, Statement)):
                     results += collect_expressions(item, f"{full_path}[{i}]/", index_map)
 
         elif hasattr(node, "__dict__"):
             results += collect_expressions(field_value, f"{full_path}/", index_map)
+
+    if len(results) > 0:
+        print(";;;;;;;;",results[0])
 
     return results

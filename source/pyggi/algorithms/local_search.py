@@ -1,11 +1,11 @@
-import time
+import time, os
 from abc import ABCMeta, abstractmethod
 
 from antlr4 import CommonTokenStream, InputStream
-from AST_Scripts.antlr.RustLexer import RustLexer
-from AST_Scripts.antlr.RustParser import RustParser
-from AST_Scripts.ast.Transformer import Transformer
-from AST_Scripts.ast.TypeChecker import TypeChecker
+from RustParser.AST_Scripts.antlr.RustLexer import RustLexer
+from RustParser.AST_Scripts.antlr.RustParser import RustParser
+from RustParser.AST_Scripts.ast.Transformer import Transformer
+from RustParser.AST_Scripts.ast.TypeChecker import TypeChecker
 from ..base import Patch, Algorithm
 
 def pretty_print_ast(node, indent=0):
@@ -87,7 +87,7 @@ class LocalSearch(Algorithm):
         """
         pass
 
-    def run(self, ast, warmup_reps=1, epoch=5, max_iter=100, timeout=15, verbose=True):
+    def run(self, warmup_reps=1, epoch=5, max_iter=100, timeout=15, verbose=True):
         """
         It starts from a randomly generated candidate solution
         and iteratively moves to its neighbouring solution with
@@ -110,10 +110,8 @@ class LocalSearch(Algorithm):
 
         warmup = list()
         empty_patch = Patch(self.program)
-        print("****************** empty patch is ", self.program.__class__, self.program)
         for i in range(warmup_reps):
             result = self.program.evaluate_patch(empty_patch, timeout=timeout)
-            print("***********result is ", result)
             if result.status is 'SUCCESS':
                 warmup.append(result.fitness)
         original_fitness = float(sum(warmup)) / len(warmup) if warmup else None
@@ -145,8 +143,21 @@ class LocalSearch(Algorithm):
             for cur_iter in range(1, max_iter + 1):
                 patch = self.get_neighbour(best_patch.clone())
                 run = self.program.evaluate_patch(patch, timeout=timeout)
+
+                print("patch is ", patch.program.file_name)
+
+                file_path = os.path.join(self.program.path, patch.program.file_name)
+                with open(file_path, "r", encoding="utf-8") as f:
+                    rust_code = f.read()
+                lexer = RustLexer(InputStream(rust_code))
+                tokens = CommonTokenStream(lexer)
+                parser = RustParser(tokens)
+                tree = parser.program()
+                builder = Transformer()
+                custom_ast = builder.visit_Program(tree)
+
                 typeChecker = TypeChecker()
-                typeChecker.visit(ast)
+                typeChecker.visit(custom_ast)
                 cur_result['FitnessEval'] += 1 / (typeChecker.error_count + 1)
 
                 if run.status is not 'SUCCESS':

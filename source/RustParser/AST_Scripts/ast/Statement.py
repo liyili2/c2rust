@@ -4,12 +4,27 @@ class Statement(ASTNode):
     pass
 
 class LetStmt(Statement):
-    def __init__(self, var_def, value):
+    def __init__(self, var_defs, values):
+        """
+        :param var_defs: a single VarDef or a list of VarDef
+        :param values: a single Expression or a list of Expression
+        """
         super().__init__()
-        self.value = value
-        self.declared_type = var_def.type
-        self.name = var_def.name
-        self.mutable = var_def.mutable
+        self.var_defs = var_defs if isinstance(var_defs, list) else [var_defs]
+        self.values = values if isinstance(values, list) else [values]
+
+    def is_destructuring(self):
+        return len(self.var_defs) > 1
+
+    def __repr__(self):
+        if self.is_destructuring():
+            vars_str = ", ".join(v.name for v in self.var_defs)
+            vals_str = ", ".join(str(v) for v in self.values)
+            return f"LetStmt(({vars_str}) = ({vals_str}))"
+        else:
+            var = self.var_defs[0]
+            val = self.values[0]
+            return f"LetStmt({var.name} = {val})"
 
     def accept(self, visitor):
         return visitor.visit_LetStmt(self)
@@ -217,3 +232,20 @@ class UnsafeBlock(Statement):
 
     def accept(self, visitor):
         return visitor.visit_UnsafeBlock(self)
+
+class TypeWrapper(Statement):
+    def __init__(self, expr):
+        super().__init__()
+        self.expr = expr
+
+    def accept(self, visitor):
+        return visitor.visit_typeWrapper(self)
+
+class ConditionalAssignmentStmt(Statement):
+    def __init__(self, cond, assignment):
+        super().__init__()
+        self.assignment = assignment
+        self.condition = cond
+
+    def accept(self, visitor):
+        return super().accept(visitor)
