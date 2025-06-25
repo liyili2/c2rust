@@ -147,46 +147,67 @@ class TypeChecker:
         return result
 
     def visit_LetStmt(self, node):
-        pass
-        # expr_type = self.visit(node.values)
-        # if node.var_defs[0].type is not None:
-        #     declared_type = self.visit(node.var_defs[0].type)
-        #     if type(declared_type) != type(expr_type) and not isinstance(expr_type, RefType):
-        #         self.increase_error_count()
-        # else:
-        #     declared_type = expr_type
+        expr_types = [self.visit(expr) for expr in node.values]
 
-        # self.env.declare(node.name, declared_type)
-        # self.symbol_table[node.name] = declared_type
+        if node.is_destructuring():
+            if len(node.var_defs) != len(expr_types):
+                self.increase_error_count()
+                return
 
-        # if isinstance(node.value, IdentifierExpr):
-        #     try:
-        #         value_info = self.env.lookup(node.value.name)
-        #     except Exception:
-        #         self.increase_error_count()
-        #         value_info = None
+            for var_def, expr_type in zip(node.var_defs, expr_types):
+                declared_type = self.visit(var_def.type) if var_def.type else expr_type
 
-        #     if value_info:
-        #         if value_info["borrowed"]:
-        #             self.increase_error_count()
-        #         if not value_info["owned"]:
-        #             self.increase_error_count()
-        #         value_info["owned"] = False
+                if var_def.type and type(declared_type) != type(expr_type) and not isinstance(expr_type, RefType):
+                    self.increase_error_count()
 
-        # elif isinstance(node.value, BorrowExpr):
-        #     try:
-        #         value_info = self.env.lookup(node.value.name)
-        #     except Exception:
-        #         self.increase_error_count()
-        #         value_info = None
+                # Declare the variable
+                self.env.declare(var_def.name, declared_type)
+                self.symbol_table[var_def.name] = declared_type
 
-        #     if value_info:
-        #         if node.value.mutable and not value_info["mutable"]:
-        #             self.increase_error_count()
-        #         if value_info["borrowed"]:
-        #             self.increase_error_count()
-        #         value_info["borrowed"] = True
-        # return True        
+                # Ownership & borrow rules
+                self._handle_borrowing(var_def, node.values[0])
+
+        else:
+            var_def = node.var_defs[0]
+            expr_type = expr_types[0]
+            declared_type = self.visit(var_def.type) if var_def.type else expr_type
+
+            if var_def.type and type(declared_type) != type(expr_type) and not isinstance(expr_type, RefType):
+                self.increase_error_count()
+
+            self.env.declare(var_def.name, declared_type)
+            self.symbol_table[var_def.name] = declared_type
+
+            self._handle_borrowing(var_def, node.values[0])
+
+    def _handle_borrowing(self, var_def, value_expr):
+        if isinstance(value_expr, IdentifierExpr):
+            try:
+                value_info = self.env.lookup(value_expr.name)
+            except Exception:
+                self.increase_error_count()
+                return
+
+            if value_info:
+                if value_info["borrowed"]:
+                    self.increase_error_count()
+                if not value_info["owned"]:
+                    self.increase_error_count()
+                value_info["owned"] = False
+
+        elif isinstance(value_expr, BorrowExpr):
+            try:
+                value_info = self.env.lookup(value_expr.name)
+            except Exception:
+                self.increase_error_count()
+                return
+
+            if value_info:
+                if value_expr.mutable and not value_info["mutable"]:
+                    self.increase_error_count()
+                if value_info["borrowed"]:
+                    self.increase_error_count()
+                value_info["borrowed"] = True
 
     def visit_Assignment(self, node):
         try:

@@ -1,8 +1,7 @@
-import subprocess
 import os, sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))
 import pytest
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')))
+import subprocess
 from antlr4 import InputStream, CommonTokenStream
 from RustParser.AST_Scripts.antlr.RustLexer import RustLexer
 from RustParser.AST_Scripts.antlr.RustParser import RustParser
@@ -34,4 +33,4 @@ class TestBstRustSuite:
         checker.visit(custom_ast)
         print("Fitness eval: ", 1 / (checker.error_count + 1))
 
-        # assert checker.error_count < 10, f"Type checker found {checker.error_count} errors"
+        assert checker.error_count < 10, f"Type checker found {checker.error_count} errors"
