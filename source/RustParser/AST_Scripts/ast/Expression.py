@@ -322,7 +322,7 @@ class TypePathFullExpr(Expression):
         self.value_expr = value_expr
 
     def accept(self, visitor):
-        return visitor.visitExpression(self)
+        return visitor.visit_TypeFullPathExpression(self)
 
 class ArrayDeclaration(Expression):
     def __init__(self, identifier, size, force, value):

@@ -18,6 +18,7 @@ from abc import ABC, abstractmethod
 from distutils.dir_util import copy_tree
 # from .. import PYGGI_DIR
 from ..utils import Logger, weighted_choice
+import locale
 
 PYGGI_DIR = "./"
 class RunResult:
@@ -286,8 +287,11 @@ class AbstractProgram(ABC):
         try:
             start = time.time()
             stdout, stderr = sprocess.communicate(timeout=timeout)
+            enc = locale.getpreferredencoding(False)  # e.g. 'UTF-8' on most systems
+            stdout = stdout.decode(enc, errors="replace")   # or "ignore"
+            stderr = stderr.decode(enc, errors="replace")
             end = time.time()
-            return (sprocess.returncode, stdout.decode("ascii"), stderr.decode("ascii"), end-start)
+            return (sprocess.returncode, stdout, stderr, end - start)
         except subprocess.TimeoutExpired:
             if os.name == 'posix':
                 os.killpg(os.getpgid(sprocess.pid), signal.SIGKILL)

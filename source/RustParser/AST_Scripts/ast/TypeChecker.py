@@ -1,5 +1,5 @@
 from ast import FunctionDef
-from RustParser.AST_Scripts.ast.Type import ArrayType, BoolType, FloatType, IntType, RefType, StringType, StructType
+from RustParser.AST_Scripts.ast.Type import ArrayType, BoolType, FloatType, IntType, RefType, StringType, StructType, VoidType
 from RustParser.AST_Scripts.ast.TypeEnv import TypeEnv
 from RustParser.AST_Scripts.ast.Expression import BorrowExpr, CastExpr, FunctionCallExpr, IdentifierExpr, LiteralExpr 
 
@@ -9,6 +9,7 @@ class TypeChecker:
         self.symbol_table = {}
         self.error_count = 0
         self.errors = []
+        self.reports = []
 
     def error(self, node, message):
         error_msg = f"Type error: {message}"
@@ -18,6 +19,9 @@ class TypeChecker:
         self.errors.append(error_msg)
         self.increase_error_count()
 
+    def report(self, node, message):
+        self.reports.append((node, message))
+
     def increase_error_count(self):
         self.error_count = self.error_count + 1
     
@@ -26,6 +30,9 @@ class TypeChecker:
 
     def generic_visit(self, node):
         raise NotImplementedError(f"No visit_{type(node).__name__} method defined.")
+    
+    def visit_TopLevelVarDef(Self, node):
+        pass
 
     def visit_InterfaceDef(self, node):
         pass
@@ -35,6 +42,60 @@ class TypeChecker:
 
     def visit_StructDef(self, node):
         pass
+
+    def visit_TypeFullPathExpression(self, node):
+        pass
+
+    def visit_StructLiteral(self, node):
+        pass
+
+    def visit_FunctionDef(self, node: FunctionDef):
+        fn_name = node.identifier
+        param_types = [p.type_ for p in node.params]  # assume each Param has `.identifier` & `.type_`
+        return_type = node.return_type or VoidType()  # `void` if omitted
+
+        # 1. Bind the function in the outer scope (optional if you did a decl-only phase)
+        if self.env.top().get(fn_name) is None:
+            self.env.top()[fn_name] = FunctionDef(param_types, return_type, node.unsafe)
+        else:
+            self.report(node, f"redefinition of function '{fn_name}'")
+
+        # 2. Enter new local scope & bind parameters
+        self.env.push()
+        for param, ty in zip(node.params, param_types):
+            if param.identifier in self.env.top():
+                self.report(param, f"duplicate parameter name '{param.identifier}'")
+            self.env.top()[param.identifier] = ty
+
+        # 3. Remember expected return type while walking body
+        saved_return = getattr(self, "current_function_return", None)
+        self.current_function_return = return_type
+
+        # 4. Visit body statements
+        for stmt in node.body:
+            stmt.accept(self)
+
+        # 5. If the function is non-void, check at least one guaranteed return path
+        if not isinstance(return_type, VoidType) and not self.body_has_terminating_return(node.body):
+            self.report(node, f"missing return in function '{fn_name}'")
+
+        # 6. Restore outer state
+        self.current_function_return = saved_return
+        self.env.pop()
+
+        return None
+
+    def body_has_terminating_return(self, stmts):
+        pass
+        # for s in reversed(stmts):
+        #     if isinstance(s, ReturnStmt):
+        #         return True
+        #     if isinstance(s, IfStmt):
+        #         return (self.body_has_terminating_return(s.then_body) and
+        #                 self.body_has_terminating_return(s.else_body or []))
+        #     if isinstance(s, WhileStmt):
+        #         continue
+        # return False
 
     def resolve_function_return_type(self, node):
         func_name = node.func
@@ -97,7 +158,15 @@ class TypeChecker:
         self.env.declare_function(name, param_types, return_type)
         body = self.visit(ctx.body)
         return FunctionDef(name=name, params=params, return_type=return_type, body=body)
-    
+
+    def visit_WhileStmt(self, node):
+        cond_type = self.visit(node.condition)
+        if not isinstance(cond_type, BoolType):
+            self.increase_error_count()
+
+        for stmt in node.body:
+            self.visit(stmt)
+
     def visit_CastExpr(self, node: CastExpr):
         expr_type = self.visit(node.expr)
         target_type = self.visit(node.type)
@@ -112,7 +181,7 @@ class TypeChecker:
         return target_type
     
     def visit_StructLiteral(self, node):
-        struct_type = self.visit(node.struct_type)
+        struct_type = self.visit(node.type_name)
         if not isinstance(struct_type, StructType):
             self.error(node, f"{struct_type} is not a valid struct type")
             self.increase_error_count()
@@ -179,6 +248,64 @@ class TypeChecker:
             self.symbol_table[var_def.name] = declared_type
 
             self._handle_borrowing(var_def, node.values[0])
+
+    def visit_BinaryExpr(self, node):
+        left_type = self.visit(node.left)
+        right_type = self.visit(node.right)
+        op = node.op
+
+        if op in ['+', '-', '*', '/']:
+            if isinstance(left_type, IntType) and isinstance(right_type, IntType):
+                return IntType()
+            else:
+                self.increase_error_count()
+                return IntType()  # still return something to keep traversal safe
+
+        elif op in ['==', '!=', '<', '>', '<=', '>=']:
+            if type(left_type) == type(right_type):
+                return BoolType()
+            else:
+                self.increase_error_count()
+                return BoolType()
+
+        elif op in ['&&', '||']:
+            if isinstance(left_type, BoolType) and isinstance(right_type, BoolType):
+                return BoolType()
+            else:
+                self.increase_error_count()
+                return BoolType()
+
+        else:
+            print(f"⚠️ Unknown binary operator: {op}")
+            self.increase_error_count()
+            return IntType()  # default fallback
+
+    def visit_CompoundAssignment(self, node):
+        target_type = self.visit(node.target)
+        value_type = self.visit(node.value)
+
+        # Check mutability
+        if isinstance(node.target, IdentifierExpr):
+            try:
+                target_info = self.env.lookup(node.target.name)
+            except Exception:
+                self.increase_error_count()
+                return
+
+            if not target_info.get("mutable", False):
+                self.increase_error_count()
+
+            if target_info.get("borrowed", False):
+                self.increase_error_count()
+
+        # Type compatibility check for compound ops
+        if node.op in ['+=', '-=', '*=', '/=']:
+            if not (isinstance(target_type, IntType) and isinstance(value_type, IntType)):
+                self.increase_error_count()
+
+        else:
+            print(f"⚠️ Unknown compound operator: {node.op}")
+            self.increase_error_count()
 
     def _handle_borrowing(self, var_def, value_expr):
         if isinstance(value_expr, IdentifierExpr):
@@ -590,4 +717,7 @@ class TypeChecker:
         # return FunctionCallExpr(func=node.func, args=node.args)
 
     def visit_PrimaryExpression(self, node):
+        pass
+
+    def visit_typeWrapper(self, node):
         pass

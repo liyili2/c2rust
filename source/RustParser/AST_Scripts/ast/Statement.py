@@ -117,7 +117,7 @@ class WhileStmt(Statement):
         # self.column = column
 
     def accept(self, visitor):
-        return visitor.visitWhileStmt(self)
+        return visitor.visit_WhileStmt(self)
 
 class MatchStmt(Statement):
     def __init__(self, expr, arms, line, column):
@@ -157,7 +157,7 @@ class CompoundAssignment(Statement):
         # self.column = column
 
     def accept(self, visitor):
-        return visitor.visitCompoundAssignment(self)
+        return visitor.visit_CompoundAssignment(self)
 
 class ExpressionStmt(Statement):
     def __init__(self, expr, line, column):

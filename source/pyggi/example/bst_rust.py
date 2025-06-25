@@ -5,18 +5,12 @@ import os
 import sys
 import random
 import argparse
-from antlr4 import CommonTokenStream, InputStream
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 from pyggi.tree.rust_engine import RustEngine
 from pyggi.algorithms.local_search import LocalSearch
 from pyggi.base.program import AbstractProgram
 from pyggi.line.line import LineDeletion, LineInsertion, LineProgram, LineReplacement
 from pyggi.tree.tree import StmtDeletion, StmtInsertion, StmtReplacement, TreeProgram
-from pyggi.tree.xml_engine import XmlEngine
-from RustParser.AST_Scripts.antlr.RustLexer import RustLexer
-from RustParser.AST_Scripts.antlr.RustParser import RustParser
-from RustParser.AST_Scripts.ast.Transformer import Transformer
-from RustParser.AST_Scripts.ast.TypeChecker import TypeChecker
 
 weighted_choice = lambda s : random.choice(sum(([v] * wt for v,wt in s),[]))
 

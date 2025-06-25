@@ -84,9 +84,14 @@ class RustEngine(AbstractTreeEngine):
 
         elif isinstance(item, TopLevelVarDef):
             print("2")
-            if hasattr(item, 'fields'):
-                for field in item.fields:
+            fields = getattr(item, 'fields', None)
+            if isinstance(fields, list):
+                for field in fields:
                     points.extend(collect_expressions(field, path=[item]))
+            elif fields is not None:
+                print(f"⚠️ Warning: 'fields' on {item} is not a list: {type(fields).__name__}")
+                # for field in item.fields:
+                #     points.extend(collect_expressions(field, path=[item]))
             if hasattr(item, 'type_'):
                 points.extend(collect_expressions(item.type_, path=[item]))
 
@@ -165,7 +170,7 @@ def collect_expressions(node, path="./", index_map=None) -> List[Tuple[str, obje
 
     for field_name, field_value in vars(node).items():
         full_path = f"{path}{node_type}[{current_index}]/{field_name}"
-        print("full path is ", full_path)
+        # print("full path is ", full_path)
         if isinstance(node, Expression):
             print("0000")
             results.append((full_path, field_value))
@@ -183,7 +188,7 @@ def collect_expressions(node, path="./", index_map=None) -> List[Tuple[str, obje
         elif hasattr(node, "__dict__"):
             results += collect_expressions(field_value, f"{full_path}/", index_map)
 
-    if len(results) > 0:
-        print(";;;;;;;;",results[0])
+    # if len(results) > 0:
+    #     print(";;;;;;;;",results[0])
 
     return results
