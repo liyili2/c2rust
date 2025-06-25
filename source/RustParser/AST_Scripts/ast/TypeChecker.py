@@ -378,6 +378,9 @@ class TypeChecker:
                 if value_info["borrowed"]:
                     self.increase_error_count()
                 value_info["borrowed"] = True
+
+        self.symbol_table[node.target] = { "type": expr_type,
+        "owned": True, "borrowed": False, "mutable": info["mutable"]}
         return True
 
     def visit_IfStmt(self, node):
@@ -720,4 +723,10 @@ class TypeChecker:
         pass
 
     def visit_typeWrapper(self, node):
+        pass
+
+    def visit_UseDecl(self, node):
+        pass
+
+    def visit_StaticVarDecl(self, node):
         pass

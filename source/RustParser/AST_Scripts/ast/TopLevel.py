@@ -129,7 +129,7 @@ class InterfaceDef(TopLevel):
     def __repr__(self):
         return f"InterfaceDef(name={self.name}, functions={self.functions})"
 
-class UseDecl:
+class UseDecl(TopLevel):
     def __init__(self, paths, aliases=None):
         """
         :param paths: List of TypePath objects
@@ -146,3 +146,6 @@ class UseDecl:
             else:
                 parts.append(str(path))
         return f"UseDecl({', '.join(parts)})"
+
+    def accept(self, visitor):
+        return super().accept(visitor)

@@ -45,6 +45,9 @@ class StaticVarDecl:
             f"mutable={self.mutable}, "
             f"visibility={self.visibility}, "
             f"initial_value={self.initial_value})")
+    
+    def accept(self, visitor):
+        return visitor.visit_StaticVarDecl(self)
 
 class ForStmt(Statement):
     def __init__(self, var, iterable, body):
