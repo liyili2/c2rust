@@ -8,3 +8,11 @@ class InitBlock(ASTNode):
 
     def accept(self, visitor):
         return visitor.visitInitBlock(self)
+
+class Block(ASTNode):
+    def __init__(self, stmts, isUnsafe):
+        self.stmts = stmts
+        self.isUnsafe = isUnsafe
+
+    def accept(self, visitor):
+        return visitor.visit_Block(self)

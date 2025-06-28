@@ -25,7 +25,7 @@ def pretty_print_ast(node, indent=0):
 #TODO: test the assignment of negative numbers to integers
 # lexer = RustLexer(InputStream("fn main(){let a : i32 = 1; a=12;let b = true;if b " \
 # "{a=2;}else{a=1;}let nums: [i32; 3] = [1,2,3];let n : i32 = 0; for n in nums { a = n;} }"))
-file_path = os.path.join(os.path.dirname(__file__), "nfa.rs")
+file_path = os.path.join(os.path.dirname(__file__), "bst.rs")
 with open(file_path, "r", encoding="utf-8") as f:
     rust_code = f.read()
 lexer = RustLexer(InputStream(rust_code))
@@ -34,9 +34,9 @@ parser = RustParser(tokens)
 tree = parser.program()
 print(pretty_print_ast(tree))
 builder = Transformer()
-custom_ast = builder.visit_Program(tree)
+custom_ast = builder.visit(tree)
 checker = TypeChecker()
 checker.visit(custom_ast)
 print("Type Error Count : ", checker.error_count)
-# print("Pretty AST:")
-# print(pretty_print_ast(custom_ast))
+print("Pretty AST:")
+print(pretty_print_ast(custom_ast))

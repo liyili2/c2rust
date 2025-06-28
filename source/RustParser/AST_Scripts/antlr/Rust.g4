@@ -11,8 +11,11 @@ topLevelItem
     | typeAlias;
 
 useDecl: 'use' typePath ('{' (typePath? Identifier ','? )* '}' ',' )* ';';
+topLevelDef: functionDef | structDef | interfaceDef | topLevelVarDef;
+topLevelVarDef: visibility? defKind? Identifier  ((':' typeExpr '=' expression ';') | '{' varDefField* '}');
+defKind: 'const' | 'union' | 'unsafe';
+varDefField: visibility? Identifier ':' typeExpr ','?;
 
-topLevelDef: functionDef | structDef | interfaceDef | constDef | unionDef | unsafeDef;
 typeAlias: visibility? 'type' Identifier '=' typeExpr ';';
 interfaceDef: 'impl' Identifier '{' functionDef+ '}' ;
 
@@ -48,11 +51,6 @@ functionDef: visibility? unsafeModifier? externAbi? 'fn' Identifier ('()' | '(' 
 paramList: param (',' param)* (',')?;
 param: '&'? 'mut'? Identifier (':' typeExpr)?;
 
-constDef: visibility? 'const' Identifier ':' typeExpr '=' expression ';';
-unionDef: visibility? 'union' Identifier  ((':' typeExpr '=' expression ';') | '{' unionField* '}');
-unionField: visibility? Identifier ':' typeExpr ','?;
-unsafeDef: visibility? 'unsafe' Identifier ':' typeExpr '=' expression ';';
-
 typeExpr: basicType | pointerType;
 pointerType: '*' ('mut' | 'const') (typeExpr)?;
 basicType
@@ -72,10 +70,9 @@ basicType
 typePath: Identifier DOUBLE_COLON | DOUBLE_COLON? Identifier (DOUBLE_COLON Identifier)* ;
 arrayType: '[' basicType ';' Number ']' ;
 
-block: '{' statement* returnStmt? '}';
-unsafeBlock: unsafeModifier block;
+block: unsafeModifier? '{' statement* returnStmt? '}';
 statement
-    : unsafeBlock
+    : block
     | letStmt
     | conditionalAssignmentStmt
     | structLiteral

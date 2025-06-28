@@ -1,9 +1,10 @@
 import os
+from RustParser.AST_Scripts.ast.Block import Block
 from RustParser.AST_Scripts.antlr.RustLexer import RustLexer
 from antlr4 import CommonTokenStream, InputStream
 from RustParser.AST_Scripts.antlr.RustParser import RustParser
 from RustParser.AST_Scripts.ast.Transformer import Transformer
-from RustParser.AST_Scripts.ast.Expression import Expression
+from RustParser.AST_Scripts.ast.Expression import Expression, UnsafeExpression
 from RustParser.AST_Scripts.ast.Statement import LetStmt, Statement
 from RustParser.AST_Scripts.ast.TopLevel import Attribute, ExternBlock, ExternFunctionDecl, FunctionDef, InterfaceDef, StructDef, TopLevel, TopLevelVarDef, TypeAliasDecl
 from RustParser.AST_Scripts.ast.TypeChecker import TypeChecker
@@ -49,7 +50,7 @@ class RustEngine(AbstractTreeEngine):
         parser = RustParser(token_stream)
         tree = parser.program()
         builder = Transformer()
-        ast = builder.visit_Program(tree)
+        ast = builder.visit(tree)
         cls.ast = ast
         return ast
 
@@ -59,7 +60,7 @@ class RustEngine(AbstractTreeEngine):
 
     @classmethod
     def get_modification_points(cls, ast_root):
-        print("in get_modification_points")
+        print("in get_modification_points", ast_root.__class__)
         modification_points = []
 
         for item in ast_root.items:
@@ -77,9 +78,15 @@ class RustEngine(AbstractTreeEngine):
         points = []
 
         print("point class ", item.__class__)
+        if isinstance(item, TopLevelVarDef):
+            if str.startswith(item.def_kind, "unsafe"):
+                print("item1 is ", item)
+                points.append(item)
         if isinstance(item, FunctionDef):
+            if item.unsafe:
+                points.extend(item)
             print("1")
-            for stmt in item.body:
+            for stmt in item.body.stmts:
                 points.extend(collect_expressions(stmt, path=[item]))
 
         elif isinstance(item, TopLevelVarDef):
@@ -115,15 +122,16 @@ class RustEngine(AbstractTreeEngine):
         elif isinstance(item, InterfaceDef):
             print("54")
             for func in item.functions:
+                print("function in interfaceDef")
                 points.extend(collect_expressions(func, path=[item]))
 
         elif isinstance(item, ExternFunctionDecl):
             if item.return_type:
-                points.extend(collect_expressions(item.return_type, path=[item]))
+                points.extend(collect_expressions(node=item.return_type, path=[item]))
             for param in item.params:
                 points.extend(collect_expressions(param, path=[item]))
 
-        print("points are ", len(points))
+        # print("points are ", len(points))
 
         return points
 
@@ -141,22 +149,25 @@ class RustEngine(AbstractTreeEngine):
         unparser = RustUnparser()
         return unparser.visitProgram(program_ctx)
 
-def get_file_extension(file_path):
-    """
-    :param file_path: The path of file
-    :type file_path: str
-    :return: file extension
-    :rtype: str
-    """
-    _, file_extension = os.path.splitext(file_path)
-    return file_extension
-
 def collect_expressions(node, path="./", index_map=None) -> List[Tuple[str, object]]:
+
     if index_map is None:
         index_map = {}
     results = []
 
-    # print("collect_expressions", node.__class__)
+    print("collect_expressions", node.__class__)
+    if isinstance(node, FunctionDef):
+        if node.unsafe:
+            results.append(node)
+        collect_expressions(node.body, "./", index_map)
+
+    if isinstance(node, Block):
+        if node.isUnsafe:
+            print("unsafe block ", node)
+            results.append(node)
+        for stmt in node.stmts:
+            collect_expressions(stmt)
+
     if isinstance(node, Expression):
         results.append((path.rstrip("/"), node))
 
@@ -172,11 +183,11 @@ def collect_expressions(node, path="./", index_map=None) -> List[Tuple[str, obje
         full_path = f"{path}{node_type}[{current_index}]/{field_name}"
         # print("full path is ", full_path)
         if isinstance(node, Expression):
-            print("0000")
-            results.append((full_path, field_value))
+            if isinstance(node, UnsafeExpression):
+                print("0000")
+                results.append((full_path, field_value))
 
         if isinstance(node, Statement):
-            print("1111")
             results.append((full_path, field_value))
 
         elif isinstance(node, list):
@@ -188,7 +199,14 @@ def collect_expressions(node, path="./", index_map=None) -> List[Tuple[str, obje
         elif hasattr(node, "__dict__"):
             results += collect_expressions(field_value, f"{full_path}/", index_map)
 
-    # if len(results) > 0:
-    #     print(";;;;;;;;",results[0])
-
     return results
+
+def get_file_extension(file_path):
+    """
+    :param file_path: The path of file
+    :type file_path: str
+    :return: file extension
+    :rtype: str
+    """
+    _, file_extension = os.path.splitext(file_path)
+    return file_extension

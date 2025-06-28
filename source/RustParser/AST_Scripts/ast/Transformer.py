@@ -2,20 +2,74 @@
 from RustParser.AST_Scripts.ast.Expression import ArrayDeclaration, ArrayLiteral, BasicTypeCastExpr, BinaryExpr, BoolLiteral, BorrowExpr, BoxWrapperExpr, CastExpr, CharLiteralExpr, DereferenceExpr, FieldAccessExpr, FunctionCallExpr, IdentifierExpr, IndexExpr, IntLiteral, MethodCallExpr, MutableExpr, ParenExpr, Pattern, PatternExpr, QualifiedExpression, RangeExpression, RepeatArrayLiteral, StrLiteral, StructDefInit, StructLiteralExpr, StructLiteralField, TypeAccessExpr, TypePathExpression, TypePathFullExpr, TypeWrapperExpr, UnaryExpr, UnsafeExpression
 from RustParser.AST_Scripts.ast.Statement import AssignStmt, BreakStmt, CallStmt, CompoundAssignment, ConditionalAssignmentStmt, ContinueStmt, ExpressionStmt, ForStmt, IfStmt, LetStmt, LoopStmt, MatchArm, MatchPattern, MatchStmt, ReturnStmt, StaticVarDecl, StructLiteral, TypeWrapper, UnsafeBlock, WhileStmt
 from RustParser.AST_Scripts.antlr.RustVisitor import RustVisitor
-from RustParser.AST_Scripts.ast.TopLevel import ExternBlock, ExternFunctionDecl, ExternStaticVarDecl, ExternTypeDecl, FunctionDef, InterfaceDef, StructDef, Attribute, TopLevelVarDef, TypeAliasDecl, UseDecl
+from RustParser.AST_Scripts.ast.TopLevel import ExternBlock, ExternFunctionDecl, ExternStaticVarDecl, ExternTypeDecl, FunctionDef, InterfaceDef, StructDef, Attribute, TopLevelVarDef, TypeAliasDecl, UseDecl, VarDefField
 from RustParser.AST_Scripts.ast.Program import Program
 from RustParser.AST_Scripts.ast.Expression import LiteralExpr
 from RustParser.AST_Scripts.ast.Type import ArrayType, BoolType, IntType, PathType, PointerType, StringType, Type
 from RustParser.AST_Scripts.antlr import RustLexer, RustParser
 from RustParser.AST_Scripts.ast.VarDef import VarDef
 from RustParser.AST_Scripts.antlr import RustParser
-from RustParser.AST_Scripts.ast.Block import InitBlock
+from RustParser.AST_Scripts.ast.Block import Block, InitBlock
 from RustParser.AST_Scripts.ast.Func import FunctionParamList, Param
 
 class Transformer(RustVisitor):
     def __init__(self):
         super().__init__()
         self.struct_defs = {}
+        self._depth = 0
+
+    def visit(self, tree):
+        rule_name = tree.__class__.__name__.replace("Context", "")
+        method_name = f"visit{rule_name}"
+        visitor_fn  = getattr(self, method_name, None)
+        self._depth += 1
+        try:
+            if visitor_fn is not None:
+                return visitor_fn(tree)
+            else:
+                return self.visitChildren(tree)
+        finally:
+            self._depth -= 1
+
+    def visitProgram(self, ctx):
+        items = []
+        for item_ctx in ctx.topLevelItem():
+            result = self.visit(item_ctx)
+            items.append(result)
+        return Program(items)
+
+    def visitTopLevelDef(self, ctx):
+        if ctx.functionDef():
+            return self.visit(ctx.functionDef())
+        elif ctx.structDef():
+            return self.visit(ctx.structDef())
+        elif ctx.interfaceDef():
+            return self.visit(ctx.interfaceDef())
+        elif ctx.topLevelVarDef():
+            return self.visit(ctx.topLevelVarDef())
+
+    def visitTopLevelVarDef(self, ctx):
+        visibility = (self.visit(ctx.visibility()) if ctx.visibility() else None)
+        def_kind = (ctx.defKind().getText() if ctx.defKind() else None)
+        name = ctx.Identifier().getText()
+        if ctx.COLON():
+            type_expr = self.visit(ctx.typeExpr())
+            fields = None
+        else:
+            type_expr = None
+
+            fields = []
+            for fld_ctx in ctx.varDefField():
+                fld_visibility = (self.visit(fld_ctx.visibility()) if fld_ctx.visibility() else None)
+                fld_name = fld_ctx.Identifier().getText()
+                fld_type = self.visit(fld_ctx.typeExpr())
+                fields.append(VarDefField(fld_name, fld_type, fld_visibility))
+
+        node = TopLevelVarDef(
+            name=name, fields=fields, type=type_expr,
+            def_kind=def_kind, visibility=visibility)
+
+        return node
 
     def _expr_from_text(self, text):
         text = text.strip()
@@ -135,14 +189,7 @@ class Transformer(RustVisitor):
             return target_val[index_val]
         except (IndexError, TypeError, KeyError) as e:
             raise Exception(f"Indexing error: {e}")
-
-    def visit_Program(self, ctx):
-        items = []
-        for item in ctx.topLevelItem():
-            result = self.visit(item)
-            items.append(result)
-        return Program(items)
-
+    
     def get_literal_type(self, value):
         if isinstance(value, IntLiteral):
             return IntType()
@@ -160,7 +207,7 @@ class Transformer(RustVisitor):
             result = self.visit(child)
             if result is not None:
                 return result
-        print("⚠️ Unrecognized topLevelItem:", ctx.getText())
+        print("Unrecognized topLevelItem:", ctx.getText())
         return None
 
     def visitInterfaceDef(self, ctx):
@@ -198,7 +245,6 @@ class Transformer(RustVisitor):
 
         return TopLevelVarDef(name=name, type=typ ,fields=fields, visibility=visibility)
 
-    # Add isUnsafe field
     def visitFunctionDef(self, ctx):
         name = ctx.Identifier().getText()
         params = self.visit(ctx.paramList()) if ctx.paramList() else []
@@ -206,7 +252,7 @@ class Transformer(RustVisitor):
         body = self.visit(ctx.block())
         unsafe = False
         if ctx.unsafeModifier():
-            unsafe = self.visit(ctx.unsafeModifier())
+            unsafe = True
         return FunctionDef(identifier=name, params=params, return_type=return_type, body=body, unsafe=unsafe)
 
     def visitParam(self, ctx):
@@ -438,10 +484,13 @@ class Transformer(RustVisitor):
 
     def visitBlock(self, ctx):
         stmts = []
+        isUnsafe = False
+        if ctx.unsafeModifier():
+            isUnsafe = True
         for stmt_ctx in ctx.statement():
             result = self.visit(stmt_ctx)
             stmts.append(result)
-        return stmts
+        return Block(stmts=stmts, isUnsafe=isUnsafe)
 
     def visitExpressionStatement(self, ctx):
         expr = self.visit(ctx.expression())
@@ -457,15 +506,15 @@ class Transformer(RustVisitor):
             print("⚠️ callExpressionPostFix not recognized format")
             args = []
         return CallStmt(callee=function_expr, args=args)
-    
+
     def visitUnsafeBlock(self, ctx):
         block = self.visit(ctx.block())
         return UnsafeBlock(block)
 
     def visitStatement(self, ctx):
         # print("stmt is ", ctx.callStmt(), ctx.__class__, ctx.getText())
-        if ctx.unsafeBlock():
-            return self.visit(ctx.unsafeBlock())
+        if ctx.block():
+            return self.visit(ctx.block())
         elif ctx.letStmt():
             return self.visit(ctx.letStmt())
         elif ctx.ifStmt():
@@ -758,6 +807,7 @@ class Transformer(RustVisitor):
         return MethodCallExpr(method_name=function_name, args=args)
 
     def visitGenericArgs(self, ctx):
+        print("generic arg call")
         return [self.visit(ty) for ty in ctx.type()]
 
     def visitDereferenceExpression(self, ctx):

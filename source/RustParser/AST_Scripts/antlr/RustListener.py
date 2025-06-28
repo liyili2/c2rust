@@ -44,6 +44,33 @@ class RustListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by RustParser#topLevelVarDef.
+    def enterTopLevelVarDef(self, ctx:RustParser.TopLevelVarDefContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#topLevelVarDef.
+    def exitTopLevelVarDef(self, ctx:RustParser.TopLevelVarDefContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#defKind.
+    def enterDefKind(self, ctx:RustParser.DefKindContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#defKind.
+    def exitDefKind(self, ctx:RustParser.DefKindContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#varDefField.
+    def enterVarDefField(self, ctx:RustParser.VarDefFieldContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#varDefField.
+    def exitVarDefField(self, ctx:RustParser.VarDefFieldContext):
+        pass
+
+
     # Enter a parse tree produced by RustParser#typeAlias.
     def enterTypeAlias(self, ctx:RustParser.TypeAliasContext):
         pass
@@ -242,42 +269,6 @@ class RustListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by RustParser#constDef.
-    def enterConstDef(self, ctx:RustParser.ConstDefContext):
-        pass
-
-    # Exit a parse tree produced by RustParser#constDef.
-    def exitConstDef(self, ctx:RustParser.ConstDefContext):
-        pass
-
-
-    # Enter a parse tree produced by RustParser#unionDef.
-    def enterUnionDef(self, ctx:RustParser.UnionDefContext):
-        pass
-
-    # Exit a parse tree produced by RustParser#unionDef.
-    def exitUnionDef(self, ctx:RustParser.UnionDefContext):
-        pass
-
-
-    # Enter a parse tree produced by RustParser#unionField.
-    def enterUnionField(self, ctx:RustParser.UnionFieldContext):
-        pass
-
-    # Exit a parse tree produced by RustParser#unionField.
-    def exitUnionField(self, ctx:RustParser.UnionFieldContext):
-        pass
-
-
-    # Enter a parse tree produced by RustParser#unsafeDef.
-    def enterUnsafeDef(self, ctx:RustParser.UnsafeDefContext):
-        pass
-
-    # Exit a parse tree produced by RustParser#unsafeDef.
-    def exitUnsafeDef(self, ctx:RustParser.UnsafeDefContext):
-        pass
-
-
     # Enter a parse tree produced by RustParser#typeExpr.
     def enterTypeExpr(self, ctx:RustParser.TypeExprContext):
         pass
@@ -329,15 +320,6 @@ class RustListener(ParseTreeListener):
 
     # Exit a parse tree produced by RustParser#block.
     def exitBlock(self, ctx:RustParser.BlockContext):
-        pass
-
-
-    # Enter a parse tree produced by RustParser#unsafeBlock.
-    def enterUnsafeBlock(self, ctx:RustParser.UnsafeBlockContext):
-        pass
-
-    # Exit a parse tree produced by RustParser#unsafeBlock.
-    def exitUnsafeBlock(self, ctx:RustParser.UnsafeBlockContext):
         pass
 
 

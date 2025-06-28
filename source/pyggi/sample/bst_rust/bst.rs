@@ -7,8 +7,10 @@ struct Node {
     right: Option<Box<Node> >,
 }
 
+unsafe unsafeTopLevelVarDef: i32 = 11;
+
 impl Node {
-    fn new(key: i32, value: string) -> Self {
+    unsafe fn new(key: i32, value: string) -> Self {
         Node {
             key,
             value,
@@ -61,7 +63,10 @@ impl Node {
 }
 
 fn main() {
-    let mut root = Node::new(5, string::from("five") );
+    unsafe {
+        let mut root = Node::new(5, string::from("five") );
+    }
+    let a : i32 = unsafe{22};
     // println!("{:?}", root.search(5));
     // println!("{:?}", root.search(3));
     // root.insert(3, string::from("three"));

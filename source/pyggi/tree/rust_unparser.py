@@ -85,3 +85,6 @@ class RustUnparser(RustVisitor):
     def visit_InterfaceDef(self, node):
         funcs = '\n'.join(self.visit(func) for func in node.functions if hasattr(func, 'accept'))
         return f"interface {node.name} {{\n{funcs}\n}}"
+    
+    def visit_Block(self, node):
+        pass

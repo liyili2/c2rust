@@ -1,7 +1,6 @@
 import sys, os
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
-from RustParser.AST_Scripts.ast.RustTreeProgram import RustASTProgram
 from antlr4 import FileStream, CommonTokenStream, InputStream
 from RustParser.AST_Scripts.antlr.RustLexer import RustLexer
 from RustParser.AST_Scripts.antlr.RustParser import RustParser
@@ -40,8 +39,8 @@ def pretty_print_ast(node, indent=0):
 def test_pipeline():
     tree = parse_rust_code()
     ast = transform(tree)
-    program = RustASTProgram(ast)
-    print("tree is ", program.__class__)
+    # program = Program(ast)
+    # print("tree is ", program.__class__)
     # mutation = ReplaceExpr()
 
     # algo = FirstImprovement(
@@ -50,7 +49,7 @@ def test_pipeline():
     # )
 
     # algo.run(program)
-    print(f"Best fitness: {program.fitness}")
+    # print(f"Best fitness: {program.fitness}")
 
 if __name__ == "__main__":
     test_pipeline()

@@ -280,6 +280,17 @@ class TypeChecker:
             self.increase_error_count()
             return IntType()  # default fallback
 
+    def visit_Block(self, node):
+        result_stmts = []
+        if node.isUnsafe:
+            self.error(node, "unsafe blcok error")
+        for stmt in node.stmts:
+            result_stmt = self.visit(stmt)
+            result_stmts.append(result_stmt)
+
+    def visit_UnsafeExpression(self, node):
+        self.error(node, "unsafe expression error")
+
     def visit_CompoundAssignment(self, node):
         target_type = self.visit(node.target)
         value_type = self.visit(node.value)
@@ -571,7 +582,7 @@ class TypeChecker:
     def visit_QualifiedExpression(self, node):
         inner_type = self.visit(node.inner_expr)
         return inner_type
-    
+
     def visit_MutableExpr(self, node):
         inner_expr = self.visit(node.expr)
         if not isinstance(node.expr, IdentifierExpr):

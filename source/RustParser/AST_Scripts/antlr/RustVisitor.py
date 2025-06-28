@@ -1,6 +1,6 @@
-# Generated from Rust.g4 by ANTLR 4.13.1
+# Generated from Rust.g4 by ANTLR 4.7.2
 from antlr4 import *
-if "." in __name__:
+if __name__ is not None and "." in __name__:
     from .RustParser import RustParser
 else:
     from RustParser import RustParser
@@ -26,6 +26,21 @@ class RustVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by RustParser#topLevelDef.
     def visitTopLevelDef(self, ctx:RustParser.TopLevelDefContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#topLevelVarDef.
+    def visitTopLevelVarDef(self, ctx:RustParser.TopLevelVarDefContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#defKind.
+    def visitDefKind(self, ctx:RustParser.DefKindContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#varDefField.
+    def visitVarDefField(self, ctx:RustParser.VarDefFieldContext):
         return self.visitChildren(ctx)
 
 
@@ -139,26 +154,6 @@ class RustVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by RustParser#constDef.
-    def visitConstDef(self, ctx:RustParser.ConstDefContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by RustParser#unionDef.
-    def visitUnionDef(self, ctx:RustParser.UnionDefContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by RustParser#unionField.
-    def visitUnionField(self, ctx:RustParser.UnionFieldContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by RustParser#unsafeDef.
-    def visitUnsafeDef(self, ctx:RustParser.UnsafeDefContext):
-        return self.visitChildren(ctx)
-
-
     # Visit a parse tree produced by RustParser#typeExpr.
     def visitTypeExpr(self, ctx:RustParser.TypeExprContext):
         return self.visitChildren(ctx)
@@ -186,11 +181,6 @@ class RustVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by RustParser#block.
     def visitBlock(self, ctx:RustParser.BlockContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by RustParser#unsafeBlock.
-    def visitUnsafeBlock(self, ctx:RustParser.UnsafeBlockContext):
         return self.visitChildren(ctx)
 
 

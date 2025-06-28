@@ -154,7 +154,7 @@ class LocalSearch(Algorithm):
                 parser = RustParser(tokens)
                 tree = parser.program()
                 builder = Transformer()
-                custom_ast = builder.visit_Program(tree)
+                custom_ast = builder.visit(tree)
 
                 typeChecker = TypeChecker()
                 typeChecker.visit(custom_ast)

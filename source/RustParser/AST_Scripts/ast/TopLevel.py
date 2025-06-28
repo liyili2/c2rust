@@ -114,11 +114,18 @@ class TypeAliasDecl(TopLevel):
         self.visibility = visibility
 
 class TopLevelVarDef(TopLevel):
-    def __init__(self, name, fields, type, visibility=None):
+    def __init__(self, name, fields, type, def_kind, visibility=None):
         self.name = name
         self.fields = fields
         self.visibility = visibility
         self.type_ = type
+        self.def_kind = def_kind
+
+class VarDefField(ASTNode):
+    def __init__(self, name, type_, visibility=None):
+        self.name       = name
+        self.type_      = type_
+        self.visibility = visibility
 
 class InterfaceDef(TopLevel):
     def __init__(self, name: str, functions: list):
