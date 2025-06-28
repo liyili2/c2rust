@@ -63,6 +63,7 @@ impl Node {
 }
 
 fn main() {
+    let a : aa::bb::cc = 1 as bb;
     unsafe {
         let mut root = Node::new(5, string::from("five") );
     }

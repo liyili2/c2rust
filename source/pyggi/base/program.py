@@ -109,6 +109,7 @@ class AbstractProgram(ABC):
         if from_file:
             with open(os.path.join(self.path, config_file_name)) as config_file:
                 config = json.load(config_file)
+        config.setdefault("test_command", "./run.sh")
         self.test_command = config['test_command']
         self.target_files = config['target_files']
         return config

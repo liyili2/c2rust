@@ -1,3 +1,4 @@
+import random
 import time, os
 from abc import ABCMeta, abstractmethod
 
@@ -6,6 +7,7 @@ from RustParser.AST_Scripts.antlr.RustLexer import RustLexer
 from RustParser.AST_Scripts.antlr.RustParser import RustParser
 from RustParser.AST_Scripts.ast.Transformer import Transformer
 from RustParser.AST_Scripts.ast.TypeChecker import TypeChecker
+from pyggi.tree.tree import StmtDeletion, StmtInsertion, StmtReplacement
 from ..base import Patch, Algorithm
 
 def pretty_print_ast(node, indent=0):
@@ -112,7 +114,7 @@ class LocalSearch(Algorithm):
         empty_patch = Patch(self.program)
         for i in range(warmup_reps):
             result = self.program.evaluate_patch(empty_patch, timeout=timeout)
-            if result.status is 'SUCCESS':
+            if result.status == 'SUCCESS':
                 warmup.append(result.fitness)
         original_fitness = float(sum(warmup)) / len(warmup) if warmup else None
 
@@ -144,23 +146,10 @@ class LocalSearch(Algorithm):
                 patch = self.get_neighbour(best_patch.clone())
                 run = self.program.evaluate_patch(patch, timeout=timeout)
 
-                print("patch is ", patch.program.file_name)
+                if run.fitness is not None:
+                    cur_result['FitnessEval'] += 1 / (run.fitness + 1)
 
-                file_path = os.path.join(self.program.path, patch.program.file_name)
-                with open(file_path, "r", encoding="utf-8") as f:
-                    rust_code = f.read()
-                lexer = RustLexer(InputStream(rust_code))
-                tokens = CommonTokenStream(lexer)
-                parser = RustParser(tokens)
-                tree = parser.program()
-                builder = Transformer()
-                custom_ast = builder.visit(tree)
-
-                typeChecker = TypeChecker()
-                typeChecker.visit(custom_ast)
-                cur_result['FitnessEval'] += 1 / (typeChecker.error_count + 1)
-
-                if run.status is not 'SUCCESS':
+                if run.status != 'SUCCESS':
                     cur_result['InvalidPatch'] += 1
                     update_best = False
                 else:
@@ -177,6 +166,8 @@ class LocalSearch(Algorithm):
                 if run.fitness is not None and self.stopping_criterion(cur_iter, run.fitness):
                     cur_result['Success'] = True
                     break
+
+                # print("diff: ", patch.diff())
 
             cur_result['Time'] = time.time() - start
 

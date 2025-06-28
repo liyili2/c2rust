@@ -4,8 +4,8 @@ from RustParser.AST_Scripts.antlr.RustLexer import RustLexer
 from antlr4 import CommonTokenStream, InputStream
 from RustParser.AST_Scripts.antlr.RustParser import RustParser
 from RustParser.AST_Scripts.ast.Transformer import Transformer
-from RustParser.AST_Scripts.ast.Expression import Expression, UnsafeExpression
-from RustParser.AST_Scripts.ast.Statement import LetStmt, Statement
+from RustParser.AST_Scripts.ast.Expression import CastExpr, Expression, TypePathExpression, UnsafeExpression
+from RustParser.AST_Scripts.ast.Statement import IfStmt, LetStmt, Statement
 from RustParser.AST_Scripts.ast.TopLevel import Attribute, ExternBlock, ExternFunctionDecl, FunctionDef, InterfaceDef, StructDef, TopLevel, TopLevelVarDef, TypeAliasDecl
 from RustParser.AST_Scripts.ast.TypeChecker import TypeChecker
 from pyggi.tree.rust_unparser import RustUnparser
@@ -155,7 +155,7 @@ def collect_expressions(node, path="./", index_map=None) -> List[Tuple[str, obje
         index_map = {}
     results = []
 
-    print("collect_expressions", node.__class__)
+    # print("collect_expressions", node.__class__)
     if isinstance(node, FunctionDef):
         if node.unsafe:
             results.append(node)
@@ -163,13 +163,34 @@ def collect_expressions(node, path="./", index_map=None) -> List[Tuple[str, obje
 
     if isinstance(node, Block):
         if node.isUnsafe:
-            print("unsafe block ", node)
             results.append(node)
         for stmt in node.stmts:
             collect_expressions(stmt)
 
     if isinstance(node, Expression):
         results.append((path.rstrip("/"), node))
+
+    if isinstance(node, Statement):
+        # print("stmt ", node.__class__)
+        if isinstance(node, LetStmt):
+            for var_def, value in zip(node.var_defs, node.values):
+                # print("vardeftype ", var_def.type, value)
+                if isinstance(value, CastExpr):
+                    results.append((node, var_def, value))
+
+                if var_def.type is not None:
+                    var_type = getattr(var_def, 'type', None)
+                    has_type_path = False
+                    if  isinstance(var_def.type, TypePathExpression):
+                        has_type_path = True
+                        # index = node.var_defs.index(var_def)
+                        # results.append(node.var_defs[index])
+                        results.append(node)
+                else:
+                    results.append(node)
+
+        elif isinstance(node, IfStmt):
+                pass
 
     if not hasattr(node, "__dict__"):
         return results
@@ -181,17 +202,14 @@ def collect_expressions(node, path="./", index_map=None) -> List[Tuple[str, obje
 
     for field_name, field_value in vars(node).items():
         full_path = f"{path}{node_type}[{current_index}]/{field_name}"
-        # print("full path is ", full_path)
         if isinstance(node, Expression):
             if isinstance(node, UnsafeExpression):
-                print("0000")
                 results.append((full_path, field_value))
 
         if isinstance(node, Statement):
             results.append((full_path, field_value))
 
         elif isinstance(node, list):
-            print("2222")
             for i, item in enumerate(field_value):
                 if isinstance(item, (Expression, Statement)):
                     results += collect_expressions(item, f"{full_path}[{i}]/", index_map)

@@ -779,8 +779,7 @@ class Transformer(RustVisitor):
 
     def visitTypePathExpression(self, ctx):
             type_path = [id.getText() for id in ctx.Identifier()]
-            # print("type path is ", type_path)
-            return TypePathExpression(type_path)
+            return TypePathExpression(type_path, type_path)
 
     def visitPrimaryExpression(self, ctx):
         if ctx.literal():
@@ -854,7 +853,7 @@ class Transformer(RustVisitor):
             return self.visit(ctx.pointerType())
 
         elif "::" in type_str:
-            return type_str.split("::")[-1]
+            return TypePathExpression(type_path=type_str.split("::") , last_type=type_str.split("::")[-1])
 
         else:
             return type_str

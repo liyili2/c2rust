@@ -305,12 +305,13 @@ class PatternExpr(Expression):
         return self
 
 class TypePathExpression(Expression):
-    def __init__(self, type_path):
+    def __init__(self, type_path, last_type):
         super().__init__()
+        self.last_type = last_type
         self.type_path = type_path  # list of strings
 
     def accept(self, visitor):
-        return visitor.visitTypePathExpression(self)
+        return visitor.visit_TypePathExpression(self)
 
     # def __repr__(self):
     #     return f"TypePathExpression(type_path={self.type_path}, value_expr={self.value_expr})"

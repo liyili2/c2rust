@@ -716,6 +716,9 @@ class TypeChecker:
                 self.increase_error_count()
 
         return field_type
+    
+    def visit_TypePathExpression(self, node):
+        self.error(node, "type path expression instead of simple types")
 
     def visit_BoolLiteral(self, node):
         return BoolType()
