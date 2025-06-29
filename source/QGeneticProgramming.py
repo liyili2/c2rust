@@ -35,20 +35,17 @@ class XMLEngine:
         return list(tags)
 
     def get_tags(self):
-        return self.tags
-        
+        return self.tags     
 
 # Fixture to provide input_states to tests
 @pytest.fixture
 def input_states_fixture():
     return input_states
 
-
 # Fixture to provide true_states to tests
 @pytest.fixture
 def true_states_fixture():
     return true_states
-
 
 class QProgram(AbstractProgram):
     '''

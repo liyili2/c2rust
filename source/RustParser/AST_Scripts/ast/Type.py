@@ -3,6 +3,22 @@ from RustParser.AST_Scripts.ast.ASTNode import ASTNode
 class Type(ASTNode):
     pass
 
+class VoidType:
+    def __init__(self):
+        self.name = "void"
+
+    def __repr__(self):
+        return "Void"
+
+    def __eq__(self, other):
+        return isinstance(other, VoidType)
+
+    def __hash__(self):
+        return hash("void")
+
+    def accept(self, visitor):
+        return super().accept(visitor)
+
 class BoolType:
     def __init__(self):
         super().__init__()
@@ -12,6 +28,9 @@ class BoolType:
 
     def __eq__(self, other):
         return isinstance(other, BoolType)
+    
+    def accept(self, visitor):
+        return super().accept(visitor)
 
 class IntType(Type):
     def __init__(self):
@@ -20,12 +39,18 @@ class IntType(Type):
     def __repr__(self):
         return "i32"
 
+    def accept(self, visitor):
+        return super().accept(visitor)
+
 class StringType(Type):
     def __init__(self):
         super().__init__()
 
     def __repr__(self):
         return "String"
+    
+    def accept(self, visitor):
+        return super().accept(visitor)
 
 class FloatType(Type):
     def __init__(self):
@@ -33,6 +58,9 @@ class FloatType(Type):
 
     def __repr__(self):
         return "float"
+    
+    def accept(self, visitor):
+        return super().accept(visitor)
 
 class StructType(Type):
     def __init__(self, name):
@@ -41,6 +69,9 @@ class StructType(Type):
 
     def __repr__(self):
         return f"Struct<{self.name}>"
+    
+    def accept(self, visitor):
+        return super().accept(visitor)
 
 class RefType(Type):
     def __init__(self, inner):
@@ -49,6 +80,9 @@ class RefType(Type):
 
     def __repr__(self):
         return f"&{self.inner}"
+    
+    def accept(self, visitor):
+        return super().accept(visitor)
 
 class ArrayType(Type):
     def __init__(self, var_type, size=None):

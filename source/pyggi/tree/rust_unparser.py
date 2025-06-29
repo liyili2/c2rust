@@ -1,4 +1,4 @@
-from AST_Scripts.antlr.RustVisitor import RustVisitor
+from RustParser.AST_Scripts.antlr.RustVisitor import RustVisitor
 
 class RustUnparser(RustVisitor):
     def visitProgram(self, ctx):
@@ -85,3 +85,6 @@ class RustUnparser(RustVisitor):
     def visit_InterfaceDef(self, node):
         funcs = '\n'.join(self.visit(func) for func in node.functions if hasattr(func, 'accept'))
         return f"interface {node.name} {{\n{funcs}\n}}"
+    
+    def visit_Block(self, node):
+        pass

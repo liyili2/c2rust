@@ -11,12 +11,13 @@ class TopLevel(ASTNode):
         return getattr(visitor, method_name, visitor.generic_visit)(self)
 
 class FunctionDef(TopLevel):
-    def __init__(self, identifier, params, return_type, body):
+    def __init__(self, identifier, params, return_type, body, unsafe=False):
         super().__init__()
         self.identifier = identifier
         self.params = params
         self.return_type = return_type
         self.body = body
+        self.unsafe = unsafe
 
     def accept(self, visitor):
         method_Identifier = f'visit_{self.__class__.__name__}'
@@ -113,11 +114,18 @@ class TypeAliasDecl(TopLevel):
         self.visibility = visibility
 
 class TopLevelVarDef(TopLevel):
-    def __init__(self, name, fields, type, visibility=None):
+    def __init__(self, name, fields, type, def_kind, visibility=None):
         self.name = name
         self.fields = fields
         self.visibility = visibility
         self.type_ = type
+        self.def_kind = def_kind
+
+class VarDefField(ASTNode):
+    def __init__(self, name, type_, visibility=None):
+        self.name       = name
+        self.type_      = type_
+        self.visibility = visibility
 
 class InterfaceDef(TopLevel):
     def __init__(self, name: str, functions: list):
@@ -129,14 +137,22 @@ class InterfaceDef(TopLevel):
         return f"InterfaceDef(name={self.name}, functions={self.functions})"
 
 class UseDecl(TopLevel):
-    def __init__(self, tree: 'UseTree', alias: Optional[str] = None):
-        super().__init__()
-        self.tree = tree
-        self.alias = alias
+    def __init__(self, paths, aliases=None):
+        """
+        :param paths: List of TypePath objects
+        :param aliases: List of optional identifiers corresponding to each path
+        """
+        self.paths = paths  # list of TypePath
+        self.aliases = aliases or [None] * len(paths)  # list of optional identifier strings
 
-class UseTree(TopLevel):
-    def __init__(self, path: List[str], alias: Optional[str] = None, nested: Optional[List['UseTree']] = None):
-        super().__init__()
-        self.path = path                  # e.g., ['std', 'ptr']
-        self.alias = alias                # e.g., "X" in `use std as X`
-        self.nested = nested or []        # e.g., [UseTree(...), UseTree(...)]
+    def __repr__(self):
+        parts = []
+        for path, alias in zip(self.paths, self.aliases):
+            if alias:
+                parts.append(f"{path} as {alias}")
+            else:
+                parts.append(str(path))
+        return f"UseDecl({', '.join(parts)})"
+
+    def accept(self, visitor):
+        return super().accept(visitor)

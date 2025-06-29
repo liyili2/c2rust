@@ -18,6 +18,7 @@ from abc import ABC, abstractmethod
 from distutils.dir_util import copy_tree
 # from .. import PYGGI_DIR
 from ..utils import Logger, weighted_choice
+import locale
 
 PYGGI_DIR = "./"
 class RunResult:
@@ -84,7 +85,6 @@ class AbstractProgram(ABC):
 
         # Load actual contents using the engines
         self.load_contents()
-        print("after load contents")
         assert self.modification_points
         assert self.contents
         self.logger.info("Path to the temporal program variants: {}".format(self.tmp_path))
@@ -108,6 +108,7 @@ class AbstractProgram(ABC):
         if from_file:
             with open(os.path.join(self.path, config_file_name)) as config_file:
                 config = json.load(config_file)
+        config.setdefault("test_command", "./run.sh")
         self.test_command = config['test_command']
         self.target_files = config['target_files']
         return config
@@ -170,27 +171,23 @@ class AbstractProgram(ABC):
         return random.choice(files)
 
     def random_target(self, target_file=None, method="random"):
-        """
-        :param str target_file: The modification point is chosen within target_file
-        :param str method: The way how to choose a modification point, *'random'* or *'weighted'*
-        :return: The **index** of modification point
-        :rtype: int
-        """
         if target_file is None:
             target_file = target_file or random.choice(self.target_files)
         assert target_file in self.target_files
         assert method in ['random', 'weighted']
+
         candidates = self.modification_points[target_file]
+
         if method == 'random' or target_file not in self.modification_weights:
-            return (target_file, random.randrange(len(candidates)))
+            index = random.randrange(len(candidates))
+            node = candidates[index]
+            return (target_file, node)
+
         elif method == 'weighted':
-            weighted_choice = lambda s : random.choice(sum(([v] * wt for v,wt in s),[]))
-            point = weighted_choice(list(zip(list(range(len(candidates))),
-                self.modification_weights[target_file])))
-            return (target_file, point)
-            # cumulated_weights = sum(self.modification_weights[target_file])
-            # list_of_prob = list(map(lambda w: float(w)/cumulated_weights, self.modification_weights[target_file]))
-            # return (target_file, random.choices(list(range(len(candidates))), weights=list_of_prob, k=1)[0])
+            weighted_choice = lambda s: random.choice(sum(([v] * wt for v, wt in s), []))
+            index = weighted_choice(list(zip(list(range(len(candidates))), self.modification_weights[target_file])))
+            node = candidates[index]
+            return (target_file, node)
 
     @property
     def tmp_path(self):
@@ -286,8 +283,11 @@ class AbstractProgram(ABC):
         try:
             start = time.time()
             stdout, stderr = sprocess.communicate(timeout=timeout)
+            enc = locale.getpreferredencoding(False)  # e.g. 'UTF-8' on most systems
+            stdout = stdout.decode(enc, errors="replace")   # or "ignore"
+            stderr = stderr.decode(enc, errors="replace")
             end = time.time()
-            return (sprocess.returncode, stdout.decode("ascii"), stderr.decode("ascii"), end-start)
+            return (sprocess.returncode, stdout, stderr, end - start)
         except subprocess.TimeoutExpired:
             if os.name == 'posix':
                 os.killpg(os.getpgid(sprocess.pid), signal.SIGKILL)
@@ -300,6 +300,7 @@ class AbstractProgram(ABC):
             os.chdir(cwd)
 
     def compute_fitness(self, result, return_code, stdout, stderr, elapsed_time):
+        print("stdout is ", stdout)
         if "test result: ok" in stdout:
             result.fitness = elapsed_time
         else:

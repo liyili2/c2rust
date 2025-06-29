@@ -24,18 +24,23 @@ class RustVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by RustParser#useTree.
-    def visitUseTree(self, ctx:RustParser.UseTreeContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by RustParser#useTreeList.
-    def visitUseTreeList(self, ctx:RustParser.UseTreeListContext):
-        return self.visitChildren(ctx)
-
-
     # Visit a parse tree produced by RustParser#topLevelDef.
     def visitTopLevelDef(self, ctx:RustParser.TopLevelDefContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#topLevelVarDef.
+    def visitTopLevelVarDef(self, ctx:RustParser.TopLevelVarDefContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#defKind.
+    def visitDefKind(self, ctx:RustParser.DefKindContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#varDefField.
+    def visitVarDefField(self, ctx:RustParser.VarDefFieldContext):
         return self.visitChildren(ctx)
 
 
@@ -129,6 +134,11 @@ class RustVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by RustParser#structLiteralField.
+    def visitStructLiteralField(self, ctx:RustParser.StructLiteralFieldContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by RustParser#functionDef.
     def visitFunctionDef(self, ctx:RustParser.FunctionDefContext):
         return self.visitChildren(ctx)
@@ -141,26 +151,6 @@ class RustVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by RustParser#param.
     def visitParam(self, ctx:RustParser.ParamContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by RustParser#constDef.
-    def visitConstDef(self, ctx:RustParser.ConstDefContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by RustParser#unionDef.
-    def visitUnionDef(self, ctx:RustParser.UnionDefContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by RustParser#unionField.
-    def visitUnionField(self, ctx:RustParser.UnionFieldContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by RustParser#unsafeDef.
-    def visitUnsafeDef(self, ctx:RustParser.UnsafeDefContext):
         return self.visitChildren(ctx)
 
 
@@ -194,13 +184,13 @@ class RustVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by RustParser#unsafeBlock.
-    def visitUnsafeBlock(self, ctx:RustParser.UnsafeBlockContext):
+    # Visit a parse tree produced by RustParser#statement.
+    def visitStatement(self, ctx:RustParser.StatementContext):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by RustParser#statement.
-    def visitStatement(self, ctx:RustParser.StatementContext):
+    # Visit a parse tree produced by RustParser#conditionalAssignmentStmt.
+    def visitConditionalAssignmentStmt(self, ctx:RustParser.ConditionalAssignmentStmtContext):
         return self.visitChildren(ctx)
 
 
@@ -231,6 +221,16 @@ class RustVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by RustParser#matchStmt.
     def visitMatchStmt(self, ctx:RustParser.MatchStmtContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#matchArm.
+    def visitMatchArm(self, ctx:RustParser.MatchArmContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#matchPattern.
+    def visitMatchPattern(self, ctx:RustParser.MatchPatternContext):
         return self.visitChildren(ctx)
 
 
@@ -284,13 +284,48 @@ class RustVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by RustParser#boxWrappwer.
+    def visitBoxWrappwer(self, ctx:RustParser.BoxWrappwerContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#typeWrapper.
+    def visitTypeWrapper(self, ctx:RustParser.TypeWrapperContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#boxWrapperPrefix.
+    def visitBoxWrapperPrefix(self, ctx:RustParser.BoxWrapperPrefixContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#typeWrapperPrefix.
+    def visitTypeWrapperPrefix(self, ctx:RustParser.TypeWrapperPrefixContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by RustParser#expression.
     def visitExpression(self, ctx:RustParser.ExpressionContext):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by RustParser#basicTypeCastExpr.
+    def visitBasicTypeCastExpr(self, ctx:RustParser.BasicTypeCastExprContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#unsafeExpression.
+    def visitUnsafeExpression(self, ctx:RustParser.UnsafeExpressionContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by RustParser#qualifiedExpression.
     def visitQualifiedExpression(self, ctx:RustParser.QualifiedExpressionContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#typeAccessPostfix.
+    def visitTypeAccessPostfix(self, ctx:RustParser.TypeAccessPostfixContext):
         return self.visitChildren(ctx)
 
 
@@ -404,23 +439,13 @@ class RustVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by RustParser#structLiteralField.
-    def visitStructLiteralField(self, ctx:RustParser.StructLiteralFieldContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by RustParser#matchArm.
-    def visitMatchArm(self, ctx:RustParser.MatchArmContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by RustParser#matchPattern.
-    def visitMatchPattern(self, ctx:RustParser.MatchPatternContext):
-        return self.visitChildren(ctx)
-
-
     # Visit a parse tree produced by RustParser#literal.
     def visitLiteral(self, ctx:RustParser.LiteralContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#byteLiteral.
+    def visitByteLiteral(self, ctx:RustParser.ByteLiteralContext):
         return self.visitChildren(ctx)
 
 

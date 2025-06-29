@@ -38,18 +38,21 @@ class StmtReplacement(TreeEdit):
         self.ingredient = ingredient
 
     def apply(self, program, new_contents, modification_points):
+        print("******, called2")
         engine = program.engines[self.target[0]]
         return engine.do_replace(program, self, new_contents, modification_points)
 
     @classmethod
     def create(cls, program, target_file=None, ingr_file=None, method='random'):
+        print("c1")
         if target_file is None:
-            target_file = program.random_file(AbstractTreeEngine)
+            target_file = program.target_files[0]
         if ingr_file is None:
-            ingr_file = program.random_file(engine=program.engines[target_file])
+            ingr_file = program.target_files[0]
+        print("c2", target_file, program.engines[ingr_file], program.engines[target_file])
         assert program.engines[target_file] == program.engines[ingr_file]
         return cls(program.random_target(target_file, method),
-                   program.random_target(ingr_file, 'random'))
+                program.random_target(ingr_file, 'random'))
 
 class StmtInsertion(TreeEdit):
     def __init__(self, target, ingredient, direction='before'):
@@ -59,15 +62,16 @@ class StmtInsertion(TreeEdit):
         self.direction = direction
 
     def apply(self, program, new_contents, modification_points):
+        print("******, called3")
         engine = program.engines[self.target[0]]
         return engine.do_insert(program, self, new_contents, modification_points)
 
     @classmethod
     def create(cls, program, target_file=None, ingr_file=None, direction=None, method='random'):
         if target_file is None:
-            target_file = program.random_file(AbstractTreeEngine)
+            target_file = program.target_files[0]
         if ingr_file is None:
-            ingr_file = program.random_file(engine=program.engines[target_file])
+            ingr_file = program.target_files[0]
         assert program.engines[target_file] == program.engines[ingr_file]
         if direction is None:
             direction = random.choice(['before', 'after'])
@@ -81,12 +85,13 @@ class StmtDeletion(TreeEdit):
 
     def apply(self, program, new_contents, modification_points):
         engine = program.engines[self.target[0]]
+        print("******, called1", engine)
         return engine.do_delete(program, self, new_contents, modification_points)
 
     @classmethod
     def create(cls, program, target_file=None, method='random'):
         if target_file is None:
-            target_file = program.random_file(AbstractTreeEngine)
+            target_file = program.target_files[0]
         return cls(program.random_target(target_file, method))
 
 class StmtMoving(TreeEdit):
