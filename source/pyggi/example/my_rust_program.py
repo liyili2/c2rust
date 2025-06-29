@@ -4,6 +4,7 @@ import shutil
 import tempfile
 import uuid
 from types import SimpleNamespace as Result
+from pyggi.tree.rust_engine import RustEngine
 from pyggi.build.lib.pyggi.base.patch import Patch
 from pyggi.tree.tree import TreeProgram
 from RustParser.AST_Scripts.antlr.RustParser import RustParser
@@ -13,13 +14,16 @@ from RustParser.AST_Scripts.ast.Transformer import Transformer
 from RustParser.AST_Scripts.ast.TypeChecker import TypeChecker
 
 class MyRustProgram(TreeProgram):
-    """A PyGGI Program that uses the Rust TypeChecker as its fitness oracle."""
-
     def __init__(self, path, config):
         self.config = config
         super().__init__(path, config)
         self.main_file = config["target_files"][0]
-        self.config = config
+
+    @classmethod
+    def get_engine(cls, file_name):
+        if file_name.endswith(".rs"):
+            return RustEngine
+        raise Exception(f"No engine for {file_name}")
 
     def apply_patch(self, patch: Patch):
         tmp_root = os.path.join(os.getcwd(), "tmp_variants")
@@ -47,8 +51,25 @@ class MyRustProgram(TreeProgram):
         """
         # workdir = patch.apply()           # temp variant dir
         # src_path = os.path.join(workdir.path, self.main_file)
-        variant = self.apply_patch(patch)               # ← NEW helper
+        variant = self.apply_patch(patch)
+        variant.trees = {}
+        for file_name in variant.target_files:
+            file_path = os.path.join(variant.path, file_name)
+            with open(file_path, encoding="utf-8") as f:
+                code = f.read()
+            engine = variant.engines[file_name]
+            tree = engine.get_contents(file_path)  # parses to AST
+            variant.trees[file_name] = tree
+
+        mutated_tree = variant.trees[self.main_file]
+        engine = self.engines[self.main_file]
+        mutated_code = engine.to_source_code(tree=mutated_tree)
+
         src_path = os.path.join(variant.path, self.main_file)
+        with open(src_path, "w", encoding="utf-8") as f:
+            f.write(mutated_code)
+        print("📝 Wrote mutated Rust code to:", src_path)
+
         start = time.time()
 
         try:
@@ -60,7 +81,9 @@ class MyRustProgram(TreeProgram):
             tokens  = CommonTokenStream(lexer)
             tree    = RustParser(tokens).program()
 
-            ast     = Transformer().visit(tree)
+            transformer = Transformer()
+            ast     = transformer.visit(tree)
+            transformer.set_parents(ast)
 
             # --- type‑check --------------------------------------------------
             checker = TypeChecker()
@@ -80,5 +103,5 @@ class MyRustProgram(TreeProgram):
         res = Result()
         res.elapsed_time = elapsed
         res.status  = status
-        res.fitness = error_cnt            # lower = better (0 == perfect)
+        res.fitness = 1 / (error_cnt + 1)           # lower = better (0 == perfect)
         return res

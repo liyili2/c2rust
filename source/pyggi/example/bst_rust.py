@@ -94,6 +94,10 @@ if __name__ == "__main__":
         program = MyRustProgram(args.project_path, config=cfg)
         ops     = [StmtReplacement, StmtInsertion, StmtDeletion]
 
+        test_op = StmtReplacement.create(program, method="random")
+        print("🚀 replacement picked:", test_op.target)
+        print("👉 AST node type:", type(test_op.target[1]).__name__)
+
     search = MyLocalSearch(program)
     search.operators = ops
     results = search.run(warmup_reps=5, epoch=args.epoch, max_iter=args.iter, timeout=15)

@@ -15,7 +15,7 @@ class TypeChecker:
         error_msg = f"Type error: {message}"
         if hasattr(node, 'line'):
             error_msg = f"[Line {node.line}] {error_msg}"
-        print(error_msg)
+        # print(error_msg)
         self.errors.append(error_msg)
         self.increase_error_count()
 
@@ -716,7 +716,7 @@ class TypeChecker:
                 self.increase_error_count()
 
         return field_type
-    
+
     def visit_TypePathExpression(self, node):
         self.error(node, "type path expression instead of simple types")
 

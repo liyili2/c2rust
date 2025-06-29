@@ -85,7 +85,6 @@ class AbstractProgram(ABC):
 
         # Load actual contents using the engines
         self.load_contents()
-        print("after load contents")
         assert self.modification_points
         assert self.contents
         self.logger.info("Path to the temporal program variants: {}".format(self.tmp_path))
@@ -172,27 +171,23 @@ class AbstractProgram(ABC):
         return random.choice(files)
 
     def random_target(self, target_file=None, method="random"):
-        """
-        :param str target_file: The modification point is chosen within target_file
-        :param str method: The way how to choose a modification point, *'random'* or *'weighted'*
-        :return: The **index** of modification point
-        :rtype: int
-        """
         if target_file is None:
             target_file = target_file or random.choice(self.target_files)
         assert target_file in self.target_files
         assert method in ['random', 'weighted']
+
         candidates = self.modification_points[target_file]
+
         if method == 'random' or target_file not in self.modification_weights:
-            return (target_file, random.randrange(len(candidates)))
+            index = random.randrange(len(candidates))
+            node = candidates[index]
+            return (target_file, node)
+
         elif method == 'weighted':
-            weighted_choice = lambda s : random.choice(sum(([v] * wt for v,wt in s),[]))
-            point = weighted_choice(list(zip(list(range(len(candidates))),
-                self.modification_weights[target_file])))
-            return (target_file, point)
-            # cumulated_weights = sum(self.modification_weights[target_file])
-            # list_of_prob = list(map(lambda w: float(w)/cumulated_weights, self.modification_weights[target_file]))
-            # return (target_file, random.choices(list(range(len(candidates))), weights=list_of_prob, k=1)[0])
+            weighted_choice = lambda s: random.choice(sum(([v] * wt for v, wt in s), []))
+            index = weighted_choice(list(zip(list(range(len(candidates))), self.modification_weights[target_file])))
+            node = candidates[index]
+            return (target_file, node)
 
     @property
     def tmp_path(self):

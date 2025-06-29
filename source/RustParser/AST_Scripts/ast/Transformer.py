@@ -1017,3 +1017,23 @@ class Transformer(RustVisitor):
             aliases.append(None)
 
         return UseDecl(paths, aliases)
+
+    def set_parents(self, node, parent=None, visited=None):
+        if visited is None:
+            visited = set()
+
+        if id(node) in visited:
+            return
+        visited.add(id(node))
+
+        if isinstance(node, list):
+            for child in node:
+                self.set_parents(child, parent, visited)
+
+        elif hasattr(node, '__dict__'):
+            node.parent = parent
+            for key, val in vars(node).items():
+                # Don't recurse into basic types or parent link
+                if key == "parent" or isinstance(val, (str, int, float, bool, type(None))):
+                    continue
+                self.set_parents(val, node, visited)
