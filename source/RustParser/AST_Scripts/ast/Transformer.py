@@ -1,8 +1,9 @@
 
-from RustParser.AST_Scripts.ast.Expression import ArrayDeclaration, ArrayLiteral, BasicTypeCastExpr, BinaryExpr, BoolLiteral, BorrowExpr, BoxWrapperExpr, CastExpr, CharLiteralExpr, DereferenceExpr, FieldAccessExpr, FunctionCallExpr, IdentifierExpr, IndexExpr, IntLiteral, MethodCallExpr, MutableExpr, ParenExpr, Pattern, PatternExpr, QualifiedExpression, RangeExpression, RepeatArrayLiteral, StrLiteral, StructDefInit, StructLiteralExpr, StructLiteralField, TypeAccessExpr, TypePathExpression, TypePathFullExpr, TypeWrapperExpr, UnaryExpr, UnsafeExpression
+from RustParser.AST_Scripts.ast.ASTNode import ASTNode
+from RustParser.AST_Scripts.ast.Expression import ArrayDeclaration, ArrayLiteral, BasicTypeCastExpr, BinaryExpr, BoolLiteral, BorrowExpr, BoxWrapperExpr, CastExpr, CharLiteral, CharLiteralExpr, DereferenceExpr, FieldAccessExpr, FunctionCallExpr, IdentifierExpr, IndexExpr, IntLiteral, MethodCallExpr, MutableExpr, ParenExpr, Pattern, PatternExpr, QualifiedExpression, RangeExpression, RepeatArrayLiteral, StrLiteral, StructDefInit, StructLiteralExpr, StructLiteralField, TypeAccessExpr, TypePathExpression, TypePathFullExpr, TypeWrapperExpr, UnaryExpr, UnsafeExpression
 from RustParser.AST_Scripts.ast.Statement import AssignStmt, BreakStmt, CallStmt, CompoundAssignment, ConditionalAssignmentStmt, ContinueStmt, ExpressionStmt, ForStmt, IfStmt, LetStmt, LoopStmt, MatchArm, MatchPattern, MatchStmt, ReturnStmt, StaticVarDecl, StructLiteral, TypeWrapper, UnsafeBlock, WhileStmt
 from RustParser.AST_Scripts.antlr.RustVisitor import RustVisitor
-from RustParser.AST_Scripts.ast.TopLevel import ExternBlock, ExternFunctionDecl, ExternStaticVarDecl, ExternTypeDecl, FunctionDef, InterfaceDef, StructDef, Attribute, TopLevelVarDef, TypeAliasDecl, UseDecl, VarDefField
+from RustParser.AST_Scripts.ast.TopLevel import ExternBlock, ExternFunctionDecl, ExternStaticVarDecl, ExternTypeDecl, FunctionDef, InterfaceDef, StructDef, Attribute, TopLevel, TopLevelVarDef, TypeAliasDecl, UseDecl, VarDefField
 from RustParser.AST_Scripts.ast.Program import Program
 from RustParser.AST_Scripts.ast.Expression import LiteralExpr
 from RustParser.AST_Scripts.ast.Type import ArrayType, BoolType, IntType, PathType, PointerType, StringType, Type
@@ -31,7 +32,9 @@ class Transformer(RustVisitor):
         finally:
             self._depth -= 1
 
+    topNode = None
     def visitProgram(self, ctx):
+        topNode = ctx
         items = []
         for item_ctx in ctx.topLevelItem():
             result = self.visit(item_ctx)
@@ -379,6 +382,7 @@ class Transformer(RustVisitor):
         if len(var_defs) == 1 and len(expressions) == 1 and init_block is None:
             var_def = self.visit(var_defs[0])
             expr = self.visit(expressions[0])
+            # print("expr type is ", expr.__class__)
             return LetStmt(var_def, expr)
 
         # case 2: let varDef initBlock
@@ -840,7 +844,6 @@ class Transformer(RustVisitor):
         if type_str.startswith('[') and ';' in type_str and type_str.endswith(']'):
             inner_type_str, size_str = type_str[1:-1].split(';')
             inner_type = self._basic_type_from_str(inner_type_str.strip())
-            # print("inner type is ", inner_type_str.strip(), inner_type)
             size = int(size_str.strip())
             return ArrayType(inner_type, size)
 
@@ -854,7 +857,10 @@ class Transformer(RustVisitor):
 
         elif "::" in type_str:
             return TypePathExpression(type_path=type_str.split("::") , last_type=type_str.split("::")[-1])
-
+        elif str.__eq__(type_str,"i32"):
+            return IntType()
+        elif str.__eq__(type_str,"String"):
+            return StringType()
         else:
             return type_str
 
@@ -880,22 +886,22 @@ class Transformer(RustVisitor):
         if ctx.arrayLiteral():
             return self.visit(ctx.arrayLiteral())
         elif ctx.booleanLiteral():
-            return self.visit(ctx.booleanLiteral())
+            return BoolLiteral(self.visit(ctx.booleanLiteral()))
         elif ctx.HexNumber():
             return int(ctx.HexNumber().getText(), 16)
         elif ctx.Number():
-            return int(ctx.Number().getText())
+            return IntLiteral(ctx.Number().getText())
         elif ctx.SignedNumber():
-            return int(ctx.SignedNumber().getText())
+            return IntLiteral(int(ctx.SignedNumber().getText()))
         elif ctx.BYTE_STRING_LITERAL():
             text = ctx.BYTE_STRING_LITERAL().getText()
             return bytes(text[2:-1], "utf-8")
         elif ctx.Binary():
             return int(ctx.Binary().getText(), 2)
         elif ctx.STRING_LITERAL():
-            return ctx.STRING_LITERAL().getText()[1:-1]
+            return StrLiteral(ctx.STRING_LITERAL().getText()[1:-1])
         elif ctx.CHAR_LITERAL():
-            return ctx.CHAR_LITERAL().getText()[1:-1]
+            return CharLiteral(ctx.CHAR_LITERAL().getText()[1:-1])
         elif ctx.byteLiteral():
             return self.visit(ctx.byteLiteral())
         elif ctx.NONE():
@@ -1037,3 +1043,25 @@ class Transformer(RustVisitor):
                 if key == "parent" or isinstance(val, (str, int, float, bool, type(None))):
                     continue
                 self.set_parents(val, node, visited)
+
+def setParents(node, parent=None, top_level_prog=None):
+    if not isinstance(node, ASTNode):
+        return
+
+    if isinstance(node, Program):
+        top_level_prog = node
+
+    if isinstance(node, TopLevel) and top_level_prog:
+        node.parent = top_level_prog
+    elif parent is not None:
+        node.parent = parent
+
+    for attr, value in vars(node).items():
+        if attr == "parent":
+            continue
+
+        if isinstance(value, list):
+            for item in value:
+                setParents(item, node, top_level_prog)
+        elif isinstance(value, ASTNode):
+            setParents(value, node, top_level_prog)

@@ -238,12 +238,16 @@ class AbstractProgram(ABC):
         return self.engines[file_name].dump(contents[file_name], file_name)
 
     def get_modified_contents(self, patch):
+        print("get_modified_contents")
         target_files = self.contents.keys()
         modification_points = copy.deepcopy(self.modification_points)
         new_contents = copy.deepcopy(self.contents)
+        print("target_files_len:", len(target_files))
         for target_file in target_files:
             edits = list(filter(lambda a: a.target[0] == target_file, patch.edit_list))
+            print("edits_len", len(edits))
             for edit in edits:
+                print("edit_class:", edit.__class__)
                 edit.apply(self, new_contents, modification_points)
         return new_contents
 
@@ -260,6 +264,7 @@ class AbstractProgram(ABC):
             - key: The target file name(path) related to the program root path
             - value: The contents of the file
         """
+        print("apply")
         new_contents = self.get_modified_contents(patch)
         self.write_to_tmp_dir(new_contents)
         return new_contents
@@ -308,6 +313,7 @@ class AbstractProgram(ABC):
 
     def evaluate_patch(self, patch, timeout=15):
         # apply + run
+        print("fuck2")
         self.apply(patch)
         return_code, stdout, stderr, elapsed_time = self.exec_cmd(self.test_command, timeout)
         # print("Standard Output:\n", stdout)

@@ -7,3 +7,6 @@ class Program(ASTNode):
 
     def accept(self, visitor):
         return visitor.visit_Program(self)
+    
+    def getChildren(self):
+        return self.items

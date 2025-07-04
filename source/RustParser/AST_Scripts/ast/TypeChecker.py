@@ -1,4 +1,5 @@
 from ast import FunctionDef
+from RustParser.AST_Scripts.ast.Block import Block
 from RustParser.AST_Scripts.ast.Type import ArrayType, BoolType, FloatType, IntType, RefType, StringType, StructType, VoidType
 from RustParser.AST_Scripts.ast.TypeEnv import TypeEnv
 from RustParser.AST_Scripts.ast.Expression import BorrowExpr, CastExpr, FunctionCallExpr, IdentifierExpr, LiteralExpr 
@@ -15,7 +16,7 @@ class TypeChecker:
         error_msg = f"Type error: {message}"
         if hasattr(node, 'line'):
             error_msg = f"[Line {node.line}] {error_msg}"
-        # print(error_msg)
+        print(error_msg)
         self.errors.append(error_msg)
         self.increase_error_count()
 
@@ -50,6 +51,7 @@ class TypeChecker:
         pass
 
     def visit_FunctionDef(self, node: FunctionDef):
+        print("t1")
         fn_name = node.identifier
         param_types = [p.type_ for p in node.params]  # assume each Param has `.identifier` & `.type_`
         return_type = node.return_type or VoidType()  # `void` if omitted
@@ -210,7 +212,7 @@ class TypeChecker:
                 self.increase_error_count()
 
         return struct_type
-    
+
     def visit_UnsafeBlock(self, node):
         result = self.visit(node.block)
         return result
@@ -220,14 +222,14 @@ class TypeChecker:
 
         if node.is_destructuring():
             if len(node.var_defs) != len(expr_types):
-                self.increase_error_count()
+                self.error(node, "number of group-let of values and targets do not match")
                 return
 
             for var_def, expr_type in zip(node.var_defs, expr_types):
                 declared_type = self.visit(var_def.type) if var_def.type else expr_type
 
                 if var_def.type and type(declared_type) != type(expr_type) and not isinstance(expr_type, RefType):
-                    self.increase_error_count()
+                    self.error(node, "in the group-let, type of one of the values do not match its target")
 
                 # Declare the variable
                 self.env.declare(var_def.name, declared_type)
@@ -239,10 +241,14 @@ class TypeChecker:
         else:
             var_def = node.var_defs[0]
             expr_type = expr_types[0]
-            declared_type = self.visit(var_def.type) if var_def.type else expr_type
+            # print("llllllllll", var_def.type.__class__, expr_type.__class__, (var_def.type.__class__ is expr_type.__class__))
+            if var_def.type:
+                declared_type = self.visit(var_def.type)
+            else:
+                declared_type = expr_type
 
-            if var_def.type and type(declared_type) != type(expr_type) and not isinstance(expr_type, RefType):
-                self.increase_error_count()
+            if (not (var_def.type.__class__ is expr_type.__class__)) or isinstance(expr_type, RefType):
+                self.error(node, "type of the value and target do not match")
 
             self.env.declare(var_def.name, declared_type)
             self.symbol_table[var_def.name] = declared_type
@@ -274,17 +280,21 @@ class TypeChecker:
             else:
                 self.increase_error_count()
                 return BoolType()
-
         else:
             print(f"⚠️ Unknown binary operator: {op}")
             self.increase_error_count()
             return IntType()  # default fallback
 
     def visit_Block(self, node):
+        print("t3")
         result_stmts = []
+        if isinstance(node.stmts, Block):
+            print("t4", self.error_count)
+            pass
         if node.isUnsafe:
             self.error(node, "unsafe blcok error")
         for stmt in node.stmts:
+            print("t2")
             result_stmt = self.visit(stmt)
             result_stmts.append(result_stmt)
 

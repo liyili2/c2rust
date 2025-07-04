@@ -91,6 +91,9 @@ class Block(Statement):
 
     def accept(self, visitor):
         return visitor.visit_block(self)
+    
+    def getChildren(self):
+        return self.statements
 
 class ExternStaticVarDecl(Statement):
     def __init__(self, name, var_type, mutable, initial_value, visibility=None):

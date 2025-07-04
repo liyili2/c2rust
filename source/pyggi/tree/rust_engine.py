@@ -1,10 +1,12 @@
+from copy import deepcopy
 import os
 from RustParser.AST_Scripts.ast.AstPrinter import AstPrinter
 from RustParser.AST_Scripts.ast.Block import Block
 from RustParser.AST_Scripts.antlr.RustLexer import RustLexer
 from antlr4 import CommonTokenStream, InputStream
 from RustParser.AST_Scripts.antlr.RustParser import RustParser
-from RustParser.AST_Scripts.ast.Transformer import Transformer
+from RustParser.AST_Scripts.ast.Transformer import Transformer, setParents
+from RustParser.AST_Scripts.ast.Program import Program
 from RustParser.AST_Scripts.ast.Expression import BinaryExpr, CastExpr, Expression, TypePathExpression, UnsafeExpression
 from RustParser.AST_Scripts.ast.Statement import IfStmt, LetStmt, Statement
 from RustParser.AST_Scripts.ast.TopLevel import Attribute, ExternBlock, ExternFunctionDecl, FunctionDef, InterfaceDef, StructDef, TopLevel, TopLevelVarDef, TypeAliasDecl
@@ -14,19 +16,33 @@ from pyggi.tree.rust_unparser import RustUnparser
 from pyggi.tree.abstract_engine import AbstractTreeEngine
 from typing import List, Tuple
 
-def pretty_print_ast(node, indent=0):
-    spacer = '  ' * indent
-    if isinstance(node, list):
-        return '\n'.join(pretty_print_ast(n, indent) for n in node)
+def pretty_print_ast(node, indent=0, visited=None):
+    if visited is None:
+        visited = set()
 
-    if hasattr(node, '__dict__'):
-        lines = [f"{spacer}{node.__class__.__name__}:"]
-        for key, value in vars(node).items():
-            lines.append(f"{spacer}  {key}:")
-            lines.append(pretty_print_ast(value, indent + 2))
-        return '\n'.join(lines)
+    if id(node) in visited:
+        return ' ' * indent + f"<Cycle: {type(node).__name__}>\n"
+
+    visited.add(id(node))
+
+    lines = []
+    prefix = ' ' * indent
+
+    if isinstance(node, list):
+        for n in node:
+            lines.append(pretty_print_ast(n, indent, visited))
+    elif hasattr(node, '__dict__'):
+        lines.append(f"{prefix}{type(node).__name__}:")
+        for attr, value in vars(node).items():
+            if attr == "parent":
+                continue  # Skip parent to prevent infinite loop
+            lines.append(f"{prefix}  {attr}:")
+            lines.append(pretty_print_ast(value, indent + 4, visited))
     else:
-        return f"{spacer}{repr(node)}"
+        lines.append(f"{prefix}{repr(node)}")
+
+    return '\n'.join(lines)
+
 
 class RustEngine(AbstractTreeEngine):
     def __init__(self):
@@ -54,7 +70,8 @@ class RustEngine(AbstractTreeEngine):
         parser = RustParser(token_stream)
         tree = parser.program()
         builder = Transformer()
-        ast = builder.visit(tree)
+        ast=builder.visit(tree)
+        setParents(ast)
         cls.ast = ast
         return ast
 
@@ -70,53 +87,75 @@ class RustEngine(AbstractTreeEngine):
         return [(file_name, p) for p in points]
 
     @classmethod
-    def _collect_nodes(cls, node):
-        results = []
+    def _collect_nodes(cls, node, visited=None):
+        if visited is None:
+            visited = set()
 
-        # if isinstance(node, (Statement, Expression)):
-        #     print(f"✅ Found node: {type(node).__name__}")
-        #     results.append(node)
+        results = []
+        if id(node) in visited:
+            return results
+        visited.add(id(node))
+
         if isinstance(node, Statement):
-            # print("=========", node.__class__)
             results.append(node)
 
         if isinstance(node, list):
             for child in node:
-                results.extend(cls._collect_nodes(child))
+                results.extend(cls._collect_nodes(child, visited))
         elif hasattr(node, "__dict__"):
             for val in vars(node).values():
-                results.extend(cls._collect_nodes(val))
+                results.extend(cls._collect_nodes(val, visited))
 
         return results
 
     @classmethod
-    def do_replace(cls, program, op, new_contents, modification_points):
+    def do_replace(cls, program, op, trees, modification_points):
         print("do_replace")
         file_name, target_node = op.target
-        # Replace the node in AST
-        cls._replace_node(target_node, new_contents)
-        return
+        _, ingredient_node = op.ingredient
+        cls._replace_node(target_node, deepcopy(ingredient_node))
 
     @classmethod
-    def do_insert(cls, program, op, new_contents, modification_points):
-        print("do_insert")
-        file_name, target_node = op.target
-        # You need to decide: insert *before*, *after*, or *into*
-        # Let's say we insert after the current node
-        parent = getattr(target_node, 'parent', None)
-        if parent and hasattr(parent, 'body') and isinstance(parent.body, list):
-            idx = parent.body.index(target_node)
-            parent.body.insert(idx + 1, new_contents)
-        return
-
-    @classmethod
-    def do_delete(cls, program, op, new_contents, modification_points):
+    def do_insert(cls, program, op, trees, modification_points):
         print("do_delete")
         file_name, target_node = op.target
-        parent = getattr(target_node, 'parent', None)
-        if parent and hasattr(parent, 'body') and isinstance(parent.body, list):
-            parent.body.remove(target_node)
-        return
+        if isinstance(target_node, tuple):
+            _, target_node = target_node  # get the real AST node
+
+        new_Ast = remove_ast_node(program, target_node)
+        if hasattr(program, "trees"):
+            program.trees[file_name] = new_Ast
+        # print("do_insert")
+        # file_name, target_node = op.target
+        # _, ingredient_node = op.ingredient
+        # parent = getattr(target_node, 'parent', None)
+        # if parent and hasattr(parent, 'body') and isinstance(parent.body, list):
+        #     idx = parent.body.index(target_node)
+        #     if op.direction == "before":
+        #         parent.body.insert(idx, deepcopy(ingredient_node))
+        #     else:
+        #         parent.body.insert(idx + 1, deepcopy(ingredient_node))
+
+    @classmethod
+    def do_delete(cls, program, op, trees, modification_points):
+        print("do_delete", op, op.__class__, program.__class__, trees.__class__)
+        file_name, target_node = program.target
+        if isinstance(target_node, tuple):
+            _, target_node = target_node
+
+        new_ast = remove_ast_node(trees[file_name], target_node)
+        # cls.trees[file_name] = new_ast
+        trees[file_name] = new_ast
+        # op[file_name] = new_ast
+        op.trees[file_name] = new_ast
+        print("tree: ", program.__class__, file_name, pretty_print_ast(trees[file_name]))
+        return trees
+
+    @classmethod
+    def _get_root_node(cls, node):
+        while hasattr(node, 'parent') and node.parent is not None:
+            node = node.parent
+        return node
 
     @staticmethod
     def _replace_node(target_node, new_node):
@@ -285,3 +324,84 @@ def get_file_extension(file_path):
     """
     _, file_extension = os.path.splitext(file_path)
     return file_extension
+
+def get_all_parents(ast_root, target_node, parent=None):
+    if parent is None:
+        parent = getattr(target_node, 'parent', None)
+        if parent is None:
+            raise ValueError("Target node has no parent reference")
+
+    if isinstance(parent, Program):
+        return [parent]
+
+    return [parent] + get_all_parents(ast_root, parent, parent.parent)
+
+def remove_node(ast_root, target_node, parents):
+    current = ast_root
+    # current = ast_root.trees["bst.rs"]
+    i = len(parents) - 1
+    other_tops = []
+    new_ast = None
+    if isinstance(current, Program):
+        current_list = current.getChildren()
+        for top in current_list:
+            if isinstance(parents[i - 1], type(top)):
+                top_children = top.getChildren()
+                if isinstance(parents[i - 2] ,type(top_children)):
+                    if isinstance(top_children, Block):
+                        top_children_stmts = top_children.getChildren()
+                        for stmt in top_children_stmts:
+                            print("found node is ", stmt)
+                            if statements_eq(stmt, target_node):
+                                print("node found!!!")
+                                top_children_stmts.remove(stmt)
+                                newBlock = Block(top_children_stmts, top_children.isUnsafe)
+                                top.setBody(newBlock)
+                                other_tops.append(top)
+                            else:
+                                continue
+            else:
+                other_tops.append(top)
+                continue
+
+    new_ast = Program(items=other_tops)
+    return new_ast
+
+def statements_eq(stmt1, stmt2):
+    print("statements_eq_", stmt1, stmt2)
+    if not isinstance(stmt1, type(stmt2)):
+        print("not the same class")
+        return False
+
+    if isinstance(stmt1, LetStmt):
+        print("ppppp")
+        for i in range(len(stmt1.var_defs)):
+            print("qqqqq")
+            if not (str.__eq__(stmt1.var_defs[i].name, stmt2.var_defs[i].name) and isinstance(stmt1.var_defs[i].type, type(stmt2.var_defs[i].type))):
+                print(stmt1.var_defs[i].name, stmt2.var_defs[i].name, stmt1.var_defs[i].type, stmt2.var_defs[i].type)
+                return False
+        return True
+
+    return False
+
+def get_attr_name(parent, child):
+    for attr_name in dir(parent):
+        if attr_name.startswith("__"):
+            continue
+        try:
+            attr_value = getattr(parent, attr_name)
+        except AttributeError:
+            continue
+
+        if isinstance(attr_value, list):
+            if child in attr_value:
+                return attr_name
+        elif attr_value is child:
+            return attr_name
+    return None  # Not found
+
+def remove_ast_node(ast_root, target_node):
+    parents = get_all_parents(ast_root, target_node)
+    print("target node is ", target_node, target_node.parent, parents, len(parents))
+    new_ast = remove_node(ast_root, target_node, parents)
+    return new_ast

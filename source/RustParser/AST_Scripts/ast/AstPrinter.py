@@ -1,8 +1,9 @@
 
 
-class AstPrinter:
+class AstPrinter: 
     def visit(self, node):
         method_name = f"visit_{type(node).__name__}"
+        print("in main", method_name)
         visitor = getattr(self, method_name, self.generic_visit)
         return visitor(node)
 
@@ -10,12 +11,51 @@ class AstPrinter:
         return f"<Unknown:{type(node).__name__}>"
     
     def visit_Program(self, node):
-        return "\n".join(self.visit(item) for item in node.items)
+        return "\n\n".join(self.visit(item) for item in node.items)
+
+    def visit_FunctionDef(self, node):
+        print("in funcdef")
+        header = "unsafe " if node.unsafe else ""
+        header += f"fn {node.identifier}("
+        header += self.visit(node.params) + ")"
+        if node.return_type:
+            header += f" -> {self.visit(node.return_type)}"
+        body = self.visit(node.body)
+        return f"{header} {body}"
+
+    def visit_FunctionParamList(self, node):
+        return ", ".join(self.visit(param) for param in node.params)
+
+    def visit_Param(self, node):
+        mut = "mut " if node.is_mut else ""
+        return f"{mut}{node.name}: {self.visit(node.typ)}"
+
+    def visit_TypeName(self, node):
+        return node.name  # assuming TypeName just wraps a string type name
+
+    def visit_Block(self, node):
+        stmts = "\n".join("    " + self.visit(stmt) for stmt in node.stmts)
+        return "{\n" + stmts + "\n}"
 
     def visit_LetStmt(self, node):
-        decl = self.visit(node.declared_type) if node.declared_type else ""
-        val = self.visit(node.value)
-        return f"let {node.identifier} : {decl} = {val};"
+        if not node.is_destructuring():
+            var = node.var_defs[0]
+            val = self.visit(node.values[0])
+            return f"let {self.visit(var)} = {val};"
+
+        vars_str = ", ".join(self.visit(v) for v in node.var_defs)
+        vals_str = ", ".join(self.visit(v) for v in node.values)
+        return f"let ({vars_str}) = ({vals_str});"
+    
+    def visit_VarDef(self, node):
+        mut = "mut " if getattr(node, "is_mut", False) else ""
+        return f"{mut}{node.name}: {self.visit(node.type)}"  # or just node.name if no type
+
+    def visit_Literal(self, node):
+        return str(node.value)
+
+    def visit_Identifier(self, node):
+        return node.name
 
     def visit_AssignStmt(self, node):
         target = self.visit(node.target)
@@ -30,10 +70,6 @@ class AstPrinter:
     def visit_CallStmt(self, node):
         return self.visit(node.call) + ";"
 
-    def visit_Block(self, node):
-        stmts = "\n".join(self.visit(s) for s in node.stmts)
-        return f"{{\n{stmts}\n}}"
-
     def visit_IfStmt(self, node):
         cond = self.visit(node.condition)
         then = self.visit(node.then_branch)
@@ -41,12 +77,6 @@ class AstPrinter:
         if node.else_branch:
             result += f" else {self.visit(node.else_branch)}"
         return result
-
-    def visit_Identifier(self, node):
-        return node.name
-
-    def visit_Literal(self, node):
-        return str(node.value)
 
     def visit_BinaryExpr(self, node):
         left = self.visit(node.left)
@@ -73,3 +103,21 @@ class AstPrinter:
     def visit_FieldAccessExpr(self, node):
         receiver = self.visit(node.receiver)
         return f"{receiver}.{node.name}"
+    
+    def visit_Type(self, node):
+        print("********")
+
+    def visit_BoolType(self, node):
+        return "bool"
+
+    def visit_IntType(self, node):
+        return "i32"
+
+    def visit_StringType(self, node):
+        return "String"
+
+    def visit_FloatType(self, node):
+        return "f32"
+
+    def visit_str(self, node):
+        return node

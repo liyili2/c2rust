@@ -1,6 +1,7 @@
 """
 Improving non-functional properties ::
 """
+from copy import deepcopy
 import os
 import sys
 import random
@@ -47,9 +48,20 @@ class MyProgram(AbstractProgram):
     def get_engine(cls, file_name):
         return RustEngine
 
+    # def apply_patch(self, patch):                 # ← accept the patch here
+    #     """
+    #     Clone the program, then let the standard `apply` do the real work.
+    #     """
+    #     variant = MyRustProgram(path=self.path, config=self.config)
+    #     variant.trees = deepcopy(self.trees)
+    #     variant.modification_points = deepcopy(self.modification_points)
+
+    #     print("applying the changes:")
+    #     variant.apply(patch)
+    #     return variant
+
 class MyLineProgram(LineProgram, MyProgram):
     pass
-
 
 class MyLocalSearch(LocalSearch):
     def get_neighbour(self, patch):
@@ -94,17 +106,17 @@ if __name__ == "__main__":
         program = MyRustProgram(args.project_path, config=cfg)
         ops     = [StmtReplacement, StmtInsertion, StmtDeletion]
 
-        test_op = StmtReplacement.create(program, method="random")
-        print("🚀 replacement picked:", test_op.target)
-        print("👉 AST node type:", type(test_op.target[1]).__name__)
+        # test_op = StmtDeletion.create(program, method="random")
+        # print("🚀 deletion picked:", test_op.target)
+        # print("👉 AST node type:", type(test_op.target[1]).__name__)
 
     search = MyLocalSearch(program)
     search.operators = ops
     results = search.run(warmup_reps=5, epoch=args.epoch, max_iter=args.iter, timeout=15)
-    print("====================== RESULT ======================")
-    for ep, r in enumerate(results, 1):
-        print(f"Epoch {ep}:  best fitness {r['BestFitness']}")
-        if r["diff"]:
-            print(r["diff"])
+    # print("====================== RESULT ======================")
+    # for ep, r in enumerate(results, 1):
+    #     print(f"Epoch {ep}:  best fitness {r['BestFitness']}")
+        # if r["diff"]:
+        #     print(r["diff"])
 
     program.remove_tmp_variant()
