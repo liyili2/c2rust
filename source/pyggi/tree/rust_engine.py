@@ -351,9 +351,7 @@ def remove_node(ast_root, target_node, parents):
                     if isinstance(top_children, Block):
                         top_children_stmts = top_children.getChildren()
                         for stmt in top_children_stmts:
-                            print("found node is ", stmt)
                             if statements_eq(stmt, target_node):
-                                print("node found!!!")
                                 top_children_stmts.remove(stmt)
                                 newBlock = Block(top_children_stmts, top_children.isUnsafe)
                                 top.setBody(newBlock)
