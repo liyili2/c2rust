@@ -286,15 +286,12 @@ class TypeChecker:
             return IntType()  # default fallback
 
     def visit_Block(self, node):
-        print("t3")
         result_stmts = []
         if isinstance(node.stmts, Block):
-            print("t4", self.error_count)
-            pass
+            self.visit(node.stmts)
         if node.isUnsafe:
             self.error(node, "unsafe blcok error")
         for stmt in node.stmts:
-            print("t2")
             result_stmt = self.visit(stmt)
             result_stmts.append(result_stmt)
 
@@ -726,6 +723,11 @@ class TypeChecker:
                 self.error(node, "the identifier is not owned or borrowed")
 
         return field_type
+
+    def visit_MatchStmt(self, node):
+        self.visit(node.expr)
+        for arm in node.arms:
+            self.visit(arm.body)
 
     def visit_TypePathExpression(self, node):
         self.error(node, "type path expression instead of simple types")

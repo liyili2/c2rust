@@ -125,13 +125,13 @@ class WhileStmt(Statement):
 class MatchStmt(Statement):
     def __init__(self, expr, arms, line, column):
         super().__init__()
-        self.expr = expr              # the expression being matched
-        self.arms = arms              # list of MatchArm
+        self.expr = expr
+        self.arms = arms
         # self.line = line
         # self.column = column
 
     def accept(self, visitor):
-        return visitor.visit_match_stmt(self)
+        return visitor.visit_MatchStmt(self)
 
 class MatchArm(Statement):
     def __init__(self, patterns, body):
