@@ -82,9 +82,7 @@ class RustEngine(AbstractTreeEngine):
     @classmethod
     def get_modification_points(cls, ast_root):
         points = cls._collect_nodes(ast_root)
-        print(";;;;;;", ast_root.__class__)
-        file_name = "bst.rs"
-        return [(file_name, p) for p in points]
+        return [(p, p) for p in points]
 
     @classmethod
     def _collect_nodes(cls, node, visited=None):
