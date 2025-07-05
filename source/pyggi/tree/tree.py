@@ -3,7 +3,6 @@ import ast
 import astor
 import random
 from abc import abstractmethod
-
 from pyggi.tree.rust_engine import RustEngine
 from . import AbstractTreeEngine, AstorEngine, XmlEngine
 from ..base import AbstractProgram, AbstractEdit
@@ -38,7 +37,7 @@ class StmtReplacement(TreeEdit):
         self.ingredient = ingredient
 
     def apply(self, program, new_contents, modification_points):
-        print("******, called2")
+        print("StmtReplacement called")
         engine = program.engines[self.target[0]]
         return engine.do_replace(program, self, new_contents, modification_points)
 
@@ -62,7 +61,7 @@ class StmtInsertion(TreeEdit):
         self.direction = direction
 
     def apply(self, program, new_contents, modification_points):
-        print("******, called3")
+        print("StmtInsertion called")
         engine = program.engines[self.target[0]]
         return engine.do_insert(program, self, new_contents, modification_points)
 
@@ -84,7 +83,7 @@ class StmtDeletion(TreeEdit):
 
     def apply(self, program, new_contents, modification_points):
         engine = program.engines[self.target[0]]
-        print("******, called1", engine, new_contents.__class__, new_contents, program.__class__, program)
+        print("StmtDeletion called", engine, new_contents.__class__, new_contents, program.__class__, program)
         return engine.do_delete(program, self, new_contents, modification_points)
 
     @classmethod
