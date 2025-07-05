@@ -326,21 +326,27 @@ def remove_node(ast_root, target_node, parents):
                 if isinstance(parents[i - 2] ,type(top_children)):
                     if isinstance(top_children, Block):
                         top_children_stmts = top_children.getChildren()
-                        for stmt in top_children_stmts:
-                            if statements_eq(stmt, target_node):
-                                print("equal, applying deletion")
-                                top_children_stmts.remove(stmt)
-                                newBlock = Block(top_children_stmts, top_children.isUnsafe)
-                                top.setBody(newBlock)
-                                other_tops.append(top)
-                            else:
-                                continue
+                        remake_ast_after_removal(target_node, other_tops, top, top_children, top_children_stmts)
+                    elif isinstance(top_children, FunctionDef):
+                        top_children_stmts = top_children.getChildren()
+                        remake_ast_after_removal(target_node, other_tops, top, top_children, top_children_stmts)
             else:
                 other_tops.append(top)
                 continue
 
     new_ast = Program(items=other_tops)
     return new_ast
+
+def remake_ast_after_removal(target_node, other_tops, top, top_children, top_children_stmts):
+    for stmt in top_children_stmts:
+        if statements_eq(stmt, target_node):
+            print("equal, applying deletion")
+            top_children_stmts.remove(stmt)
+            newBlock = Block(top_children_stmts, top_children.isUnsafe)
+            top.setBody(newBlock)
+            other_tops.append(top)
+        else:
+            continue
 
 def statements_eq(stmt1, stmt2):
     print("statements_eq_", stmt1, stmt2)
