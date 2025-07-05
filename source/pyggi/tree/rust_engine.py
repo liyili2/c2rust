@@ -43,7 +43,6 @@ def pretty_print_ast(node, indent=0, visited=None):
 
     return '\n'.join(lines)
 
-
 class RustEngine(AbstractTreeEngine):
     def __init__(self):
         self.currentAst = None
@@ -53,13 +52,14 @@ class RustEngine(AbstractTreeEngine):
         tokens = CommonTokenStream(lexer)
         parser = RustParser(tokens)
         tree = parser.program()
-        return tree  # Use your AST node visitor if needed
+        return tree
 
     @classmethod
     def to_source_code(self, tree):
-        print("✍️ Serializing AST back to Rust source...")
-        printer = AstPrinter()
-        return printer.visit(tree)
+        pass
+        # print("✍️ Serializing AST back to Rust source...")
+        # printer = AstPrinter()
+        # return printer.visit(tree)
 
     @classmethod
     def get_contents(cls, file_path):
@@ -82,6 +82,7 @@ class RustEngine(AbstractTreeEngine):
     @classmethod
     def get_modification_points(cls, ast_root):
         points = cls._collect_nodes(ast_root)
+        print(";;;;;;", ast_root.__class__)
         file_name = "bst.rs"
         return [(file_name, p) for p in points]
 
@@ -231,7 +232,6 @@ def collect_expressions(node, path="./", index_map=None) -> List[Tuple[str, obje
         index_map = {}
     results = []
 
-    # print("collect_expressions", node.__class__)
     if isinstance(node, FunctionDef):
         if node.unsafe:
             results.append(node)
@@ -257,10 +257,6 @@ def collect_expressions(node, path="./", index_map=None) -> List[Tuple[str, obje
                         results.append(node)
                 if is_cast_expr or has_type_path or var_def.type==None:
                     results.append(node)
-
-        # elif isinstance(node, IfStmt):
-        #     if isinstance(node.condition, BinaryExpr):
-        #         if is_problematic(node.condition.left) or is_problematic(node.condition.type):
 
     if not hasattr(node, "__dict__"):
         return results
@@ -288,9 +284,6 @@ def collect_expressions(node, path="./", index_map=None) -> List[Tuple[str, obje
             results += collect_expressions(field_value, f"{full_path}/", index_map)
 
     return results
-
-def is_problematic(node):
-    return isinstance(node, PointerType) or isinstance(node, RefType) or isinstance(node, TypePathExpression) or isinstance(node, CastExpr) 
 
 def get_file_extension(file_path):
     """

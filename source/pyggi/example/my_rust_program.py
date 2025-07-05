@@ -39,9 +39,6 @@ class MyRustProgram(TreeProgram):
         new_variant = variant.apply(patch)
         return new_variant
 
-    # ---------------------------------------------------------------------
-    # The ONLY method LocalSearch really needs:
-    # ---------------------------------------------------------------------
     def evaluate_patch(self, patch: Patch, timeout=15):
         """
         1. Apply `patch` to a temp copy of the project
@@ -50,16 +47,7 @@ class MyRustProgram(TreeProgram):
         """
         print("evaluate_patch")
         variant = self.apply_patch(patch)
-        # variant.trees = {}
 
-        # for file_name in variant.target_files:
-        #     file_path = os.path.join(variant.path, file_name)
-        #     engine = variant.engines[file_name]
-        #     tree = engine.get_contents(file_path)
-        #     variant.trees[file_name] = tree
-
-        # original = self.trees[self.main_file]
-        # variant = self.apply_patch(patch)
         mutated_ast = variant[self.main_file]
         print("eval tree", self.main_file, pretty_print_ast(mutated_ast))
 

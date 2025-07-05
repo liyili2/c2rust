@@ -120,11 +120,9 @@ class AbstractProgram(ABC):
 
     def load_engines(self):
         # Associate each file to its engine
-        print("in load engine")
         self.engines = dict()
         for file_name in self.target_files:
             self.engines[file_name] = self.__class__.get_engine(file_name)
-            print("engine dict is ", file_name, self.engines[file_name], len(self.target_files), self.target_files)
 
     def load_contents(self):
         self.contents = {}

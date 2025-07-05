@@ -48,18 +48,6 @@ class MyProgram(AbstractProgram):
     def get_engine(cls, file_name):
         return RustEngine
 
-    # def apply_patch(self, patch):                 # ← accept the patch here
-    #     """
-    #     Clone the program, then let the standard `apply` do the real work.
-    #     """
-    #     variant = MyRustProgram(path=self.path, config=self.config)
-    #     variant.trees = deepcopy(self.trees)
-    #     variant.modification_points = deepcopy(self.modification_points)
-
-    #     print("applying the changes:")
-    #     variant.apply(patch)
-    #     return variant
-
 class MyLineProgram(LineProgram, MyProgram):
     pass
 
