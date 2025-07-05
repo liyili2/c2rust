@@ -6,6 +6,7 @@ class Statement(ASTNode):
 class LetStmt(Statement):
     def __init__(self, var_defs, values):
         super().__init__()
+        # print("llllll", values, var_defs)
         self.var_defs = var_defs if isinstance(var_defs, list) else [var_defs]
         self.values = values if isinstance(values, list) else [values]
 

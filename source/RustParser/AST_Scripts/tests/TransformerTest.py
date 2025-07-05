@@ -12,22 +12,20 @@ from RustParser.AST_Scripts.ast.Program import Program
 from RustParser.AST_Scripts.ast.TopLevel import TopLevel
 from RustParser.AST_Scripts.ast.ASTNode import ASTNode
 
-def pretty_print_ast(node, indent=0, show_parent=False):
+def pretty_print_ast(node, indent=0):
+    spacer = '  ' * indent
     if isinstance(node, list):
-        return '\n'.join(pretty_print_ast(n, indent, show_parent) for n in node)
+        return '\n'.join(pretty_print_ast(n, indent) for n in node)
 
-    if isinstance(node, ASTNode):
-        lines = [f"{' ' * indent}{node.__class__.__name__}:"]        
-        if show_parent and hasattr(node, 'parent') and node.parent:
-            lines.append(f"{' ' * (indent + 2)}parent: {node.parent.__class__.__name__}")
-
-        for attr, value in vars(node).items():
-            if attr == 'parent':
-                continue
-            lines.append(f"{' ' * (indent + 2)}{attr}:")
-            lines.append(pretty_print_ast(value, indent + 4, show_parent))
+    if hasattr(node, '__dict__'):
+        lines = [f"{spacer}{node.__class__.__name__}:"]
+        for key, value in vars(node).items():
+            lines.append(f"{spacer}  {key}:")
+            lines.append(pretty_print_ast(value, indent + 2))
         return '\n'.join(lines)
-    return f"{' ' * indent}{repr(node)}"
+    else:
+        return f"{spacer}{repr(node)}"
+
 
 file_path = os.path.join(os.path.dirname(__file__), "bst.rs")
 with open(file_path, "r", encoding="utf-8") as f:
@@ -39,9 +37,9 @@ tree = parser.program()
 print(pretty_print_ast(tree))
 builder = Transformer()
 custom_ast = builder.visit(tree)
-set_parents(custom_ast)
+# set_parents(custom_ast)
 checker = TypeChecker()
 checker.visit(custom_ast)
 print("Type Error Count : ", checker.error_count)
 print("Pretty AST:")
-print(pretty_print_ast(custom_ast, show_parent=True))
+print(pretty_print_ast(custom_ast))

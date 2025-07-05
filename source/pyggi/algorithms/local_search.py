@@ -90,7 +90,6 @@ class LocalSearch(Algorithm):
         pass
 
     def run(self, warmup_reps=1, epoch=5, max_iter=100, timeout=15, verbose=True):
-        print("runfuck")
         """
         It starts from a randomly generated candidate solution
         and iteratively moves to its neighbouring solution with
@@ -114,7 +113,6 @@ class LocalSearch(Algorithm):
         warmup = list()
         empty_patch = Patch(self.program)
         for i in range(warmup_reps):
-            print("fuck4")
             result = self.program.evaluate_patch(empty_patch, timeout=timeout)
             if result.status == 'SUCCESS':
                 warmup.append(result.fitness)
@@ -146,7 +144,6 @@ class LocalSearch(Algorithm):
             start = time.time()
             for cur_iter in range(1, max_iter + 1):
                 patch = self.get_neighbour(best_patch.clone())
-                print("runfuck2")
                 run = self.program.evaluate_patch(patch, timeout=timeout)
 
                 if run.fitness is not None:

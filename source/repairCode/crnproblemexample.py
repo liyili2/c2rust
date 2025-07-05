@@ -135,7 +135,6 @@ def load_run_patch(prg, fname: str):
                 i_pos = int(m_arr[20])
                 patch.add(edit_opr.create2(t_file, t_pos, i_pos))
 
-        print("fuck3")
         res = prg.evaluate_patch(patch, timeout=prg.args.timeout, partial=0)
         patch.fitness = res.fitness
         i += 1

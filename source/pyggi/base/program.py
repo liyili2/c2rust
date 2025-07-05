@@ -313,7 +313,6 @@ class AbstractProgram(ABC):
 
     def evaluate_patch(self, patch, timeout=15):
         # apply + run
-        print("fuck2")
         self.apply(patch)
         return_code, stdout, stderr, elapsed_time = self.exec_cmd(self.test_command, timeout)
         # print("Standard Output:\n", stdout)

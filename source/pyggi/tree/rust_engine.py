@@ -7,8 +7,8 @@ from antlr4 import CommonTokenStream, InputStream
 from RustParser.AST_Scripts.antlr.RustParser import RustParser
 from RustParser.AST_Scripts.ast.Transformer import Transformer, setParents
 from RustParser.AST_Scripts.ast.Program import Program
-from RustParser.AST_Scripts.ast.Expression import BinaryExpr, CastExpr, Expression, TypePathExpression, UnsafeExpression
-from RustParser.AST_Scripts.ast.Statement import IfStmt, LetStmt, Statement
+from RustParser.AST_Scripts.ast.Expression import BinaryExpr, BoolLiteral, CastExpr, Expression, FieldAccessExpr, IdentifierExpr, IntLiteral, MethodCallExpr, StrLiteral, TypePathExpression, UnsafeExpression
+from RustParser.AST_Scripts.ast.Statement import AssignStmt, CallStmt, ForStmt, IfStmt, LetStmt, Statement, WhileStmt
 from RustParser.AST_Scripts.ast.TopLevel import Attribute, ExternBlock, ExternFunctionDecl, FunctionDef, InterfaceDef, StructDef, TopLevel, TopLevelVarDef, TypeAliasDecl
 from RustParser.AST_Scripts.ast.TypeChecker import TypeChecker
 from RustParser.AST_Scripts.ast.Type import PointerType, RefType
@@ -82,7 +82,6 @@ class RustEngine(AbstractTreeEngine):
     @classmethod
     def get_modification_points(cls, ast_root):
         points = cls._collect_nodes(ast_root)
-        print("points are ", len(points))
         file_name = "bst.rs"
         return [(file_name, p) for p in points]
 
@@ -110,45 +109,23 @@ class RustEngine(AbstractTreeEngine):
 
     @classmethod
     def do_replace(cls, program, op, trees, modification_points):
-        print("do_replace")
-        file_name, target_node = op.target
-        _, ingredient_node = op.ingredient
-        cls._replace_node(target_node, deepcopy(ingredient_node))
+        #TODO
+        pass
 
     @classmethod
     def do_insert(cls, program, op, trees, modification_points):
-        print("do_delete")
-        file_name, target_node = op.target
-        if isinstance(target_node, tuple):
-            _, target_node = target_node  # get the real AST node
-
-        new_Ast = remove_ast_node(program, target_node)
-        if hasattr(program, "trees"):
-            program.trees[file_name] = new_Ast
-        # print("do_insert")
-        # file_name, target_node = op.target
-        # _, ingredient_node = op.ingredient
-        # parent = getattr(target_node, 'parent', None)
-        # if parent and hasattr(parent, 'body') and isinstance(parent.body, list):
-        #     idx = parent.body.index(target_node)
-        #     if op.direction == "before":
-        #         parent.body.insert(idx, deepcopy(ingredient_node))
-        #     else:
-        #         parent.body.insert(idx + 1, deepcopy(ingredient_node))
+        #TODO
+        pass
 
     @classmethod
     def do_delete(cls, program, op, trees, modification_points):
-        print("do_delete", op, op.__class__, program.__class__, trees.__class__)
-        file_name, target_node = program.target
+        file_name, target_node = op.target
         if isinstance(target_node, tuple):
             _, target_node = target_node
 
         new_ast = remove_ast_node(trees[file_name], target_node)
-        # cls.trees[file_name] = new_ast
         trees[file_name] = new_ast
-        # op[file_name] = new_ast
-        op.trees[file_name] = new_ast
-        print("tree: ", program.__class__, file_name, pretty_print_ast(trees[file_name]))
+        program.trees[file_name] = new_ast
         return trees
 
     @classmethod
@@ -338,7 +315,6 @@ def get_all_parents(ast_root, target_node, parent=None):
 
 def remove_node(ast_root, target_node, parents):
     current = ast_root
-    # current = ast_root.trees["bst.rs"]
     i = len(parents) - 1
     other_tops = []
     new_ast = None
@@ -352,6 +328,7 @@ def remove_node(ast_root, target_node, parents):
                         top_children_stmts = top_children.getChildren()
                         for stmt in top_children_stmts:
                             if statements_eq(stmt, target_node):
+                                print("equal, applying deletion")
                                 top_children_stmts.remove(stmt)
                                 newBlock = Block(top_children_stmts, top_children.isUnsafe)
                                 top.setBody(newBlock)
@@ -368,35 +345,78 @@ def remove_node(ast_root, target_node, parents):
 def statements_eq(stmt1, stmt2):
     print("statements_eq_", stmt1, stmt2)
     if not isinstance(stmt1, type(stmt2)):
-        print("not the same class")
         return False
 
     if isinstance(stmt1, LetStmt):
-        print("ppppp")
         for i in range(len(stmt1.var_defs)):
-            print("qqqqq")
             if not (str.__eq__(stmt1.var_defs[i].name, stmt2.var_defs[i].name) and isinstance(stmt1.var_defs[i].type, type(stmt2.var_defs[i].type))):
                 print(stmt1.var_defs[i].name, stmt2.var_defs[i].name, stmt1.var_defs[i].type, stmt2.var_defs[i].type)
                 return False
         return True
 
+    if isinstance(stmt1, IfStmt):
+        print("ifstmts: ", stmt1.condition , stmt2.condition, stmt1.then_branch , stmt2.then_branch , stmt1.else_branch , stmt2.else_branch)
+        return (expr_eq(stmt1.condition, stmt2.condition) and
+                statements_eq(stmt1.then_branch, stmt2.then_branch) and
+                (stmt1.else_branch is None and stmt2.else_branch is None or
+                 stmt1.else_branch is not None and stmt2.else_branch is not None and
+                 statements_eq(stmt1.else_branch, stmt2.else_branch)))
+
+    if isinstance(stmt1, ForStmt):
+        print("forstmt eq case")
+        return (
+            stmt1.var == stmt2.var and
+            expr_eq(stmt1.iterable, stmt2.iterable) and
+            statements_eq(stmt1.body, stmt2.body))
+
+    if isinstance(stmt1, CallStmt):
+        if not expr_eq(stmt1.callee, stmt2.callee):
+            return False
+        if len(stmt1.args) != len(stmt2.args):
+            return False
+        for arg1, arg2 in zip(stmt1.args, stmt2.args):
+            if not expr_eq(arg1, arg2):
+                return False
+        return True
+
+    if isinstance(stmt1, AssignStmt):
+        print("assignstmt eq case")
+        return (
+            expr_eq(stmt1.target, stmt2.target) and
+            expr_eq(stmt1.value, stmt2.value))
+    
+    if isinstance(stmt1, WhileStmt):
+        print("whilestmt eq case")
+        return (
+            expr_eq(stmt1.condition, stmt2.condition) and
+            statements_eq(stmt1.body, stmt2.body))
+
     return False
 
-def get_attr_name(parent, child):
-    for attr_name in dir(parent):
-        if attr_name.startswith("__"):
-            continue
-        try:
-            attr_value = getattr(parent, attr_name)
-        except AttributeError:
-            continue
-
-        if isinstance(attr_value, list):
-            if child in attr_value:
-                return attr_name
-        elif attr_value is child:
-            return attr_name
-    return None  # Not found
+def expr_eq(expr1, expr2):
+    if type(expr1) != type(expr2):
+        return False
+    if isinstance(expr1, IdentifierExpr):
+        return expr1.name == expr2.name
+    if isinstance(expr1, StrLiteral):
+        return expr1.value == expr2.value
+    if isinstance(expr1, IntLiteral):
+        return expr1.value == expr2.value
+    if isinstance(expr1, BoolLiteral):
+        return expr1.value == expr2.value
+    if isinstance(expr1, BinaryExpr):
+        return (expr_eq(expr1.left, expr2.left) and
+                expr_eq(expr1.right, expr2.right) and
+                expr1.op == expr2.op)
+    if isinstance(expr1, MethodCallExpr):
+        return (
+            expr_eq(expr1.receiver, expr2.receiver) and
+            expr1.method_name == expr2.method_name and
+            len(expr1.args) == len(expr2.args) and
+            all(expr_eq(a1, a2) for a1, a2 in zip(expr1.args, expr2.args)))
+    if isinstance(expr1, FieldAccessExpr):
+        return (expr_eq(expr1.receiver, expr2.receiver) and expr_eq(expr1.name, expr2.name))
+    return False 
 
 def remove_ast_node(ast_root, target_node):
     parents = get_all_parents(ast_root, target_node)

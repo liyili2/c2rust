@@ -63,7 +63,19 @@
 // }
 
 fn main() {
-    let a : i32 = "11";
+    let a : i32 = 2;
+    while a {
+        print("hello!");
+    }
+    // let a : i32 = "11";
+    // let a : i32 = 2;
+    // a = b.val;
+    // for num in  a {
+    //     println!("The number is: {}", num);
+    // } 
+    // if a {
+    //     let b : i32 = 2;
+    // }
     // let a : aa::bb::cc = 1 as bb;
     // unsafe {
     //     let mut root = Node::new(5, string::from("five") );

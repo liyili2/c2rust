@@ -85,7 +85,7 @@ class StmtDeletion(TreeEdit):
     def apply(self, program, new_contents, modification_points):
         engine = program.engines[self.target[0]]
         print("******, called1", engine, new_contents.__class__, new_contents, program.__class__, program)
-        return engine.do_delete(self, program, new_contents, modification_points)
+        return engine.do_delete(program, self, new_contents, modification_points)
 
     @classmethod
     def create(cls, program, target_file=None, method='random'):

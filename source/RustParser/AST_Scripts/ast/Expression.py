@@ -249,14 +249,16 @@ class CharLiteralExpr(Expression):
 
     def accept(self, visitor):
         return visitor.visitCharLiteralExpr(self)
-    
+
 class FieldAccessExpr(Expression):
     def __init__(self, receiver, field_name):
         super().__init__()
+        print("class FieldAccessExpr")
         self.receiver = receiver
         self.name = field_name
 
     def accept(self, visitor):
+        print("accept FieldAccessExpr")
         return visitor.visit_FieldAccessExpr(self)
 
 class IndexExpr(Expression):

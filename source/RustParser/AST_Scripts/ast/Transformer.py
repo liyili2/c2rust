@@ -174,9 +174,11 @@ class Transformer(RustVisitor):
                 i += 1
         return expr
 
-    def visitFieldAccessExpr(self, expr):
-        receiver_val = self.visit(expr.receiver)
-        field_name = expr.field_name
+    # def visitFieldAccessExpr(self, expr):
+    #     print("visitFieldAccessExpr")
+    #     receiver_val = self.visit(expr.receiver)
+    #     field_name = self.visit(expr.primaryExpression())
+    #     return field_name
         if isinstance(receiver_val, dict):
             if field_name in receiver_val:
                 return receiver_val[field_name]
@@ -381,6 +383,7 @@ class Transformer(RustVisitor):
         # case 1: let varDef = expression;
         if len(var_defs) == 1 and len(expressions) == 1 and init_block is None:
             var_def = self.visit(var_defs[0])
+            # print("vardef: ", var_def)
             expr = self.visit(expressions[0])
             # print("expr type is ", expr.__class__)
             return LetStmt(var_def, expr)
@@ -422,16 +425,16 @@ class Transformer(RustVisitor):
             name = tokens[0]
 
         if ':' in tokens:
-            # print("found the :::::::::::::", ctx.type_().__class__)
             var_type = self.visit(ctx.typeExpr())
-
+        
+        # print("found the :::::::::::::", name, mutable, by_ref, var_type)
         return VarDef(name=name, mutable=mutable, by_ref=by_ref, var_type=var_type)
 
     def visitStaticItem(self, ctx):
         visibility = ctx.visibility().getText() if ctx.visibility() else None
         mutable = ctx.getChild(1).getText() == "mut"
         name = ctx.Identifier().getText()
-        print("static item name is ", name)
+        # print("static item name is ", name)
         var_type = self.visit(ctx.typeExpr())
         value = self.visit(ctx.expr()) if ctx.expr() else None
         return ExternStaticVarDecl(
@@ -629,8 +632,9 @@ class Transformer(RustVisitor):
             return UnaryExpr(op, expr)
 
         elif ctx.fieldAccessPostFix():
+            print("fieldAccessPostFix")
             base = self.visit(ctx.expression(0))
-            postfix = self.visit(ctx.fieldAccessPostFix())
+            postfix = self.visitPrimaryExpression(ctx.fieldAccessPostFix().primaryExpression())
             return FieldAccessExpr(base, postfix)
 
         elif ctx.booleanOps():
@@ -786,6 +790,10 @@ class Transformer(RustVisitor):
             return TypePathExpression(type_path, type_path)
 
     def visitPrimaryExpression(self, ctx):
+        if isinstance(ctx, list):
+            if len(ctx) != 1:
+                raise Exception(f"Expected exactly one primaryExpression, got: {len(ctx)} in {ctx}")
+            ctx = ctx[0]
         if ctx.literal():
             return self.visit(ctx.literal())
         elif ctx.Identifier():

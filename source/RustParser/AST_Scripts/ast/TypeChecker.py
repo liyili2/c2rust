@@ -164,7 +164,7 @@ class TypeChecker:
     def visit_WhileStmt(self, node):
         cond_type = self.visit(node.condition)
         if not isinstance(cond_type, BoolType):
-            self.increase_error_count()
+            self.error(node, "wrong while condition type")
 
         for stmt in node.body:
             self.visit(stmt)
@@ -358,6 +358,9 @@ class TypeChecker:
                 value_info["borrowed"] = True
 
     def visit_Assignment(self, node):
+        visited_target = self.visit(node.target)
+        expr_type = self.visit(node.value)
+
         try:
             info = self.env.lookup(node.target)
         except Exception:
@@ -368,8 +371,6 @@ class TypeChecker:
             self.increase_error_count()
         if info["borrowed"]:
             self.increase_error_count()
-
-        expr_type = self.visit(node.value)
 
         if type(info["type"]) != type(expr_type):
             self.increase_error_count()
@@ -408,22 +409,20 @@ class TypeChecker:
         condition_type = self.visit(node.condition)
 
         if not isinstance(condition_type, BoolType):
-            self.increase_error_count()
+            self.error(node, "if condition type is not a boolean")
 
-        for stmt in node.then_branch:
-            self.visit(stmt)
+        self.visit(node.then_branch)
 
         if node.else_branch:
             for stmt in node.else_branch:
                 self.visit(stmt)
-
         return True
 
     def visit_ForStmt(self, node):
         iterable_type = self.visit(node.iterable)
 
         if not isinstance(iterable_type, ArrayType):
-            self.increase_error_count()
+            self.error(node, "wrong iterative type")
             return
 
         self.env.define(node.var, {
@@ -437,7 +436,7 @@ class TypeChecker:
 
     def visit_ReturnStmt(self, node):
         if node.value is None:
-            return_type = "unit"  # or "void", depending on your type system
+            return_type = "unit"
         else:
             return_type = self.visit(node.value)
         return return_type
@@ -646,7 +645,7 @@ class TypeChecker:
     def visit_CallStmt(self, node):
         expr_type = self.visit(node.callee)
         if not hasattr(node, 'call_postfix') or node.call_postfix is None:
-            self.increase_error_count()
+            self.error(node, "no call_postfix in the call stmt is")
             return
 
         self.visit_callExpressionPostFix(node.call_postfix, node.expression)
@@ -697,33 +696,34 @@ class TypeChecker:
                     self.increase_error_count()
 
     def visit_FieldAccessExpr(self, node):
+        print("visit_FieldAccessExpr")
         base_type = self.visit(node.receiver)
 
         if not isinstance(base_type, StructType):
-            self.increase_error_count()
+            self.error(node, "access to a wrong type of variable (not a struct)")
             return None
 
         struct_name = base_type.name
         struct_info = self.env.lookup_struct(struct_name)
 
         if struct_info is None:
-            self.increase_error_count()
+            self.error(node, "access to an undefined struct")
             return None
 
         field_type = struct_info.get(node.field)
         if field_type is None:
-            self.increase_error_count()
+            self.error(node, "no such a field to access")
             return None
 
         if isinstance(node.base, IdentifierExpr):
             try:
                 var_info = self.env.lookup(node.base.name)
             except Exception:
-                self.increase_error_count()
+                self.error(node, "no such a identifier to access")
                 return None
 
             if not var_info["owned"] or var_info["borrowed"]:
-                self.increase_error_count()
+                self.error(node, "the identifier is not owned or borrowed")
 
         return field_type
 

@@ -116,7 +116,7 @@ if __name__ == "__main__":
     # print("====================== RESULT ======================")
     # for ep, r in enumerate(results, 1):
     #     print(f"Epoch {ep}:  best fitness {r['BestFitness']}")
-        # if r["diff"]:
-        #     print(r["diff"])
+    #     if r["diff"]:
+    #         print(r["diff"])
 
     program.remove_tmp_variant()
