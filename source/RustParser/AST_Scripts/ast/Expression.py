@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import List, Optional
 from RustParser.AST_Scripts.ast.ASTNode import ASTNode
-from RustParser.AST_Scripts.ast.Type import IntType, StringType, FloatType
+from RustParser.AST_Scripts.ast.Type import BoolType, IntType, StringType, FloatType
 
 class Expression(ASTNode):
     def __init__(self, type=None):
@@ -145,13 +145,25 @@ class BoolLiteral(Expression):
     def __init__(self, value: bool):
         super().__init__()
         self.value = value
+        self.type = BoolType()
 
     def accept(self, visitor):
         return visitor.visit_BoolLiteral(self)
 
+class CharLiteral(Expression):
+    def __init__(self, value: bool):
+        super().__init__()
+        self.value = value
+        self.type = CharLiteral()
+
+    def accept(self, visitor):
+        pass
+
+
 class IntLiteral(Expression):
     def __init__(self, value: int):
         super().__init__()
+        self.type = IntType()
         self.value = value
 
     def accept(self, visitor):
@@ -161,6 +173,7 @@ class StrLiteral(Expression):
     def __init__(self, value: str):
         super().__init__()
         self.value = value
+        self.type = StringType()
 
     def accept(self, visitor):
         return visitor.visit_StrLiteral(self)
@@ -236,14 +249,16 @@ class CharLiteralExpr(Expression):
 
     def accept(self, visitor):
         return visitor.visitCharLiteralExpr(self)
-    
+
 class FieldAccessExpr(Expression):
     def __init__(self, receiver, field_name):
         super().__init__()
+        print("class FieldAccessExpr")
         self.receiver = receiver
         self.name = field_name
 
     def accept(self, visitor):
+        print("accept FieldAccessExpr")
         return visitor.visit_FieldAccessExpr(self)
 
 class IndexExpr(Expression):

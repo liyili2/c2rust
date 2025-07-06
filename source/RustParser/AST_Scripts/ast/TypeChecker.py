@@ -1,4 +1,5 @@
 from ast import FunctionDef
+from RustParser.AST_Scripts.ast.Block import Block
 from RustParser.AST_Scripts.ast.Type import ArrayType, BoolType, FloatType, IntType, RefType, StringType, StructType, VoidType
 from RustParser.AST_Scripts.ast.TypeEnv import TypeEnv
 from RustParser.AST_Scripts.ast.Expression import BorrowExpr, CastExpr, FunctionCallExpr, IdentifierExpr, LiteralExpr 
@@ -15,7 +16,7 @@ class TypeChecker:
         error_msg = f"Type error: {message}"
         if hasattr(node, 'line'):
             error_msg = f"[Line {node.line}] {error_msg}"
-        # print(error_msg)
+        print(error_msg)
         self.errors.append(error_msg)
         self.increase_error_count()
 
@@ -50,6 +51,7 @@ class TypeChecker:
         pass
 
     def visit_FunctionDef(self, node: FunctionDef):
+        print("t1")
         fn_name = node.identifier
         param_types = [p.type_ for p in node.params]  # assume each Param has `.identifier` & `.type_`
         return_type = node.return_type or VoidType()  # `void` if omitted
@@ -162,7 +164,7 @@ class TypeChecker:
     def visit_WhileStmt(self, node):
         cond_type = self.visit(node.condition)
         if not isinstance(cond_type, BoolType):
-            self.increase_error_count()
+            self.error(node, "wrong while condition type")
 
         for stmt in node.body:
             self.visit(stmt)
@@ -210,7 +212,7 @@ class TypeChecker:
                 self.increase_error_count()
 
         return struct_type
-    
+
     def visit_UnsafeBlock(self, node):
         result = self.visit(node.block)
         return result
@@ -220,14 +222,14 @@ class TypeChecker:
 
         if node.is_destructuring():
             if len(node.var_defs) != len(expr_types):
-                self.increase_error_count()
+                self.error(node, "number of group-let of values and targets do not match")
                 return
 
             for var_def, expr_type in zip(node.var_defs, expr_types):
                 declared_type = self.visit(var_def.type) if var_def.type else expr_type
 
                 if var_def.type and type(declared_type) != type(expr_type) and not isinstance(expr_type, RefType):
-                    self.increase_error_count()
+                    self.error(node, "in the group-let, type of one of the values do not match its target")
 
                 # Declare the variable
                 self.env.declare(var_def.name, declared_type)
@@ -239,10 +241,14 @@ class TypeChecker:
         else:
             var_def = node.var_defs[0]
             expr_type = expr_types[0]
-            declared_type = self.visit(var_def.type) if var_def.type else expr_type
+            # print("llllllllll", var_def.type.__class__, expr_type.__class__, (var_def.type.__class__ is expr_type.__class__))
+            if var_def.type:
+                declared_type = self.visit(var_def.type)
+            else:
+                declared_type = expr_type
 
-            if var_def.type and type(declared_type) != type(expr_type) and not isinstance(expr_type, RefType):
-                self.increase_error_count()
+            if (not (var_def.type.__class__ is expr_type.__class__)) or isinstance(expr_type, RefType):
+                self.error(node, "type of the value and target do not match")
 
             self.env.declare(var_def.name, declared_type)
             self.symbol_table[var_def.name] = declared_type
@@ -274,7 +280,6 @@ class TypeChecker:
             else:
                 self.increase_error_count()
                 return BoolType()
-
         else:
             print(f"⚠️ Unknown binary operator: {op}")
             self.increase_error_count()
@@ -282,6 +287,8 @@ class TypeChecker:
 
     def visit_Block(self, node):
         result_stmts = []
+        if isinstance(node.stmts, Block):
+            self.visit(node.stmts)
         if node.isUnsafe:
             self.error(node, "unsafe blcok error")
         for stmt in node.stmts:
@@ -348,6 +355,9 @@ class TypeChecker:
                 value_info["borrowed"] = True
 
     def visit_Assignment(self, node):
+        visited_target = self.visit(node.target)
+        expr_type = self.visit(node.value)
+
         try:
             info = self.env.lookup(node.target)
         except Exception:
@@ -358,8 +368,6 @@ class TypeChecker:
             self.increase_error_count()
         if info["borrowed"]:
             self.increase_error_count()
-
-        expr_type = self.visit(node.value)
 
         if type(info["type"]) != type(expr_type):
             self.increase_error_count()
@@ -398,22 +406,20 @@ class TypeChecker:
         condition_type = self.visit(node.condition)
 
         if not isinstance(condition_type, BoolType):
-            self.increase_error_count()
+            self.error(node, "if condition type is not a boolean")
 
-        for stmt in node.then_branch:
-            self.visit(stmt)
+        self.visit(node.then_branch)
 
         if node.else_branch:
             for stmt in node.else_branch:
                 self.visit(stmt)
-
         return True
 
     def visit_ForStmt(self, node):
         iterable_type = self.visit(node.iterable)
 
         if not isinstance(iterable_type, ArrayType):
-            self.increase_error_count()
+            self.error(node, "wrong iterative type")
             return
 
         self.env.define(node.var, {
@@ -427,7 +433,7 @@ class TypeChecker:
 
     def visit_ReturnStmt(self, node):
         if node.value is None:
-            return_type = "unit"  # or "void", depending on your type system
+            return_type = "unit"
         else:
             return_type = self.visit(node.value)
         return return_type
@@ -636,7 +642,7 @@ class TypeChecker:
     def visit_CallStmt(self, node):
         expr_type = self.visit(node.callee)
         if not hasattr(node, 'call_postfix') or node.call_postfix is None:
-            self.increase_error_count()
+            self.error(node, "no call_postfix in the call stmt is")
             return
 
         self.visit_callExpressionPostFix(node.call_postfix, node.expression)
@@ -687,35 +693,41 @@ class TypeChecker:
                     self.increase_error_count()
 
     def visit_FieldAccessExpr(self, node):
+        print("visit_FieldAccessExpr")
         base_type = self.visit(node.receiver)
 
         if not isinstance(base_type, StructType):
-            self.increase_error_count()
+            self.error(node, "access to a wrong type of variable (not a struct)")
             return None
 
         struct_name = base_type.name
         struct_info = self.env.lookup_struct(struct_name)
 
         if struct_info is None:
-            self.increase_error_count()
+            self.error(node, "access to an undefined struct")
             return None
 
         field_type = struct_info.get(node.field)
         if field_type is None:
-            self.increase_error_count()
+            self.error(node, "no such a field to access")
             return None
 
         if isinstance(node.base, IdentifierExpr):
             try:
                 var_info = self.env.lookup(node.base.name)
             except Exception:
-                self.increase_error_count()
+                self.error(node, "no such a identifier to access")
                 return None
 
             if not var_info["owned"] or var_info["borrowed"]:
-                self.increase_error_count()
+                self.error(node, "the identifier is not owned or borrowed")
 
         return field_type
+
+    def visit_MatchStmt(self, node):
+        self.visit(node.expr)
+        for arm in node.arms:
+            self.visit(arm.body)
 
     def visit_TypePathExpression(self, node):
         self.error(node, "type path expression instead of simple types")

@@ -147,7 +147,7 @@ class LocalSearch(Algorithm):
                 run = self.program.evaluate_patch(patch, timeout=timeout)
 
                 if run.fitness is not None:
-                    cur_result['FitnessEval'] += 1 / (run.fitness + 1)
+                    cur_result['FitnessEval'] += run.fitness
 
                 if run.status != 'SUCCESS':
                     cur_result['InvalidPatch'] += 1

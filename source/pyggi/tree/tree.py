@@ -3,7 +3,6 @@ import ast
 import astor
 import random
 from abc import abstractmethod
-
 from pyggi.tree.rust_engine import RustEngine
 from . import AbstractTreeEngine, AstorEngine, XmlEngine
 from ..base import AbstractProgram, AbstractEdit
@@ -38,18 +37,18 @@ class StmtReplacement(TreeEdit):
         self.ingredient = ingredient
 
     def apply(self, program, new_contents, modification_points):
-        print("******, called2")
+        print("StmtReplacement called")
         engine = program.engines[self.target[0]]
         return engine.do_replace(program, self, new_contents, modification_points)
 
     @classmethod
     def create(cls, program, target_file=None, ingr_file=None, method='random'):
-        print("c1")
+        # print("c1")
         if target_file is None:
             target_file = program.target_files[0]
         if ingr_file is None:
             ingr_file = program.target_files[0]
-        print("c2", target_file, program.engines[ingr_file], program.engines[target_file])
+        # print("c2", target_file, program.engines[ingr_file], program.engines[target_file])
         assert program.engines[target_file] == program.engines[ingr_file]
         return cls(program.random_target(target_file, method),
                 program.random_target(ingr_file, 'random'))
@@ -62,7 +61,7 @@ class StmtInsertion(TreeEdit):
         self.direction = direction
 
     def apply(self, program, new_contents, modification_points):
-        print("******, called3")
+        print("StmtInsertion called")
         engine = program.engines[self.target[0]]
         return engine.do_insert(program, self, new_contents, modification_points)
 
@@ -76,8 +75,7 @@ class StmtInsertion(TreeEdit):
         if direction is None:
             direction = random.choice(['before', 'after'])
         return cls(program.random_target(target_file, method),
-                   program.random_target(ingr_file, 'random'),
-                   direction)
+                   program.random_target(ingr_file, 'random'), direction)
 
 class StmtDeletion(TreeEdit):
     def __init__(self, target):
@@ -85,7 +83,7 @@ class StmtDeletion(TreeEdit):
 
     def apply(self, program, new_contents, modification_points):
         engine = program.engines[self.target[0]]
-        print("******, called1", engine)
+        print("StmtDeletion called", engine, new_contents.__class__, new_contents, program.__class__, program)
         return engine.do_delete(program, self, new_contents, modification_points)
 
     @classmethod

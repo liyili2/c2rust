@@ -16,3 +16,9 @@ class Block(ASTNode):
 
     def accept(self, visitor):
         return visitor.visit_Block(self)
+
+    def getChildren(self):
+        return self.stmts
+    
+    def remove(self, stmt):
+        self.stmts.remove(stmt)

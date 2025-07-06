@@ -48,7 +48,7 @@ class StringType(Type):
 
     def __repr__(self):
         return "String"
-    
+
     def accept(self, visitor):
         return super().accept(visitor)
 

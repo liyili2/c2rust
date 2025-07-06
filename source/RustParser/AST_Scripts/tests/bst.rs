@@ -1,69 +1,82 @@
 // easy for debugging / knowing what is inside
-#[derive(Debug)]
-struct Node {
-    key: i32,
-    value: string,
-    left: Option<Box<Node> >,
-    right: Option<Box<Node> >,
-}
+// #[derive(Debug)]
+// struct Node {
+//     key: i32,
+//     value: string,
+//     left: Option<Box<Node> >,
+//     right: Option<Box<Node> >,
+// }
 
-unsafe unsafeTopLevelVarDef: i32 = 11;
+// unsafe unsafeTopLevelVarDef: i32 = 11;
 
-impl Node {
-    unsafe fn new(key: i32, value: string) -> Self {
-        Node {
-            key,
-            value,
-            left: None,
-            right: None,
-        }
-    }
+// impl Node {
+//     unsafe fn new(key: i32, value: string) -> Self {
+//         Node {
+//             key,
+//             value,
+//             left: None,
+//             right: None,
+//         }
+//     }
 
-    // looks like Box is helpful here
-    fn insert() {
-        if key < self.key {
-            if let some(ref mut left) = self.left {
-                left.insert(key, value);
-            }
-            else {
-                self.left = some(box::new(Node::new(key, value) ) );
-            }
-        }
-        else if key > self.key {
-            if let some(ref mut right) = self.right {
-                right.insert(key, value);
-            } 
-        else {
-                self.right = some(box::new(Node::new(key, value) ) );
-            }
-        } else {
-            self.value = value;
-        }
-    }
+//     // looks like Box is helpful here
+//     fn insert() {
+//         if key < self.key {
+//             if let some(ref mut left) = self.left {
+//                 left.insert(key, value);
+//             }
+//             else {
+//                 self.left = some(box::new(Node::new(key, value) ) );
+//             }
+//         }
+//         else if key > self.key {
+//             if let some(ref mut right) = self.right {
+//                 right.insert(key, value);
+//             } 
+//         else {
+//                 self.right = some(box::new(Node::new(key, value) ) );
+//             }
+//         } else {
+//             self.value = value;
+//         }
+//     }
 
-    // self.left is owned by current function
-    // but looks like left in Some(ref mut left) is something can be passed to other functions
-    fn search(&mut self, key: i32) -> Option<&string> {
-        if key < self.key {
-            if let some(ref mut left) = self.left {
-                return left.search(key);
-            } else {
-                return None;
-            }
-        } else if key > self.key {
-            if let some(ref mut right) = self.right {
-                return right.search(key);
-            } else {
-                return None;
-            }
-        } else {
-            return some(&self.value);
-        }
-    }
-}
+//     // self.left is owned by current function
+//     // but looks like left in Some(ref mut left) is something can be passed to other functions
+//     fn search(&mut self, key: i32) -> Option<&string> {
+//         if key < self.key {
+//             if let some(ref mut left) = self.left {
+//                 return left.search(key);
+//             } else {
+//                 return None;
+//             }
+//         } else if key > self.key {
+//             if let some(ref mut right) = self.right {
+//                 return right.search(key);
+//             } else {
+//                 return None;
+//             }
+//         } else {
+//             return some(&self.value);
+//         }
+//     }
+// }
 
 fn main() {
-    let a : aa::bb::cc = 1 as bb;
+    let a : i32 = 2;
+    while a {
+        print("hello!");
+    }
+    // let a : i32 = "11";
+    // let a : i32 = 2;
+    // a = b.val;
+    // for num in  a {
+    //     println!("The number is: {}", num);
+    // } 
+    // if a {
+    //     let b : i32 = 2;
+    // }
+    // let a : aa::bb::cc = 1 as bb;
     // unsafe {
     //     let mut root = Node::new(5, string::from("five") );
     // }

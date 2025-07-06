@@ -6,6 +6,7 @@ class Statement(ASTNode):
 class LetStmt(Statement):
     def __init__(self, var_defs, values):
         super().__init__()
+        # print("llllll", values, var_defs)
         self.var_defs = var_defs if isinstance(var_defs, list) else [var_defs]
         self.values = values if isinstance(values, list) else [values]
 
@@ -91,6 +92,9 @@ class Block(Statement):
 
     def accept(self, visitor):
         return visitor.visit_block(self)
+    
+    def getChildren(self):
+        return self.statements
 
 class ExternStaticVarDecl(Statement):
     def __init__(self, name, var_type, mutable, initial_value, visibility=None):
@@ -121,13 +125,13 @@ class WhileStmt(Statement):
 class MatchStmt(Statement):
     def __init__(self, expr, arms, line, column):
         super().__init__()
-        self.expr = expr              # the expression being matched
-        self.arms = arms              # list of MatchArm
+        self.expr = expr
+        self.arms = arms
         # self.line = line
         # self.column = column
 
     def accept(self, visitor):
-        return visitor.visit_match_stmt(self)
+        return visitor.visit_MatchStmt(self)
 
 class MatchArm(Statement):
     def __init__(self, patterns, body):

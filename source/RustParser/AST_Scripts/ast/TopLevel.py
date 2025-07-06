@@ -1,9 +1,11 @@
 from typing import List, Optional
+from RustParser.AST_Scripts.ast.Program import Program
 from RustParser.AST_Scripts.ast import Type
 from RustParser.AST_Scripts.ast.ASTNode import ASTNode
 
 class TopLevel(ASTNode):
     def __init__(self):
+        # self.parent = program
         pass
 
     def accept(self, visitor):
@@ -22,6 +24,12 @@ class FunctionDef(TopLevel):
     def accept(self, visitor):
         method_Identifier = f'visit_{self.__class__.__name__}'
         return getattr(visitor, method_Identifier, visitor.generic_visit)(self)
+    
+    def getChildren(self):
+        return self.body
+
+    def setBody(self, body):
+        self.body = body
 
 class StructDef(TopLevel):
     def __init__(self, name, fields):
@@ -51,6 +59,9 @@ class ExternBlock(TopLevel):
 
     def __repr__(self):
         return f"<ExternBlock abi={self.abi}, items={self.items}>"
+    
+    def getChildren(self):
+        return self.items
 
 class ExternItem(ASTNode):
     pass    
@@ -135,6 +146,9 @@ class InterfaceDef(TopLevel):
 
     def __repr__(self):
         return f"InterfaceDef(name={self.name}, functions={self.functions})"
+    
+    def getChildren(self):
+        return self.functions
 
 class UseDecl(TopLevel):
     def __init__(self, paths, aliases=None):
