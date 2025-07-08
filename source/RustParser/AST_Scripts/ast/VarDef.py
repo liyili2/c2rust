@@ -4,6 +4,6 @@ class VarDef:
         self.mutable = mutable
         self.by_ref = by_ref
         self.type = var_type
-    
+
     def accept(self, visitor):
         return visitor.visit_VarDef(self)

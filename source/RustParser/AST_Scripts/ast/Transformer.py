@@ -427,14 +427,12 @@ class Transformer(RustVisitor):
         if ':' in tokens:
             var_type = self.visit(ctx.typeExpr())
         
-        # print("found the :::::::::::::", name, mutable, by_ref, var_type)
         return VarDef(name=name, mutable=mutable, by_ref=by_ref, var_type=var_type)
 
     def visitStaticItem(self, ctx):
         visibility = ctx.visibility().getText() if ctx.visibility() else None
         mutable = ctx.getChild(1).getText() == "mut"
         name = ctx.Identifier().getText()
-        # print("static item name is ", name)
         var_type = self.visit(ctx.typeExpr())
         value = self.visit(ctx.expr()) if ctx.expr() else None
         return ExternStaticVarDecl(
@@ -1032,34 +1030,17 @@ class Transformer(RustVisitor):
 
         return UseDecl(paths, aliases)
 
-    def set_parents(self, node, parent=None, visited=None):
-        if visited is None:
-            visited = set()
-
-        if id(node) in visited:
-            return
-        visited.add(id(node))
-
-        if isinstance(node, list):
-            for child in node:
-                self.set_parents(child, parent, visited)
-
-        elif hasattr(node, '__dict__'):
-            node.parent = parent
-            for key, val in vars(node).items():
-                # Don't recurse into basic types or parent link
-                if key == "parent" or isinstance(val, (str, int, float, bool, type(None))):
-                    continue
-                self.set_parents(val, node, visited)
-
 def setParents(node, parent=None, top_level_prog=None):
+    # print("setParents ", node.__class__)
     if not isinstance(node, ASTNode):
         return
 
     if isinstance(node, Program):
         top_level_prog = node
 
-    if isinstance(node, TopLevel) and top_level_prog:
+    if isinstance(node, FunctionDef) and isinstance(parent, InterfaceDef):
+        node.parent = parent
+    elif isinstance(node, TopLevel) and top_level_prog:
         node.parent = top_level_prog
     elif parent is not None:
         node.parent = parent

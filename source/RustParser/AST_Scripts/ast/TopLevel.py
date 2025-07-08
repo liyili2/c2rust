@@ -149,6 +149,9 @@ class InterfaceDef(TopLevel):
     
     def getChildren(self):
         return self.functions
+    
+    def setFunctions(self, newFunctions):
+        self.functions = newFunctions
 
 class UseDecl(TopLevel):
     def __init__(self, paths, aliases=None):

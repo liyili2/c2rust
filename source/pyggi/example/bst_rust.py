@@ -12,7 +12,7 @@ from pyggi.tree.rust_engine import RustEngine
 from pyggi.algorithms.local_search import LocalSearch
 from pyggi.base.program import AbstractProgram
 from pyggi.line.line import LineDeletion, LineInsertion, LineProgram, LineReplacement
-from pyggi.tree.tree import StmtDeletion, StmtInsertion, StmtReplacement, TreeProgram
+from pyggi.tree.tree import StmtDeletion, StmtInsertion, StmtMoving, StmtReplacement, TreeProgram
 
 weighted_choice = lambda s : random.choice(sum(([v] * wt for v,wt in s),[]))
 

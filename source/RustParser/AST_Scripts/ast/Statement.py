@@ -85,17 +85,6 @@ class ReturnStmt(Statement):
     def accept(self, visitor):
         return visitor.visit_return_stmt(self)
 
-class Block(Statement):
-    def __init__(self, statements):
-        super().__init__()
-        self.statements = statements
-
-    def accept(self, visitor):
-        return visitor.visit_block(self)
-    
-    def getChildren(self):
-        return self.statements
-
 class ExternStaticVarDecl(Statement):
     def __init__(self, name, var_type, mutable, initial_value, visibility=None):
         super().__init__()

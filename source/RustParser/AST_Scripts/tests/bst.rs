@@ -62,19 +62,26 @@
 //     }
 // }
 
+impl Node {
+    fn foo() {
+        let a : i32 = 0;
+        a = 12;
+        while a {
+            print("hello!");
+        }
+    }
+}
+
 fn main() {
-    let a : i32 = 2;
+    let a : i32 = 0;
+    a = 12;
     while a {
         print("hello!");
     }
-    // let a : i32 = "11";
-    // let a : i32 = 2;
     // a = b.val;
-    // for num in  a {
-    //     println!("The number is: {}", num);
-    // } 
+    // let a : i32 = 11;
     // if a {
-    //     let b : i32 = 2;
+    //     print("hello")
     // }
     // let a : aa::bb::cc = 1 as bb;
     // unsafe {
