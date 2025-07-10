@@ -94,7 +94,7 @@ statement
     ;
 
 conditionalAssignmentStmt: 'let'? (typeWrapper | expression) '=' expression 'else' block ';';
-callStmt: expression callExpressionPostFix ';' ;
+callStmt: expression ('.' expression) callExpressionPostFix ';' | expression callExpressionPostFix ';' ;
 letStmt: 'let' varDef '=' expression ';' | 'let' varDef initBlock | 'let' '(' (varDef ','?)* ')' '=' '(' (expression ','?)* ')' ';';
 varDef: 'ref'? 'mut'? Identifier (':' typeExpr)?;
 compoundOp: '+=' | '-=' | '*=' | '/=' | '%=' | '&=' | '|=' | '^=' ;
@@ -130,7 +130,7 @@ expression
     | unaryOpes expression
     | borrowExpression
     | unsafeExpression
-    | expression fieldAccessPostFix
+    | expression callExpressionPostFix
     | expression typeAccessPostfix
     | basicTypeCastExpr
     | expression rangeSymbol expression
@@ -140,10 +140,10 @@ expression
     | expression compoundOps expression
     | expressionBlock
     | qualifiedExpression
-    | expression callExpressionPostFix
     | patternPrefix expression
     | arrayDeclaration
     | dereferenceExpression
+    | expression fieldAccessPostFix
     ;
 
 basicTypeCastExpr: typeExpr typePath;
@@ -171,7 +171,7 @@ borrowExpression: '&' expression;
 primaryExpression: literal | Identifier;
 
 fieldAccessPostFix: '[' primaryExpression ']' | ('.' primaryExpression)+;
-callExpressionPostFix: '!'? functionCallArgs;
+callExpressionPostFix: ('.' expression)? '!'? functionCallArgs;
 functionCallArgs: '()' | '(' expression (',' expression)* ')' ;
 
 TRUE: 'true';

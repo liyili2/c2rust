@@ -40,7 +40,7 @@ class IntType(Type):
         return "i32"
 
     def accept(self, visitor):
-        return super().accept(visitor)
+        return visitor.visit_IntType(self)
 
 class StringType(Type):
     def __init__(self):
@@ -91,7 +91,7 @@ class ArrayType(Type):
         self.size = size
 
     def __repr__(self):
-        return f"[{self.var_type}; {self.size}]" if self.size else f"[{self.elem_type}]"
+        return f"[{self.var_type}; {self.size}]" if self.size else f"[{self.var_type}]"
     
     def accept(self, visitor):
         return visitor.visit_ArrayType(self)

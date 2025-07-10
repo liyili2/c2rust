@@ -62,22 +62,26 @@
 //     }
 // }
 
-impl Node {
-    fn foo() {
-        let a : i32 = 0;
-        a = 12;
-        while a {
-            print("hello!");
-        }
-    }
-}
+// impl Node {
+//     fn foo() {
+//         let a : i32 = 0;
+//         a = 12;
+//         while a {
+//             print("hello!");
+//         }
+//     }
+// }
 
 fn main() {
-    let a : i32 = 0;
-    a = 12;
-    while a {
-        print("hello!");
-    }
+    let s : i32 = 1;
+    s += 13;
+    // println!("{}", s);
+    // let a : i32 = 0;
+    // let b : i32 = 1;
+    // a = 12;
+    // while a {
+    //     print("hello!");
+    // }
     // a = b.val;
     // let a : i32 = 11;
     // if a {

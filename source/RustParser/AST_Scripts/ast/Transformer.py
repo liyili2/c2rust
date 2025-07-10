@@ -20,9 +20,12 @@ class Transformer(RustVisitor):
         self._depth = 0
 
     def visit(self, tree):
+        if isinstance(tree, list):
+            return [self.visit(child) for child in tree]
+
         rule_name = tree.__class__.__name__.replace("Context", "")
         method_name = f"visit{rule_name}"
-        visitor_fn  = getattr(self, method_name, None)
+        visitor_fn = getattr(self, method_name, None)
         self._depth += 1
         try:
             if visitor_fn is not None:
@@ -75,6 +78,7 @@ class Transformer(RustVisitor):
         return node
 
     def _expr_from_text(self, text):
+        # print("_expr_from_text")
         text = text.strip()
         if text.isdigit():
             return LiteralExpr(value=int(text))
@@ -126,7 +130,7 @@ class Transformer(RustVisitor):
             method_name = part
             args = []
             for i in range(ctx.getChildCount()):
-                    print(f"Child {i}: {type(ctx.getChild(i))} → {ctx.getChild(i).getText()}")
+                    # print(f"Child {i}: {type(ctx.getChild(i))} → {ctx.getChild(i).getText()}")
                     args = [self.visit(child) for child in ctx.getChild(i).expression()]
                     break
 
@@ -630,7 +634,7 @@ class Transformer(RustVisitor):
             return UnaryExpr(op, expr)
 
         elif ctx.fieldAccessPostFix():
-            print("fieldAccessPostFix")
+            # print("fieldAccessPostFix")
             base = self.visit(ctx.expression(0))
             postfix = self.visitPrimaryExpression(ctx.fieldAccessPostFix().primaryExpression())
             return FieldAccessExpr(base, postfix)
@@ -788,6 +792,7 @@ class Transformer(RustVisitor):
             return TypePathExpression(type_path, type_path)
 
     def visitPrimaryExpression(self, ctx):
+        # print("visitPrimaryExpression")
         if isinstance(ctx, list):
             if len(ctx) != 1:
                 raise Exception(f"Expected exactly one primaryExpression, got: {len(ctx)} in {ctx}")
@@ -889,6 +894,7 @@ class Transformer(RustVisitor):
         return PathType(segments=segments)
 
     def visitLiteral(self, ctx):
+        # print("visitLiteral")
         if ctx.arrayLiteral():
             return self.visit(ctx.arrayLiteral())
         elif ctx.booleanLiteral():
@@ -896,6 +902,7 @@ class Transformer(RustVisitor):
         elif ctx.HexNumber():
             return int(ctx.HexNumber().getText(), 16)
         elif ctx.Number():
+            # print("ctx.Number", ctx.Number().getText())
             return IntLiteral(ctx.Number().getText())
         elif ctx.SignedNumber():
             return IntLiteral(int(ctx.SignedNumber().getText()))
@@ -925,6 +932,7 @@ class Transformer(RustVisitor):
 
     def visitArrayLiteral(self, ctx):
         # print("in array literal visitor")
+        name = ""
         if ctx.Identifier():
             name = ctx.Identifier().getText()
             if ctx.expression(0):
@@ -970,7 +978,7 @@ class Transformer(RustVisitor):
 
     def visitMatchArm(self, ctx):
         patterns = [self.visit(pat_ctx) for pat_ctx in ctx.matchPattern()]
-        print("patterns are ", patterns, len(patterns), ctx.block())
+        # print("patterns are ", patterns, len(patterns), ctx.block())
         body = self.visit(ctx.block())
         return MatchArm(patterns=patterns, body=body)
 

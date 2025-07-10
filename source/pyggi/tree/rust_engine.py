@@ -117,7 +117,9 @@ class RustEngine(AbstractTreeEngine):
         if isinstance(target_node, tuple):
             _, target_node = target_node
 
-        new_ast = move_ast_node(trees[file_name], target_node)
+        new_ast = trees[file_name]
+        # new_ast = move_ast_node(trees[file_name], target_node)
+        new_ast = make_lets_mutable(new_ast, target_node)
         trees[file_name] = new_ast
         program.trees[file_name] = new_ast
         return trees
@@ -125,15 +127,35 @@ class RustEngine(AbstractTreeEngine):
     @classmethod
     def do_insert(cls, program, op, trees, modification_points):
         #TODO
-        pass
-
-    @classmethod
-    def do_delete(cls, program, op, trees, modification_points):
+        # pass
         file_name, target_node = op.target
         if isinstance(target_node, tuple):
             _, target_node = target_node
 
-        new_ast = remove_ast_node(trees[file_name], target_node)
+        new_ast = trees[file_name]
+        # new_ast = move_ast_node(trees[file_name], target_node)
+        new_ast = make_lets_mutable(new_ast, target_node)
+        trees[file_name] = new_ast
+        program.trees[file_name] = new_ast
+        return trees
+
+    @classmethod
+    def do_delete(cls, program, op, trees, modification_points):
+        # file_name, target_node = op.target
+        # if isinstance(target_node, tuple):
+        #     _, target_node = target_node
+
+        # new_ast = remove_ast_node(trees[file_name], target_node)
+        # trees[file_name] = new_ast
+        # program.trees[file_name] = new_ast
+        # return trees
+        file_name, target_node = op.target
+        if isinstance(target_node, tuple):
+            _, target_node = target_node
+
+        new_ast = trees[file_name]
+        # new_ast = move_ast_node(trees[file_name], target_node)
+        new_ast = make_lets_mutable(new_ast, target_node)
         trees[file_name] = new_ast
         program.trees[file_name] = new_ast
         return trees
@@ -432,6 +454,50 @@ def remove_ast_node(ast_root, target_node):
     print("target node is ", target_node, target_node.parent, parents, len(parents))
     new_ast = remove_node(ast_root, target_node, parents)
     return new_ast
+
+def make_lets_mutable(ast_root, target_node):
+    parents = get_all_parents(ast_root, target_node)
+    if not isinstance(ast_root, Program):
+        return None
+    
+    if not isinstance(target_node, LetStmt):
+        return ast_root
+
+    parent_len = len(parents)
+
+    for top in ast_root.getChildren():
+        if parent_len < 3:
+            continue
+
+        parent_1, parent_2 = parents[-2], parents[-3]
+        top_type_matches = isinstance(parent_1, type(top))
+        top_children = top.getChildren()
+
+        if not top_type_matches:
+            continue
+
+        if isinstance(parent_2, type(top_children)):
+            if isinstance(top_children, Block):
+                for stmt in top_children.getChildren():
+                    if isinstance(stmt, LetStmt):
+                        stmt.var_defs[0].mutable = True
+            elif isinstance(top_children, FunctionDef) and isinstance(top_children.body, Block):
+                for stmt in top_children.body.getChildren():
+                    if isinstance(stmt, LetStmt):
+                        stmt.var_defs[0].mutable = True
+
+        elif isinstance(top_children, list):
+            matched_children = []
+            for item in top_children:
+                if isinstance(parent_2, type(item)) and isinstance(item.body, Block):
+                    for stmt in top_children.getChildren():
+                        if isinstance(stmt, LetStmt):
+                            stmt.var_defs[0].mutable = True
+                else:
+                    matched_children.append(item)
+
+    print("replaceast: ", pretty_print_ast(ast_root))
+    return ast_root
 
 def move_ast_node(ast_root, target_node):
     parents = get_all_parents(ast_root, target_node)

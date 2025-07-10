@@ -1,8 +1,9 @@
 from ast import FunctionDef
+from types import NoneType
 from RustParser.AST_Scripts.ast.Block import Block
 from RustParser.AST_Scripts.ast.Type import ArrayType, BoolType, FloatType, IntType, RefType, StringType, StructType, VoidType
 from RustParser.AST_Scripts.ast.TypeEnv import TypeEnv
-from RustParser.AST_Scripts.ast.Expression import BorrowExpr, CastExpr, FunctionCallExpr, IdentifierExpr, LiteralExpr 
+from RustParser.AST_Scripts.ast.Expression import BinaryExpr, BorrowExpr, CastExpr, FunctionCallExpr, IdentifierExpr, IntLiteral, LiteralExpr, RangeExpression 
 
 class TypeChecker:
     def __init__(self):
@@ -18,7 +19,7 @@ class TypeChecker:
             error_msg = f"[Line {node.line}] {error_msg}"
         print(error_msg)
         self.errors.append(error_msg)
-        self.increase_error_count()
+        self.error_count = self.error_count + 1
 
     def report(self, node, message):
         self.reports.append((node, message))
@@ -51,40 +52,60 @@ class TypeChecker:
         pass
 
     def visit_FunctionDef(self, node: FunctionDef):
-        print("t1")
+        print("visit_function_def", self.error_count)
+
         fn_name = node.identifier
-        param_types = [p.type_ for p in node.params]  # assume each Param has `.identifier` & `.type_`
-        return_type = node.return_type or VoidType()  # `void` if omitted
+        param_types = [param.typ for param in node.params]
+        return_type = node.return_type or VoidType()
 
-        # 1. Bind the function in the outer scope (optional if you did a decl-only phase)
         if self.env.top().get(fn_name) is None:
-            self.env.top()[fn_name] = FunctionDef(param_types, return_type, node.unsafe)
+            self.env.top()[fn_name] = {
+                "kind": "function",
+                "param_types": param_types,
+                "return_type": return_type
+            }
         else:
-            self.report(node, f"redefinition of function '{fn_name}'")
+            self.error(node, f"redefinition of function '{fn_name}'")
 
-        # 2. Enter new local scope & bind parameters
-        self.env.push()
-        for param, ty in zip(node.params, param_types):
-            if param.identifier in self.env.top():
-                self.report(param, f"duplicate parameter name '{param.identifier}'")
-            self.env.top()[param.identifier] = ty
+        self.env.enter_scope()
+        for i, param in enumerate(node.params):
+            param_name = param.name
+            param_type = param.typ
+            is_mut = param.is_mut
 
-        # 3. Remember expected return type while walking body
+            if i == 0 and param_name == "self":
+                if not self.in_method_context():
+                    self.error(param, "`self` used outside of method context")
+
+                if not isinstance(param_type, RefType):
+                    self.error(param, f"`self` must be a reference type, found: {param_type}")
+
+                if is_mut and not getattr(param_type, "mutable", False):
+                    self.error(param, "`self` is marked mutable, but its type is not a mutable reference")
+
+            if param_name in self.env.top():
+                self.error(param, f"duplicate parameter name '{param_name}'")
+
+            self.env.top()[param_name] = {
+                "type": param_type,
+                "mutable": is_mut,
+                "owned": True,
+                "borrowed": False
+            }
+
         saved_return = getattr(self, "current_function_return", None)
         self.current_function_return = return_type
 
-        # 4. Visit body statements
-        for stmt in node.body:
-            stmt.accept(self)
+        for stmt in node.body.getChildren():
+            self.visit(stmt)
 
-        # 5. If the function is non-void, check at least one guaranteed return path
         if not isinstance(return_type, VoidType) and not self.body_has_terminating_return(node.body):
-            self.report(node, f"missing return in function '{fn_name}'")
+            self.error(node, f"missing return in function '{fn_name}'")
 
-        # 6. Restore outer state
         self.current_function_return = saved_return
-        self.env.pop()
+        self.env.exit_scope()
 
+        print("visit_function_def2", self.error_count)
         return None
 
     def body_has_terminating_return(self, stmts):
@@ -103,7 +124,7 @@ class TypeChecker:
         func_name = node.func
         func_info = self.env.lookup_function(func_name)
         if func_info["kind"] != "function":
-            self.increase_error_count()
+            self.error(node, "wrong function return type")
         return func_info["return_type"]
 
     def get_literal_type(self, value):
@@ -114,9 +135,10 @@ class TypeChecker:
         elif isinstance(value, bool):
             return BoolType()
         else:
-            self.increase_error_count()
+            self.error(self, "unknown literal type")
 
     def visit_Type(self, ctx):
+        print("visit_Type")
         type_str = ctx.getText()
         if type_str == "i32":
             return IntType()
@@ -125,7 +147,7 @@ class TypeChecker:
         elif type_str == "String":
             return StringType()
         else:
-            self.increase_error_count()
+            self.error(self, "unknown primitive type")
 
     def visit(self, node):
         if node is None:
@@ -138,28 +160,7 @@ class TypeChecker:
 
     def visit_Program(self, node):
         for item in node.items:
-            if not self.visit(item):
-                self.increase_error_count()
-        return True
-
-    def visit_FunctionDef(self, ctx):
-        name = ctx.identifier
-
-        if ctx.params is not None:
-            params = self.visit(ctx.params)
-        else:
-            params = []
-
-        param_types = [typ for (_, typ, _) in params]
-
-        if ctx.return_type is not None:
-            return_type = self.visit(ctx.return_type)
-        else:
-            return_type = None
-
-        self.env.declare_function(name, param_types, return_type)
-        body = self.visit(ctx.body)
-        return FunctionDef(name=name, params=params, return_type=return_type, body=body)
+            self.visit(item)
 
     def visit_WhileStmt(self, node):
         cond_type = self.visit(node.condition)
@@ -179,7 +180,7 @@ class TypeChecker:
         if isinstance(expr_type, valid_numeric_types) and isinstance(target_type, valid_numeric_types):
             return target_type
 
-        self.increase_error_count()
+        # self.increase_error_count()
         return target_type
     
     def visit_StructLiteral(self, node):
@@ -231,23 +232,27 @@ class TypeChecker:
                 if var_def.type and type(declared_type) != type(expr_type) and not isinstance(expr_type, RefType):
                     self.error(node, "in the group-let, type of one of the values do not match its target")
 
-                # Declare the variable
                 self.env.declare(var_def.name, declared_type)
                 self.symbol_table[var_def.name] = declared_type
-
-                # Ownership & borrow rules
                 self._handle_borrowing(var_def, node.values[0])
 
         else:
             var_def = node.var_defs[0]
             expr_type = expr_types[0]
-            # print("llllllllll", var_def.type.__class__, expr_type.__class__, (var_def.type.__class__ is expr_type.__class__))
+            # print(var_def.type.__class__, expr_type.__class__, (var_def.type.__class__ is expr_type.__class__))
             if var_def.type:
                 declared_type = self.visit(var_def.type)
             else:
                 declared_type = expr_type
 
-            if (not (var_def.type.__class__ is expr_type.__class__)) or isinstance(expr_type, RefType):
+            if isinstance(var_def.type, NoneType):
+                var_def.type = expr_type
+
+            if isinstance(expr_type, NoneType):
+                expr_type = var_def.type
+
+            if not (var_def.type.__class__ is expr_type.__class__):
+                # print(var_def.type.__class__, expr_type.__class__)
                 self.error(node, "type of the value and target do not match")
 
             self.env.declare(var_def.name, declared_type)
@@ -256,34 +261,41 @@ class TypeChecker:
             self._handle_borrowing(var_def, node.values[0])
 
     def visit_BinaryExpr(self, node):
-        left_type = self.visit(node.left)
-        right_type = self.visit(node.right)
+        left = self.visit(node.left)
+        right = self.visit(node.right)
         op = node.op
 
-        if op in ['+', '-', '*', '/']:
-            if isinstance(left_type, IntType) and isinstance(right_type, IntType):
+        # print("visit_BinaryExpr", right.__class__, left.__class__)
+        if op in ['+', '-', '*', '/', '>>', '<<']:
+            if isinstance(left, IntType) and isinstance(right, IntType):
                 return IntType()
             else:
-                self.increase_error_count()
-                return IntType()  # still return something to keep traversal safe
+                self.error(node, "binary expression target and value type mismatch #1")
+                return IntType()
 
         elif op in ['==', '!=', '<', '>', '<=', '>=']:
-            if type(left_type) == type(right_type):
+            if type(left) == type(right):
                 return BoolType()
             else:
-                self.increase_error_count()
+                self.error(node, "binary expression target and value type mismatch #2")
                 return BoolType()
 
         elif op in ['&&', '||']:
-            if isinstance(left_type, BoolType) and isinstance(right_type, BoolType):
+            if isinstance(left, BoolType) and isinstance(right, BoolType):
                 return BoolType()
             else:
-                self.increase_error_count()
+                self.error(node, "binary expression target and value type mismatch #3")
                 return BoolType()
+            
+        elif op in ['&']:
+            if isinstance(left, IntType) and isinstance(right, IntType):
+                return IntType()
+            else:
+                self.error(node, "binary expression target and value type mismatch #3")
+                return IntType()
         else:
-            print(f"⚠️ Unknown binary operator: {op}")
-            self.increase_error_count()
-            return IntType()  # default fallback
+            self.error(node, f"Unknown binary operator: {op}")
+            return IntType()
 
     def visit_Block(self, node):
         result_stmts = []
@@ -307,23 +319,22 @@ class TypeChecker:
             try:
                 target_info = self.env.lookup(node.target.name)
             except Exception:
-                self.increase_error_count()
+                self.error(node, "usage of undefined variable in compound assignment")
                 return
 
             if not target_info.get("mutable", False):
-                self.increase_error_count()
+                self.error(node, "assignment target must be mutable in compound assignment")
 
             if target_info.get("borrowed", False):
-                self.increase_error_count()
+                self.error(node, "usage of not borrowed variable in compound assignment")
 
         # Type compatibility check for compound ops
         if node.op in ['+=', '-=', '*=', '/=']:
             if not (isinstance(target_type, IntType) and isinstance(value_type, IntType)):
-                self.increase_error_count()
+                self.error(node, "ops not compatible in compound assignment")
 
         else:
-            print(f"⚠️ Unknown compound operator: {node.op}")
-            self.increase_error_count()
+            self.error(node, f"Unknown compound operator: {node.op}")
 
     def _handle_borrowing(self, var_def, value_expr):
         if isinstance(value_expr, IdentifierExpr):
@@ -411,25 +422,34 @@ class TypeChecker:
         self.visit(node.then_branch)
 
         if node.else_branch:
-            for stmt in node.else_branch:
+            for stmt in node.else_branch.getChildren():
                 self.visit(stmt)
         return True
 
     def visit_ForStmt(self, node):
         iterable_type = self.visit(node.iterable)
 
-        if not isinstance(iterable_type, ArrayType):
+        if not isinstance(node.iterable, ArrayType) and not isinstance(node.iterable, RangeExpression):
             self.error(node, "wrong iterative type")
             return
 
+        range_type = None
+        if isinstance(node.iterable, ArrayType):
+            range_type = iterable_type.var_type
+        else:
+            range_type = node.iterable.initial.__class__
         self.env.define(node.var, {
-            "type": iterable_type.elem_type,
+            "type": range_type,
             "owned": True, "borrowed": False})
 
-        for stmt in node.body:
+        for stmt in node.body.getChildren():
             self.visit(stmt)
 
         return True
+
+    def visit_RangeExpression(self, node):
+        # print("visit_RangeExpression", node.initial, node.last)
+        return RangeExpression(node.initial, node.last)
 
     def visit_ReturnStmt(self, node):
         if node.value is None:
@@ -501,55 +521,30 @@ class TypeChecker:
         return params
 
     def visit_IntType(self, node):
-        return node
+        # print("visit_IntType")
+        return IntType()
 
     def visit_BoolType(self, node):
         return BoolType()
-    
-    def visit_binaryExpr(self, node):
-        left_type = self.visit(node.left)
-        right_type = self.visit(node.right)
 
-        if left_type != right_type:
-            self.error(f"Type mismatch: cannot apply '{node.op}' to '{left_type}' and '{right_type}'")
-            node.type = "error"
-            return "error"
+    def visit_ArrayType(self, node: ArrayType):
+        elem_type = self.visit(node.var_type)
 
-        if node.op in {"+", "-", "*", "/"}:
-            if left_type != "int":
-                self.error(f"Arithmetic operator '{node.op}' requires 'int' operands, got '{left_type}'")
-                node.type = "error"
-                return "error"
-            node.type = "int"
-            return "int"
-
-        elif node.op in {"==", "!=", "<", ">", "<=", ">="}:
-            node.type = "bool"
-            return "bool"
-
-        elif node.op in {"&&", "||"}:
-            if left_type != "bool":
-                self.error(f"Logical operator '{node.op}' requires 'bool' operands, got '{left_type}'")
-                node.type = "error"
-                return "error"
-            node.type = "bool"
-            return "bool"
-
-        else:
-            self.error(f"Unknown binary operator '{node.op}'")
-            node.type = "error"
-            return "error"
-        
-    def visit_ArrayType(self, node):
-        elem_type = self.visit(node.elem_type)
         if node.size is not None:
             size_type = self.visit(node.size)
-            if size_type != "i32":
-                self.error(f"Array size must be of type i32, got {size_type}")
-            if not isinstance(node.size, IntType):
-                self.warning("Array size is not a constant literal — might be dynamic")
-        return f"[{elem_type}; {node.size.value if hasattr(node.size, 'value') else '?'}]"
-    
+
+            if (not self.is_compile_time_constant(node.size)) and (not isinstance(size_type, IntType)):
+                self.error(node.size, "array size must be an integer")
+
+        return ArrayType(elem_type, size=node.size)
+
+    def is_compile_time_constant(self, node):
+        if isinstance(node, IntLiteral) or isinstance(node, int):
+            return True
+        if isinstance(node, BinaryExpr):
+            return self.is_compile_time_constant(node.left) and self.is_compile_time_constant(node.right)
+        return False
+
     def visit_MatchPattern(self, node):
         pattern_type = self.visit(node.value)
         if pattern_type not in ["i32", "bool", "char", "String", "enum_variant"]:
@@ -558,6 +553,7 @@ class TypeChecker:
         return pattern_type
 
     def visit_LiteralExpr(self, node):
+        print("visit_LiteralExpr")
         if isinstance(node.value, int):
             return IntType()
 
@@ -574,7 +570,6 @@ class TypeChecker:
             info = self.env.lookup(node.name)
         except Exception:
             self.increase_error_count()
-            return None
 
         if not info["owned"]:
             self.increase_error_count()
@@ -641,37 +636,37 @@ class TypeChecker:
     
     def visit_CallStmt(self, node):
         expr_type = self.visit(node.callee)
-        if not hasattr(node, 'call_postfix') or node.call_postfix is None:
-            self.error(node, "no call_postfix in the call stmt is")
-            return
+        # if node.call_postfix is None:
+        #     self.error(node, "no call_postfix in the call stmt is")
+        #     return
 
-        self.visit_callExpressionPostFix(node.call_postfix, node.expression)
+        # self.visit_callExpressionPostFix(node.call_postfix, node.expression)
 
     def visit_callExpressionPostFix(self, node, func_expr):
-        if not hasattr(node, 'args'):
-            self.increase_error_count()
-            return
+        # if not hasattr(node, 'args'):
+        #     self.increase_error_count()
+        #     return
 
-        args = self.visit(node.args) if hasattr(node, 'args') else []
-        if isinstance(func_expr, IdentifierExpr):
-            func_name = func_expr.name
-        else:
-            self.increase_error_count()
-            return
+        # args = self.visit(node.args) if hasattr(node, 'args') else []
+        # if isinstance(func_expr, IdentifierExpr):
+        #     func_name = func_expr.name
+        # else:
+        #     self.increase_error_count()
+        #     return
 
-        func_info = self.env.lookup_function(func_name)
-        if not func_info or func_info["kind"] != "function":
-            self.increase_error_count()
-            return
+        # func_info = self.env.lookup_function(func_name)
+        # if not func_info or func_info["kind"] != "function":
+        #     self.increase_error_count()
+        #     return
 
-        param_types = func_info["param_types"]
-        if len(args) != len(param_types):
-            self.increase_error_count()
-            return
+        # param_types = func_info["param_types"]
+        # if len(args) != len(param_types):
+        #     self.increase_error_count()
+        #     return
 
-        for arg, expected_type in zip(args, param_types):
-            if type(arg) != type(expected_type):
-                self.increase_error_count()
+        # for arg, expected_type in zip(args, param_types):
+        #     if type(arg) != type(expected_type):
+        #         self.increase_error_count()
 
         for arg in node.args:
             if isinstance(arg, IdentifierExpr):
@@ -693,8 +688,8 @@ class TypeChecker:
                     self.increase_error_count()
 
     def visit_FieldAccessExpr(self, node):
-        print("visit_FieldAccessExpr")
         base_type = self.visit(node.receiver)
+        print("visit_FieldAccessExpr", base_type, node.receiver.name, node.name)
 
         if not isinstance(base_type, StructType):
             self.error(node, "access to a wrong type of variable (not a struct)")
@@ -736,6 +731,7 @@ class TypeChecker:
         return BoolType()
 
     def visit_IntLiteral(self, node):
+        # print("visit_IntLiteral")
         return IntType()
 
     def visit_StrLiteral(self, node):
