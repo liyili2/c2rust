@@ -1,7 +1,7 @@
 from ast import FunctionDef
 from types import NoneType
 from RustParser.AST_Scripts.ast.Block import Block
-from RustParser.AST_Scripts.ast.Type import ArrayType, BoolType, FloatType, IntType, RefType, StringType, StructType, VoidType
+from RustParser.AST_Scripts.ast.Type import ArrayType, BoolType, FloatType, IntType, PointerType, RefType, StringType, StructType, VoidType
 from RustParser.AST_Scripts.ast.TypeEnv import TypeEnv
 from RustParser.AST_Scripts.ast.Expression import BinaryExpr, BorrowExpr, CastExpr, FunctionCallExpr, IdentifierExpr, IntLiteral, LiteralExpr, RangeExpression 
 
@@ -33,6 +33,11 @@ class TypeChecker:
     def generic_visit(self, node):
         raise NotImplementedError(f"No visit_{type(node).__name__} method defined.")
     
+    def visit_StructField(self, node):
+        if isinstance(node.type, PointerType):
+            self.error(node, "raw pointer usage in a struct field")
+        # print("visit_StructField", node.name, node.type)
+    
     def visit_TopLevelVarDef(Self, node):
         pass
 
@@ -43,6 +48,9 @@ class TypeChecker:
         pass
 
     def visit_StructDef(self, node):
+        for field in node.fields:
+            fiels_type = self.visit(field)
+        #TODO
         pass
 
     def visit_TypeFullPathExpression(self, node):
@@ -255,7 +263,7 @@ class TypeChecker:
                 # print(var_def.type.__class__, expr_type.__class__)
                 self.error(node, "type of the value and target do not match")
 
-            self.env.declare(var_def.name, declared_type)
+            self.env.declare(var_def.name, declared_type, mutable=var_def.mutable)
             self.symbol_table[var_def.name] = declared_type
 
             self._handle_borrowing(var_def, node.values[0])
@@ -310,6 +318,12 @@ class TypeChecker:
     def visit_UnsafeExpression(self, node):
         self.error(node, "unsafe expression error")
 
+    def visit_ExternBlock(self, node):
+        pass
+
+    def visit_TypeAliasDecl(self, node):
+        pass
+
     def visit_CompoundAssignment(self, node):
         target_type = self.visit(node.target)
         value_type = self.visit(node.value)
@@ -318,6 +332,7 @@ class TypeChecker:
         if isinstance(node.target, IdentifierExpr):
             try:
                 target_info = self.env.lookup(node.target.name)
+                print(";;", target_info)
             except Exception:
                 self.error(node, "usage of undefined variable in compound assignment")
                 return

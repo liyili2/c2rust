@@ -3,7 +3,7 @@ from RustParser.AST_Scripts.ast.ASTNode import ASTNode
 from RustParser.AST_Scripts.ast.Expression import ArrayDeclaration, ArrayLiteral, BasicTypeCastExpr, BinaryExpr, BoolLiteral, BorrowExpr, BoxWrapperExpr, CastExpr, CharLiteral, CharLiteralExpr, DereferenceExpr, FieldAccessExpr, FunctionCallExpr, IdentifierExpr, IndexExpr, IntLiteral, MethodCallExpr, MutableExpr, ParenExpr, Pattern, PatternExpr, QualifiedExpression, RangeExpression, RepeatArrayLiteral, StrLiteral, StructDefInit, StructLiteralExpr, StructLiteralField, TypeAccessExpr, TypePathExpression, TypePathFullExpr, TypeWrapperExpr, UnaryExpr, UnsafeExpression
 from RustParser.AST_Scripts.ast.Statement import AssignStmt, BreakStmt, CallStmt, CompoundAssignment, ConditionalAssignmentStmt, ContinueStmt, ExpressionStmt, ForStmt, IfStmt, LetStmt, LoopStmt, MatchArm, MatchPattern, MatchStmt, ReturnStmt, StaticVarDecl, StructLiteral, TypeWrapper, UnsafeBlock, WhileStmt
 from RustParser.AST_Scripts.antlr.RustVisitor import RustVisitor
-from RustParser.AST_Scripts.ast.TopLevel import ExternBlock, ExternFunctionDecl, ExternStaticVarDecl, ExternTypeDecl, FunctionDef, InterfaceDef, StructDef, Attribute, TopLevel, TopLevelVarDef, TypeAliasDecl, UseDecl, VarDefField
+from RustParser.AST_Scripts.ast.TopLevel import ExternBlock, ExternFunctionDecl, ExternStaticVarDecl, ExternTypeDecl, FunctionDef, InterfaceDef, StructDef, Attribute, StructField, TopLevel, TopLevelVarDef, TypeAliasDecl, UseDecl, VarDefField
 from RustParser.AST_Scripts.ast.Program import Program
 from RustParser.AST_Scripts.ast.Expression import LiteralExpr
 from RustParser.AST_Scripts.ast.Type import ArrayType, BoolType, IntType, PathType, PointerType, StringType, Type
@@ -27,7 +27,11 @@ class Transformer(RustVisitor):
         method_name = f"visit{rule_name}"
         visitor_fn = getattr(self, method_name, None)
         self._depth += 1
+
         try:
+            if tree is None:
+                return None
+
             if visitor_fn is not None:
                 return visitor_fn(tree)
             else:
@@ -278,16 +282,14 @@ class Transformer(RustVisitor):
     def visitStructDef(self, ctx):
         name = ctx.Identifier().getText()
         fields = [self.visit(f) for f in ctx.structField()]
-        field_types = {}
-        for field_name, field_type in fields:
-            field_types[field_name] = field_type
-        self.struct_defs[name] = field_types
         return StructDef(name=name, fields=fields)
 
     def visitStructField(self, ctx):
-        name = ctx.Identifier().getText()
+        name_token = ctx.Identifier()
+        name = name_token.getText() if name_token else "<missing>"
         typ = self.visit(ctx.typeExpr())
-        return (name, typ)
+        vis = self.visit(ctx.visibility()) if ctx.visibility() else None
+        return StructField(name, typ, vis)
 
     def visitStructLiteral(self, ctx):
         type_name = ctx.Identifier().getText()

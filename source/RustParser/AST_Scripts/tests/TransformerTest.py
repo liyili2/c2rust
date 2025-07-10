@@ -26,7 +26,7 @@ def pretty_print_ast(node, indent=0):
     else:
         return f"{spacer}{repr(node)}"
 
-file_path = os.path.join(os.path.dirname(__file__), "aggregate.rs")
+file_path = os.path.join(os.path.dirname(__file__), "test1.rs")
 with open(file_path, "r", encoding="utf-8") as f:
     rust_code = f.read()
 lexer = RustLexer(InputStream(rust_code))
@@ -40,5 +40,5 @@ custom_ast = builder.visit(tree)
 checker = TypeChecker()
 checker.visit(custom_ast)
 print("Type Error Count : ", checker.error_count)
-print("Pretty AST:")
+# print("Pretty AST:")
 # print(pretty_print_ast(custom_ast))

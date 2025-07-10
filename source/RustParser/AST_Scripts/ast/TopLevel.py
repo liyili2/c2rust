@@ -41,6 +41,17 @@ class StructDef(TopLevel):
         method_name = f'visit_{self.__class__.__name__}'
         return getattr(visitor, method_name, visitor.generic_visit)(self)
 
+class StructField(ASTNode):
+    def __init__(self, name, typeExpr, visibility):
+        super().__init__()
+        self.name = name
+        self.type = typeExpr
+        self.visibility = visibility
+
+    def accept(self, visitor):
+        method_name = f'visit_{self.__class__.__name__}'
+        return getattr(visitor, method_name, visitor.generic_visit)(self)
+
 class Attribute(TopLevel):
     def __init__(self, name, args=None):
         super().__init__()
@@ -137,6 +148,9 @@ class VarDefField(ASTNode):
         self.name       = name
         self.type_      = type_
         self.visibility = visibility
+
+    def accept(self, visitor):
+        return super().accept(visitor)
 
 class InterfaceDef(TopLevel):
     def __init__(self, name: str, functions: list):
