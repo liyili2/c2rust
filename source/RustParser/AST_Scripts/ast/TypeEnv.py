@@ -10,7 +10,7 @@ class TypeEnv:
         self.scopes.pop()
 
     def declare(self, name, typ, mutable=False):
-        print("declare:", typ)
+        # print("declare:", typ)
         self.scopes[-1][name] = {
             "type": typ,
             "owned": True,

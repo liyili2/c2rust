@@ -105,7 +105,7 @@ class TypeChecker:
         self.current_function_return = saved_return
         self.env.exit_scope()
 
-        print("visit_function_def2", self.error_count)
+        # print("visit_function_def2", self.error_count)
         return None
 
     def body_has_terminating_return(self, stmts):
@@ -566,10 +566,12 @@ class TypeChecker:
             self.increase_error_count()
 
     def visit_IdentifierExpr(self, node):
+        info = None
         try:
             info = self.env.lookup(node.name)
         except Exception:
-            self.increase_error_count()
+            self.error(node, "identifier "+ node.name +" not defined")
+            return
 
         if not info["owned"]:
             self.increase_error_count()
@@ -624,7 +626,6 @@ class TypeChecker:
         if not node.elements:
             self.increase_error_count()
             return None
-
         elem_types = [self.visit(elem) for elem in node.elements]
 
         first_type = elem_types[0]
@@ -635,12 +636,7 @@ class TypeChecker:
         return ArrayType(first_type)
     
     def visit_CallStmt(self, node):
-        expr_type = self.visit(node.callee)
-        # if node.call_postfix is None:
-        #     self.error(node, "no call_postfix in the call stmt is")
-        #     return
-
-        # self.visit_callExpressionPostFix(node.call_postfix, node.expression)
+        pass
 
     def visit_callExpressionPostFix(self, node, func_expr):
         # if not hasattr(node, 'args'):
