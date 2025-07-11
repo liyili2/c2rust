@@ -443,6 +443,7 @@ class TypeChecker:
                 self.error(node, "undefined variable in assignment value")
                 value_info = None
 
+            #TODO: Check it better
             if ( value_type is IntType) or ( value_type is BoolType) or ( value_type is CharType):
                 if value_info:
                     if not value_info["owned"]:
