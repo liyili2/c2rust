@@ -332,23 +332,23 @@ def serializedATN():
         0,815,814,1,0,0,0,815,816,1,0,0,0,816,115,1,0,0,0,817,818,5,51,0,
         0,818,117,1,0,0,0,819,820,6,59,-1,0,820,821,3,152,76,0,821,822,3,
         118,59,25,822,845,1,0,0,0,823,845,3,164,82,0,824,845,3,48,24,0,825,
-        826,3,132,66,0,826,827,3,118,59,21,827,845,1,0,0,0,828,845,3,156,
+        826,3,132,66,0,826,827,3,118,59,20,827,845,1,0,0,0,828,845,3,156,
         78,0,829,845,3,150,75,0,830,845,3,128,64,0,831,832,3,154,77,0,832,
-        833,3,118,59,17,833,845,1,0,0,0,834,845,3,162,81,0,835,845,3,122,
-        61,0,836,845,3,120,60,0,837,845,3,160,80,0,838,845,3,124,62,0,839,
-        840,3,134,67,0,840,841,3,118,59,4,841,845,1,0,0,0,842,845,3,130,
-        65,0,843,845,3,158,79,0,844,819,1,0,0,0,844,823,1,0,0,0,844,824,
-        1,0,0,0,844,825,1,0,0,0,844,828,1,0,0,0,844,829,1,0,0,0,844,830,
-        1,0,0,0,844,831,1,0,0,0,844,834,1,0,0,0,844,835,1,0,0,0,844,836,
-        1,0,0,0,844,837,1,0,0,0,844,838,1,0,0,0,844,839,1,0,0,0,844,842,
-        1,0,0,0,844,843,1,0,0,0,845,876,1,0,0,0,846,847,10,11,0,0,847,848,
-        3,142,71,0,848,849,3,118,59,12,849,875,1,0,0,0,850,851,10,10,0,0,
-        851,852,3,146,73,0,852,853,3,118,59,11,853,875,1,0,0,0,854,855,10,
-        9,0,0,855,856,3,148,74,0,856,857,3,118,59,10,857,875,1,0,0,0,858,
+        833,3,118,59,16,833,845,1,0,0,0,834,845,3,162,81,0,835,845,3,122,
+        61,0,836,845,3,120,60,0,837,845,3,158,79,0,838,845,3,160,80,0,839,
+        845,3,124,62,0,840,841,3,134,67,0,841,842,3,118,59,3,842,845,1,0,
+        0,0,843,845,3,130,65,0,844,819,1,0,0,0,844,823,1,0,0,0,844,824,1,
+        0,0,0,844,825,1,0,0,0,844,828,1,0,0,0,844,829,1,0,0,0,844,830,1,
+        0,0,0,844,831,1,0,0,0,844,834,1,0,0,0,844,835,1,0,0,0,844,836,1,
+        0,0,0,844,837,1,0,0,0,844,838,1,0,0,0,844,839,1,0,0,0,844,840,1,
+        0,0,0,844,843,1,0,0,0,845,876,1,0,0,0,846,847,10,23,0,0,847,848,
+        3,148,74,0,848,849,3,118,59,24,849,875,1,0,0,0,850,851,10,10,0,0,
+        851,852,3,142,71,0,852,853,3,118,59,11,853,875,1,0,0,0,854,855,10,
+        9,0,0,855,856,3,146,73,0,856,857,3,118,59,10,857,875,1,0,0,0,858,
         859,10,8,0,0,859,860,3,144,72,0,860,861,3,118,59,9,861,875,1,0,0,
-        0,862,863,10,7,0,0,863,864,3,140,70,0,864,865,3,118,59,8,865,875,
-        1,0,0,0,866,867,10,22,0,0,867,875,3,138,69,0,868,869,10,14,0,0,869,
-        875,3,168,84,0,870,871,10,13,0,0,871,875,3,126,63,0,872,873,10,1,
+        0,862,863,10,6,0,0,863,864,3,140,70,0,864,865,3,118,59,7,865,875,
+        1,0,0,0,866,867,10,21,0,0,867,875,3,138,69,0,868,869,10,13,0,0,869,
+        875,3,168,84,0,870,871,10,12,0,0,871,875,3,126,63,0,872,873,10,1,
         0,0,873,875,3,166,83,0,874,846,1,0,0,0,874,850,1,0,0,0,874,854,1,
         0,0,0,874,858,1,0,0,0,874,862,1,0,0,0,874,866,1,0,0,0,874,868,1,
         0,0,0,874,870,1,0,0,0,874,872,1,0,0,0,875,878,1,0,0,0,876,874,1,
@@ -5684,6 +5684,10 @@ class RustParser ( Parser ):
             return self.getTypedRuleContext(RustParser.BasicTypeCastExprContext,0)
 
 
+        def dereferenceExpression(self):
+            return self.getTypedRuleContext(RustParser.DereferenceExpressionContext,0)
+
+
         def expressionBlock(self):
             return self.getTypedRuleContext(RustParser.ExpressionBlockContext,0)
 
@@ -5700,8 +5704,8 @@ class RustParser ( Parser ):
             return self.getTypedRuleContext(RustParser.ArrayDeclarationContext,0)
 
 
-        def dereferenceExpression(self):
-            return self.getTypedRuleContext(RustParser.DereferenceExpressionContext,0)
+        def binaryOps(self):
+            return self.getTypedRuleContext(RustParser.BinaryOpsContext,0)
 
 
         def rangeSymbol(self):
@@ -5710,10 +5714,6 @@ class RustParser ( Parser ):
 
         def booleanOps(self):
             return self.getTypedRuleContext(RustParser.BooleanOpsContext,0)
-
-
-        def binaryOps(self):
-            return self.getTypedRuleContext(RustParser.BinaryOpsContext,0)
 
 
         def conditionalOps(self):
@@ -5792,7 +5792,7 @@ class RustParser ( Parser ):
                 self.state = 825
                 self.typePathExpression()
                 self.state = 826
-                self.expression(21)
+                self.expression(20)
                 pass
 
             elif la_ == 5:
@@ -5814,7 +5814,7 @@ class RustParser ( Parser ):
                 self.state = 831
                 self.unaryOpes()
                 self.state = 832
-                self.expression(17)
+                self.expression(16)
                 pass
 
             elif la_ == 9:
@@ -5834,29 +5834,29 @@ class RustParser ( Parser ):
 
             elif la_ == 12:
                 self.state = 837
-                self.expressionBlock()
+                self.dereferenceExpression()
                 pass
 
             elif la_ == 13:
                 self.state = 838
-                self.qualifiedExpression()
+                self.expressionBlock()
                 pass
 
             elif la_ == 14:
                 self.state = 839
-                self.patternPrefix()
-                self.state = 840
-                self.expression(4)
+                self.qualifiedExpression()
                 pass
 
             elif la_ == 15:
-                self.state = 842
-                self.arrayDeclaration()
+                self.state = 840
+                self.patternPrefix()
+                self.state = 841
+                self.expression(3)
                 pass
 
             elif la_ == 16:
                 self.state = 843
-                self.dereferenceExpression()
+                self.arrayDeclaration()
                 pass
 
 
@@ -5876,13 +5876,13 @@ class RustParser ( Parser ):
                         localctx = RustParser.ExpressionContext(self, _parentctx, _parentState)
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expression)
                         self.state = 846
-                        if not self.precpred(self._ctx, 11):
+                        if not self.precpred(self._ctx, 23):
                             from antlr4.error.Errors import FailedPredicateException
-                            raise FailedPredicateException(self, "self.precpred(self._ctx, 11)")
+                            raise FailedPredicateException(self, "self.precpred(self._ctx, 23)")
                         self.state = 847
-                        self.rangeSymbol()
+                        self.binaryOps()
                         self.state = 848
-                        self.expression(12)
+                        self.expression(24)
                         pass
 
                     elif la_ == 2:
@@ -5893,7 +5893,7 @@ class RustParser ( Parser ):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 10)")
                         self.state = 851
-                        self.booleanOps()
+                        self.rangeSymbol()
                         self.state = 852
                         self.expression(11)
                         pass
@@ -5906,7 +5906,7 @@ class RustParser ( Parser ):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 9)")
                         self.state = 855
-                        self.binaryOps()
+                        self.booleanOps()
                         self.state = 856
                         self.expression(10)
                         pass
@@ -5928,22 +5928,22 @@ class RustParser ( Parser ):
                         localctx = RustParser.ExpressionContext(self, _parentctx, _parentState)
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expression)
                         self.state = 862
-                        if not self.precpred(self._ctx, 7):
+                        if not self.precpred(self._ctx, 6):
                             from antlr4.error.Errors import FailedPredicateException
-                            raise FailedPredicateException(self, "self.precpred(self._ctx, 7)")
+                            raise FailedPredicateException(self, "self.precpred(self._ctx, 6)")
                         self.state = 863
                         self.compoundOps()
                         self.state = 864
-                        self.expression(8)
+                        self.expression(7)
                         pass
 
                     elif la_ == 6:
                         localctx = RustParser.ExpressionContext(self, _parentctx, _parentState)
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expression)
                         self.state = 866
-                        if not self.precpred(self._ctx, 22):
+                        if not self.precpred(self._ctx, 21):
                             from antlr4.error.Errors import FailedPredicateException
-                            raise FailedPredicateException(self, "self.precpred(self._ctx, 22)")
+                            raise FailedPredicateException(self, "self.precpred(self._ctx, 21)")
                         self.state = 867
                         self.castExpressionPostFix()
                         pass
@@ -5952,9 +5952,9 @@ class RustParser ( Parser ):
                         localctx = RustParser.ExpressionContext(self, _parentctx, _parentState)
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expression)
                         self.state = 868
-                        if not self.precpred(self._ctx, 14):
+                        if not self.precpred(self._ctx, 13):
                             from antlr4.error.Errors import FailedPredicateException
-                            raise FailedPredicateException(self, "self.precpred(self._ctx, 14)")
+                            raise FailedPredicateException(self, "self.precpred(self._ctx, 13)")
                         self.state = 869
                         self.callExpressionPostFix()
                         pass
@@ -5963,9 +5963,9 @@ class RustParser ( Parser ):
                         localctx = RustParser.ExpressionContext(self, _parentctx, _parentState)
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expression)
                         self.state = 870
-                        if not self.precpred(self._ctx, 13):
+                        if not self.precpred(self._ctx, 12):
                             from antlr4.error.Errors import FailedPredicateException
-                            raise FailedPredicateException(self, "self.precpred(self._ctx, 13)")
+                            raise FailedPredicateException(self, "self.precpred(self._ctx, 12)")
                         self.state = 871
                         self.typeAccessPostfix()
                         pass
@@ -8165,7 +8165,7 @@ class RustParser ( Parser ):
 
     def expression_sempred(self, localctx:ExpressionContext, predIndex:int):
             if predIndex == 0:
-                return self.precpred(self._ctx, 11)
+                return self.precpred(self._ctx, 23)
          
 
             if predIndex == 1:
@@ -8181,19 +8181,19 @@ class RustParser ( Parser ):
          
 
             if predIndex == 4:
-                return self.precpred(self._ctx, 7)
+                return self.precpred(self._ctx, 6)
          
 
             if predIndex == 5:
-                return self.precpred(self._ctx, 22)
+                return self.precpred(self._ctx, 21)
          
 
             if predIndex == 6:
-                return self.precpred(self._ctx, 14)
+                return self.precpred(self._ctx, 13)
          
 
             if predIndex == 7:
-                return self.precpred(self._ctx, 13)
+                return self.precpred(self._ctx, 12)
          
 
             if predIndex == 8:

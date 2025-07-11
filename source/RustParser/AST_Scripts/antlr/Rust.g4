@@ -121,6 +121,7 @@ typeWrapperPrefix: 'Some' ;
 expression
     : mutableExpression expression
     | primaryExpression
+    | expression binaryOps expression
     | structLiteral
     | expression castExpressionPostFix
     | typePathExpression expression
@@ -135,14 +136,13 @@ expression
     | basicTypeCastExpr
     | expression rangeSymbol expression
     | expression booleanOps expression
-    | expression binaryOps expression
     | expression conditionalOps expression
+    | dereferenceExpression
     | expression compoundOps expression
     | expressionBlock
     | qualifiedExpression
     | patternPrefix expression
     | arrayDeclaration
-    | dereferenceExpression
     | expression fieldAccessPostFix
     ;
 
@@ -160,7 +160,7 @@ compoundOps: '+=' | '-=' | '*=' | '/=' | '%=' | '&=' | '|=' | '^=';
 rangeSymbol: '..';
 conditionalOps: '==' | '!=' | '>' | '<' | '||' | '&&';
 booleanOps: '>>' | '&' | '>=' | '<=';
-binaryOps: '*' | '/' | '%' | '+' | '-' ;
+binaryOps: '*' | '/' | '%' | '+' | '-';
 structFieldDec: Identifier '{' structLiteralField (',' structLiteralField)* ','? '}' ;
 mutableExpression: 'mut';
 unaryOpes: '!' | '+' | '-';

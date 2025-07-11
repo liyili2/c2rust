@@ -232,7 +232,7 @@ class DereferenceExpr(Expression):
         self.expr = expr
 
     def accept(self, visitor):
-        return visitor.visitDereferenceExpr(self)
+        return visitor.visit_DereferenceExpr(self)
 
 class BinaryExpr(Expression):
     def __init__(self, left, op, right):

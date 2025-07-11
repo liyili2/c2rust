@@ -63,9 +63,10 @@ class FloatType(Type):
         return super().accept(visitor)
 
 class StructType(Type):
-    def __init__(self, name):
+    def __init__(self, name, fields):
         super().__init__()
         self.name = name
+        self.fields = fields
 
     def __repr__(self):
         return f"Struct<{self.name}>"
@@ -108,7 +109,7 @@ class PointerType(Type):
         return f"*{mutability} {pointee}"
     
     def accept(self, visitor):
-        return super().accept(visitor)
+        return visitor.visit_PointerType(self)
 
     def to_dict(self):
         return {
