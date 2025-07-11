@@ -154,7 +154,7 @@ class CharLiteral(Expression):
     def __init__(self, value: bool):
         super().__init__()
         self.value = value
-        self.type = CharLiteral()
+        # self.type = CharLiteral(value=value)
 
     def accept(self, visitor):
         pass
@@ -215,7 +215,7 @@ class UnaryExpr(Expression):
         self.expr = expr
 
     def accept(self, visitor):
-        return visitor.visitExpression(self.expr)
+        return visitor.visit_UnaryExpr(self.expr)
 
 class MethodCallExpr(Expression):
     def __init__(self, receiver, method_name, args, line=None, column=None):

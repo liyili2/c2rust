@@ -320,8 +320,8 @@ def serializedATN():
         774,5,48,0,0,774,775,3,118,59,0,775,776,3,68,34,0,776,778,1,0,0,
         0,777,773,1,0,0,0,778,781,1,0,0,0,779,777,1,0,0,0,779,780,1,0,0,
         0,780,784,1,0,0,0,781,779,1,0,0,0,782,783,5,29,0,0,783,785,3,68,
-        34,0,784,782,1,0,0,0,784,785,1,0,0,0,785,103,1,0,0,0,786,787,3,118,
-        59,0,787,788,5,4,0,0,788,105,1,0,0,0,789,791,5,43,0,0,790,792,3,
+        34,0,784,782,1,0,0,0,784,785,1,0,0,0,785,103,1,0,0,0,786,787,3,164,
+        82,0,787,788,5,4,0,0,788,105,1,0,0,0,789,791,5,43,0,0,790,792,3,
         118,59,0,791,790,1,0,0,0,791,792,1,0,0,0,792,793,1,0,0,0,793,796,
         5,4,0,0,794,796,5,78,0,0,795,789,1,0,0,0,795,794,1,0,0,0,796,107,
         1,0,0,0,797,798,5,49,0,0,798,799,3,68,34,0,799,109,1,0,0,0,800,802,
@@ -5223,8 +5223,8 @@ class RustParser ( Parser ):
             super().__init__(parent, invokingState)
             self.parser = parser
 
-        def expression(self):
-            return self.getTypedRuleContext(RustParser.ExpressionContext,0)
+        def primaryExpression(self):
+            return self.getTypedRuleContext(RustParser.PrimaryExpressionContext,0)
 
 
         def getRuleIndex(self):
@@ -5254,7 +5254,7 @@ class RustParser ( Parser ):
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 786
-            self.expression(0)
+            self.primaryExpression()
             self.state = 787
             self.match(RustParser.T__3)
         except RecognitionException as re:

@@ -523,7 +523,7 @@ class Transformer(RustVisitor):
         return UnsafeBlock(block)
 
     def visitStatement(self, ctx):
-        # print("stmt is ", ctx.callStmt(), ctx.__class__, ctx.getText())
+        print("stmt is ", ctx.__class__, ctx.getText())
         if ctx.block():
             return self.visit(ctx.block())
         elif ctx.letStmt():
@@ -555,7 +555,7 @@ class Transformer(RustVisitor):
         elif ctx.getText() == "continue;":
             return ContinueStmt()
         elif ctx.exprStmt():
-            return self.visit(ctx.exprStmt())
+            return ExpressionStmt(expr=ctx.exprStmt().primaryExpression())
         elif ctx.structDef():
             return self.visit(ctx.structDef())
         elif ctx.typeWrapper():
@@ -565,6 +565,9 @@ class Transformer(RustVisitor):
         else:
             print("⚠️ Unknown statement:", ctx.getText())
             return None
+        
+    def visitExpressionStmt(self, ctx):
+        return ExpressionStmt(expr=ctx.primaryExpression())
 
     def visitConditionalAssignmentStmt(self, ctx):
         cond = self.visit(ctx.block())

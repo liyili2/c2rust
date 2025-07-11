@@ -51,6 +51,16 @@ class StringType(Type):
 
     def accept(self, visitor):
         return super().accept(visitor)
+    
+class CharType(Type):
+    def __init__(self):
+        super().__init__()
+
+    def __repr__(self):
+        return "char"
+
+    def accept(self, visitor):
+        return super().accept(visitor)
 
 class FloatType(Type):
     def __init__(self):

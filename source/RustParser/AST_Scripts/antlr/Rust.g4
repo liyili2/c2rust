@@ -109,7 +109,7 @@ initBlock: '{' (Identifier ':' expression ',')* '}' ';' expression;
 assignStmt: expression '=' expression ';';
 forStmt: 'for' Identifier 'in' expression block;
 ifStmt: 'if' expression block ('else if' expression block)* ('else' block)?;
-exprStmt: expression ';';
+exprStmt: primaryExpression ';';
 returnStmt: 'return' (expression)? ';' | Identifier;
 loopStmt: 'loop' block;
 

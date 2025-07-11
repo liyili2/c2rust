@@ -1,9 +1,9 @@
 from ast import FunctionDef
 from types import NoneType
 from RustParser.AST_Scripts.ast.Block import Block
-from RustParser.AST_Scripts.ast.Type import ArrayType, BoolType, FloatType, IntType, PointerType, RefType, StringType, StructType, VoidType
+from RustParser.AST_Scripts.ast.Type import ArrayType, BoolType, CharType, FloatType, IntType, PointerType, RefType, StringType, StructType, VoidType
 from RustParser.AST_Scripts.ast.TypeEnv import TypeEnv
-from RustParser.AST_Scripts.ast.Expression import BinaryExpr, BorrowExpr, CastExpr, DereferenceExpr, FunctionCallExpr, IdentifierExpr, IntLiteral, LiteralExpr, RangeExpression 
+from RustParser.AST_Scripts.ast.Expression import BinaryExpr, BorrowExpr, CastExpr, DereferenceExpr, FieldAccessExpr, FunctionCallExpr, IdentifierExpr, IntLiteral, LiteralExpr, RangeExpression 
 
 class TypeChecker:
     def __init__(self):
@@ -190,6 +190,8 @@ class TypeChecker:
             self.visit(stmt)
 
     def visit_CastExpr(self, node: CastExpr):
+        if isinstance(node.expr, DereferenceExpr):
+            self.error(node, "raw pointer dereference in a cast expression")
         expr_type = self.visit(node.expr)
         target_type = self.visit(node.type)
         if expr_type == target_type:
@@ -295,7 +297,10 @@ class TypeChecker:
         if isinstance(node.right, PointerType) or isinstance(node.right, DereferenceExpr):
             self.error(node, "usage of raw pointers in a binary expression's right operand")
 
-        # print("visit_BinaryExpr", node.op, node.left, node.right)
+        print("visit_BinaryExpr", node.op, node.left, node.right)
+        if isinstance(node.left, FunctionCallExpr) or isinstance(node.right, FunctionCallExpr):
+            return
+
         if op in ['+', '-', '*', '/', '>>', '<<']:
             if isinstance(left, IntType) and isinstance(right, IntType):
                 return IntType()
@@ -402,14 +407,24 @@ class TypeChecker:
                     self.increase_error_count()
                 value_info["borrowed"] = True
 
+    def get_expr_identifier(self,expr):
+        if isinstance(expr, IdentifierExpr):
+            return expr.name
+        elif isinstance(expr, DereferenceExpr):
+            return self.get_expr_identifier(expr.expr)
+        elif isinstance(expr, FieldAccessExpr):
+            receiver = expr.receiver
+            return self.get_expr_identifier(receiver)
+
     def visit_Assignment(self, node):
-        # print("visit_Assignment1" ,node.target.name)
-        try:
-            info = self.env.lookup(node.target.name)
-            # print("visit_Assignment2", info, node.target, node.value)
-        except Exception:
-            self.error(node, "undefined variable in assignment")
-            return
+        print("visit_Assignment1" ,self.get_expr_identifier(node.target))
+        # try:
+        if self.get_expr_identifier(node.target) is not None:
+            info = self.env.lookup(self.get_expr_identifier(node.target))
+            print("visit_Assignment2", info, node.target, node.value)
+        # except Exception:
+        #     self.error(node, "undefined variable in assignment")
+        #     return
 
         if not info["owned"]:
             self.error(node, "assigning to a not-owned variable")
@@ -417,20 +432,22 @@ class TypeChecker:
             self.error(node, "assigning to a borrowed variable")
 
         value_type = self.visit(node.value)
-        if type(info["type"]) != type(value_type) and not isinstance(node.value, FunctionCallExpr):
+        if type(info["type"]) != type(value_type) and not isinstance(node.value, FunctionCallExpr) and not isinstance(node.target, FieldAccessExpr):
             self.error(node, "type mismatch in assignemnt")
 
         if isinstance(node.value, IdentifierExpr):
             try:
+                print("node.value.name",node.value.name)
                 value_info = self.env.lookup(node.value.name)
             except Exception:
                 self.error(node, "undefined variable in assignment value")
                 value_info = None
 
-            if value_info:
-                if not value_info["owned"]:
-                    self.error(node, "assigning a not-owned variable to target")
-                value_info["owned"] = False
+            if ( value_type is IntType) or ( value_type is BoolType) or ( value_type is CharType):
+                if value_info:
+                    if not value_info["owned"]:
+                        self.error(node, "assigning a not-owned variable to target")
+                    value_info["owned"] = False
 
         if isinstance(node.value, BorrowExpr):
             try:
@@ -450,19 +467,19 @@ class TypeChecker:
         # "owned": True, "borrowed": False, "mutable": info["mutable"]}
         return
 
+    def visit_LoopStmt(self, node):
+        self.visit(node.body)
+
+    def visit_UnaryExpr(self, node):
+        pass
+
     def visit_IfStmt(self, node):
         print("visit_IfStmt", node.condition.__class__)
-        condition_type = self.visit(node.condition)
-
-        if not isinstance(condition_type, BoolType):
-            self.error(node, "if condition type is not a boolean")
-
+        self.visit(node.condition)
         self.visit(node.then_branch)
-
-        if node.else_branch:
-            for stmt in node.else_branch.getChildren():
-                self.visit(stmt)
-        return True
+        if node.else_branch is not None:
+            self.visit(node.else_branch)
+        return
 
     def visit_ForStmt(self, node):
         iterable_type = self.visit(node.iterable)
@@ -726,7 +743,7 @@ class TypeChecker:
 
     def visit_FieldAccessExpr(self, node):
         base_type = self.visit(node.receiver)
-        print("visit_FieldAccessExpr", base_type, node.receiver.name, node.name)
+        # print("visit_FieldAccessExpr", base_type, node.receiver.name, node.name)
 
         if not isinstance(base_type, StructType):
             self.error(node, "access to a wrong type of variable (not a struct)")
@@ -761,6 +778,9 @@ class TypeChecker:
         for arm in node.arms:
             self.visit(arm.body)
 
+    def visit_ExpressionStmt(self, node):
+        pass
+
     def visit_TypePathExpression(self, node):
         # print("visit_TypePathExpression")
         if str.__contains__(node.last_type, "int"):
@@ -768,7 +788,7 @@ class TypeChecker:
         if str.__contains__(node.last_type, "str"):
             return StringType()
         if str.__contains__(node.last_type, "char"):
-            return StringType()
+            return CharType()
         if str.__contains__(node.last_type, "bool"):
             return BoolType()
         # self.error(node, "type path expression instead of simple types")

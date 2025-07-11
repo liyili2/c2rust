@@ -152,14 +152,14 @@ class CompoundAssignment(Statement):
         return visitor.visit_CompoundAssignment(self)
 
 class ExpressionStmt(Statement):
-    def __init__(self, expr, line, column):
+    def __init__(self, expr, line=None, column=None):
         super().__init__()
         self.expr = expr
         # self.line = line
         # self.column = column
 
     def accept(self, visitor):
-        return visitor.visitExpressionStmt(self)
+        return visitor.visit_ExpressionStmt(self)
 
 class ReturnStmt(Statement):
     def __init__(self, value=None):
@@ -178,7 +178,7 @@ class LoopStmt(Statement):
         self.body = body
 
     def accept(self, visitor):
-        return visitor.visitLoopStmt(self)
+        return visitor.visit_LoopStmt(self)
 
     def __repr__(self):
         return f"LoopStmt(body={repr(self.body)})"
