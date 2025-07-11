@@ -1,9 +1,11 @@
 from ast import FunctionDef
 from types import NoneType
+from RustParser.AST_Scripts.ast.Program import Program
 from RustParser.AST_Scripts.ast.Block import Block
 from RustParser.AST_Scripts.ast.Type import ArrayType, BoolType, CharType, FloatType, IntType, PointerType, RefType, StringType, StructType, VoidType
 from RustParser.AST_Scripts.ast.TypeEnv import TypeEnv
-from RustParser.AST_Scripts.ast.Expression import BinaryExpr, BorrowExpr, CastExpr, DereferenceExpr, FieldAccessExpr, FunctionCallExpr, IdentifierExpr, IntLiteral, LiteralExpr, RangeExpression 
+from RustParser.AST_Scripts.ast.Expression import BinaryExpr, BorrowExpr, CastExpr, DereferenceExpr, FieldAccessExpr, FunctionCallExpr, IdentifierExpr, IntLiteral, LiteralExpr, RangeExpression
+from RustParser.AST_Scripts.ast.Statement import IfStmt, ReturnStmt, WhileStmt
 
 class TypeChecker:
     def __init__(self):
@@ -118,7 +120,7 @@ class TypeChecker:
         for stmt in node.body.getChildren():
             self.visit(stmt)
 
-        if not isinstance(return_type, VoidType) and not self.body_has_terminating_return(node.body):
+        if not isinstance(return_type, VoidType) and not self.body_has_terminating_return(node.body.getChildren()):
             self.error(node, f"missing return in function '{fn_name}'")
 
         self.current_function_return = saved_return
@@ -128,16 +130,15 @@ class TypeChecker:
         return None
 
     def body_has_terminating_return(self, stmts):
-        pass
-        # for s in reversed(stmts):
-        #     if isinstance(s, ReturnStmt):
-        #         return True
-        #     if isinstance(s, IfStmt):
-        #         return (self.body_has_terminating_return(s.then_body) and
-        #                 self.body_has_terminating_return(s.else_body or []))
-        #     if isinstance(s, WhileStmt):
-        #         continue
-        # return False
+        for s in reversed(stmts):
+            if isinstance(s, ReturnStmt):
+                return True
+            if isinstance(s, IfStmt):
+                return (self.body_has_terminating_return(s.then_body) and
+                        self.body_has_terminating_return(s.else_body or []))
+            if isinstance(s, WhileStmt):
+                continue
+        return False
 
     def resolve_function_return_type(self, node):
         func_name = node.func
@@ -274,9 +275,9 @@ class TypeChecker:
             if not isinstance(var_def_type, expr_type.__class__):
                 self.error(node, "type of the value and target do not match")
 
-            print("letdeclare", var_def.name, var_def.type.__class__, var_def_type)
+            # print("letdeclare", var_def.name, var_def.type.__class__, var_def_type)
             self.env.declare(var_def.name, var_def_type, mutable=var_def.mutable)
-            print("declarecheck", self.env.lookup(var_def.name))
+            # print("declarecheck", self.env.lookup(var_def.name))
             self.symbol_table[var_def.name] = var_def_type
             self._handle_borrowing(var_def, node.values[0])
 
@@ -297,7 +298,7 @@ class TypeChecker:
         if isinstance(node.right, PointerType) or isinstance(node.right, DereferenceExpr):
             self.error(node, "usage of raw pointers in a binary expression's right operand")
 
-        print("visit_BinaryExpr", node.op, node.left, node.right)
+        # print("visit_BinaryExpr", node.op, node.left, node.right)
         if isinstance(node.left, FunctionCallExpr) or isinstance(node.right, FunctionCallExpr):
             return
 
@@ -354,12 +355,17 @@ class TypeChecker:
     def visit_CompoundAssignment(self, node):
         target_type = self.visit(node.target)
         value_type = self.visit(node.value)
+        target_name = self.get_expr_identifier(node.target)
+        try:
+            target_type = self.env.lookup(target_name)["type"]
+        except Exception:
+            self.error(node, "undefined variable in compound assignment")
 
         # Check mutability
         if isinstance(node.target, IdentifierExpr):
             try:
                 target_info = self.env.lookup(node.target.name)
-                print(";;", target_info)
+                # print(";;", target_info)
             except Exception:
                 self.error(node, "usage of undefined variable in compound assignment")
                 return
@@ -372,9 +378,8 @@ class TypeChecker:
 
         # Type compatibility check for compound ops
         if node.op in ['+=', '-=', '*=', '/=']:
-            if not (isinstance(target_type, IntType) and isinstance(value_type, IntType)):
+            if (not isinstance(target_type, IntType)) or (not isinstance(value_type, IntType)):
                 self.error(node, "ops not compatible in compound assignment")
-
         else:
             self.error(node, f"Unknown compound operator: {node.op}")
 
@@ -417,37 +422,36 @@ class TypeChecker:
             return self.get_expr_identifier(receiver)
 
     def visit_Assignment(self, node):
-        print("visit_Assignment1" ,self.get_expr_identifier(node.target))
-        # try:
-        if self.get_expr_identifier(node.target) is not None:
-            info = self.env.lookup(self.get_expr_identifier(node.target))
-            print("visit_Assignment2", info, node.target, node.value)
-        # except Exception:
-        #     self.error(node, "undefined variable in assignment")
-        #     return
+        # print("visit_Assignment1" ,self.get_expr_identifier(node.target))
+        try:
+            if self.get_expr_identifier(node.target) is not None:
+                info = self.env.lookup(self.get_expr_identifier(node.target))
+                # print("visit_Assignment2", info, node.target, node.value)
+        except Exception:
+            self.error(node, f"undefined variable {self.get_expr_identifier(node.target)} in assignment {self.get_expr_identifier(node.target)} = {self.get_expr_identifier(node.value)}")
+            return
 
         if not info["owned"]:
-            self.error(node, "assigning to a not-owned variable")
+            self.error(node, f"assigning to a not-owned variable in {self.get_expr_identifier(node.target)} = {self.get_expr_identifier(node.value)}")
         if info["borrowed"]:
-            self.error(node, "assigning to a borrowed variable")
+            self.error(node, f"assigning to a borrowed variable {self.get_expr_identifier(node.target)} = {self.get_expr_identifier(node.value)}")
 
         value_type = self.visit(node.value)
         if type(info["type"]) != type(value_type) and not isinstance(node.value, FunctionCallExpr) and not isinstance(node.target, FieldAccessExpr):
-            self.error(node, "type mismatch in assignemnt")
+            self.error(node, f"type mismatch in assignemnt {self.get_expr_identifier(node.target)} = {self.get_expr_identifier(node.value)}")
 
         if isinstance(node.value, IdentifierExpr):
             try:
-                print("node.value.name",node.value.name)
                 value_info = self.env.lookup(node.value.name)
             except Exception:
-                self.error(node, "undefined variable in assignment value")
+                self.error(node, f"undefined variable in assignment value : {self.get_expr_identifier(node.target)} = {self.get_expr_identifier(node.value)}")
                 value_info = None
 
             #TODO: Check it better
             if ( value_type is IntType) or ( value_type is BoolType) or ( value_type is CharType):
                 if value_info:
                     if not value_info["owned"]:
-                        self.error(node, "assigning a not-owned variable to target")
+                        self.error(node, f"assigning a not-owned variable to target : {self.get_expr_identifier(node.target)} = {self.get_expr_identifier(node.value)}")
                     value_info["owned"] = False
 
         if isinstance(node.value, BorrowExpr):
@@ -458,14 +462,14 @@ class TypeChecker:
                 value_info = None
 
             if value_info:
-                if node.value.mutable and not value_info["mutable"]:
-                    self.increase_error_count()
-                if value_info["borrowed"]:
-                    self.increase_error_count()
-                value_info["borrowed"] = True
+                # if node.value.mutable and not value_info["mutable"]:
+                #     self.increase_error_count()
+                # if value_info["borrowed"]:
+                #     self.increase_error_count()
+                # value_info["borrowed"] = True
 
-        # self.symbol_table[node.target] = { "type": expr_type,
-        # "owned": True, "borrowed": False, "mutable": info["mutable"]}
+                self.symbol_table[node.target] = { "type": value_info['type'],
+                "owned": True, "borrowed": False, "mutable": info["mutable"]}
         return
 
     def visit_LoopStmt(self, node):
@@ -475,7 +479,7 @@ class TypeChecker:
         pass
 
     def visit_IfStmt(self, node):
-        print("visit_IfStmt", node.condition.__class__)
+        # print("visit_IfStmt", node.condition.__class__)
         self.visit(node.condition)
         self.visit(node.then_branch)
         if node.else_branch is not None:
@@ -818,4 +822,8 @@ class TypeChecker:
         pass
 
     def visit_StaticVarDecl(self, node):
-        pass
+        node_type = self.visit(node.var_type)
+        print("visit_StaticVarDecl", node.parent.__class__, node_type)
+        self.env.declare(name=node.name, typ=node_type, mutable=node.mutable)
+        if node.mutable and isinstance(node.parent, Program):
+            self.error(node, f"global static mutable struct declaration: {node.name}")

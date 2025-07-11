@@ -6,7 +6,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '.
 from antlr4 import CommonTokenStream, InputStream
 from RustParser.AST_Scripts.antlr.RustLexer import RustLexer
 from RustParser.AST_Scripts.antlr.RustParser import RustParser
-from RustParser.AST_Scripts.ast.Transformer import Transformer
+from RustParser.AST_Scripts.ast.Transformer import Transformer, setParents
 from RustParser.AST_Scripts.ast.TypeChecker import TypeChecker
 from RustParser.AST_Scripts.ast.Program import Program
 from RustParser.AST_Scripts.ast.TopLevel import TopLevel
@@ -26,7 +26,7 @@ def pretty_print_ast(node, indent=0):
     else:
         return f"{spacer}{repr(node)}"
 
-file_path = os.path.join(os.path.dirname(__file__), "test1.rs")
+file_path = os.path.join(os.path.dirname(__file__), "test2.rs")
 with open(file_path, "r", encoding="utf-8") as f:
     rust_code = f.read()
 lexer = RustLexer(InputStream(rust_code))
@@ -36,7 +36,7 @@ tree = parser.program()
 print(pretty_print_ast(tree))
 builder = Transformer()
 custom_ast = builder.visit(tree)
-# set_parents(custom_ast)
+setParents(custom_ast)
 checker = TypeChecker()
 checker.visit(custom_ast)
 print("Type Error Count : ", checker.error_count)

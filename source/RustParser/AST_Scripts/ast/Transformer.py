@@ -1,9 +1,9 @@
 
 from RustParser.AST_Scripts.ast.ASTNode import ASTNode
 from RustParser.AST_Scripts.ast.Expression import ArrayDeclaration, ArrayLiteral, BasicTypeCastExpr, BinaryExpr, BoolLiteral, BorrowExpr, BoxWrapperExpr, CastExpr, CharLiteral, CharLiteralExpr, DereferenceExpr, FieldAccessExpr, FunctionCallExpr, IdentifierExpr, IndexExpr, IntLiteral, MethodCallExpr, MutableExpr, ParenExpr, Pattern, PatternExpr, QualifiedExpression, RangeExpression, RepeatArrayLiteral, StrLiteral, StructDefInit, StructLiteralExpr, StructLiteralField, TypeAccessExpr, TypePathExpression, TypePathFullExpr, TypeWrapperExpr, UnaryExpr, UnsafeExpression
-from RustParser.AST_Scripts.ast.Statement import AssignStmt, BreakStmt, CallStmt, CompoundAssignment, ConditionalAssignmentStmt, ContinueStmt, ExpressionStmt, ForStmt, IfStmt, LetStmt, LoopStmt, MatchArm, MatchPattern, MatchStmt, ReturnStmt, StaticVarDecl, StructLiteral, TypeWrapper, UnsafeBlock, WhileStmt
+from RustParser.AST_Scripts.ast.Statement import AssignStmt, BreakStmt, CallStmt, CompoundAssignment, ConditionalAssignmentStmt, ContinueStmt, ExpressionStmt, ForStmt, IfStmt, LetStmt, LoopStmt, MatchArm, MatchPattern, MatchStmt, ReturnStmt, StructLiteral, TypeWrapper, UnsafeBlock, WhileStmt
 from RustParser.AST_Scripts.antlr.RustVisitor import RustVisitor
-from RustParser.AST_Scripts.ast.TopLevel import ExternBlock, ExternFunctionDecl, ExternStaticVarDecl, ExternTypeDecl, FunctionDef, InterfaceDef, StructDef, Attribute, StructField, TopLevel, TopLevelVarDef, TypeAliasDecl, UseDecl, VarDefField
+from RustParser.AST_Scripts.ast.TopLevel import StaticVarDecl, ExternBlock, ExternFunctionDecl, ExternStaticVarDecl, ExternTypeDecl, FunctionDef, InterfaceDef, StructDef, Attribute, StructField, TopLevel, TopLevelVarDef, TypeAliasDecl, UseDecl, VarDefField
 from RustParser.AST_Scripts.ast.Program import Program
 from RustParser.AST_Scripts.ast.Expression import LiteralExpr
 from RustParser.AST_Scripts.ast.Type import ArrayType, BoolType, IntType, PathType, PointerType, StringType, Type
@@ -523,7 +523,7 @@ class Transformer(RustVisitor):
         return UnsafeBlock(block)
 
     def visitStatement(self, ctx):
-        print("stmt is ", ctx.__class__, ctx.getText())
+        # print("stmt is ", ctx.__class__, ctx.getText())
         if ctx.block():
             return self.visit(ctx.block())
         elif ctx.letStmt():
@@ -600,8 +600,9 @@ class Transformer(RustVisitor):
             raise Exception("Unrecognized return statement")
 
     def visitStaticVarDecl(self, ctx):
+        # print("visitStaticVarDecl")
         visibility = ctx.visibility().getText() if ctx.visibility() else None
-        mutable = ctx.getChild(1).getText() == 'mut' 
+        mutable = (ctx.getChild(1).getText() == 'mut' or ctx.getChild(2).getText() == 'mut')
         identifier_index = 3 if mutable else 2
         name = ctx.Identifier(0).getText()
         var_type = None

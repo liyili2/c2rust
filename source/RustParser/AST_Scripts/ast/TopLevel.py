@@ -89,6 +89,26 @@ class ExternTypeDecl(ExternItem):
     def accept(self, visitor):
         pass
 
+class StaticVarDecl(TopLevel):
+    def __init__(self, name, var_type, mutable, initial_value, visibility=None):
+        super().__init__()
+        self.name = name                  # str: variable name
+        self.var_type = var_type          # str or Type: declared type
+        self.mutable = mutable            # bool: true if `mut` is present
+        self.initial_value = initial_value  # Expr: value assigned at declaration
+        self.visibility = visibility      # str or None: 'pub', 'pub(crate)', etc.
+
+    def __repr__(self):
+        return (
+            f"StaticVarDecl(name={self.name}, "
+            f"type={self.var_type}, "
+            f"mutable={self.mutable}, "
+            f"visibility={self.visibility}, "
+            f"initial_value={self.initial_value})")
+    
+    def accept(self, visitor):
+        return visitor.visit_StaticVarDecl(self)
+
 class ExternStaticVarDecl(ExternItem):
     def __init__(self, name: str, var_type: Type, mutable: bool, initial_value, visibility: str = None):
         self.name = name
