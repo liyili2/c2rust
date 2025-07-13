@@ -26,26 +26,6 @@ class LetStmt(Statement):
     def accept(self, visitor):
         return visitor.visit_LetStmt(self)
 
-class StaticVarDecl:
-    def __init__(self, name, var_type, mutable, initial_value, visibility=None):
-        super().__init__()
-        self.name = name                  # str: variable name
-        self.var_type = var_type          # str or Type: declared type
-        self.mutable = mutable            # bool: true if `mut` is present
-        self.initial_value = initial_value  # Expr: value assigned at declaration
-        self.visibility = visibility      # str or None: 'pub', 'pub(crate)', etc.
-
-    def __repr__(self):
-        return (
-            f"StaticVarDecl(name={self.name}, "
-            f"type={self.var_type}, "
-            f"mutable={self.mutable}, "
-            f"visibility={self.visibility}, "
-            f"initial_value={self.initial_value})")
-    
-    def accept(self, visitor):
-        return visitor.visit_StaticVarDecl(self)
-
 class ForStmt(Statement):
     def __init__(self, var, iterable, body):
         super().__init__()
@@ -84,17 +64,6 @@ class ReturnStmt(Statement):
 
     def accept(self, visitor):
         return visitor.visit_return_stmt(self)
-
-class Block(Statement):
-    def __init__(self, statements):
-        super().__init__()
-        self.statements = statements
-
-    def accept(self, visitor):
-        return visitor.visit_block(self)
-    
-    def getChildren(self):
-        return self.statements
 
 class ExternStaticVarDecl(Statement):
     def __init__(self, name, var_type, mutable, initial_value, visibility=None):
@@ -163,14 +132,14 @@ class CompoundAssignment(Statement):
         return visitor.visit_CompoundAssignment(self)
 
 class ExpressionStmt(Statement):
-    def __init__(self, expr, line, column):
+    def __init__(self, expr, line=None, column=None):
         super().__init__()
         self.expr = expr
         # self.line = line
         # self.column = column
 
     def accept(self, visitor):
-        return visitor.visitExpressionStmt(self)
+        return visitor.visit_ExpressionStmt(self)
 
 class ReturnStmt(Statement):
     def __init__(self, value=None):
@@ -189,7 +158,7 @@ class LoopStmt(Statement):
         self.body = body
 
     def accept(self, visitor):
-        return visitor.visitLoopStmt(self)
+        return visitor.visit_LoopStmt(self)
 
     def __repr__(self):
         return f"LoopStmt(body={repr(self.body)})"

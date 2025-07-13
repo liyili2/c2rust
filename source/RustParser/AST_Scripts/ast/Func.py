@@ -1,16 +1,5 @@
 from RustParser.AST_Scripts.ast.ASTNode import ASTNode
 
-class FunctionDef(ASTNode):
-    def __init__(self, name, params, return_type, body):
-        super().__init__()
-        self.name = name
-        self.params = params  # list of (name, type)
-        self.return_type = return_type
-        self.body = body
-
-    def accept(self, visitor):
-        return visitor.visit_function_def(self)
-
 class Param(ASTNode):
     def __init__(self, name, typ, is_mut):
         super().__init__()
@@ -30,8 +19,9 @@ class FunctionParamList(ASTNode):
         self.params = params
         self.param_len = len(self.params)
 
+    def __iter__(self):
+        return iter(self.params)
     def __repr__(self):
         return f"FunctionParamList(params={self.params})"
-
     def accept(self, visitor):
         return visitor.visit_FunctionParamList(self)

@@ -15,18 +15,23 @@ from RustParser.AST_Scripts.ast.Type import PointerType, RefType
 from pyggi.tree.rust_unparser import RustUnparser
 from pyggi.tree.abstract_engine import AbstractTreeEngine
 from typing import List, Tuple
+import random
 
 def pretty_print_ast(node, indent=0, visited=None):
     if visited is None:
         visited = set()
 
-    if id(node) in visited:
-        return ' ' * indent + f"<Cycle: {type(node).__name__}>\n"
-
-    visited.add(id(node))
-
     lines = []
     prefix = ' ' * indent
+
+    if isinstance(node, (str, int, float, bool, type(None))):
+        return f"{prefix}{repr(node)}"
+
+    node_id = id(node)
+    if node_id in visited:
+        return f"{prefix}<Cycle: {type(node).__name__}>"
+
+    visited.add(node_id)
 
     if isinstance(node, list):
         for n in node:
@@ -35,7 +40,7 @@ def pretty_print_ast(node, indent=0, visited=None):
         lines.append(f"{prefix}{type(node).__name__}:")
         for attr, value in vars(node).items():
             if attr == "parent":
-                continue  # Skip parent to prevent infinite loop
+                continue
             lines.append(f"{prefix}  {attr}:")
             lines.append(pretty_print_ast(value, indent + 4, visited))
     else:
@@ -108,8 +113,15 @@ class RustEngine(AbstractTreeEngine):
 
     @classmethod
     def do_replace(cls, program, op, trees, modification_points):
-        #TODO
-        pass
+        file_name, target_node = op.target
+        if isinstance(target_node, tuple):
+            _, target_node = target_node
+
+        new_ast = trees[file_name]
+        new_ast = move_ast_node(trees[file_name], target_node)
+        trees[file_name] = new_ast
+        program.trees[file_name] = new_ast
+        return trees
 
     @classmethod
     def do_insert(cls, program, op, trees, modification_points):
@@ -319,8 +331,9 @@ def remove_node(ast_root, target_node, parents):
                         top_children_stmts = top_children.getChildren()
                         remake_ast_after_removal(target_node, other_tops, top, top_children, top_children_stmts)
                     elif isinstance(top_children, FunctionDef):
-                        top_children_stmts = top_children.getChildren()
-                        remake_ast_after_removal(target_node, other_tops, top, top_children, top_children_stmts)
+                        if isinstance(top_children.body, Block):
+                            top_children_stmts = top_children.getChildren()
+                            remake_ast_after_removal(target_node, other_tops, top, top_children, top_children_stmts)
             else:
                 other_tops.append(top)
                 continue
@@ -420,3 +433,95 @@ def remove_ast_node(ast_root, target_node):
     print("target node is ", target_node, target_node.parent, parents, len(parents))
     new_ast = remove_node(ast_root, target_node, parents)
     return new_ast
+
+def make_lets_mutable(ast_root, target_node):
+    parents = get_all_parents(ast_root, target_node)
+    if not isinstance(ast_root, Program):
+        return None
+    
+    if not isinstance(target_node, LetStmt):
+        return ast_root
+
+    parent_len = len(parents)
+
+    for top in ast_root.getChildren():
+        if parent_len < 3:
+            continue
+
+        parent_1, parent_2 = parents[-2], parents[-3]
+        top_type_matches = isinstance(parent_1, type(top))
+        top_children = top.getChildren()
+
+        if not top_type_matches:
+            continue
+
+        if isinstance(parent_2, type(top_children)):
+            if isinstance(top_children, Block):
+                for stmt in top_children.getChildren():
+                    if isinstance(stmt, LetStmt):
+                        stmt.var_defs[0].mutable = True
+            elif isinstance(top_children, FunctionDef) and isinstance(top_children.body, Block):
+                for stmt in top_children.body.getChildren():
+                    if isinstance(stmt, LetStmt):
+                        stmt.var_defs[0].mutable = True
+
+        elif isinstance(top_children, list):
+            matched_children = []
+            for item in top_children:
+                if isinstance(parent_2, type(item)) and isinstance(item.body, Block):
+                    for stmt in top_children.getChildren():
+                        if isinstance(stmt, LetStmt):
+                            stmt.var_defs[0].mutable = True
+                else:
+                    matched_children.append(item)
+
+    print("replaceast: ", pretty_print_ast(ast_root))
+    return ast_root
+
+def move_ast_node(ast_root, target_node):
+    parents = get_all_parents(ast_root, target_node)
+    if not isinstance(ast_root, Program):
+        return None
+
+    remaining_tops = []
+    parent_len = len(parents)
+
+    for top in ast_root.getChildren():
+        if parent_len < 3:
+            remaining_tops.append(top)
+            continue
+
+        parent_1, parent_2 = parents[-2], parents[-3]
+        top_type_matches = isinstance(parent_1, type(top))
+        top_children = top.getChildren()
+
+        if not top_type_matches:
+            remaining_tops.append(top)
+            continue
+
+        if isinstance(parent_2, type(top_children)):
+            if isinstance(top_children, Block):
+                shuffle_and_update_block(top, top_children)
+            elif isinstance(top_children, FunctionDef) and isinstance(top_children.body, Block):
+                shuffle_and_update_block(top, top_children.body)
+
+            remaining_tops.append(top)
+
+        elif isinstance(top_children, list):
+            matched_children = []
+            for item in top_children:
+                if isinstance(parent_2, type(item)) and isinstance(item.body, Block):
+                    shuffle_and_update_block(item, item.body)
+                    matched_children.append(item)
+                else:
+                    matched_children.append(item)
+
+            top.setFunctions(matched_children)
+            remaining_tops.append(top)
+
+    return Program(items=remaining_tops)
+
+def shuffle_and_update_block(node, block):
+    random.shuffle(block.getChildren())
+    new_block = Block(block.getChildren(), block.isUnsafe)
+    node.setBody(new_block)

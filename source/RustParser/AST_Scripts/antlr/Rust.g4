@@ -94,7 +94,7 @@ statement
     ;
 
 conditionalAssignmentStmt: 'let'? (typeWrapper | expression) '=' expression 'else' block ';';
-callStmt: expression callExpressionPostFix ';' ;
+callStmt: expression ('.' expression) callExpressionPostFix ';' | expression callExpressionPostFix ';' ;
 letStmt: 'let' varDef '=' expression ';' | 'let' varDef initBlock | 'let' '(' (varDef ','?)* ')' '=' '(' (expression ','?)* ')' ';';
 varDef: 'ref'? 'mut'? Identifier (':' typeExpr)?;
 compoundOp: '+=' | '-=' | '*=' | '/=' | '%=' | '&=' | '|=' | '^=' ;
@@ -109,7 +109,7 @@ initBlock: '{' (Identifier ':' expression ',')* '}' ';' expression;
 assignStmt: expression '=' expression ';';
 forStmt: 'for' Identifier 'in' expression block;
 ifStmt: 'if' expression block ('else if' expression block)* ('else' block)?;
-exprStmt: expression ';';
+exprStmt: primaryExpression ';';
 returnStmt: 'return' (expression)? ';' | Identifier;
 loopStmt: 'loop' block;
 
@@ -121,6 +121,7 @@ typeWrapperPrefix: 'Some' ;
 expression
     : mutableExpression expression
     | primaryExpression
+    | expression binaryOps expression
     | structLiteral
     | expression castExpressionPostFix
     | typePathExpression expression
@@ -130,20 +131,19 @@ expression
     | unaryOpes expression
     | borrowExpression
     | unsafeExpression
-    | expression fieldAccessPostFix
+    | expression callExpressionPostFix
     | expression typeAccessPostfix
     | basicTypeCastExpr
     | expression rangeSymbol expression
     | expression booleanOps expression
-    | expression binaryOps expression
     | expression conditionalOps expression
+    | dereferenceExpression
     | expression compoundOps expression
     | expressionBlock
     | qualifiedExpression
-    | expression callExpressionPostFix
     | patternPrefix expression
     | arrayDeclaration
-    | dereferenceExpression
+    | expression fieldAccessPostFix
     ;
 
 basicTypeCastExpr: typeExpr typePath;
@@ -160,7 +160,7 @@ compoundOps: '+=' | '-=' | '*=' | '/=' | '%=' | '&=' | '|=' | '^=';
 rangeSymbol: '..';
 conditionalOps: '==' | '!=' | '>' | '<' | '||' | '&&';
 booleanOps: '>>' | '&' | '>=' | '<=';
-binaryOps: '*' | '/' | '%' | '+' | '-' ;
+binaryOps: '*' | '/' | '%' | '+' | '-';
 structFieldDec: Identifier '{' structLiteralField (',' structLiteralField)* ','? '}' ;
 mutableExpression: 'mut';
 unaryOpes: '!' | '+' | '-';
@@ -171,7 +171,7 @@ borrowExpression: '&' expression;
 primaryExpression: literal | Identifier;
 
 fieldAccessPostFix: '[' primaryExpression ']' | ('.' primaryExpression)+;
-callExpressionPostFix: '!'? functionCallArgs;
+callExpressionPostFix: ('.' expression)? '!'? functionCallArgs;
 functionCallArgs: '()' | '(' expression (',' expression)* ')' ;
 
 TRUE: 'true';

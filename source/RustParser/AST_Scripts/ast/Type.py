@@ -40,7 +40,7 @@ class IntType(Type):
         return "i32"
 
     def accept(self, visitor):
-        return super().accept(visitor)
+        return visitor.visit_IntType(self)
 
 class StringType(Type):
     def __init__(self):
@@ -48,6 +48,16 @@ class StringType(Type):
 
     def __repr__(self):
         return "String"
+
+    def accept(self, visitor):
+        return super().accept(visitor)
+    
+class CharType(Type):
+    def __init__(self):
+        super().__init__()
+
+    def __repr__(self):
+        return "char"
 
     def accept(self, visitor):
         return super().accept(visitor)
@@ -63,9 +73,10 @@ class FloatType(Type):
         return super().accept(visitor)
 
 class StructType(Type):
-    def __init__(self, name):
+    def __init__(self, name, fields):
         super().__init__()
         self.name = name
+        self.fields = fields
 
     def __repr__(self):
         return f"Struct<{self.name}>"
@@ -91,7 +102,7 @@ class ArrayType(Type):
         self.size = size
 
     def __repr__(self):
-        return f"[{self.var_type}; {self.size}]" if self.size else f"[{self.elem_type}]"
+        return f"[{self.var_type}; {self.size}]" if self.size else f"[{self.var_type}]"
     
     def accept(self, visitor):
         return visitor.visit_ArrayType(self)
@@ -108,7 +119,7 @@ class PointerType(Type):
         return f"*{mutability} {pointee}"
     
     def accept(self, visitor):
-        return super().accept(visitor)
+        return visitor.visit_PointerType(self)
 
     def to_dict(self):
         return {

@@ -41,6 +41,17 @@ class StructDef(TopLevel):
         method_name = f'visit_{self.__class__.__name__}'
         return getattr(visitor, method_name, visitor.generic_visit)(self)
 
+class StructField(ASTNode):
+    def __init__(self, name, typeExpr, visibility):
+        super().__init__()
+        self.name = name
+        self.type = typeExpr
+        self.visibility = visibility
+
+    def accept(self, visitor):
+        method_name = f'visit_{self.__class__.__name__}'
+        return getattr(visitor, method_name, visitor.generic_visit)(self)
+
 class Attribute(TopLevel):
     def __init__(self, name, args=None):
         super().__init__()
@@ -77,6 +88,26 @@ class ExternTypeDecl(ExternItem):
     
     def accept(self, visitor):
         pass
+
+class StaticVarDecl(TopLevel):
+    def __init__(self, name, var_type, mutable, initial_value, visibility=None):
+        super().__init__()
+        self.name = name                  # str: variable name
+        self.var_type = var_type          # str or Type: declared type
+        self.mutable = mutable            # bool: true if `mut` is present
+        self.initial_value = initial_value  # Expr: value assigned at declaration
+        self.visibility = visibility      # str or None: 'pub', 'pub(crate)', etc.
+
+    def __repr__(self):
+        return (
+            f"StaticVarDecl(name={self.name}, "
+            f"type={self.var_type}, "
+            f"mutable={self.mutable}, "
+            f"visibility={self.visibility}, "
+            f"initial_value={self.initial_value})")
+    
+    def accept(self, visitor):
+        return visitor.visit_StaticVarDecl(self)
 
 class ExternStaticVarDecl(ExternItem):
     def __init__(self, name: str, var_type: Type, mutable: bool, initial_value, visibility: str = None):
@@ -138,6 +169,9 @@ class VarDefField(ASTNode):
         self.type_      = type_
         self.visibility = visibility
 
+    def accept(self, visitor):
+        return super().accept(visitor)
+
 class InterfaceDef(TopLevel):
     def __init__(self, name: str, functions: list):
         super().__init__()
@@ -149,6 +183,9 @@ class InterfaceDef(TopLevel):
     
     def getChildren(self):
         return self.functions
+    
+    def setFunctions(self, newFunctions):
+        self.functions = newFunctions
 
 class UseDecl(TopLevel):
     def __init__(self, paths, aliases=None):

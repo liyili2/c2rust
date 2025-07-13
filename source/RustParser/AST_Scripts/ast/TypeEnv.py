@@ -10,6 +10,7 @@ class TypeEnv:
         self.scopes.pop()
 
     def declare(self, name, typ, mutable=False):
+        # print("declare:", typ)
         self.scopes[-1][name] = {
             "type": typ,
             "owned": True,
@@ -37,3 +38,6 @@ class TypeEnv:
         if name in self.function_env:
             return self.function_env[name]
         raise Exception(f"Undefined function '{name}'")
+
+    def top(self):
+        return self.scopes[-1]
