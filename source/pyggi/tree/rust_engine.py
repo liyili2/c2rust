@@ -118,8 +118,7 @@ class RustEngine(AbstractTreeEngine):
             _, target_node = target_node
 
         new_ast = trees[file_name]
-        # new_ast = move_ast_node(trees[file_name], target_node)
-        new_ast = make_lets_mutable(new_ast, target_node)
+        new_ast = move_ast_node(trees[file_name], target_node)
         trees[file_name] = new_ast
         program.trees[file_name] = new_ast
         return trees
@@ -127,35 +126,15 @@ class RustEngine(AbstractTreeEngine):
     @classmethod
     def do_insert(cls, program, op, trees, modification_points):
         #TODO
-        # pass
-        file_name, target_node = op.target
-        if isinstance(target_node, tuple):
-            _, target_node = target_node
-
-        new_ast = trees[file_name]
-        # new_ast = move_ast_node(trees[file_name], target_node)
-        new_ast = make_lets_mutable(new_ast, target_node)
-        trees[file_name] = new_ast
-        program.trees[file_name] = new_ast
-        return trees
+        pass
 
     @classmethod
     def do_delete(cls, program, op, trees, modification_points):
-        # file_name, target_node = op.target
-        # if isinstance(target_node, tuple):
-        #     _, target_node = target_node
-
-        # new_ast = remove_ast_node(trees[file_name], target_node)
-        # trees[file_name] = new_ast
-        # program.trees[file_name] = new_ast
-        # return trees
         file_name, target_node = op.target
         if isinstance(target_node, tuple):
             _, target_node = target_node
 
-        new_ast = trees[file_name]
-        # new_ast = move_ast_node(trees[file_name], target_node)
-        new_ast = make_lets_mutable(new_ast, target_node)
+        new_ast = remove_ast_node(trees[file_name], target_node)
         trees[file_name] = new_ast
         program.trees[file_name] = new_ast
         return trees
