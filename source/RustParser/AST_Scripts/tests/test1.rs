@@ -67,10 +67,10 @@ pub struct State {
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct Frag {
-    pub start: *mut State,
-    pub out: *mut Ptrlist,
-}
+// pub struct Frag {
+//     pub start: *mut State,
+//     pub out: *mut Ptrlist,
+// }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub union Ptrlist {

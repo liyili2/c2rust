@@ -848,7 +848,7 @@ class Transformer(RustVisitor):
 
     def visitCastExpr(self, node):
         expr = self.visit(node.expr)
-        target_type = node.type
+        target_type = self.visit(node.type)
         return CastExpr(expr=expr, type=target_type)
 
     def visitPattern(self, ctx):

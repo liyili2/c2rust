@@ -18,8 +18,8 @@ class TypeEnv:
             "mutable": mutable,
         }
 
-    def define(self, name, info):
-        self.scopes[-1][name] = info
+    # def define(self, name, info):
+    #     self.scopes[-1][name] = info
 
     def lookup(self, name):
         for scope in reversed(self.scopes):
