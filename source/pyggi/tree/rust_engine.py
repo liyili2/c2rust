@@ -481,7 +481,10 @@ def transform_ast(ast_root, target_node, transform_fn):
 
         parent_1, parent_2 = parents[-2], parents[-3]
         top_type_matches = isinstance(parent_1, type(top))
-        top_children = top.getChildren()
+        if isinstance(top, list):
+            top_children = top
+        else:
+            top_children = top.getChildren()
 
         if not top_type_matches:
             remaining_tops.append(top)
