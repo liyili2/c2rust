@@ -6,7 +6,7 @@ from RustParser.AST_Scripts.antlr.RustVisitor import RustVisitor
 from RustParser.AST_Scripts.ast.TopLevel import StaticVarDecl, ExternBlock, ExternFunctionDecl, ExternStaticVarDecl, ExternTypeDecl, FunctionDef, InterfaceDef, StructDef, Attribute, StructField, TopLevel, TopLevelVarDef, TypeAliasDecl, UseDecl, VarDefField
 from RustParser.AST_Scripts.ast.Program import Program
 from RustParser.AST_Scripts.ast.Expression import LiteralExpr
-from RustParser.AST_Scripts.ast.Type import ArrayType, BoolType, IntType, PathType, PointerType, StringType, Type
+from RustParser.AST_Scripts.ast.Type import SafeNonNullWrapper, ArrayType, BoolType, IntType, PathType, PointerType, StringType, Type
 from RustParser.AST_Scripts.antlr import RustLexer, RustParser
 from RustParser.AST_Scripts.ast.VarDef import VarDef
 from RustParser.AST_Scripts.antlr import RustParser
@@ -389,9 +389,7 @@ class Transformer(RustVisitor):
         # case 1: let varDef = expression;
         if len(var_defs) == 1 and len(expressions) == 1 and init_block is None:
             var_def = self.visit(var_defs[0])
-            # print("vardef: ", var_def)
             expr = self.visit(expressions[0])
-            # print("expr type is ", expr.__class__)
             return LetStmt(var_def, expr)
 
         # case 2: let varDef initBlock
@@ -405,6 +403,8 @@ class Transformer(RustVisitor):
             var_defs_visited = [self.visit(vd) for vd in var_defs]
             expressions_visited = [self.visit(ex) for ex in expressions]
             return LetStmt(var_defs_visited, expressions_visited)
+        
+        # elif len(var_defs) == 1:
 
         else:
             raise NotImplementedError("Unsupported let statement structure")
@@ -742,6 +742,9 @@ class Transformer(RustVisitor):
             basicType = self.visit(ctx.basicTypeCastExpr().typeExpr())
             typePath = self.visit(ctx.basicTypeCastExpr().typePath())
             return BasicTypeCastExpr(basicType, typePath)
+        
+        elif ctx.safeNonNullWrapper():
+            return self.visit(ctx.safeNonNullWrapper())
 
         # elif ctx.typeWrapperPrefix():
         #     expr = self.visit(ctx.expression())
@@ -755,6 +758,10 @@ class Transformer(RustVisitor):
         #     return BoxWrapperExpr(expr=expr, path=path)
 
         raise Exception(f"Unrecognized expression structure: {ctx.getText()}")
+
+    def visitSafeNonNullWrapper(self, ctx):
+        typeExpr = self.visit(ctx.typeExpr())
+        return SafeNonNullWrapper(typeExpr=typeExpr)
 
     def visitQualifiedExpression(self, ctx):
         expr = self.visit(ctx.expression())
@@ -796,8 +803,8 @@ class Transformer(RustVisitor):
         # return FunctionCallExpr(func=ctx.func, args=ctx.args)
 
     def visitTypePathExpression(self, ctx):
-            type_path = [id.getText() for id in ctx.Identifier()]
-            return TypePathExpression(type_path, type_path)
+        type_str = ctx.getText()
+        return TypePathExpression(type_path=type_str.split("::") , last_type=type_str.split("::")[-1])
 
     def visitPrimaryExpression(self, ctx):
         # print("visitPrimaryExpression")
@@ -808,24 +815,18 @@ class Transformer(RustVisitor):
         if ctx.literal():
             return self.visit(ctx.literal())
         elif ctx.Identifier():
-            # print("in id primary case", ctx.Identifier().getText())
             return IdentifierExpr(ctx.Identifier().getText())
         else:
             raise Exception(f"Unknown primary expression: {ctx.getText()}")
 
     def visitQualifiedFunctionCall(self, ctx):
-        print("in qualified")
         # type_path = self.visit(ctx.typePath())
-        print("path is ", ctx.Identifier().__class__ , len(ctx.Identifier()))
         function_name = ctx.Identifier().getText()
-        print("name is ", function_name)
         generic_args = self.visit(ctx.genericArgs()) if ctx.genericArgs() else None
-        print("args are ", generic_args)
         if ctx.argumentList():
             args = self.visit(ctx.argumentList())
         else:
             args = []
-
         return MethodCallExpr(method_name=function_name, args=args)
 
     def visitGenericArgs(self, ctx):
@@ -859,8 +860,10 @@ class Transformer(RustVisitor):
 
     def visitTypeExpr(self, ctx):
         type_str = ctx.getText()
-        # print("in visit type!", type_str)
-        if type_str.startswith('[') and ';' in type_str and type_str.endswith(']'):
+        if ctx.basicType():
+            return self.visit(ctx.basicType())
+
+        elif type_str.startswith('[') and ';' in type_str and type_str.endswith(']'):
             inner_type_str, size_str = type_str[1:-1].split(';')
             inner_type = self._basic_type_from_str(inner_type_str.strip())
             size = int(size_str.strip())
@@ -874,12 +877,24 @@ class Transformer(RustVisitor):
         elif ctx.pointerType():
             return self.visit(ctx.pointerType())
 
-        elif "::" in type_str:
-            return TypePathExpression(type_path=type_str.split("::") , last_type=type_str.split("::")[-1])
+        # elif "::" in type_str:
+        #     return TypePathExpression(type_path=type_str.split("::") , last_type=type_str.split("::")[-1])
         elif str.__eq__(type_str,"i32"):
             return IntType()
         elif str.__eq__(type_str,"String"):
             return StringType()
+        else:
+            return type_str
+
+    def visitBasicType(self, ctx):
+        type_str = ctx.getText()
+        if ctx.safeNonNullWrapper():
+            print(self.visit(ctx.safeNonNullWrapper()).__class__ )
+            return self.visit(ctx.safeNonNullWrapper())
+
+        elif ctx.typePath():
+            type_str = ctx.typePath().getText()
+            return TypePathExpression(type_path=type_str.split("::") , last_type=type_str.split("::")[-1])
         else:
             return type_str
 

@@ -9,14 +9,18 @@ class TypeEnv:
     def exit_scope(self):
         self.scopes.pop()
 
-    def declare(self, name, typ, mutable=False):
+    def declare(self, name, typ, mutable=False, isSafelyWrapped=False):
         # print("declare:", typ)
         self.scopes[-1][name] = {
             "type": typ,
             "owned": True,
             "borrowed": False,
             "mutable": mutable,
+            "isSafelyWrapped": isSafelyWrapped,
         }
+
+    def wrapSafe(self, name, isSafelyWrapped):
+        self.scopes[-1][name]["isSafelyWrapped"] = isSafelyWrapped
 
     # def define(self, name, info):
     #     self.scopes[-1][name] = info

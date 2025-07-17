@@ -9,9 +9,10 @@ from RustParser.AST_Scripts.ast.Transformer import Transformer, setParents
 from RustParser.AST_Scripts.ast.Program import Program
 from RustParser.AST_Scripts.ast.Expression import BinaryExpr, BoolLiteral, CastExpr, Expression, FieldAccessExpr, IdentifierExpr, IntLiteral, MethodCallExpr, StrLiteral, TypePathExpression, UnsafeExpression
 from RustParser.AST_Scripts.ast.Statement import AssignStmt, CallStmt, ForStmt, IfStmt, LetStmt, Statement, WhileStmt
-from RustParser.AST_Scripts.ast.TopLevel import Attribute, ExternBlock, ExternFunctionDecl, FunctionDef, InterfaceDef, StructDef, TopLevel, TopLevelVarDef, TypeAliasDecl
+from RustParser.AST_Scripts.ast.TopLevel import Attribute, ExternBlock, ExternFunctionDecl, FunctionDef, InterfaceDef, StaticVarDecl, StructDef, TopLevel, TopLevelVarDef, TypeAliasDecl
 from RustParser.AST_Scripts.ast.TypeChecker import TypeChecker
-from RustParser.AST_Scripts.ast.Type import PointerType, RefType
+from RustParser.AST_Scripts.ast.Type import PointerType, RefType, SafeNonNullWrapper
+from RustParser.AST_Scripts.ast.VarDef import VarDef
 from pyggi.tree.rust_unparser import RustUnparser
 from pyggi.tree.abstract_engine import AbstractTreeEngine
 from typing import List, Tuple
@@ -99,6 +100,10 @@ class RustEngine(AbstractTreeEngine):
             return results
         visited.add(id(node))
 
+        if isinstance(node, StaticVarDecl):
+            print("adding it", node)
+            results.append(node)
+
         if isinstance(node, Statement):
             results.append(node)
 
@@ -118,9 +123,11 @@ class RustEngine(AbstractTreeEngine):
             _, target_node = target_node
 
         new_ast = trees[file_name]
-        new_ast = move_ast_node(trees[file_name], target_node)
-        trees[file_name] = new_ast
-        program.trees[file_name] = new_ast
+        new_ast1 = move_ast_node(new_ast, target_node)
+        new_ast2 = make_global_static_pointers_unmutable(new_ast1, target_node)
+        new_ast3 = safe_wrap_raw_pointers(new_ast2, target_node)
+        trees[file_name] = new_ast3
+        program.trees[file_name] = new_ast3
         return trees
 
     @classmethod
@@ -134,9 +141,9 @@ class RustEngine(AbstractTreeEngine):
         if isinstance(target_node, tuple):
             _, target_node = target_node
 
-        new_ast = remove_ast_node(trees[file_name], target_node)
-        trees[file_name] = new_ast
-        program.trees[file_name] = new_ast
+        new_ast1 = remove_ast_node(trees[file_name], target_node)
+        trees[file_name] = new_ast1
+        program.trees[file_name] = new_ast1
         return trees
 
     @classmethod
@@ -232,9 +239,10 @@ class RustEngine(AbstractTreeEngine):
 
     @classmethod
     def dump(cls, contents_of_file, file_name):
-        program_ctx = contents_of_file  # or tree.root or similar depending on your parser wrapper
-        unparser = RustUnparser()
-        return unparser.visitProgram(program_ctx)
+        program_ctx = contents_of_file
+        # unparser = RustUnparser()
+        return program_ctx
+        # return unparser.visitProgram(program_ctx)
 
 def collect_expressions(node, path="./", index_map=None) -> List[Tuple[str, object]]:
 
@@ -434,51 +442,31 @@ def remove_ast_node(ast_root, target_node):
     new_ast = remove_node(ast_root, target_node, parents)
     return new_ast
 
-def make_lets_mutable(ast_root, target_node):
-    parents = get_all_parents(ast_root, target_node)
-    if not isinstance(ast_root, Program):
-        return None
-    
-    if not isinstance(target_node, LetStmt):
-        return ast_root
+def shuffle_and_update_block(node, block):
+    random.shuffle(block.getChildren())
+    new_block = Block(block.getChildren(), block.isUnsafe)
+    node.setBody(new_block)
 
-    parent_len = len(parents)
+def replace_raw_pointer_defs_with_safe_wrappers(node, block):
+    new_stmts = []
+    for stmt in block.getChildren():
+        if isinstance(stmt, LetStmt):
+            if len(stmt.var_defs) == 1:
+                if isinstance(stmt.var_defs[0].type, PointerType) and stmt.var_defs[0].mutable:
+                    new_stmt = LetStmt(values=stmt.values[0],
+                        var_defs=[
+                            VarDef(var_type=SafeNonNullWrapper(typeExpr=stmt.var_defs[0].type), 
+                                   name=stmt.var_defs[0].name, mutable=stmt.var_defs[0].mutable)
+                        ]
+                    )
+                    new_stmts.append(new_stmt)
+        else:
+            new_stmts.append(stmt)
 
-    for top in ast_root.getChildren():
-        if parent_len < 3:
-            continue
+    new_block = Block(new_stmts, block.isUnsafe)
+    node.setBody(new_block)
 
-        parent_1, parent_2 = parents[-2], parents[-3]
-        top_type_matches = isinstance(parent_1, type(top))
-        top_children = top.getChildren()
-
-        if not top_type_matches:
-            continue
-
-        if isinstance(parent_2, type(top_children)):
-            if isinstance(top_children, Block):
-                for stmt in top_children.getChildren():
-                    if isinstance(stmt, LetStmt):
-                        stmt.var_defs[0].mutable = True
-            elif isinstance(top_children, FunctionDef) and isinstance(top_children.body, Block):
-                for stmt in top_children.body.getChildren():
-                    if isinstance(stmt, LetStmt):
-                        stmt.var_defs[0].mutable = True
-
-        elif isinstance(top_children, list):
-            matched_children = []
-            for item in top_children:
-                if isinstance(parent_2, type(item)) and isinstance(item.body, Block):
-                    for stmt in top_children.getChildren():
-                        if isinstance(stmt, LetStmt):
-                            stmt.var_defs[0].mutable = True
-                else:
-                    matched_children.append(item)
-
-    print("replaceast: ", pretty_print_ast(ast_root))
-    return ast_root
-
-def move_ast_node(ast_root, target_node):
+def transform_ast(ast_root, target_node, transform_fn):
     parents = get_all_parents(ast_root, target_node)
     if not isinstance(ast_root, Program):
         return None
@@ -501,9 +489,9 @@ def move_ast_node(ast_root, target_node):
 
         if isinstance(parent_2, type(top_children)):
             if isinstance(top_children, Block):
-                shuffle_and_update_block(top, top_children)
+                transform_fn(top, top_children)
             elif isinstance(top_children, FunctionDef) and isinstance(top_children.body, Block):
-                shuffle_and_update_block(top, top_children.body)
+                transform_fn(top, top_children.body)
 
             remaining_tops.append(top)
 
@@ -511,7 +499,7 @@ def move_ast_node(ast_root, target_node):
             matched_children = []
             for item in top_children:
                 if isinstance(parent_2, type(item)) and isinstance(item.body, Block):
-                    shuffle_and_update_block(item, item.body)
+                    transform_fn(item, item.body)
                     matched_children.append(item)
                 else:
                     matched_children.append(item)
@@ -521,7 +509,22 @@ def move_ast_node(ast_root, target_node):
 
     return Program(items=remaining_tops)
 
-def shuffle_and_update_block(node, block):
-    random.shuffle(block.getChildren())
-    new_block = Block(block.getChildren(), block.isUnsafe)
-    node.setBody(new_block)
+def safe_wrap_raw_pointers(ast_root, target_node):
+    return transform_ast(ast_root, target_node, replace_raw_pointer_defs_with_safe_wrappers)
+
+def move_ast_node(ast_root, target_node):
+    return transform_ast(ast_root, target_node, shuffle_and_update_block)
+
+def make_global_static_pointers_unmutable(ast_root, target_node):
+    # print("make_global_static_pointers_unmutable")
+    if isinstance(target_node, TopLevel):
+        top_items = []
+        for top in ast_root.getChildren():
+            if isinstance(top, StaticVarDecl):
+                new_top_item = StaticVarDecl(var_type=top.var_type, mutable=False, name= top.name,
+                                            initial_value=top.initial_value, visibility=top.visibility)
+                top_items.append(new_top_item)
+            else:
+                top_items.append(top)
+
+        return Program(items=top_items)

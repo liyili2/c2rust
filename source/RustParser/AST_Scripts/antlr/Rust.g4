@@ -55,6 +55,7 @@ typeExpr: basicType | pointerType;
 pointerType: '*' ('mut' | 'const') (typeExpr)?;
 basicType
     : 'i32'
+    | safeNonNullWrapper
     | 'String'
     | 'bool'
     | 'u8'
@@ -67,6 +68,7 @@ basicType
     | '[' typeExpr ']'
     | Identifier;
 
+safeNonNullWrapper: 'Option<NonNull<' typeExpr ('>>' | '>' '>') ;
 typePath: Identifier DOUBLE_COLON | DOUBLE_COLON? Identifier (DOUBLE_COLON Identifier)* ;
 arrayType: '[' basicType ';' Number ']' ;
 

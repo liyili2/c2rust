@@ -1,17 +1,12 @@
 from copy import deepcopy
+from shutil import copy
 import os
-import time
-import shutil
-import tempfile
-import uuid
-from deepdiff import DeepDiff
 from types import SimpleNamespace as Result
 from pyggi.tree.rust_engine import RustEngine, pretty_print_ast
 from pyggi.build.lib.pyggi.base.patch import Patch
 from pyggi.tree.tree import TreeProgram
 from RustParser.AST_Scripts.antlr.RustParser import RustParser
 from RustParser.AST_Scripts.antlr.RustLexer   import RustLexer
-from antlr4 import InputStream, CommonTokenStream
 from RustParser.AST_Scripts.ast.Transformer import Transformer
 from RustParser.AST_Scripts.ast.TypeChecker import TypeChecker
 
@@ -32,7 +27,7 @@ class MyRustProgram(TreeProgram):
         raise Exception(f"No engine for {file_name}")
 
     def apply_patch(self, patch):
-        print("apply_patch")
+        print("apply_patch", self.trees["bst.rs"].__class__)
         variant = MyRustProgram(path=self.path, config=self.config)
         variant.trees = deepcopy(self.trees)
         variant.modification_points = deepcopy(self.modification_points)
@@ -49,7 +44,7 @@ class MyRustProgram(TreeProgram):
         variant = self.apply_patch(patch)
 
         mutated_ast = variant[self.main_file]
-        print("eval tree", self.main_file, pretty_print_ast(mutated_ast))
+        # print("eval tree", self.main_file, pretty_print_ast(mutated_ast))
 
         # diff = DeepDiff(original, variant, ignore_order=True)
         # print("🔍 Mutation diff:")

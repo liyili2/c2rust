@@ -5,7 +5,7 @@ from RustParser.AST_Scripts.ast.ASTNode import ASTNode
 
 class TopLevel(ASTNode):
     def __init__(self):
-        # self.parent = program
+        # self.parent = None
         pass
 
     def accept(self, visitor):

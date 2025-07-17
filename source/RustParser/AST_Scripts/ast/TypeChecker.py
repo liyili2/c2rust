@@ -2,10 +2,11 @@ from ast import FunctionDef
 from types import NoneType
 from RustParser.AST_Scripts.ast.Program import Program
 from RustParser.AST_Scripts.ast.Block import Block
-from RustParser.AST_Scripts.ast.Type import ArrayType, BoolType, CharType, FloatType, IntType, PointerType, RefType, StringType, StructType, VoidType
+from RustParser.AST_Scripts.ast.Type import SafeNonNullWrapper, ArrayType, BoolType, CharType, FloatType, IntType, PointerType, RefType, StringType, StructType, VoidType
 from RustParser.AST_Scripts.ast.TypeEnv import TypeEnv
 from RustParser.AST_Scripts.ast.Expression import BinaryExpr, BorrowExpr, CastExpr, DereferenceExpr, FieldAccessExpr, FunctionCallExpr, IdentifierExpr, IntLiteral, LiteralExpr, MutableExpr, RangeExpression
 from RustParser.AST_Scripts.ast.Statement import IfStmt, ReturnStmt, WhileStmt
+from RustParser.AST_Scripts.ast.TopLevel import TopLevel
 
 class TypeChecker:
     def __init__(self):
@@ -172,8 +173,8 @@ class TypeChecker:
             self.error(self, "unknown primitive type")
 
     def visit(self, node):
-        if node is None:
-            self.increase_error_count()
+        # if node is None:
+        #     self.error(node, "none node found")
         if isinstance(node, list):
             return [self.visit(n) for n in node]
         if hasattr(node, 'accept'):
@@ -240,7 +241,9 @@ class TypeChecker:
         return result
 
     def visit_LetStmt(self, node):
-        expr_types = [self.visit(expr) for expr in node.values]
+        expr_types = []
+        for expr in node.values:
+            expr_types.append(self.visit(expr))
 
         if node.is_destructuring():
             if len(node.var_defs) != len(expr_types):
@@ -260,33 +263,28 @@ class TypeChecker:
         else:
             var_def = node.var_defs[0]
             expr_type = expr_types[0]
-            # print(";;;;;", var_def.name, var_def.type)
-            # print(var_def.type.__class__, expr_type.__class__, (var_def.type.__class__ is expr_type.__class__))
             if var_def.type:
-                # print("declared_type",var_def.type.__class__)
                 var_def_type = self.visit(var_def.type)
-                # declared_type = self.visit(var_def.type)
-                # print("declared_type", var_def_type)
             else:
                 var_def_type = expr_type
 
-            # if isinstance(var_def.value, CastExpr):
-            #     var_def_type = 
-
             if isinstance(var_def.type, NoneType):
                 var_def.type = expr_type
+            self.detect_raw_pointer_definition(var_def.name, var_def.type, var_def.mutable)
 
             if isinstance(expr_type, NoneType):
                 expr_type = var_def.type
 
-            if not isinstance(var_def_type, expr_type.__class__):
+            if not isinstance(var_def_type, expr_type.__class__) and not isinstance(var_def_type, SafeNonNullWrapper):
                 self.error(node, "type of the value and target do not match")
 
-            # print("letdeclare", var_def.name, var_def.type.__class__, var_def_type)
             self.env.declare(var_def.name, var_def_type, mutable=var_def.mutable)
-            # print("declarecheck", self.env.lookup(var_def.name))
             self.symbol_table[var_def.name] = var_def_type
             self._handle_borrowing(var_def, node.values[0])
+
+    def detect_raw_pointer_definition(self, name, type, isMutable):
+        if isinstance(type, PointerType) and isMutable:
+            self.error(self, f"raw pointer definition: {name} = *mut {type.accept(self)}")
 
     def visit_PointerType(self, node):
         # print("visit_PointerType", node.pointee_type.__class__, node.pointee_type)
@@ -294,6 +292,10 @@ class TypeChecker:
 
     def visit_DereferenceExpr(Self, node):
         pass
+
+    def visit_SafeNonNullWrapper(self, node):
+        print("visit_SafeNonNullWrapper")
+        return node
 
     def visit_BinaryExpr(self, node):
         left = self.visit(node.left)
@@ -635,8 +637,10 @@ class TypeChecker:
         
         if isinstance(node.value, bool):
             return BoolType()
+        if isinstance(node.value, NoneType):
+            return NoneType()
         else:
-            self.increase_error_count()
+            self.error(node, f"unknown literal type for {node.value}")
 
     def visit_IdentifierExpr(self, node):
         info = None
@@ -647,7 +651,7 @@ class TypeChecker:
             return
 
         return info["type"]
-    
+
     def visit_QualifiedExpression(self, node):
         inner_type = self.visit(node.inner_expr)
         return inner_type
@@ -791,7 +795,7 @@ class TypeChecker:
         pass
 
     def visit_TypePathExpression(self, node):
-        # print("visit_TypePathExpression")
+        # print("visit_TypePathExpression", node.last_type.__class__, node.last_type)
         if str.__contains__(node.last_type, "int"):
             return IntType()
         if str.__contains__(node.last_type, "str"):
@@ -817,6 +821,7 @@ class TypeChecker:
         # return FunctionCallExpr(func=node.func, args=node.args)
 
     def visit_PrimaryExpression(self, node):
+        print("visit_PrimaryExpression")
         pass
 
     def visit_typeWrapper(self, node):
@@ -827,7 +832,7 @@ class TypeChecker:
 
     def visit_StaticVarDecl(self, node):
         node_type = self.visit(node.var_type)
-        print("visit_StaticVarDecl", node.name, node.parent.__class__, node_type)
+        # print("visit_StaticVarDecl", node.name, node.parent.__class__, node_type)
         self.env.declare(name=node.name, typ=node_type, mutable=node.mutable)
-        if node.mutable and isinstance(node.parent, Program):
+        if node.mutable and isinstance(node, TopLevel):
             self.error(node, f"global static mutable struct declaration: {node.name}")
