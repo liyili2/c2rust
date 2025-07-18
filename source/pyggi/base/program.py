@@ -262,7 +262,7 @@ class AbstractProgram(ABC):
             - key: The target file name(path) related to the program root path
             - value: The contents of the file
         """
-        # print("apply")
+        print("apply")
         new_contents = self.get_modified_contents(patch)
         self.write_to_tmp_dir(new_contents)
         return new_contents

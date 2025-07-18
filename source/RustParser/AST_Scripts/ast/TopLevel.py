@@ -40,6 +40,9 @@ class StructDef(TopLevel):
     def accept(self, visitor):
         method_name = f'visit_{self.__class__.__name__}'
         return getattr(visitor, method_name, visitor.generic_visit)(self)
+    
+    def getChildren(self):
+        return self.fields
 
 class StructField(ASTNode):
     def __init__(self, name, typeExpr, visibility):
@@ -162,6 +165,9 @@ class TopLevelVarDef(TopLevel):
         self.visibility = visibility
         self.type_ = type
         self.def_kind = def_kind
+
+    def getChildren(self):
+        return self.fields
 
 class VarDefField(ASTNode):
     def __init__(self, name, type_, visibility=None):

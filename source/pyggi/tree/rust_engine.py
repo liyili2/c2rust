@@ -105,6 +105,7 @@ class RustEngine(AbstractTreeEngine):
             results.append(node)
 
         if isinstance(node, Statement):
+            # print("[[[]]]", node.__class__)
             results.append(node)
 
         if isinstance(node, list):
@@ -124,7 +125,7 @@ class RustEngine(AbstractTreeEngine):
 
         new_ast = trees[file_name]
         new_ast1 = move_ast_node(new_ast, target_node)
-        new_ast2 = make_global_static_pointers_unmutable(new_ast1, target_node)
+        new_ast2 = make_global_static_pointers_unmutable(new_ast, target_node)
         new_ast3 = safe_wrap_raw_pointers(new_ast2, target_node)
         trees[file_name] = new_ast3
         program.trees[file_name] = new_ast3
@@ -133,7 +134,15 @@ class RustEngine(AbstractTreeEngine):
     @classmethod
     def do_insert(cls, program, op, trees, modification_points):
         #TODO
-        pass
+        # pass
+        file_name, target_node = op.target
+        if isinstance(target_node, tuple):
+            _, target_node = target_node
+
+        new_ast1 = remove_ast_node(trees[file_name], target_node)
+        trees[file_name] = new_ast1
+        program.trees[file_name] = new_ast1
+        return trees
 
     @classmethod
     def do_delete(cls, program, op, trees, modification_points):
