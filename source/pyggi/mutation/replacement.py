@@ -6,15 +6,23 @@ from RustParser.AST_Scripts.ast.Block import Block
 from RustParser.AST_Scripts.ast.Statement import LetStmt
 from RustParser.AST_Scripts.ast.VarDef import VarDef
 from RustParser.AST_Scripts.ast.Type import PointerType, SafeNonNullWrapper
-from c2rust.source.pyggi.mutation.utils import MutationUtils
+from pyggi.mutation.utils import MutationUtils
 import random
 
 class ReplacementOperator:
-    def __init__(self):
+    def __init__(self, ast, node):
         self.utils = MutationUtils()
+        self.new_ast = self.apply_mutation(ast, node)
 
-    def apply_mutation(self):
-        pass
+    def get_new_ast(self):
+        return self.new_ast
+
+    def apply_mutation(self, ast, node):
+        new_ast = self.safe_wrap_raw_pointers(ast, node)
+        new_ast = self.safe_wrap_raw_pointer_argumetns(ast, node)
+        new_ast = self.make_global_static_pointers_unmutable(ast, node)
+        # new_ast = self.move_ast_node(ast, node)
+        return new_ast
 
     def shuffle_and_update_block(self, node, block):
         random.shuffle(block.getChildren())
@@ -40,14 +48,13 @@ class ReplacementOperator:
         new_block = Block(new_stmts, block.isUnsafe)
         node.setBody(new_block)
 
-
     def safe_wrap_raw_pointers(self, ast_root, target_node):
         return self.utils.transform_ast(ast_root, target_node, self.replace_raw_pointer_defs_with_safe_wrappers)
 
     def move_ast_node(self, ast_root, target_node):
         return self.utils.transform_ast(ast_root, target_node, self.shuffle_and_update_block)
 
-    def make_global_static_pointers_unmutable(ast_root, target_node):
+    def make_global_static_pointers_unmutable(self, ast_root, target_node):
         # print("make_global_static_pointers_unmutable")
         if isinstance(target_node, TopLevel):
             top_items = []

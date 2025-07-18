@@ -72,11 +72,15 @@
 //     }
 // }
 
-fn foo(mut argv: *mut *mut libc::c_char, mut argv2: *mut *mut libc::c_int, mut argv3: *mut *mut libc::c_int) {
+// fn foo(mut argv: *mut *mut libc::c_char, mut argv2: *mut *mut libc::c_int, mut argv3: *mut *mut libc::c_int) {
 
-}
+// }
 
-fn main(mut argv: *mut *mut libc::c_char, mut argv2: *mut *mut libc::c_int, mut argv3: *mut *mut libc::c_int) {
+// fn main(mut argv: *mut *mut libc::c_char, mut argv2: *mut *mut libc::c_int, mut argv3: *mut *mut libc::c_int) {
+
+// fn main() {
+//     let a: *mut libc::c_char = "googoolii";
+    // let a: i32 = "1";
     // let s : i32 = 1;
     // s += 13;
     // println!("{}", s);
@@ -91,7 +95,7 @@ fn main(mut argv: *mut *mut libc::c_char, mut argv2: *mut *mut libc::c_int, mut 
     // if a {
     //     print("hello")
     // }
-    let a : aa::bb::cc = 1 as bb;
+    // let a : aa::bb::cc = 1 as bb;
     // unsafe {
     //     let mut root = Node::new(5, string::from("five") );
     // }
@@ -116,17 +120,17 @@ fn main(mut argv: *mut *mut libc::c_char, mut argv2: *mut *mut libc::c_int, mut 
     // root.insert(8, string::from("eight"));
     // println!("{:?}", root.search(8));
     // println!("{:?}", root);
-}
+// }
 
-// static mut listid0: libc::c_int = 0;
-// static mut listid1: libc::c_int = 1;
-// static mut listid2: libc::c_int = 2;
+static mut listid0: libc::c_int = 0;
+static mut listid1: libc::c_int = 1;
+static mut listid2: libc::c_int = 2;
 
-// fn main() {
+fn main() {
 //     let mut dst: *mut libc::c_char = 0 as *mut libc::c_char;
 //     let a = 2;
 //     a = 44;
 //     let mut dst : Option<NonNull<libc::c_char>> = None;
 //     let mut dst: Option<NonNull<libc::c_char> > = None;
 //     let mut dst: i32 = 1;
-// }
+}

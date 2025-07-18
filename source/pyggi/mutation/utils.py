@@ -139,7 +139,7 @@ class MutationUtils:
             return (self.expr_eq(expr1.receiver, expr2.receiver) and self.expr_eq(expr1.name, expr2.name))
         return False 
 
-    def function_def_eq(func1, func2):
+    def function_def_eq(self, func1, func2):
         # print("function_def_eq", func1.identifier, func2.identifier, (func1.params.param_len), (func2.params.param_len), len(func1.body.getChildren()))
         return (func1.identifier == func2.identifier and (func1.params.param_len) == (func2.params.param_len) and len(func1.body.getChildren()) == len(func1.body.getChildren()))
 

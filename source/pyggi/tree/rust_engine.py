@@ -14,9 +14,8 @@ from RustParser.AST_Scripts.ast.TopLevel import Attribute, ExternBlock, ExternFu
 from RustParser.AST_Scripts.ast.TypeChecker import TypeChecker
 from RustParser.AST_Scripts.ast.Type import PointerType, RefType, SafeNonNullWrapper
 from RustParser.AST_Scripts.ast.VarDef import VarDef
-from c2rust.source.pyggi.mutation.deletion import DeletionOperator
-from c2rust.source.pyggi.mutation.replacement import ReplacementOperator
-from pyggi.tree.rust_unparser import RustUnparser
+from pyggi.mutation.replacement import ReplacementOperator
+from pyggi.mutation.deletion import DeletionOperator
 from pyggi.tree.abstract_engine import AbstractTreeEngine
 from typing import List, Tuple
 import random
@@ -53,9 +52,6 @@ def pretty_print_ast(node, indent=0, visited=None):
     return '\n'.join(lines)
 
 class RustEngine(AbstractTreeEngine):
-    # def __init__(self):
-    # currentAst = None
-
     def parse(self, src_code):
         lexer = RustLexer(InputStream(src_code))
         tokens = CommonTokenStream(lexer)
@@ -123,18 +119,10 @@ class RustEngine(AbstractTreeEngine):
         file_name, target_node = op.target
         if isinstance(target_node, tuple):
             _, target_node = target_node
-
-        new_ast = trees[file_name]
-        replacementOperator = ReplacementOperator()
-        replacementOperator.apply()
-        # TODO
-        # new_ast1 = move_ast_node(new_ast, target_node)
-        # new_ast2 = make_global_static_pointers_unmutable(new_ast, target_node)
-        # new_ast3 = safe_wrap_raw_pointers(new_ast2, target_node)
-        # new_ast4 = safe_wrap_raw_pointer_argumetns(new_ast, target_node)
-        # trees[file_name] = new_ast4
-        # program.trees[file_name] = new_ast4
-        # return trees
+        replacementOperator = ReplacementOperator(trees[file_name], target_node)
+        trees[file_name] = replacementOperator.get_new_ast()
+        program.trees[file_name] = trees[file_name] 
+        return trees
 
     @classmethod
     def do_insert(cls, program, op, trees, modification_points):
@@ -146,12 +134,10 @@ class RustEngine(AbstractTreeEngine):
         file_name, target_node = op.target
         if isinstance(target_node, tuple):
             _, target_node = target_node
-
-        deletionOperator = DeletionOperator()
-        # TODO
-        # trees[file_name] = new_ast1
-        # program.trees[file_name] = new_ast1
-        # return trees
+        deletionOperator = DeletionOperator(trees[file_name], target_node)
+        trees[file_name] = deletionOperator.get_new_ast()
+        program.trees[file_name] = trees[file_name] 
+        return trees
 
     @classmethod
     def _get_root_node(cls, node):

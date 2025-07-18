@@ -748,8 +748,8 @@ class Transformer(RustVisitor):
             typePath = self.visit(ctx.basicTypeCastExpr().typePath())
             return BasicTypeCastExpr(basicType, typePath)
         
-        elif ctx.safeNonNullWrapper():
-            return self.visit(ctx.safeNonNullWrapper())
+        # elif ctx.safeNonNullWrapper():
+        #     return self.visit(ctx.safeNonNullWrapper())
 
         # elif ctx.typeWrapperPrefix():
         #     expr = self.visit(ctx.expression())

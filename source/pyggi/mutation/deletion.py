@@ -2,11 +2,17 @@
 from RustParser.AST_Scripts.ast.Program import Program
 from RustParser.AST_Scripts.ast.TopLevel import FunctionDef
 from RustParser.AST_Scripts.ast.Block import Block
-from c2rust.source.pyggi.mutation.utils import MutationUtils
+from pyggi.mutation.utils import MutationUtils
 
 class DeletionOperator:
-    def __init__(self):
+    def __init__(self, ast, node):
+        self.ast = ast
+        self.node = node
         self.utils = MutationUtils()
+        self.new_ast = self.remove_ast_node(self.ast, self.node)
+
+    def get_new_ast(self):
+        return self.new_ast
 
     def remove_ast_node(self, ast_root, target_node):
         parents = self.utils.get_all_parents(ast_root, target_node)
