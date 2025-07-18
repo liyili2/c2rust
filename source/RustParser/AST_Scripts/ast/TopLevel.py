@@ -31,6 +31,9 @@ class FunctionDef(TopLevel):
     def setBody(self, body):
         self.body = body
 
+    def setParamList(self, paramList):
+        self.params = paramList
+
 class StructDef(TopLevel):
     def __init__(self, name, fields):
         super().__init__()

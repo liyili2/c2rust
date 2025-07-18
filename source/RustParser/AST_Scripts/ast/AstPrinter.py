@@ -27,7 +27,7 @@ class AstPrinter:
         return ", ".join(self.visit(param) for param in node.params)
 
     def visit_Param(self, node):
-        mut = "mut " if node.is_mut else ""
+        mut = "mut " if node.mutable else ""
         return f"{mut}{node.name}: {self.visit(node.typ)}"
 
     def visit_TypeName(self, node):

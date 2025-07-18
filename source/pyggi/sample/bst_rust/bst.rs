@@ -1,78 +1,82 @@
-// // easy for debugging / knowing what is inside
-#[derive(Debug)]
-struct Node {
-    key: i32,
-    value: string,
-    left: Option<Box<Node> >,
-    right: Option<Box<Node> >,
+// // // easy for debugging / knowing what is inside
+// #[derive(Debug)]
+// struct Node {
+//     key: i32,
+//     value: string,
+//     left: Option<Box<Node> >,
+//     right: Option<Box<Node> >,
+// }
+
+// unsafe unsafeTopLevelVarDef: i32 = 11;
+
+// impl Node {
+//     unsafe fn new(key: i32, value: string) -> Self {
+//         Node {
+//             key,
+//             value,
+//             left: None,
+//             right: None,
+//         }
+//     }
+
+//     // looks like Box is helpful here
+//     fn insert() {
+//         if key < self.key {
+//             if let some(ref mut left) = self.left {
+//                 left.insert(key, value);
+//             }
+//             else {
+//                 self.left = some(box::new(Node::new(key, value) ) );
+//             }
+//         }
+//         else if key > self.key {
+//             if let some(ref mut right) = self.right {
+//                 right.insert(key, value);
+//             } 
+//         else {
+//                 self.right = some(box::new(Node::new(key, value) ) );
+//             }
+//         } else {
+//             self.value = value;
+//         }
+//     }
+
+//     // self.left is owned by current function
+//     // but looks like left in Some(ref mut left) is something can be passed to other functions
+//     fn search(&mut self, key: i32) -> Option<&string> {
+//         if key < self.key {
+//             if let some(ref mut left) = self.left {
+//                 return left.search(key);
+//             } else {
+//                 return None;
+//             }
+//         } else if key > self.key {
+//             if let some(ref mut right) = self.right {
+//                 return right.search(key);
+//             } else {
+//                 return None;
+//             }
+//         } else {
+//             return some(&self.value);
+//         }
+//     }
+// }
+
+// impl Node {
+//     fn foo() {
+//         let a : i32 = 0;
+//         a = 12;
+//         while a {
+//             print("hello!");
+//         }
+//     }
+// }
+
+fn foo(mut argv: *mut *mut libc::c_char, mut argv2: *mut *mut libc::c_int, mut argv3: *mut *mut libc::c_int) {
+
 }
 
-unsafe unsafeTopLevelVarDef: i32 = 11;
-
-impl Node {
-    unsafe fn new(key: i32, value: string) -> Self {
-        Node {
-            key,
-            value,
-            left: None,
-            right: None,
-        }
-    }
-
-    // looks like Box is helpful here
-    fn insert() {
-        if key < self.key {
-            if let some(ref mut left) = self.left {
-                left.insert(key, value);
-            }
-            else {
-                self.left = some(box::new(Node::new(key, value) ) );
-            }
-        }
-        else if key > self.key {
-            if let some(ref mut right) = self.right {
-                right.insert(key, value);
-            } 
-        else {
-                self.right = some(box::new(Node::new(key, value) ) );
-            }
-        } else {
-            self.value = value;
-        }
-    }
-
-    // self.left is owned by current function
-    // but looks like left in Some(ref mut left) is something can be passed to other functions
-    fn search(&mut self, key: i32) -> Option<&string> {
-        if key < self.key {
-            if let some(ref mut left) = self.left {
-                return left.search(key);
-            } else {
-                return None;
-            }
-        } else if key > self.key {
-            if let some(ref mut right) = self.right {
-                return right.search(key);
-            } else {
-                return None;
-            }
-        } else {
-            return some(&self.value);
-        }
-    }
-}
-
-impl Node {
-    fn foo() {
-        let a : i32 = 0;
-        a = 12;
-        while a {
-            print("hello!");
-        }
-    }
-}
-
-fn main() {
+fn main(mut argv: *mut *mut libc::c_char, mut argv2: *mut *mut libc::c_int, mut argv3: *mut *mut libc::c_int) {
     // let s : i32 = 1;
     // s += 13;
     // println!("{}", s);
@@ -114,9 +118,9 @@ fn main() {
     // println!("{:?}", root);
 }
 
-static mut listid0: libc::c_int = 0;
-static mut listid1: libc::c_int = 1;
-static mut listid2: libc::c_int = 2;
+// static mut listid0: libc::c_int = 0;
+// static mut listid1: libc::c_int = 1;
+// static mut listid2: libc::c_int = 2;
 
 // fn main() {
 //     let mut dst: *mut libc::c_char = 0 as *mut libc::c_char;

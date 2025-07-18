@@ -90,7 +90,7 @@ class TypeChecker:
         for i, param in enumerate(node.params):
             param_name = param.name
             param_type = self.visit(param.typ)
-            is_mut = param.is_mut
+            is_mut = param.mutable
 
             # print("param", param.__class__, param.typ.__class__)
             self.visit(param)
@@ -580,19 +580,19 @@ class TypeChecker:
         name = node.name
         checked_type = self.visit(node.typ)
         # print("visit_ParamNode", name, checked_type, node.typ.__class__)
-        if isinstance(node.typ, PointerType):
+        if isinstance(node.typ, PointerType) and node.mutable:
             self.error(node, "raw pointer usage in the function signature")
-        is_mut = node.is_mut
-        # self.env.declare(name, checked_type, is_mut)
-        return (name, checked_type, is_mut)
+        mutable = node.mutable
+        # self.env.declare(name, checked_type, mutable)
+        return (name, checked_type, mutable)
 
     def visit_FunctionParamList(self, ctx):
         print("visit_FunctionParamList")
         params = []
         for param_ctx in ctx.params:
             print("param_ctx", ctx.param)
-            name, typ, is_mut = self.visit(param_ctx)
-            params.append((name, typ, is_mut))
+            name, typ, mutable = self.visit(param_ctx)
+            params.append((name, typ, mutable))
         return params
 
     def visit_IntType(self, node):

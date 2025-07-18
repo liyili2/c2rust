@@ -273,11 +273,16 @@ class Transformer(RustVisitor):
         identifier = ctx.Identifier().getText()
         type_ctx = ctx.typeExpr()
         typ = self.visit(type_ctx) if type_ctx else None
-        return Param(name=identifier, typ=typ, is_mut=is_mut)
+        # print("visitParam: ", )
+        return Param(name=identifier, typ=typ, mutable=is_mut)
 
     def visitParamList(self, ctx):
-        params = [self.visit(param_ctx) for param_ctx in ctx.param()]
-        return FunctionParamList(params)
+        param_list = FunctionParamList([])
+        for param_ctx in ctx.param():
+            param = self.visit(param_ctx)
+            param.set_parent(param_list)
+            param_list.params.append(param)
+        return param_list
 
     def visitStructDef(self, ctx):
         name = ctx.Identifier().getText()

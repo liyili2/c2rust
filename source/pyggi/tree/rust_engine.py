@@ -1,3 +1,4 @@
+from RustParser.AST_Scripts.ast.Func import FunctionParamList, Param
 from copy import deepcopy
 import os
 from RustParser.AST_Scripts.ast.AstPrinter import AstPrinter
@@ -101,7 +102,11 @@ class RustEngine(AbstractTreeEngine):
         visited.add(id(node))
 
         if isinstance(node, StaticVarDecl):
-            print("adding it", node)
+            # print("adding it", node)
+            results.append(node)
+
+        if isinstance(node, FunctionParamList):
+            # print("[[[]]]", node.parent)
             results.append(node)
 
         if isinstance(node, Statement):
@@ -124,25 +129,18 @@ class RustEngine(AbstractTreeEngine):
             _, target_node = target_node
 
         new_ast = trees[file_name]
-        new_ast1 = move_ast_node(new_ast, target_node)
-        new_ast2 = make_global_static_pointers_unmutable(new_ast, target_node)
-        new_ast3 = safe_wrap_raw_pointers(new_ast2, target_node)
-        trees[file_name] = new_ast3
-        program.trees[file_name] = new_ast3
+        # new_ast1 = move_ast_node(new_ast, target_node)
+        # new_ast2 = make_global_static_pointers_unmutable(new_ast, target_node)
+        # new_ast3 = safe_wrap_raw_pointers(new_ast2, target_node)
+        new_ast4 = safe_wrap_raw_pointer_argumetns(new_ast, target_node)
+        trees[file_name] = new_ast4
+        program.trees[file_name] = new_ast4
         return trees
 
     @classmethod
     def do_insert(cls, program, op, trees, modification_points):
         #TODO
-        # pass
-        file_name, target_node = op.target
-        if isinstance(target_node, tuple):
-            _, target_node = target_node
-
-        new_ast1 = remove_ast_node(trees[file_name], target_node)
-        trees[file_name] = new_ast1
-        program.trees[file_name] = new_ast1
-        return trees
+        pass
 
     @classmethod
     def do_delete(cls, program, op, trees, modification_points):
@@ -445,6 +443,10 @@ def expr_eq(expr1, expr2):
         return (expr_eq(expr1.receiver, expr2.receiver) and expr_eq(expr1.name, expr2.name))
     return False 
 
+def function_def_eq(func1, func2):
+    # print("function_def_eq", func1.identifier, func2.identifier, (func1.params.param_len), (func2.params.param_len), len(func1.body.getChildren()))
+    return (func1.identifier == func2.identifier and (func1.params.param_len) == (func2.params.param_len) and len(func1.body.getChildren()) == len(func1.body.getChildren()))
+
 def remove_ast_node(ast_root, target_node):
     parents = get_all_parents(ast_root, target_node)
     print("target node is ", target_node, target_node.parent, parents, len(parents))
@@ -540,3 +542,35 @@ def make_global_static_pointers_unmutable(ast_root, target_node):
                 top_items.append(top)
 
         return Program(items=top_items)
+
+# check param list parent
+def safe_wrap_raw_pointer_argumetns(ast_root, target_node):
+    parents = get_all_parents(ast_root, target_node)
+    if not isinstance(ast_root, Program):
+        return None
+
+    if not isinstance(target_node, FunctionParamList):
+        return ast_root
+
+    remaining_tops = []
+    new_params = []
+
+    parent_1 = parents[-2]
+    for top in ast_root.getChildren():
+        if isinstance(parent_1, type(top)) and isinstance(parent_1, FunctionDef):
+            if function_def_eq(parent_1, top):
+                for param in parent_1.params.params:
+                    if isinstance(param.typ, PointerType) and param.mutable:
+                        new_param = Param(name=param.name, typ=SafeNonNullWrapper(
+                            typeExpr=param.typ
+                        ), mutable=param.mutable)
+
+                        new_params.append(new_param)
+                    else:
+                        new_params.append(param)
+                parent_1.setParamList(new_params)
+                remaining_tops.append(parent_1)
+        else:
+            remaining_tops.append(top)
+
+    return Program(items=remaining_tops)

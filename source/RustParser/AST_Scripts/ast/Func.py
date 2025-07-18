@@ -1,17 +1,21 @@
 from RustParser.AST_Scripts.ast.ASTNode import ASTNode
 
 class Param(ASTNode):
-    def __init__(self, name, typ, is_mut):
+    def __init__(self, name, typ, mutable):
         super().__init__()
         self.name = name                  # str
         self.typ = typ                    # AST node (e.g., TypeNode)
-        self.is_mut = is_mut              # bool
+        self.mutable = mutable              # bool
+        self.parent = None
 
     def __repr__(self):
-        return f"ParamNode(name={self.name}, type={self.typ}, is_mut={self.is_mut})"
+        return f"ParamNode(name={self.name}, type={self.typ}, mutable={self.mutable})"
 
     def accept(self, visitor):
         return visitor.visit_ParamNode(self)
+    
+    def set_parent(self, parent):
+        self.parent = parent
 
 class FunctionParamList(ASTNode):
     def __init__(self, params):
