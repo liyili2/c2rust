@@ -14,6 +14,8 @@ from RustParser.AST_Scripts.ast.TopLevel import Attribute, ExternBlock, ExternFu
 from RustParser.AST_Scripts.ast.TypeChecker import TypeChecker
 from RustParser.AST_Scripts.ast.Type import PointerType, RefType, SafeNonNullWrapper
 from RustParser.AST_Scripts.ast.VarDef import VarDef
+from c2rust.source.pyggi.mutation.deletion import DeletionOperator
+from c2rust.source.pyggi.mutation.replacement import ReplacementOperator
 from pyggi.tree.rust_unparser import RustUnparser
 from pyggi.tree.abstract_engine import AbstractTreeEngine
 from typing import List, Tuple
@@ -51,8 +53,8 @@ def pretty_print_ast(node, indent=0, visited=None):
     return '\n'.join(lines)
 
 class RustEngine(AbstractTreeEngine):
-    def __init__(self):
-        self.currentAst = None
+    # def __init__(self):
+    # currentAst = None
 
     def parse(self, src_code):
         lexer = RustLexer(InputStream(src_code))
@@ -64,9 +66,6 @@ class RustEngine(AbstractTreeEngine):
     @classmethod
     def to_source_code(self, tree):
         pass
-        # print("✍️ Serializing AST back to Rust source...")
-        # printer = AstPrinter()
-        # return printer.visit(tree)
 
     @classmethod
     def get_contents(cls, file_path):
@@ -102,15 +101,12 @@ class RustEngine(AbstractTreeEngine):
         visited.add(id(node))
 
         if isinstance(node, StaticVarDecl):
-            # print("adding it", node)
             results.append(node)
 
         if isinstance(node, FunctionParamList):
-            # print("[[[]]]", node.parent)
             results.append(node)
 
         if isinstance(node, Statement):
-            # print("[[[]]]", node.__class__)
             results.append(node)
 
         if isinstance(node, list):
@@ -129,13 +125,16 @@ class RustEngine(AbstractTreeEngine):
             _, target_node = target_node
 
         new_ast = trees[file_name]
+        replacementOperator = ReplacementOperator()
+        replacementOperator.apply()
+        # TODO
         # new_ast1 = move_ast_node(new_ast, target_node)
         # new_ast2 = make_global_static_pointers_unmutable(new_ast, target_node)
         # new_ast3 = safe_wrap_raw_pointers(new_ast2, target_node)
-        new_ast4 = safe_wrap_raw_pointer_argumetns(new_ast, target_node)
-        trees[file_name] = new_ast4
-        program.trees[file_name] = new_ast4
-        return trees
+        # new_ast4 = safe_wrap_raw_pointer_argumetns(new_ast, target_node)
+        # trees[file_name] = new_ast4
+        # program.trees[file_name] = new_ast4
+        # return trees
 
     @classmethod
     def do_insert(cls, program, op, trees, modification_points):
@@ -148,10 +147,11 @@ class RustEngine(AbstractTreeEngine):
         if isinstance(target_node, tuple):
             _, target_node = target_node
 
-        new_ast1 = remove_ast_node(trees[file_name], target_node)
-        trees[file_name] = new_ast1
-        program.trees[file_name] = new_ast1
-        return trees
+        deletionOperator = DeletionOperator()
+        # TODO
+        # trees[file_name] = new_ast1
+        # program.trees[file_name] = new_ast1
+        # return trees
 
     @classmethod
     def _get_root_node(cls, node):
@@ -319,258 +319,3 @@ def get_file_extension(file_path):
     """
     _, file_extension = os.path.splitext(file_path)
     return file_extension
-
-def get_all_parents(ast_root, target_node, parent=None):
-    if parent is None:
-        parent = getattr(target_node, 'parent', None)
-        if parent is None:
-            raise ValueError("Target node has no parent reference")
-
-    if isinstance(parent, Program):
-        return [parent]
-
-    return [parent] + get_all_parents(ast_root, parent, parent.parent)
-
-def remove_node(ast_root, target_node, parents):
-    current = ast_root
-    i = len(parents) - 1
-    other_tops = []
-    new_ast = None
-    if isinstance(current, Program):
-        current_list = current.getChildren()
-        for top in current_list:
-            if isinstance(parents[i - 1], type(top)):
-                top_children = top.getChildren()
-                if isinstance(parents[i - 2] ,type(top_children)):
-                    if isinstance(top_children, Block):
-                        top_children_stmts = top_children.getChildren()
-                        remake_ast_after_removal(target_node, other_tops, top, top_children, top_children_stmts)
-                    elif isinstance(top_children, FunctionDef):
-                        if isinstance(top_children.body, Block):
-                            top_children_stmts = top_children.getChildren()
-                            remake_ast_after_removal(target_node, other_tops, top, top_children, top_children_stmts)
-            else:
-                other_tops.append(top)
-                continue
-
-    new_ast = Program(items=other_tops)
-    return new_ast
-
-def remake_ast_after_removal(target_node, other_tops, top, top_children, top_children_stmts):
-    for stmt in top_children_stmts:
-        if statements_eq(stmt, target_node):
-            print("equal, applying deletion")
-            top_children_stmts.remove(stmt)
-            newBlock = Block(top_children_stmts, top_children.isUnsafe)
-            top.setBody(newBlock)
-            other_tops.append(top)
-        else:
-            continue
-
-def statements_eq(stmt1, stmt2):
-    print("statements_eq_", stmt1, stmt2)
-    if not isinstance(stmt1, type(stmt2)):
-        return False
-
-    if isinstance(stmt1, LetStmt):
-        for i in range(len(stmt1.var_defs)):
-            if not (str.__eq__(stmt1.var_defs[i].name, stmt2.var_defs[i].name) and isinstance(stmt1.var_defs[i].type, type(stmt2.var_defs[i].type))):
-                print(stmt1.var_defs[i].name, stmt2.var_defs[i].name, stmt1.var_defs[i].type, stmt2.var_defs[i].type)
-                return False
-        return True
-
-    if isinstance(stmt1, IfStmt):
-        print("ifstmts: ", stmt1.condition , stmt2.condition, stmt1.then_branch , stmt2.then_branch , stmt1.else_branch , stmt2.else_branch)
-        return (expr_eq(stmt1.condition, stmt2.condition) and
-                statements_eq(stmt1.then_branch, stmt2.then_branch) and
-                (stmt1.else_branch is None and stmt2.else_branch is None or
-                 stmt1.else_branch is not None and stmt2.else_branch is not None and
-                 statements_eq(stmt1.else_branch, stmt2.else_branch)))
-
-    if isinstance(stmt1, ForStmt):
-        print("forstmt eq case")
-        return (
-            stmt1.var == stmt2.var and
-            expr_eq(stmt1.iterable, stmt2.iterable) and
-            statements_eq(stmt1.body, stmt2.body))
-
-    if isinstance(stmt1, CallStmt):
-        if not expr_eq(stmt1.callee, stmt2.callee):
-            return False
-        if len(stmt1.args) != len(stmt2.args):
-            return False
-        for arg1, arg2 in zip(stmt1.args, stmt2.args):
-            if not expr_eq(arg1, arg2):
-                return False
-        return True
-
-    if isinstance(stmt1, AssignStmt):
-        print("assignstmt eq case")
-        return (
-            expr_eq(stmt1.target, stmt2.target) and
-            expr_eq(stmt1.value, stmt2.value))
-    
-    if isinstance(stmt1, WhileStmt):
-        print("whilestmt eq case")
-        return (
-            expr_eq(stmt1.condition, stmt2.condition) and
-            statements_eq(stmt1.body, stmt2.body))
-
-    return False
-
-def expr_eq(expr1, expr2):
-    if type(expr1) != type(expr2):
-        return False
-    if isinstance(expr1, IdentifierExpr):
-        return expr1.name == expr2.name
-    if isinstance(expr1, StrLiteral):
-        return expr1.value == expr2.value
-    if isinstance(expr1, IntLiteral):
-        return expr1.value == expr2.value
-    if isinstance(expr1, BoolLiteral):
-        return expr1.value == expr2.value
-    if isinstance(expr1, BinaryExpr):
-        return (expr_eq(expr1.left, expr2.left) and
-                expr_eq(expr1.right, expr2.right) and
-                expr1.op == expr2.op)
-    if isinstance(expr1, MethodCallExpr):
-        return (
-            expr_eq(expr1.receiver, expr2.receiver) and
-            expr1.method_name == expr2.method_name and
-            len(expr1.args) == len(expr2.args) and
-            all(expr_eq(a1, a2) for a1, a2 in zip(expr1.args, expr2.args)))
-    if isinstance(expr1, FieldAccessExpr):
-        return (expr_eq(expr1.receiver, expr2.receiver) and expr_eq(expr1.name, expr2.name))
-    return False 
-
-def function_def_eq(func1, func2):
-    # print("function_def_eq", func1.identifier, func2.identifier, (func1.params.param_len), (func2.params.param_len), len(func1.body.getChildren()))
-    return (func1.identifier == func2.identifier and (func1.params.param_len) == (func2.params.param_len) and len(func1.body.getChildren()) == len(func1.body.getChildren()))
-
-def remove_ast_node(ast_root, target_node):
-    parents = get_all_parents(ast_root, target_node)
-    print("target node is ", target_node, target_node.parent, parents, len(parents))
-    new_ast = remove_node(ast_root, target_node, parents)
-    return new_ast
-
-def shuffle_and_update_block(node, block):
-    random.shuffle(block.getChildren())
-    new_block = Block(block.getChildren(), block.isUnsafe)
-    node.setBody(new_block)
-
-def replace_raw_pointer_defs_with_safe_wrappers(node, block):
-    new_stmts = []
-    for stmt in block.getChildren():
-        if isinstance(stmt, LetStmt):
-            if len(stmt.var_defs) == 1:
-                if isinstance(stmt.var_defs[0].type, PointerType) and stmt.var_defs[0].mutable:
-                    new_stmt = LetStmt(values=stmt.values[0],
-                        var_defs=[
-                            VarDef(var_type=SafeNonNullWrapper(typeExpr=stmt.var_defs[0].type), 
-                                   name=stmt.var_defs[0].name, mutable=stmt.var_defs[0].mutable)
-                        ]
-                    )
-                    new_stmts.append(new_stmt)
-        else:
-            new_stmts.append(stmt)
-
-    new_block = Block(new_stmts, block.isUnsafe)
-    node.setBody(new_block)
-
-def transform_ast(ast_root, target_node, transform_fn):
-    parents = get_all_parents(ast_root, target_node)
-    if not isinstance(ast_root, Program):
-        return None
-
-    remaining_tops = []
-    parent_len = len(parents)
-
-    for top in ast_root.getChildren():
-        if parent_len < 3:
-            remaining_tops.append(top)
-            continue
-
-        parent_1, parent_2 = parents[-2], parents[-3]
-        top_type_matches = isinstance(parent_1, type(top))
-        if isinstance(top, list):
-            top_children = top
-        else:
-            top_children = top.getChildren()
-
-        if not top_type_matches:
-            remaining_tops.append(top)
-            continue
-
-        if isinstance(parent_2, type(top_children)):
-            if isinstance(top_children, Block):
-                transform_fn(top, top_children)
-            elif isinstance(top_children, FunctionDef) and isinstance(top_children.body, Block):
-                transform_fn(top, top_children.body)
-
-            remaining_tops.append(top)
-
-        elif isinstance(top_children, list):
-            matched_children = []
-            for item in top_children:
-                if isinstance(parent_2, type(item)) and isinstance(item.body, Block):
-                    transform_fn(item, item.body)
-                    matched_children.append(item)
-                else:
-                    matched_children.append(item)
-
-            top.setFunctions(matched_children)
-            remaining_tops.append(top)
-
-    return Program(items=remaining_tops)
-
-def safe_wrap_raw_pointers(ast_root, target_node):
-    return transform_ast(ast_root, target_node, replace_raw_pointer_defs_with_safe_wrappers)
-
-def move_ast_node(ast_root, target_node):
-    return transform_ast(ast_root, target_node, shuffle_and_update_block)
-
-def make_global_static_pointers_unmutable(ast_root, target_node):
-    # print("make_global_static_pointers_unmutable")
-    if isinstance(target_node, TopLevel):
-        top_items = []
-        for top in ast_root.getChildren():
-            if isinstance(top, StaticVarDecl):
-                new_top_item = StaticVarDecl(var_type=top.var_type, mutable=False, name= top.name,
-                                            initial_value=top.initial_value, visibility=top.visibility)
-                top_items.append(new_top_item)
-            else:
-                top_items.append(top)
-
-        return Program(items=top_items)
-
-# check param list parent
-def safe_wrap_raw_pointer_argumetns(ast_root, target_node):
-    parents = get_all_parents(ast_root, target_node)
-    if not isinstance(ast_root, Program):
-        return None
-
-    if not isinstance(target_node, FunctionParamList):
-        return ast_root
-
-    remaining_tops = []
-    new_params = []
-
-    parent_1 = parents[-2]
-    for top in ast_root.getChildren():
-        if isinstance(parent_1, type(top)) and isinstance(parent_1, FunctionDef):
-            if function_def_eq(parent_1, top):
-                for param in parent_1.params.params:
-                    if isinstance(param.typ, PointerType) and param.mutable:
-                        new_param = Param(name=param.name, typ=SafeNonNullWrapper(
-                            typeExpr=param.typ
-                        ), mutable=param.mutable)
-
-                        new_params.append(new_param)
-                    else:
-                        new_params.append(param)
-                parent_1.setParamList(new_params)
-                remaining_tops.append(parent_1)
-        else:
-            remaining_tops.append(top)
-
-    return Program(items=remaining_tops)
