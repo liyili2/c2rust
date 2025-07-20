@@ -2,6 +2,7 @@ from RustParser.AST_Scripts.antlr.RustVisitor import RustVisitor
 
 class RustUnparser(RustVisitor):
     def visitProgram(self, ctx):
+        # return ctx
         lines = []
 
         for item_group in ctx.items:
@@ -87,4 +88,10 @@ class RustUnparser(RustVisitor):
         return f"interface {node.name} {{\n{funcs}\n}}"
     
     def visit_Block(self, node):
+        pass
+
+    def visit_StaticVarDecl(Self, node):
+        pass
+
+    def visitStaticVarDecl(Self, node):
         pass

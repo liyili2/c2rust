@@ -169,6 +169,11 @@ class RustVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by RustParser#safeNonNullWrapper.
+    def visitSafeNonNullWrapper(self, ctx:RustParser.SafeNonNullWrapperContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by RustParser#typePath.
     def visitTypePath(self, ctx:RustParser.TypePathContext):
         return self.visitChildren(ctx)

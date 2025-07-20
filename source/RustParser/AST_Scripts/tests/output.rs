@@ -55,8 +55,8 @@ pub struct C2RustUnnamed {
     pub natom: libc::c_int,
 }
 pub type C2RustUnnamed_0 = libc::c_uint;
-// pub const Split: C2RustUnnamed_0 = 257;
-// pub const Match: C2RustUnnamed_0 = 256;
+pub const Split: C2RustUnnamed_0 = 257;
+pub const Match: C2RustUnnamed_0 = 256;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct State {
@@ -95,10 +95,10 @@ pub unsafe extern "C" fn re2post(mut re: *mut libc::c_char) -> *mut libc::c_char
     dst = buf.as_mut_ptr();
     nalt = 0 as libc::c_int;
     natom = 0 as libc::c_int;
-    if strlen(re) >= (::core::mem::size_of::[libc::c_char; 8000]() as libc::c_ulong).wrapping_div(2 as libc::c_int as libc::c_ulong)
-    {
-        return 0 as *mut libc::c_char;
-    }
+    // if strlen(re) >= (::core::mem::size_of::[libc::c_char; 8000]() as libc::c_ulong).wrapping_div(2 as libc::c_int as libc::c_ulong)
+    // {
+    //     return 0 as *mut libc::c_char;
+    // }
     while *re != 0 {
         match *re as libc::c_int {
             40 => {
@@ -456,7 +456,7 @@ pub unsafe extern "C" fn match_0(
     let mut clist: *mut List = 0 as *mut List;
     let mut nlist: *mut List = 0 as *mut List;
     let mut t: *mut List = 0 as *mut List;
-    // clist = startlist(start, &mut l1);
+    clist = startlist(start, &mut l1);
     nlist = &mut l2;
     while *s != 0 {
         c = *s as libc::c_int & 0xff as libc::c_int;

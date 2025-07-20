@@ -1,4 +1,4 @@
-// easy for debugging / knowing what is inside
+// // // easy for debugging / knowing what is inside
 // #[derive(Debug)]
 // struct Node {
 //     key: i32,
@@ -72,9 +72,17 @@
 //     }
 // }
 
-fn main() {
-    let s : i32 = 1;
-    s += 13;
+// fn foo(mut argv: *mut *mut libc::c_char, mut argv2: *mut *mut libc::c_int, mut argv3: *mut *mut libc::c_int) {
+
+// }
+
+// fn main(mut argv: *mut *mut libc::c_char, mut argv2: *mut *mut libc::c_int, mut argv3: *mut *mut libc::c_int) {
+
+// fn main() {
+//     let a: *mut libc::c_char = "googoolii";
+    // let a: i32 = "1";
+    // let s : i32 = 1;
+    // s += 13;
     // println!("{}", s);
     // let a : i32 = 0;
     // let b : i32 = 1;
@@ -112,4 +120,17 @@ fn main() {
     // root.insert(8, string::from("eight"));
     // println!("{:?}", root.search(8));
     // println!("{:?}", root);
+// }
+
+static mut listid0: libc::c_int = 0;
+static mut listid1: libc::c_int = 1;
+static mut listid2: libc::c_int = 2;
+
+fn main() {
+//     let mut dst: *mut libc::c_char = 0 as *mut libc::c_char;
+//     let a = 2;
+//     a = 44;
+//     let mut dst : Option<NonNull<libc::c_char>> = None;
+//     let mut dst: Option<NonNull<libc::c_char> > = None;
+//     let mut dst: i32 = 1;
 }

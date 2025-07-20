@@ -87,7 +87,7 @@ class AbstractProgram(ABC):
         self.load_contents()
         assert self.modification_points
         assert self.contents
-        self.logger.info("Path to the temporal program variants: {}".format(self.tmp_path))
+        # self.logger.info("Path to the temporal program variants: {}".format(self.tmp_path))
 
     def __str__(self):
         return "{}({}):{}".format(self.__class__.__name__, self.path, ",".join(self.target_files))

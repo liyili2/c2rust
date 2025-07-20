@@ -142,3 +142,11 @@ class PathType:
     def __init__(self, segments):
         super().__init__()
         self.segments = segments
+
+class SafeNonNullWrapper(Type):
+    def __init__(self, typeExpr):
+        super().__init__()
+        self.type = typeExpr
+
+    def accept(self, visitor):
+        return visitor.visit_SafeNonNullWrapper(self)

@@ -296,6 +296,15 @@ class RustListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by RustParser#safeNonNullWrapper.
+    def enterSafeNonNullWrapper(self, ctx:RustParser.SafeNonNullWrapperContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#safeNonNullWrapper.
+    def exitSafeNonNullWrapper(self, ctx:RustParser.SafeNonNullWrapperContext):
+        pass
+
+
     # Enter a parse tree produced by RustParser#typePath.
     def enterTypePath(self, ctx:RustParser.TypePathContext):
         pass

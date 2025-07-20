@@ -174,7 +174,8 @@ class LocalSearch(Algorithm):
             if best_patch:
                 cur_result['BestPatch'] = best_patch
                 cur_result['BestFitness'] = best_fitness
-                cur_result['diff'] = self.program.diff(best_patch)
+                # cur_result['diff'] = self.program.diff(best_patch)
+                cur_result['diff'] = None
 
             result.append(cur_result)
             print("=== PATCHED CODE ===", self.program.path)
