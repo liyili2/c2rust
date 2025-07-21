@@ -9,7 +9,7 @@ from RustParser.AST_Scripts.antlr.RustParser import RustParser
 from RustParser.AST_Scripts.ast.Transformer import Transformer, setParents
 from RustParser.AST_Scripts.ast.Program import Program
 from RustParser.AST_Scripts.ast.Expression import BinaryExpr, BoolLiteral, CastExpr, Expression, FieldAccessExpr, IdentifierExpr, IntLiteral, MethodCallExpr, StrLiteral, TypePathExpression, UnsafeExpression
-from RustParser.AST_Scripts.ast.Statement import AssignStmt, CallStmt, ForStmt, IfStmt, LetStmt, Statement, WhileStmt
+from RustParser.AST_Scripts.ast.Statement import AssignStmt, CallStmt, ForStmt, IfStmt, LetStmt, Statement, UnsafeBlock, WhileStmt
 from RustParser.AST_Scripts.ast.TopLevel import Attribute, ExternBlock, ExternFunctionDecl, FunctionDef, InterfaceDef, StaticVarDecl, StructDef, TopLevel, TopLevelVarDef, TypeAliasDecl
 from RustParser.AST_Scripts.ast.TypeChecker import TypeChecker
 from RustParser.AST_Scripts.ast.Type import PointerType, RefType, SafeNonNullWrapper
@@ -102,7 +102,8 @@ class RustEngine(AbstractTreeEngine):
         if isinstance(node, FunctionParamList):
             results.append(node)
 
-        if isinstance(node, Statement):
+        if isinstance(node, Statement) or isinstance(node, UnsafeBlock):
+            print("cllected_node_", node.__class__)
             results.append(node)
 
         if isinstance(node, list):
@@ -127,15 +128,29 @@ class RustEngine(AbstractTreeEngine):
     @classmethod
     def do_insert(cls, program, op, trees, modification_points):
         #TODO
-        pass
-
-    @classmethod
-    def do_delete(cls, program, op, trees, modification_points):
+        # pass
         file_name, target_node = op.target
         if isinstance(target_node, tuple):
             _, target_node = target_node
-        deletionOperator = DeletionOperator(trees[file_name], target_node)
-        trees[file_name] = deletionOperator.get_new_ast()
+        replacementOperator = ReplacementOperator(trees[file_name], target_node)
+        trees[file_name] = replacementOperator.get_new_ast()
+        program.trees[file_name] = trees[file_name] 
+        return trees
+
+    @classmethod
+    def do_delete(cls, program, op, trees, modification_points):
+        # file_name, target_node = op.target
+        # if isinstance(target_node, tuple):
+        #     _, target_node = target_node
+        # deletionOperator = DeletionOperator(trees[file_name], target_node)
+        # trees[file_name] = deletionOperator.get_new_ast()
+        # program.trees[file_name] = trees[file_name] 
+        # return trees
+        file_name, target_node = op.target
+        if isinstance(target_node, tuple):
+            _, target_node = target_node
+        replacementOperator = ReplacementOperator(trees[file_name], target_node)
+        trees[file_name] = replacementOperator.get_new_ast()
         program.trees[file_name] = trees[file_name] 
         return trees
 

@@ -499,6 +499,7 @@ class Transformer(RustVisitor):
         return ForStmt(var=var_name, iterable=iterable_expr, body=body)
 
     def visitBlock(self, ctx):
+        print("visitBlock")
         stmts = []
         isUnsafe = False
         if ctx.unsafeModifier():
@@ -506,7 +507,9 @@ class Transformer(RustVisitor):
         for stmt_ctx in ctx.statement():
             result = self.visit(stmt_ctx)
             stmts.append(result)
-        return Block(stmts=stmts, isUnsafe=isUnsafe)
+        if isUnsafe:
+            return UnsafeBlock(stmts=stmts)
+        return Block(stmts=stmts, isUnsafe=False)
 
     def visitExpressionStatement(self, ctx):
         expr = self.visit(ctx.expression())
@@ -529,9 +532,9 @@ class Transformer(RustVisitor):
 
     def visitStatement(self, ctx):
         # print("stmt is ", ctx.__class__, ctx.getText())
-        if ctx.block():
-            return self.visit(ctx.block())
-        elif ctx.letStmt():
+        # if ctx.block():
+        #     return self.visit(ctx.block())
+        if ctx.letStmt():
             return self.visit(ctx.letStmt())
         elif ctx.ifStmt():
             return self.visit(ctx.ifStmt())
@@ -567,6 +570,9 @@ class Transformer(RustVisitor):
             return self.visit(ctx.typeWrapper())
         elif ctx.conditionalAssignmentStmt():
             return self.visit(ctx.conditionalAssignmentStmt())
+        elif ctx.unsafeBlcok():
+            print("unsafeBlcok case")
+            return self.visitBlock(ctx.unsafeBlcok())
         else:
             print("⚠️ Unknown statement:", ctx.getText())
             return None

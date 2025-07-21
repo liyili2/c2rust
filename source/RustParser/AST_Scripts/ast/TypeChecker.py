@@ -237,8 +237,8 @@ class TypeChecker:
         return
 
     def visit_UnsafeBlock(self, node):
-        result = self.visit(node.block)
-        return result
+        for stmt in node.getChildren():
+            self.visit(stmt)
 
     def visit_LetStmt(self, node):
         expr_types = []
@@ -347,7 +347,7 @@ class TypeChecker:
         if isinstance(node.stmts, Block):
             self.visit(node.stmts)
         if node.isUnsafe:
-            self.error(node, "unsafe blcok error")
+            self.error(node, "unsafe blcok observed")
         for stmt in node.stmts:
             result_stmt = self.visit(stmt)
             result_stmts.append(result_stmt)

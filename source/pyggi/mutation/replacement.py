@@ -1,9 +1,10 @@
 
+from RustParser.AST_Scripts.tests.TransformerTest import pretty_print_ast
 from RustParser.AST_Scripts.ast.Program import Program
 from RustParser.AST_Scripts.ast.TopLevel import FunctionDef, TopLevel, StaticVarDecl
 from RustParser.AST_Scripts.ast.Func import FunctionParamList, Param
 from RustParser.AST_Scripts.ast.Block import Block
-from RustParser.AST_Scripts.ast.Statement import LetStmt
+from RustParser.AST_Scripts.ast.Statement import LetStmt, UnsafeBlock
 from RustParser.AST_Scripts.ast.VarDef import VarDef
 from RustParser.AST_Scripts.ast.Type import PointerType, SafeNonNullWrapper
 from pyggi.mutation.utils import MutationUtils
@@ -18,10 +19,12 @@ class ReplacementOperator:
         return self.new_ast
 
     def apply_mutation(self, ast, node):
-        new_ast = self.safe_wrap_raw_pointers(ast, node)
-        new_ast = self.safe_wrap_raw_pointer_argumetns(ast, node)
-        new_ast = self.make_global_static_pointers_unmutable(ast, node)
+        print("apply_mutation")
+        # new_ast = self.safe_wrap_raw_pointers(ast, node)
+        # new_ast = self.safe_wrap_raw_pointer_argumetns(ast, node)
+        # new_ast = self.make_global_static_pointers_unmutable(ast, node)
         # new_ast = self.move_ast_node(ast, node)
+        new_ast = self.shrink_unsafe_block_stmts(ast, node)
         return new_ast
 
     def shuffle_and_update_block(self, node, block):
@@ -52,6 +55,8 @@ class ReplacementOperator:
         return self.utils.transform_ast(ast_root, target_node, self.replace_raw_pointer_defs_with_safe_wrappers)
 
     def move_ast_node(self, ast_root, target_node):
+        if not isinstance(target_node, Block):
+            return ast_root
         return self.utils.transform_ast(ast_root, target_node, self.shuffle_and_update_block)
 
     def make_global_static_pointers_unmutable(self, ast_root, target_node):
@@ -95,6 +100,40 @@ class ReplacementOperator:
                             new_params.append(param)
                     parent_1.setParamList(new_params)
                     remaining_tops.append(parent_1)
+            else:
+                remaining_tops.append(top)
+
+        return Program(items=remaining_tops)
+
+    def shrink_unsafe_block_stmts(self, ast_root, target_node):
+        if not isinstance(target_node, UnsafeBlock):
+            return ast_root
+
+        remaining_tops = []
+        for top in ast_root.getChildren():
+            if isinstance(top, FunctionDef):
+                top_block = top.body
+                for stmt in top_block.getChildren():
+                    remaining_block_stmts = []
+                    if isinstance(stmt, UnsafeBlock):
+                        if self.utils.blocks_eq(stmt, target_node):
+                            stmts = stmt.getChildren()
+                            if len(stmts) == 0:
+                                remaining_stmts = []
+                                out_stmts = []
+                            else:
+                                slice_point = random.randint(0, len(stmts) - 1)
+                                remaining_stmts = stmts[:slice_point]
+                                out_stmts = stmts[slice_point:]
+                            unsafe_block = UnsafeBlock(stmts=remaining_stmts)
+                            remaining_block_stmts.append(unsafe_block)
+                            remaining_block_stmts.append(out_stmts)
+                            remaining_tops.append(top)
+                    else:
+                        remaining_block_stmts.append(stmt)
+
+                parent_block = Block(stmts=remaining_block_stmts, isUnsafe=False)
+                top.setBody(parent_block)
             else:
                 remaining_tops.append(top)
 
