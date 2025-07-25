@@ -29,13 +29,13 @@ class TypeChecker:
 
     def increase_error_count(self):
         self.error_count = self.error_count + 1
-    
+
     def is_type_compatible(self, expected, actual):
         return expected == actual
 
     def generic_visit(self, node):
         raise NotImplementedError(f"No visit_{type(node).__name__} method defined.")
-    
+
     def visit_StructField(self, node):
         if isinstance(node.type, PointerType):
             self.error(node, "raw pointer usage in a struct field")
@@ -43,7 +43,7 @@ class TypeChecker:
 
     def visit_BasicTypeCastExpr(self, node):
         pass
-    
+
     def visit_TopLevelVarDef(Self, node):
         pass
 

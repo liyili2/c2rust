@@ -81,7 +81,7 @@
 fn main() {
 //     let a: *mut libc::c_char = "googoolii";
     // let a: i32 = "1";
-    // let s : i32 = 1;
+    let mut s : i32 = 1;
     // s += 13;
     // println!("{}", s);
     // let a : i32 = 0;
@@ -96,11 +96,11 @@ fn main() {
     //     print("hello")
     // }
     // let a : aa::bb::cc = 1 as bb;
-    unsafe {
+    // unsafe {
         // let mut root = Node::new(5, string::from("five") );
-        let a: i32 = 1;
-        a = 22;
-    }
+    //     let a: i32 = 1;
+    //     a = 22;
+    // }
     // let a : i32 = unsafe{22};
     // println!("{:?}", root.search(5));
     // println!("{:?}", root.search(3));
