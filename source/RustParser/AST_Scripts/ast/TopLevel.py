@@ -46,6 +46,9 @@ class StructDef(TopLevel):
     
     def getChildren(self):
         return self.fields
+    
+    def setChildren(self, fields):
+        self.fields = fields
 
 class StructField(ASTNode):
     def __init__(self, name, typeExpr, visibility):

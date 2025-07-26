@@ -262,11 +262,11 @@ class TypeChecker:
 
         else:
             var_def = node.var_defs[0]
-            expr_type = expr_types[0]
+            expr_type = self.visit(expr_types[0])
             if var_def.type:
                 var_def_type = self.visit(var_def.type)
             else:
-                var_def_type = expr_type
+                var_def_type = self.visit(expr_type)
 
             if isinstance(var_def.type, NoneType):
                 var_def.type = expr_type
@@ -275,8 +275,9 @@ class TypeChecker:
             if isinstance(expr_type, NoneType):
                 expr_type = var_def.type
 
-            if not isinstance(var_def_type, expr_type.__class__) and not isinstance(var_def_type, SafeNonNullWrapper):
-                self.error(node, "type of the value and target do not match")
+            # TODO: bug fo the case let a: i32 = 1
+            if not isinstance(var_def_type, type(expr_type)) and not isinstance(var_def_type, SafeNonNullWrapper) :
+                self.error(node, f"type of the value and target do not match: {type(expr_type)} and {expr_type.__class__}")
 
             self.env.declare(var_def.name, var_def_type, mutable=var_def.mutable)
             self.symbol_table[var_def.name] = var_def_type

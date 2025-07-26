@@ -1,7 +1,7 @@
 
 from RustParser.AST_Scripts.tests.TransformerTest import pretty_print_ast
 from RustParser.AST_Scripts.ast.Program import Program
-from RustParser.AST_Scripts.ast.TopLevel import FunctionDef, TopLevel, StaticVarDecl
+from RustParser.AST_Scripts.ast.TopLevel import FunctionDef, StructDef, StructField, TopLevel, StaticVarDecl
 from RustParser.AST_Scripts.ast.Func import FunctionParamList, Param
 from RustParser.AST_Scripts.ast.Block import Block
 from RustParser.AST_Scripts.ast.Statement import LetStmt, UnsafeBlock
@@ -13,20 +13,25 @@ import random
 class ReplacementOperator:
     def __init__(self, ast, node):
         self.utils = MutationUtils()
-        self.new_ast = self.apply_mutation(ast, node)
+        self.operators = [
+            # self.safe_wrap_raw_pointers,
+            # self.safe_wrap_raw_pointer_argumetns,
+            # self.make_global_static_pointers_unmutable,
+            # self.move_ast_node,
+            # self.shrink_unsafe_block_stmts,
+            # self.flip_mutabilities,
+            self.safe_wrap_struct_field,
+        ]
+        self.new_ast = self.apply_random_mutations(ast, node, 1)
+
+    def apply_random_mutations(self, ast, node, num_ops):
+        selected_ops = random.sample(self.operators, k=num_ops)
+        for op in selected_ops:
+            ast = op(ast, node)
+        return ast
 
     def get_new_ast(self):
         return self.new_ast
-
-    def apply_mutation(self, ast, node):
-        print("apply_mutation")
-        # new_ast = self.safe_wrap_raw_pointers(ast, node)
-        # new_ast = self.safe_wrap_raw_pointer_argumetns(ast, node)
-        # new_ast = self.make_global_static_pointers_unmutable(ast, node)
-        # new_ast = self.move_ast_node(ast, node)
-        # new_ast = self.shrink_unsafe_block_stmts(ast, node)
-        new_ast = self.flip_mutabilities(ast, node)
-        return new_ast
 
     def flip_mutabilities(self, ast_root, target_node):
         parents = self.utils.get_all_parents(ast_root, target_node)
@@ -113,6 +118,46 @@ class ReplacementOperator:
 
     def safe_wrap_raw_pointers(self, ast_root, target_node):
         return self.utils.transform_ast(ast_root, target_node, self.replace_raw_pointer_defs_with_safe_wrappers)
+    
+    def safe_wrap_struct_field(self, ast_root, target_node):
+        if not isinstance(ast_root, Program):
+            return None
+        print("safe_wrap_struct_field")
+        remaining_tops = []
+        for top in ast_root.getChildren():
+            new_fields = []
+            if isinstance(top, StructDef):
+                for field in top.getChildren():
+                    print("a2", len(top.getChildren()))
+                    if isinstance(field.type, PointerType) and field.type.mutability:
+                        print("a3")
+                        new_field = StructField(name=field.name, typeExpr=SafeNonNullWrapper(
+                            typeExpr=field.type), visibility=field.visibility)
+                        new_fields.append(new_field)
+                    else:
+                        new_fields.append(field)
+                top.setChildren(new_fields)
+
+            elif isinstance(top, FunctionDef) and isinstance(top.body, Block):
+                new_Stmts = []
+                for stmt in top.body.getChildren():
+                    if isinstance(stmt, StructDef):
+                        for field in stmt.getChildren():
+                            if isinstance(field.type, PointerType) and field.type.mutability:
+                                new_field = StructField(name=field.name, typeExpr=SafeNonNullWrapper(
+                                    typeExpr=field.type), visibility=field.visibility)
+                                new_fields.append(new_field)
+                            else:
+                                new_fields.append(field)
+                        new_Stmts.append(new_field)
+                    else:
+                        new_Stmts.append(stmt)
+                new_block = Block(stmts=new_Stmts, isUnsafe=top.body.isUnsafe)
+                top.setBody(new_block)
+            remaining_tops.append(top)
+
+        print("safe struct:", pretty_print_ast(Program(items=remaining_tops)))
+        return Program(items=remaining_tops)
 
     def move_ast_node(self, ast_root, target_node):
         if not isinstance(target_node, Block):

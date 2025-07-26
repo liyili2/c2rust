@@ -499,7 +499,7 @@ class Transformer(RustVisitor):
         return ForStmt(var=var_name, iterable=iterable_expr, body=body)
 
     def visitBlock(self, ctx):
-        print("visitBlock")
+        # print("visitBlock")
         stmts = []
         isUnsafe = False
         if ctx.unsafeModifier():
