@@ -189,6 +189,11 @@ class RustVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by RustParser#unsafeBlcok.
+    def visitUnsafeBlcok(self, ctx:RustParser.UnsafeBlcokContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by RustParser#statement.
     def visitStatement(self, ctx:RustParser.StatementContext):
         return self.visitChildren(ctx)

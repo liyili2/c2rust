@@ -198,12 +198,15 @@ class CallStmt(Statement):
         return visitor.visit_CallStmt(self)
 
 class UnsafeBlock(Statement):
-    def __init__(self, block):
+    def __init__(self, stmts):
         super().__init__()
-        self.block = block
+        self.stmts = stmts
 
     def accept(self, visitor):
         return visitor.visit_UnsafeBlock(self)
+    
+    def getChildren(self):
+        return self.stmts
 
 class TypeWrapper(Statement):
     def __init__(self, expr):

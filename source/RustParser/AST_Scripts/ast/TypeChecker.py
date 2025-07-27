@@ -29,13 +29,13 @@ class TypeChecker:
 
     def increase_error_count(self):
         self.error_count = self.error_count + 1
-    
+
     def is_type_compatible(self, expected, actual):
         return expected == actual
 
     def generic_visit(self, node):
         raise NotImplementedError(f"No visit_{type(node).__name__} method defined.")
-    
+
     def visit_StructField(self, node):
         if isinstance(node.type, PointerType):
             self.error(node, "raw pointer usage in a struct field")
@@ -43,7 +43,7 @@ class TypeChecker:
 
     def visit_BasicTypeCastExpr(self, node):
         pass
-    
+
     def visit_TopLevelVarDef(Self, node):
         pass
 
@@ -237,8 +237,8 @@ class TypeChecker:
         return
 
     def visit_UnsafeBlock(self, node):
-        result = self.visit(node.block)
-        return result
+        for stmt in node.getChildren():
+            self.visit(stmt)
 
     def visit_LetStmt(self, node):
         expr_types = []
@@ -262,11 +262,11 @@ class TypeChecker:
 
         else:
             var_def = node.var_defs[0]
-            expr_type = expr_types[0]
+            expr_type = self.visit(expr_types[0])
             if var_def.type:
                 var_def_type = self.visit(var_def.type)
             else:
-                var_def_type = expr_type
+                var_def_type = self.visit(expr_type)
 
             if isinstance(var_def.type, NoneType):
                 var_def.type = expr_type
@@ -275,8 +275,9 @@ class TypeChecker:
             if isinstance(expr_type, NoneType):
                 expr_type = var_def.type
 
-            if not isinstance(var_def_type, expr_type.__class__) and not isinstance(var_def_type, SafeNonNullWrapper):
-                self.error(node, "type of the value and target do not match")
+            # TODO: bug fo the case let a: i32 = 1
+            if not isinstance(var_def_type, type(expr_type)) and not isinstance(var_def_type, SafeNonNullWrapper) :
+                self.error(node, f"type of the value and target do not match: {type(expr_type)} and {expr_type.__class__}")
 
             self.env.declare(var_def.name, var_def_type, mutable=var_def.mutable)
             self.symbol_table[var_def.name] = var_def_type
@@ -347,7 +348,7 @@ class TypeChecker:
         if isinstance(node.stmts, Block):
             self.visit(node.stmts)
         if node.isUnsafe:
-            self.error(node, "unsafe blcok error")
+            self.error(node, "unsafe blcok observed")
         for stmt in node.stmts:
             result_stmt = self.visit(stmt)
             result_stmts.append(result_stmt)
