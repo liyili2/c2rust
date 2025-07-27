@@ -14,6 +14,9 @@ class Block(ASTNode):
         self.stmts = stmts
         self.isUnsafe = isUnsafe
 
+    def setBody(self, stmts):
+        self.stmts = stmts
+
     def accept(self, visitor):
         return visitor.visit_Block(self)
 

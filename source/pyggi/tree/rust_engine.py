@@ -9,7 +9,7 @@ from RustParser.AST_Scripts.antlr.RustParser import RustParser
 from RustParser.AST_Scripts.ast.Transformer import Transformer, setParents
 from RustParser.AST_Scripts.ast.Program import Program
 from RustParser.AST_Scripts.ast.Expression import BinaryExpr, BoolLiteral, CastExpr, Expression, FieldAccessExpr, IdentifierExpr, IntLiteral, MethodCallExpr, StrLiteral, TypePathExpression, UnsafeExpression
-from RustParser.AST_Scripts.ast.Statement import AssignStmt, CallStmt, ForStmt, IfStmt, LetStmt, Statement, WhileStmt
+from RustParser.AST_Scripts.ast.Statement import AssignStmt, CallStmt, ForStmt, IfStmt, LetStmt, Statement, UnsafeBlock, WhileStmt
 from RustParser.AST_Scripts.ast.TopLevel import Attribute, ExternBlock, ExternFunctionDecl, FunctionDef, InterfaceDef, StaticVarDecl, StructDef, TopLevel, TopLevelVarDef, TypeAliasDecl
 from RustParser.AST_Scripts.ast.TypeChecker import TypeChecker
 from RustParser.AST_Scripts.ast.Type import PointerType, RefType, SafeNonNullWrapper
@@ -102,7 +102,8 @@ class RustEngine(AbstractTreeEngine):
         if isinstance(node, FunctionParamList):
             results.append(node)
 
-        if isinstance(node, Statement):
+        if isinstance(node, Statement) or isinstance(node, UnsafeBlock):
+            print("cllected_node_", node.__class__)
             results.append(node)
 
         if isinstance(node, list):

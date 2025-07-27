@@ -153,3 +153,19 @@ class MutationUtils:
                 other_tops.append(top)
             else:
                 continue
+
+    def blocks_eq(self, block1, block2):
+        print("ssss", block1.__class__, block2.__class__)
+        if not isinstance(block1, type(block2)):
+            return False
+        eq = True
+        eq = len(block1.getChildren()) == len(block2.getChildren())
+        print("eq______", len(block1.getChildren()), len(block2.getChildren()))
+        if not eq:
+            return eq
+        for i in range(len(block1.getChildren())):
+            print("eq2______", block1.getChildren()[i], block2.getChildren()[i])
+            if not self.statements_eq(block1.getChildren()[i], block2.getChildren()[i]):
+                return False
+
+        return True
