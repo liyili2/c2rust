@@ -367,3 +367,10 @@ class StructDefInit(Expression):
 
     def accept(self, visitor):
         pass
+
+class SafeWrapper(Expression):
+    def __init__(self, expr):
+        self.expr = expr
+
+    def accept(self, visitor):
+        visitor.visit_safeWrapper(self)
