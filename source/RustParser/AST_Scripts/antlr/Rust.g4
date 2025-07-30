@@ -120,9 +120,11 @@ boxWrappwer: 'Box' typeExpr? '(' expression ')';
 typeWrapper: 'Some' '(' expression ')' ;
 boxWrapperPrefix: 'Box' typeExpr? ;
 typeWrapperPrefix: 'Some' ;
+safeWrapper: 'Some' '(' expression ')';
 
 expression
     : mutableExpression expression
+    | safeWrapper
     | primaryExpression
     | expression binaryOps expression
     | structLiteral
