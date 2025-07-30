@@ -23,13 +23,13 @@ impl Node {
             if let Some(ref mut left) = self.left {
                 left.insert(key, value);
             } else {
-                self.left = Some(box::new(node::new(key, value)));
+                self.left = Some(Box::New(Node::New(key, value)));
             }
         } else if key > self.key {
             if let Some(ref mut right) = self.right {
                 right.insert(key, value);
             } else {
-                self.right = Some(box::new(node::new(key, value)));
+                self.right = Some(Box::New(Node::New(key, value)));
             }
         } else {
             self.value = value;
@@ -58,7 +58,7 @@ impl Node {
 }
 
 fn main() {
-    // let mut root = Node::new(5, String::from("five"));
+    // let mut root = Node::New(5, String::from("five"));
     // println!("{:?}", root.search(5));
     // println!("{:?}", root.search(3));
     // root.insert(3, String::from("three"));
