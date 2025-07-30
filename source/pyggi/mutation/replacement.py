@@ -6,9 +6,11 @@ from RustParser.AST_Scripts.ast.Func import FunctionParamList, Param
 from RustParser.AST_Scripts.ast.Block import Block
 from RustParser.AST_Scripts.ast.Statement import LetStmt, UnsafeBlock
 from RustParser.AST_Scripts.ast.VarDef import VarDef
-from RustParser.AST_Scripts.ast.Type import PointerType, SafeNonNullWrapper
+from RustParser.AST_Scripts.ast.Type import PointerType, RefType, SafeNonNullWrapper, VoidType
 from pyggi.mutation.utils import MutationUtils
 import random
+
+from RustParser.AST_Scripts.ast.Expression import DereferenceExpr, ReferenceExpr, UnsafeExpression
 
 class ReplacementOperator:
     def __init__(self, ast, node):
@@ -20,7 +22,8 @@ class ReplacementOperator:
             # self.move_ast_node,
             # self.shrink_unsafe_block_stmts,
             # self.flip_mutabilities,
-            self.safe_wrap_struct_field,
+            # self.safe_wrap_struct_field,
+            self.replace_raw_dereferences_in_unsafe_block,
         ]
         self.new_ast = self.apply_random_mutations(ast, node, 1)
 
@@ -32,6 +35,67 @@ class ReplacementOperator:
 
     def get_new_ast(self):
         return self.new_ast
+
+    def replace_raw_dereferences_in_unsafe_block(self, ast_root, target_node):
+        parents = self.utils.get_all_parents(ast_root, target_node)
+        if not isinstance(ast_root, Program):
+            return None
+
+        print("replace_raw_dereferences_in_unsafe_block!")
+        remaining_tops = []
+        parent_len = len(parents)
+
+        for top in ast_root.getChildren():
+            if parent_len < 3:
+                remaining_tops.append(top)
+                continue
+
+            parent_1, parent_2 = parents[-2], parents[-3]
+            top_type_matches = isinstance(parent_1, type(top))
+            if isinstance(top, list):
+                top_children = top
+            else:
+                top_children = top.getChildren()
+
+            if not top_type_matches:
+                remaining_tops.append(top)
+                continue
+
+            if isinstance(parent_2, type(top_children)):
+                new_stmts = []
+                if isinstance(top_children, Block):
+                    for stmt in top_children.getChildren():
+                        if self.utils.statements_eq(stmt, target_node) and isinstance(stmt, LetStmt):
+                            if len(stmt.var_defs) == 1:
+                                if isinstance(stmt.values[0], DereferenceExpr):
+                                    new_let_stmt = LetStmt(var_defs=VarDef(name=stmt.var_defs[0].name,
+                                        mutable= stmt.var_defs[0].mutable,
+                                        by_ref=stmt.var_defs[0].by_ref,
+                                        var_type=RefType("T")), values=UnsafeExpression(expr=ReferenceExpr(expr=stmt.values[0])))
+                                    new_stmts.append(new_let_stmt)
+                        else:
+                            new_stmts.append(stmt)
+                    top_children.setBody(new_stmts)
+                    top.setBody(top_children)
+
+                elif isinstance(top_children, FunctionDef) and isinstance(top_children.body, Block):
+                    for stmt in top_children.body.getChildren():
+                        if self.utils.statements_eq(stmt, target_node) and isinstance(stmt, LetStmt):
+                            if len(stmt.var_defs) == 1:
+                                if isinstance(stmt.values[0], DereferenceExpr):
+                                    new_let_stmt = LetStmt(var_defs=VarDef(name=stmt.var_defs[0].name,
+                                        mutable= stmt.var_defs[0].mutable,
+                                        by_ref=stmt.var_defs[0].by_ref,
+                                        var_type=RefType("T")), values=UnsafeExpression(expr=ReferenceExpr(expr=stmt.values[0])))
+                                    new_stmts.append(new_let_stmt)
+                        else:
+                            new_stmts.append(stmt)
+                    top_children.body.setBody(new_stmts)
+                    top.setBody(top_children)
+                remaining_tops.append(top)
+        
+        print("unsafe dereference: ", pretty_print_ast(Program(items=remaining_tops)))
+        return Program(items=remaining_tops)
 
     def flip_mutabilities(self, ast_root, target_node):
         parents = self.utils.get_all_parents(ast_root, target_node)

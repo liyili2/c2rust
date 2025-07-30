@@ -1,5 +1,3 @@
-
-
 fn main() {
     // let a : i32 = 1;
     // pub struct List {
@@ -8,4 +6,5 @@ fn main() {
     // }
     let ptr : String = "Razie";
     let val = *ptr;
+    // let val : &T = unsafe{&*ptr}
 }

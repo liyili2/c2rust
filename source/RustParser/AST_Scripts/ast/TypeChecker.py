@@ -4,7 +4,7 @@ from RustParser.AST_Scripts.ast.Program import Program
 from RustParser.AST_Scripts.ast.Block import Block
 from RustParser.AST_Scripts.ast.Type import SafeNonNullWrapper, ArrayType, BoolType, CharType, FloatType, IntType, PointerType, RefType, StringType, StructType, VoidType
 from RustParser.AST_Scripts.ast.TypeEnv import TypeEnv
-from RustParser.AST_Scripts.ast.Expression import BinaryExpr, BorrowExpr, CastExpr, DereferenceExpr, FieldAccessExpr, FunctionCallExpr, IdentifierExpr, IntLiteral, LiteralExpr, MutableExpr, RangeExpression
+from RustParser.AST_Scripts.ast.Expression import BinaryExpr, BorrowExpr, CastExpr, DereferenceExpr, FieldAccessExpr, FunctionCallExpr, IdentifierExpr, IntLiteral, LiteralExpr, MutableExpr, RangeExpression, UnsafeExpression
 from RustParser.AST_Scripts.ast.Statement import IfStmt, ReturnStmt, WhileStmt
 from RustParser.AST_Scripts.ast.TopLevel import TopLevel
 
@@ -276,7 +276,9 @@ class TypeChecker:
                 expr_type = var_def.type
 
             # TODO: bug fo the case let a: i32 = 1
-            if not isinstance(var_def_type, type(expr_type)) and not isinstance(var_def_type, SafeNonNullWrapper) :
+            if isinstance(node.values[0], DereferenceExpr):
+                self.error(node, f"deereference expression in a let stmt value: {node.values[0]}")
+            if not isinstance(var_def_type, type(expr_type)) and not isinstance(var_def_type, SafeNonNullWrapper) and not isinstance(node.values[0], UnsafeExpression):
                 self.error(node, f"type of the value and target do not match: {type(expr_type)} and {expr_type.__class__}")
 
             self.env.declare(var_def.name, var_def_type, mutable=var_def.mutable)
@@ -354,7 +356,8 @@ class TypeChecker:
             result_stmts.append(result_stmt)
 
     def visit_UnsafeExpression(self, node):
-        self.error(node, "unsafe expression error")
+        # self.error(node, "unsafe expression error")
+        pass
 
     def visit_ExternBlock(self, node):
         pass

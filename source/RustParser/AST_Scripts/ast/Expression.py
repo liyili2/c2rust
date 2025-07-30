@@ -140,6 +140,14 @@ class VariableRef(Expression):
 
     def accept(self, visitor):
         return visitor.visit_VariableRef(self)
+    
+class ReferenceExpr(Expression):
+    def __init__(self, expr):
+        super().__init__()
+        self.expr = expr
+
+    def accept(self, visitor):
+        return visitor.visit_ReferenceExpression(self)
 
 class BoolLiteral(Expression):
     def __init__(self, value: bool):
