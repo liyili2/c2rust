@@ -1,21 +1,21 @@
 // easy for debugging / knowing what is inside
-// #[derive(Debug)]
-// struct Node {
-//     key: i32,
-//     value: String,
-//     left: Option<Box<Node> >,
-//     right: Option<Box<Node> >,
-// }
+#[derive(Debug)]
+struct Node {
+    key: i32,
+    value: String,
+    left: Option<Box<Node> >,
+    right: Option<Box<Node> >,
+}
 
 impl Node {
-    // fn new(key: i32, value: String) -> Self {
-    //     Node {
-    //         key,
-    //         value,
-    //         left: None,
-    //         right: None,
-    //     }
-    // }
+    fn new(key: i32, value: String) -> Self {
+        Node {
+            key,
+            value,
+            left: None,
+            right: None,
+        }
+    }
 
     // looks like Box is helpful here
     fn insert(&mut self, key: i32, value: String) {
@@ -23,13 +23,13 @@ impl Node {
             if let Some(ref mut left) = self.left {
                 left.insert(key, value);
             } else {
-                self.left = Some(Box::New(Node::New(key, value)));
+                self.left = Some(Box::new(Node::new(key, value)));
             }
         } else if key > self.key {
             if let Some(ref mut right) = self.right {
                 right.insert(key, value);
             } else {
-                self.right = Some(Box::New(Node::New(key, value)));
+                self.right = Some(Box::new(Node::new(key, value)));
             }
         } else {
             self.value = value;
@@ -37,7 +37,7 @@ impl Node {
     }
 
     // self.left is owned by current function
-    // but looks like left in Some(ref mut left) is Something can be passed to other functions
+    // but looks like left in Some(ref mut left) is something can be passed to other functions
     fn search(&mut self, key: i32) -> Option<&String> {
         if key < self.key {
             if let Some(ref mut left) = self.left {
@@ -57,8 +57,9 @@ impl Node {
     }
 }
 
+
 fn main() {
-    // let mut root = Node::New(5, String::from("five"));
+    let mut root = Node::New(5, String::from("five"));
     // println!("{:?}", root.search(5));
     // println!("{:?}", root.search(3));
     // root.insert(3, String::from("three"));
