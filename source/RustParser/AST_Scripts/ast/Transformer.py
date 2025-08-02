@@ -1,6 +1,6 @@
 
 from RustParser.AST_Scripts.ast.ASTNode import ASTNode
-from RustParser.AST_Scripts.ast.Expression import ArrayDeclaration, ArrayLiteral, BasicTypeCastExpr, BinaryExpr, BoolLiteral, BorrowExpr, BoxWrapperExpr, CastExpr, CharLiteral, CharLiteralExpr, DereferenceExpr, FieldAccessExpr, FunctionCallExpr, IdentifierExpr, IndexExpr, IntLiteral, MethodCallExpr, MutableExpr, ParenExpr, Pattern, PatternExpr, QualifiedExpression, RangeExpression, RepeatArrayLiteral, StrLiteral, StructDefInit, StructLiteralExpr, StructLiteralField, TypeAccessExpr, TypePathExpression, TypePathFullExpr, TypeWrapperExpr, UnaryExpr, UnsafeExpression
+from RustParser.AST_Scripts.ast.Expression import ArrayDeclaration, ArrayLiteral, BasicTypeCastExpr, BinaryExpr, BoolLiteral, BorrowExpr, BoxWrapperExpr, CastExpr, CharLiteral, CharLiteralExpr, DereferenceExpr, FieldAccessExpr, FunctionCallExpr, IdentifierExpr, IndexExpr, IntLiteral, MethodCallExpr, MutableExpr, ParenExpr, Pattern, PatternExpr, QualifiedExpression, RangeExpression, RepeatArrayLiteral, SafeWrapper, StrLiteral, StructDefInit, StructLiteralExpr, StructLiteralField, TypeAccessExpr, TypePathExpression, TypePathFullExpr, TypeWrapperExpr, UnaryExpr, UnsafeExpression
 from RustParser.AST_Scripts.ast.Statement import AssignStmt, BreakStmt, CallStmt, CompoundAssignment, ConditionalAssignmentStmt, ContinueStmt, ExpressionStmt, ForStmt, IfStmt, LetStmt, LoopStmt, MatchArm, MatchPattern, MatchStmt, ReturnStmt, StructLiteral, TypeWrapper, UnsafeBlock, WhileStmt
 from RustParser.AST_Scripts.antlr.RustVisitor import RustVisitor
 from RustParser.AST_Scripts.ast.TopLevel import StaticVarDecl, ExternBlock, ExternFunctionDecl, ExternStaticVarDecl, ExternTypeDecl, FunctionDef, InterfaceDef, StructDef, Attribute, StructField, TopLevel, TopLevelVarDef, TypeAliasDecl, UseDecl, VarDefField
@@ -753,6 +753,9 @@ class Transformer(RustVisitor):
             basicType = self.visit(ctx.basicTypeCastExpr().typeExpr())
             typePath = self.visit(ctx.basicTypeCastExpr().typePath())
             return BasicTypeCastExpr(basicType, typePath)
+
+        elif ctx.safeWrapper():
+            return self.visit(ctx.safeWrapper())
         
         # elif ctx.safeNonNullWrapper():
         #     return self.visit(ctx.safeNonNullWrapper())
@@ -769,6 +772,10 @@ class Transformer(RustVisitor):
         #     return BoxWrapperExpr(expr=expr, path=path)
 
         raise Exception(f"Unrecognized expression structure: {ctx.getText()}")
+
+    def visitSafeWrapper(self, ctx):
+        expr = self.visit(ctx.expression())
+        return SafeWrapper(expr=expr)
 
     def visitSafeNonNullWrapper(self, ctx):
         typeExpr = self.visit(ctx.typeExpr())

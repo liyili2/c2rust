@@ -120,9 +120,11 @@ boxWrappwer: 'Box' typeExpr? '(' expression ')';
 typeWrapper: 'Some' '(' expression ')' ;
 boxWrapperPrefix: 'Box' typeExpr? ;
 typeWrapperPrefix: 'Some' ;
+safeWrapper: 'Some' '(' expression ')' | 'Box' DOUBLE_COLON Identifier '(' expression ')' ;
 
 expression
     : mutableExpression expression
+    | safeWrapper
     | primaryExpression
     | expression binaryOps expression
     | structLiteral

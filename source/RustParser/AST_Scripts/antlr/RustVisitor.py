@@ -314,6 +314,11 @@ class RustVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by RustParser#safeWrapper.
+    def visitSafeWrapper(self, ctx:RustParser.SafeWrapperContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by RustParser#expression.
     def visitExpression(self, ctx:RustParser.ExpressionContext):
         return self.visitChildren(ctx)
