@@ -3,7 +3,7 @@ from shutil import copy
 import os
 from types import SimpleNamespace as Result
 from pyggi.tree.rust_engine import RustEngine, pretty_print_ast
-from pyggi.build.lib.pyggi.base.patch import Patch
+from pyggi.base.patch import Patch
 from pyggi.tree.tree import TreeProgram
 from RustParser.AST_Scripts.antlr.RustParser import RustParser
 from RustParser.AST_Scripts.antlr.RustLexer   import RustLexer

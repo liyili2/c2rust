@@ -263,23 +263,30 @@ class TypeChecker:
         else:
             var_def = node.var_defs[0]
             expr_type = self.visit(expr_types[0])
+            print("expr_type:", expr_type.__class__, expr_type)
+
             if var_def.type:
                 var_def_type = self.visit(var_def.type)
             else:
                 var_def_type = self.visit(expr_type)
+            print("var_def_type:", var_def_type.__class__, var_def_type)
 
-            if isinstance(var_def.type, NoneType):
-                var_def.type = expr_type
+            if isinstance(var_def_type, NoneType):
+                var_def_type = expr_type
             self.detect_raw_pointer_definition(var_def.name, var_def.type, var_def.mutable)
 
             if isinstance(expr_type, NoneType):
-                expr_type = var_def.type
+                expr_type = var_def_type
 
             # TODO: bug fo the case let a: i32 = 1
             if isinstance(node.values[0], DereferenceExpr):
                 self.error(node, f"deereference expression in a let stmt value: {node.values[0]}")
-            if not isinstance(var_def_type, type(expr_type)) and not isinstance(var_def_type, SafeNonNullWrapper) and not isinstance(node.values[0], UnsafeExpression):
-                self.error(node, f"type of the value and target do not match: {type(expr_type)} and {expr_type.__class__}")
+            if (
+                not expr_type == var_def_type and
+                not isinstance(var_def_type, SafeNonNullWrapper) and
+                not isinstance(node.values[0], UnsafeExpression)
+            ):
+                self.error(node, f"type of the value and target do not match: {self.visit(var_def_type)} and {self.visit(expr_type)}")
 
             self.env.declare(var_def.name, var_def_type, mutable=var_def.mutable)
             self.symbol_table[var_def.name] = var_def_type
