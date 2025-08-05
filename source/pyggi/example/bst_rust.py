@@ -101,10 +101,10 @@ if __name__ == "__main__":
     search = MyLocalSearch(program)
     search.operators = ops
     results = search.run(warmup_reps=5, epoch=args.epoch, max_iter=args.iter, timeout=15)
-    # print("====================== RESULT ======================")
-    # for ep, r in enumerate(results, 1):
-    #     print(f"Epoch {ep}:  best fitness {r['BestFitness']}")
-    #     if r["diff"]:
-    #         print(r["diff"])
+    print("====================== RESULT ======================")
+    for ep, r in enumerate(results, 1):
+        print(f"Epoch {ep}:  best fitness {r['BestFitness']}")
+        # if r["diff"]:
+        #     print(r["diff"])
 
     program.remove_tmp_variant()

@@ -167,7 +167,7 @@ class TypeChecker:
             type_str = ctx
         if type_str == "i32":
             return IntType()
-        elif ctx.getText() == "bool":
+        elif type_str == "bool":
             return BoolType()
         elif type_str == "String":
             return StringType()
@@ -266,9 +266,12 @@ class TypeChecker:
             var_def = node.var_defs[0]
             expr_type = self.visit(expr_types[0])
 
-            if var_def.type:
+            if isinstance(var_def.type, str):
                 var_def_type = self.visit_Type(var_def.type)
             else:
+                var_def_type = self.visit(var_def.type)
+
+            if var_def_type is None:
                 var_def_type = expr_type
 
             if isinstance(var_def_type, NoneType):
@@ -820,11 +823,11 @@ class TypeChecker:
         return BoolType()
 
     def visit_IntLiteral(self, node):
-        print("visit_IntLiteral")
+        # print("visit_IntLiteral")
         return IntType()
 
     def visit_StrLiteral(self, node):
-        print("visit_StrLiteral")
+        # print("visit_StrLiteral")
         return StringType()
 
     def visit_CallExpression(self, node):

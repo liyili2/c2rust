@@ -27,7 +27,6 @@ class MyRustProgram(TreeProgram):
         raise Exception(f"No engine for {file_name}")
 
     def apply_patch(self, patch):
-        print("apply_patch", self.trees["bst.rs"].__class__)
         variant = MyRustProgram(path=self.path, config=self.config)
         variant.trees = deepcopy(self.trees)
         variant.modification_points = deepcopy(self.modification_points)
@@ -57,6 +56,7 @@ class MyRustProgram(TreeProgram):
             print("eval type ", checker.error_count)
             fitness = 1 / (checker.error_count + 1)
             status = "SUCCESS"
+            
         except Exception as e:
             fitness = None
             status = "CRASH"
@@ -65,4 +65,6 @@ class MyRustProgram(TreeProgram):
         res = Result()
         res.status = status
         res.fitness = fitness
+        # res['BestFitness'] = best_fitness
+        # res['diff'] = self.program.diff(best_patch)
         return res

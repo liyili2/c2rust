@@ -511,8 +511,8 @@ class Transformer(RustVisitor):
             return UnsafeBlock(stmts=stmts)
         return Block(stmts=stmts, isUnsafe=False)
 
-    def visitExpressionStatement(self, ctx):
-        expr = self.visit(ctx.expression())
+    def visitExprStmt(self, ctx):
+        expr = self.visit(ctx.primaryExpression())
         return ExpressionStmt(expr=expr, line=ctx.start.line, column=ctx.start.column)
 
     def visitCallStmt(self, ctx):
@@ -563,7 +563,7 @@ class Transformer(RustVisitor):
         elif ctx.getText() == "continue;":
             return ContinueStmt()
         elif ctx.exprStmt():
-            return ExpressionStmt(expr=ctx.exprStmt().primaryExpression())
+            return self.visit(ctx.exprStmt())
         elif ctx.structDef():
             return self.visit(ctx.structDef())
         elif ctx.typeWrapper():
@@ -576,9 +576,6 @@ class Transformer(RustVisitor):
         else:
             print("⚠️ Unknown statement:", ctx.getText())
             return None
-        
-    def visitExpressionStmt(self, ctx):
-        return ExpressionStmt(expr=ctx.primaryExpression())
 
     def visitConditionalAssignmentStmt(self, ctx):
         cond = self.visit(ctx.block())
@@ -820,6 +817,7 @@ class Transformer(RustVisitor):
         # print("call exp result: ", ctx.func, ctx.args)
         # return FunctionCallExpr(func=ctx.func, args=ctx.args)
 
+    # TODO: Problematic
     def visitTypePathExpression(self, ctx):
         type_str = ctx.getText()
         return TypePathExpression(type_path=type_str.split("::") , last_type=type_str.split("::")[-1])
