@@ -58,11 +58,19 @@ impl Node {
 }
 
 fn main() {
-    let a : i32 = 1;
-    pub struct List {
-        pub s: *mut *mut State,
-        pub n: libc::c_int,
-    }
-    let ptr : String = "C2Rust";
-    let val = *ptr;
+    // let a : i32 = 1;
+    // pub struct List {
+    //     pub s: *mut *mut State,
+    //     pub n: libc::c_int,
+    // }
+    // let ptr : String = "C2Rust";
+    // let val = *ptr;
+    // let mut a : i32 = 10;
+    // let r1 = &a;
+    // let r2 = &mut a;
+    // let v : String = "c2rust";
+    // let w = v;
+    // let x = v;
+    // let z = "C2RUST";
+    // let y = *z;
 }
