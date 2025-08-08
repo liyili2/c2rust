@@ -48,7 +48,9 @@ class TypeChecker:
         pass
 
     def visit_InterfaceDef(self, node):
-        pass
+        for item in node.functions:
+            print("visit_InterfaceDef", item.__class__)
+            self.visit(item)
 
     def visit_Attribute(self, node):
         pass
@@ -66,6 +68,9 @@ class TypeChecker:
         pass
 
     def visit_StructLiteral(self, node):
+        pass
+
+    def visit_safeWrapper(self, node):
         pass
 
     def visit_FunctionDef(self, node: FunctionDef):
@@ -92,18 +97,17 @@ class TypeChecker:
             param_type = self.visit(param.typ)
             is_mut = param.mutable
 
-            # print("param", param.__class__, param.typ.__class__)
+            # print("param", is_mut, param_type, param_type.__class__, param.__class__, param.typ.__class__)
             self.visit(param)
 
             if i == 0 and param_name == "self":
-                if not self.in_method_context():
-                    self.error(param, "`self` used outside of method context")
-
                 if not isinstance(param_type, RefType):
                     self.error(param, f"`self` must be a reference type, found: {param_type}")
 
                 if is_mut and not getattr(param_type, "mutable", False):
                     self.error(param, "`self` is marked mutable, but its type is not a mutable reference")
+                if is_mut and isinstance (param.typ, PointerType):
+                    self.error(node, f"raw pointer passed as argument to function {node.name}")
 
             if param_name in self.env.top():
                 self.error(param, f"duplicate parameter name '{param_name}'")
@@ -463,6 +467,8 @@ class TypeChecker:
         if info["borrowed"]:
             self.error(node, f"assigning to a borrowed variable {self.get_expr_identifier(node.target)} = {self.get_expr_identifier(node.value)}")
 
+        target_type = self.visit(node.target)
+
         value_type = self.visit(node.value)
         if type(info["type"]) != type(value_type) and not isinstance(node.value, FunctionCallExpr) and not isinstance(node.target, FieldAccessExpr) and type(value_type) != NoneType:
             if info["type"] != value_type:
@@ -516,8 +522,9 @@ class TypeChecker:
 
     def visit_ForStmt(self, node):
         iterable_type = self.visit(node.iterable)
+        print("visit_ForStmt", iterable_type, iterable_type.__class__)
 
-        if not isinstance(node.iterable, ArrayType) and not isinstance(node.iterable, RangeExpression):
+        if not isinstance(node.iterable, ArrayType) and not isinstance(node.iterable, RangeExpression) :
             self.error(node, "wrong iterative type")
             return
 
@@ -589,15 +596,14 @@ class TypeChecker:
         return (name, typ)
 
     def visit_ParamNode(self, node):
-        pass
         name = node.name
-        checked_type = self.visit(node.typ)
-        # print("visit_ParamNode", name, checked_type, node.typ.__class__)
-        if isinstance(node.typ, PointerType) and node.mutable:
+        # checked_type = self.visit(node.typ)
+        # print("visit_ParamNode", node.mutable, node.typ, isinstance(node.typ, PointerType))
+        if isinstance(node.typ, PointerType) and( node.mutable or node.typ.mutability):
             self.error(node, "raw pointer usage in the function signature")
-        mutable = node.mutable
+        mutable = node.mutable 
         # self.env.declare(name, checked_type, mutable)
-        return (name, checked_type, mutable)
+        return (name, node.typ, mutable)
 
     def visit_FunctionParamList(self, ctx):
         print("visit_FunctionParamList")
@@ -769,7 +775,10 @@ class TypeChecker:
 
     def visit_FieldAccessExpr(self, node):
         base_type = self.visit(node.receiver)
-        print("visit_FieldAccessExpr", base_type)
+        # print("visit_FieldAccessExpr", base_type, node.receiver, node.receiver.__class__)
+
+        if isinstance(node.receiver, DereferenceExpr):
+            self.error(node, "unprotected dereference in a field access expression")
 
         if not isinstance(base_type, StructType):
             self.error(node, "access to a wrong type of variable (not a struct)")
@@ -796,6 +805,8 @@ class TypeChecker:
 
             if not var_info["owned"] or var_info["borrowed"]:
                 self.error(node, "the identifier is not owned or borrowed")
+
+        
 
         return field_type
 

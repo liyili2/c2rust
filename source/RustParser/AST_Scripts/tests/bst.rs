@@ -63,6 +63,6 @@ fn main() {
         pub s: *mut *mut State,
         pub n: libc::c_int,
     }
-    let ptr : String = "Razie";
+    let ptr : String = "C2Rust";
     let val = *ptr;
 }

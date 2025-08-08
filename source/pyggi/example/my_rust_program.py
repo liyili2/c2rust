@@ -54,9 +54,10 @@ class MyRustProgram(TreeProgram):
             checker = TypeChecker()
             checker.visit(mutated_ast)
             print("eval type ", checker.error_count)
-            fitness = 1 / (checker.error_count + 1)
+            # fitness = 1 / (checker.error_count + 1)
+            fitness = checker.error_count
             status = "SUCCESS"
-            
+
         except Exception as e:
             fitness = None
             status = "CRASH"

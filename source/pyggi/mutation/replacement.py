@@ -1,7 +1,7 @@
 
 from RustParser.AST_Scripts.tests.TransformerTest import pretty_print_ast
 from RustParser.AST_Scripts.ast.Program import Program
-from RustParser.AST_Scripts.ast.TopLevel import FunctionDef, StructDef, StructField, TopLevel, StaticVarDecl
+from RustParser.AST_Scripts.ast.TopLevel import FunctionDef, InterfaceDef, StructDef, StructField, TopLevel, StaticVarDecl
 from RustParser.AST_Scripts.ast.Func import FunctionParamList, Param
 from RustParser.AST_Scripts.ast.Block import Block
 from RustParser.AST_Scripts.ast.Statement import LetStmt, UnsafeBlock
@@ -19,8 +19,8 @@ class ReplacementOperator:
             self.safe_wrap_raw_pointers,
             self.safe_wrap_raw_pointer_argumetns,
             self.make_global_static_pointers_unmutable,
-            # self.move_ast_node,
-            # self.shrink_unsafe_block_stmts,
+            self.move_ast_node,
+            self.shrink_unsafe_block_stmts,
             self.flip_mutabilities,
             self.safe_wrap_struct_field,
             self.replace_raw_dereferences_in_unsafe_wrapper,
@@ -30,6 +30,7 @@ class ReplacementOperator:
     def apply_random_mutations(self, ast, node, num_ops):
         selected_ops = random.sample(self.operators, k=num_ops)
         for op in selected_ops:
+            # print("applied operation: ", selected_ops, selected_ops.__class__)
             ast = op(ast, node)
         return ast
 
@@ -54,6 +55,8 @@ class ReplacementOperator:
 
             parent_1, parent_2 = parents[-2], parents[-3]
             top_type_matches = isinstance(parent_1, type(top))
+            if not isinstance(top, FunctionDef) or not isinstance(top, InterfaceDef):
+                continue
             top_children = top if isinstance(top, list) else top.getChildren()
 
             if not top_type_matches:
@@ -143,7 +146,8 @@ class ReplacementOperator:
                                 new_fields.append(new_field)
                             else:
                                 new_fields.append(field)
-                        new_Stmts.append(new_field)
+                        new_struct_def = StructDef(name=stmt.name, fields=new_fields)
+                        new_Stmts.append(new_struct_def)
                     else:
                         new_Stmts.append(stmt)
                 new_block = Block(stmts=new_Stmts, isUnsafe=top.body.isUnsafe)

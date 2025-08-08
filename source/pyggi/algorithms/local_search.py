@@ -62,7 +62,7 @@ class LocalSearch(Algorithm):
         """
         if best_fitness is None:
             return True
-        is_better_than_the_best = fitness >= best_fitness
+        is_better_than_the_best = fitness <= best_fitness
         return is_better_than_the_best
 
     def stopping_criterion(self, iter, fitness):

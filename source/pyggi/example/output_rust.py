@@ -115,5 +115,5 @@ if __name__ == "__main__":
     for epoch in range(len(result)):
         print("Epoch {}".format(epoch))
         print(result[epoch])
-        print(result[epoch]['diff'])
+        # print(result[epoch]['diff'])
     program.remove_tmp_variant()
