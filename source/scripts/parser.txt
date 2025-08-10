@@ -12,13 +12,13 @@ java -Xmx500M -cp "C:\antlr\antlr-4.13.1-complete.jar" org.antlr.v4.Tool -Dlangu
 java -Xmx500M -cp "antlr-4.13.1-complete.jar" org.antlr.v4.Tool -Dlanguage=Python3 -visitor Rust.g4
 
 Run the TypeChecker tests:
-python -m RustParser.AST_Scripts.tests.TypeCheckerTest
+python3 -m RustParser.AST_Scripts.tests.TypeCheckerTest
 
 Run the Transformer tests:
-python -m RustParser.AST_Scripts.tests.TransformerTest
+python3 -m RustParser.AST_Scripts.tests.TransformerTest
 
 Run the Parser tests:
-python ParserTest.py
+python3 ParserTest.py
 
 Run Pyggi(go to example dir):
 chmod +x ./run.sh

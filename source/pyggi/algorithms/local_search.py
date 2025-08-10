@@ -52,6 +52,7 @@ class LocalSearch(Algorithm):
             results = local_search.run(warmup_reps=5, epoch=3, max_iter=100, timeout=15)
     """
     def is_better_than_the_best(self, fitness, best_fitness):
+        print("is_better_than_the_best: ", fitness, best_fitness)
         """
         :param fitness: The fitness value of the current patch
         :param best_fitness: The best fitness value ever in the current epoch
@@ -61,7 +62,8 @@ class LocalSearch(Algorithm):
         """
         if best_fitness is None:
             return True
-        return fitness <= best_fitness
+        is_better_than_the_best = fitness <= best_fitness
+        return is_better_than_the_best
 
     def stopping_criterion(self, iter, fitness):
         """
@@ -153,9 +155,11 @@ class LocalSearch(Algorithm):
                     cur_result['InvalidPatch'] += 1
                     update_best = False
                 else:
+                    print("update_best")
                     update_best = self.is_better_than_the_best(run.fitness, best_fitness)
 
                 if update_best:
+                    print("best_fitness", best_fitness)
                     best_fitness, best_patch = run.fitness, patch
 
                 if verbose:
@@ -175,7 +179,7 @@ class LocalSearch(Algorithm):
                 cur_result['BestPatch'] = best_patch
                 cur_result['BestFitness'] = best_fitness
                 # cur_result['diff'] = self.program.diff(best_patch)
-                cur_result['diff'] = None
+                # cur_result['diff'] = None
 
             result.append(cur_result)
             print("=== PATCHED CODE ===", self.program.path)

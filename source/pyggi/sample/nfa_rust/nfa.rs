@@ -2,7 +2,7 @@
 use std::{
     process::ExitCode,
     ptr::{addr_of_mut, null_mut},
-    sync::atomic::{AtomicI32, Ordering},
+    // sync::atomic::{AtomicI32, Ordering},
 };
 
 // Convert infix regexp re to postfix notation.
@@ -128,7 +128,7 @@ struct State {
 // atomic because it's trivial to do so and is safe.
 static NSTATE: AtomicI32 = AtomicI32::new(0);
 
-// // matching state
+// matching state
 static mut MATCH_STATE: State =
     State { c: MATCH, out: null_mut(), out1: null_mut(), lastlist: 0 };
 
@@ -193,8 +193,8 @@ impl PtrList {
     }
 }
 
-// // Convert postfix regular expression to NFA.
-// // Return start state.
+// Convert postfix regular expression to NFA.
+// Return start state.
 fn post2nfa(postfix: &[u8]) -> *mut State {
     let mut stack: Vec<Frag> = vec![];
     for &p in postfix.iter() {
