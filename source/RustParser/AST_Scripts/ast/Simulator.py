@@ -101,22 +101,22 @@ class Simulator(RustVisitor):
 
         return result
 
-    def visitBreak(self, ctx: XMLProgrammer.QXBreak):
+    def visitBreak(self, ctx: BreakStmt):
         # This will be more complicated due to the different types of loops
         self.stack_bools.pop()
         self.stack_bools.append(False)
 
-        if ctx.vexp() is not None:
-            return ctx.vexp().accept(self)
+        if ctx is not None: # .vexp()
+            return ctx.accept(self) # .vexp()
         return None # maybe this is better to return?
 
-    def visitReturn(self, ctx: XMLProgrammer.QXReturn):
-        if ctx.vexp() is None:
+    def visitReturn(self, ctx: ReturnStmt):
+        if ctx.accept(self) is None:
             return
         else:
-            return ctx.vexp().accept(self)
+            return ctx.value
 
-    def visitLoop(self, ctx: XMLProgrammer.QXLoop):
+    def visitLoop(self, ctx: LoopStmt):
         # This is the loop keyword. For this type of loop, break statement can return a value
         # A loop statement contains a block statement, and if a break appears in the immediate block statement,
         # this loop will end?
