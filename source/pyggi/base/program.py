@@ -131,6 +131,7 @@ class AbstractProgram(ABC):
         for file_name in self.target_files:
             self.file_name = file_name
             engine = self.engines[file_name]
+            print("load_contents", file_name)
             self.contents[file_name] = engine.get_contents(file_path=os.path.join(self.path, file_name))
             self.modification_points[file_name] = engine.get_modification_points(self.contents[file_name])
 

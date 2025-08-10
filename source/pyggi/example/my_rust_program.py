@@ -3,7 +3,7 @@ from shutil import copy
 import os
 from types import SimpleNamespace as Result
 from pyggi.tree.rust_engine import RustEngine, pretty_print_ast
-from pyggi.build.lib.pyggi.base.patch import Patch
+from pyggi.base.patch import Patch
 from pyggi.tree.tree import TreeProgram
 from RustParser.AST_Scripts.antlr.RustParser import RustParser
 from RustParser.AST_Scripts.antlr.RustLexer   import RustLexer
@@ -27,7 +27,6 @@ class MyRustProgram(TreeProgram):
         raise Exception(f"No engine for {file_name}")
 
     def apply_patch(self, patch):
-        print("apply_patch", self.trees["bst.rs"].__class__)
         variant = MyRustProgram(path=self.path, config=self.config)
         variant.trees = deepcopy(self.trees)
         variant.modification_points = deepcopy(self.modification_points)
@@ -55,8 +54,10 @@ class MyRustProgram(TreeProgram):
             checker = TypeChecker()
             checker.visit(mutated_ast)
             print("eval type ", checker.error_count)
-            fitness = 1 / (checker.error_count + 1)
+            # fitness = 1 / (checker.error_count + 1)
+            fitness = checker.error_count
             status = "SUCCESS"
+
         except Exception as e:
             fitness = None
             status = "CRASH"
@@ -65,4 +66,6 @@ class MyRustProgram(TreeProgram):
         res = Result()
         res.status = status
         res.fitness = fitness
+        # res['BestFitness'] = best_fitness
+        # res['diff'] = self.program.diff(best_patch)
         return res

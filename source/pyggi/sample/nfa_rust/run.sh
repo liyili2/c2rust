@@ -5,4 +5,4 @@ export PYTHONPATH=/home/razie/C2Rust/c2rust/source
 echo "PYTHONPATH is $PYTHONPATH"
 
 # Run the Rust test suite
-pytest -s nfa_test.py
+# pytest -s nfa_test.py

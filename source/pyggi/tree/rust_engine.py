@@ -65,6 +65,7 @@ class RustEngine(AbstractTreeEngine):
 
     @classmethod
     def get_contents(cls, file_path):
+        print("get_contents", file_path)
         with open(file_path, 'r') as target_file:
             source_code = target_file.read()
         lexer = RustLexer(InputStream(source_code))
@@ -122,13 +123,22 @@ class RustEngine(AbstractTreeEngine):
             _, target_node = target_node
         replacementOperator = ReplacementOperator(trees[file_name], target_node)
         trees[file_name] = replacementOperator.get_new_ast()
+        print(";;;program", program.__class__)
         program.trees[file_name] = trees[file_name] 
         return trees
 
     @classmethod
     def do_insert(cls, program, op, trees, modification_points):
         #TODO
-        pass
+        # pass
+        file_name, target_node = op.target
+        if isinstance(target_node, tuple):
+            _, target_node = target_node
+        replacementOperator = ReplacementOperator(trees[file_name], target_node)
+        trees[file_name] = replacementOperator.get_new_ast()
+        print(";;;program", program.__class__)
+        program.trees[file_name] = trees[file_name] 
+        return trees
 
     @classmethod
     def do_delete(cls, program, op, trees, modification_points):
@@ -137,6 +147,7 @@ class RustEngine(AbstractTreeEngine):
             _, target_node = target_node
         deletionOperator = DeletionOperator(trees[file_name], target_node)
         trees[file_name] = deletionOperator.get_new_ast()
+        print(";;;program", program.__class__)
         program.trees[file_name] = trees[file_name] 
         return trees
 

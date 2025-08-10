@@ -1,5 +1,5 @@
 from RustParser.AST_Scripts.ast.Program import Program
-from RustParser.AST_Scripts.ast.TopLevel import FunctionDef
+from RustParser.AST_Scripts.ast.TopLevel import FunctionDef, StaticVarDecl, TypeAliasDecl, UseDecl
 from RustParser.AST_Scripts.ast.Block import Block
 from RustParser.AST_Scripts.ast.Statement import LetStmt, ForStmt, IfStmt, CallStmt, AssignStmt, WhileStmt
 from RustParser.AST_Scripts.ast.Expression import FieldAccessExpr, IdentifierExpr, MethodCallExpr, BinaryExpr
@@ -33,6 +33,8 @@ class MutationUtils:
             parent_1, parent_2 = parents[-2], parents[-3]
             top_type_matches = isinstance(parent_1, type(top))
             if isinstance(top, list):
+                top_children = top
+            elif isinstance(top, StaticVarDecl) or isinstance(top, TypeAliasDecl) or isinstance(top, UseDecl):
                 top_children = top
             else:
                 top_children = top.getChildren()

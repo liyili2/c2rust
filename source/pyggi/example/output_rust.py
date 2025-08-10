@@ -5,7 +5,9 @@ import os
 import sys
 import random
 import argparse
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+from pyggi.example.my_rust_program import MyRustProgram
 from pyggi.tree.rust_engine import RustEngine
 from pyggi.algorithms.local_search import LocalSearch
 from pyggi.base.program import AbstractProgram
@@ -24,25 +26,14 @@ def get_file_extension(file_path):
     _, file_extension = os.path.splitext(file_path)
     return file_extension
 
-class MyRustProgram(TreeProgram):
-    def __init__(self, path, config):
-        self.ast = None
-        self.file_name = None
-        super().__init__(path, config)
-        self.files = "./"
-        self.engine_classes = {
-            '.rs': RustEngine
-        }
-
-    @classmethod
-    def get_engine(cls, file_name):
-        if file_name.endswith(".rs"):
-            return RustEngine
-        extension = get_file_extension(file_name)
-        if extension in ['.rs']:
-            return RustEngine
-        else:
-            raise Exception('{} file is not supporteddddd'.format(extension))
+def get_engine(cls, file_name):
+    if file_name.endswith(".rs"):
+        return RustEngine
+    extension = get_file_extension(file_name)
+    if extension in ['.rs']:
+        return RustEngine
+    else:
+        raise Exception('{} file is not supporteddddd'.format(extension))
 
 class MyProgram(AbstractProgram):
     def compute_fitness(self, result, return_code, stdout, stderr, elapsed_time):
@@ -124,5 +115,5 @@ if __name__ == "__main__":
     for epoch in range(len(result)):
         print("Epoch {}".format(epoch))
         print(result[epoch])
-        print(result[epoch]['diff'])
+        # print(result[epoch]['diff'])
     program.remove_tmp_variant()

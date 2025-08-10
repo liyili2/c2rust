@@ -199,6 +199,9 @@ class InterfaceDef(TopLevel):
     def setFunctions(self, newFunctions):
         self.functions = newFunctions
 
+    def accept(self, visitor):
+        return visitor.visit_InterfaceDef(self)
+
 class UseDecl(TopLevel):
     def __init__(self, paths, aliases=None):
         """

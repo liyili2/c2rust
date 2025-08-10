@@ -4,7 +4,7 @@ from RustParser.AST_Scripts.ast.Program import Program
 from RustParser.AST_Scripts.ast.Block import Block
 from RustParser.AST_Scripts.ast.Type import SafeNonNullWrapper, ArrayType, BoolType, CharType, FloatType, IntType, PointerType, RefType, StringType, StructType, VoidType
 from RustParser.AST_Scripts.ast.TypeEnv import TypeEnv
-from RustParser.AST_Scripts.ast.Expression import BinaryExpr, BorrowExpr, CastExpr, DereferenceExpr, FieldAccessExpr, FunctionCallExpr, IdentifierExpr, IntLiteral, LiteralExpr, MutableExpr, RangeExpression
+from RustParser.AST_Scripts.ast.Expression import BinaryExpr, BorrowExpr, CastExpr, DereferenceExpr, FieldAccessExpr, FunctionCallExpr, IdentifierExpr, IntLiteral, LiteralExpr, MutableExpr, RangeExpression, UnsafeExpression
 from RustParser.AST_Scripts.ast.Statement import IfStmt, ReturnStmt, WhileStmt
 from RustParser.AST_Scripts.ast.TopLevel import TopLevel
 
@@ -16,13 +16,13 @@ class TypeChecker:
         self.errors = []
         self.reports = []
 
-    def error(self, node, message):
+    def error(self, node, message, error_weight=1):
         error_msg = f"Type error: {message}"
         if hasattr(node, 'line'):
             error_msg = f"[Line {node.line}] {error_msg}"
         print(error_msg)
         self.errors.append(error_msg)
-        self.error_count = self.error_count + 1
+        self.error_count = self.error_count + (error_weight)
 
     def report(self, node, message):
         self.reports.append((node, message))
@@ -48,7 +48,8 @@ class TypeChecker:
         pass
 
     def visit_InterfaceDef(self, node):
-        pass
+        for item in node.functions:
+            self.visit(item)
 
     def visit_Attribute(self, node):
         pass
@@ -66,6 +67,9 @@ class TypeChecker:
         pass
 
     def visit_StructLiteral(self, node):
+        pass
+
+    def visit_safeWrapper(self, node):
         pass
 
     def visit_FunctionDef(self, node: FunctionDef):
@@ -92,18 +96,17 @@ class TypeChecker:
             param_type = self.visit(param.typ)
             is_mut = param.mutable
 
-            # print("param", param.__class__, param.typ.__class__)
+            # print("param", is_mut, param_type, param_type.__class__, param.__class__, param.typ.__class__)
             self.visit(param)
 
             if i == 0 and param_name == "self":
-                if not self.in_method_context():
-                    self.error(param, "`self` used outside of method context")
-
-                if not isinstance(param_type, RefType):
+                if not isinstance(param_type, RefType) and param_type is not None:
                     self.error(param, f"`self` must be a reference type, found: {param_type}")
 
                 if is_mut and not getattr(param_type, "mutable", False):
                     self.error(param, "`self` is marked mutable, but its type is not a mutable reference")
+                if is_mut and isinstance (param.typ, PointerType):
+                    self.error(node, f"raw pointer passed as argument to function {node.name}")
 
             if param_name in self.env.top():
                 self.error(param, f"duplicate parameter name '{param_name}'")
@@ -136,9 +139,9 @@ class TypeChecker:
                 return True
             if isinstance(s, IfStmt):
                 then_has = self.body_has_terminating_return(s.then_branch.getChildren())
-                else_branch = s.else_branch.getChildren() if s.else_branch is not None else []
-                else_has = self.body_has_terminating_return(else_branch)
-                return then_has and else_has
+                # else_branch = s.else_branch.getChildren() if s.else_branch is not None else []
+                # else_has = self.body_has_terminating_return(else_branch)
+                return then_has
             if isinstance(s, WhileStmt):
                 continue
         return False
@@ -161,11 +164,13 @@ class TypeChecker:
             self.error(self, "unknown literal type")
 
     def visit_Type(self, ctx):
-        print("visit_Type")
-        type_str = ctx.getText()
+        if not isinstance(ctx, str):
+            type_str = ctx.getText()
+        else:
+            type_str = ctx
         if type_str == "i32":
             return IntType()
-        elif ctx.getText() == "bool":
+        elif type_str == "bool":
             return BoolType()
         elif type_str == "String":
             return StringType()
@@ -230,9 +235,9 @@ class TypeChecker:
             used_fields.add(field_name)
 
         missing_fields = set(field_types) - used_fields
-        if missing_fields:
-            for mf in missing_fields:
-                self.error(node, f"Missing field '{mf}' in struct literal of type '{struct_type}'")
+        # if missing_fields:
+        #     for mf in missing_fields:
+        #         self.error(node, f"Missing field '{mf}' in struct literal of type '{struct_type}'")
 
         return
 
@@ -263,21 +268,28 @@ class TypeChecker:
         else:
             var_def = node.var_defs[0]
             expr_type = self.visit(expr_types[0])
-            if var_def.type:
-                var_def_type = self.visit(var_def.type)
-            else:
-                var_def_type = self.visit(expr_type)
 
-            if isinstance(var_def.type, NoneType):
-                var_def.type = expr_type
+            if isinstance(var_def.type, str):
+                var_def_type = self.visit_Type(var_def.type)
+            else:
+                var_def_type = self.visit(var_def.type)
+
+            if var_def_type is None:
+                var_def_type = expr_type
+
+            if isinstance(var_def_type, NoneType):
+                var_def_type = expr_type
             self.detect_raw_pointer_definition(var_def.name, var_def.type, var_def.mutable)
 
             if isinstance(expr_type, NoneType):
-                expr_type = var_def.type
+                expr_type = var_def_type
 
-            # TODO: bug fo the case let a: i32 = 1
-            if not isinstance(var_def_type, type(expr_type)) and not isinstance(var_def_type, SafeNonNullWrapper) :
-                self.error(node, f"type of the value and target do not match: {type(expr_type)} and {expr_type.__class__}")
+            if (
+                not isinstance(expr_type, var_def_type.__class__) and
+                not isinstance(var_def_type, SafeNonNullWrapper) and
+                not isinstance(node.values[0], UnsafeExpression)
+            ):
+                self.error(node, f"type of the value and target do not match: {(var_def_type.__class__)} and {(expr_type.__class__)}")
 
             self.env.declare(var_def.name, var_def_type, mutable=var_def.mutable)
             self.symbol_table[var_def.name] = var_def_type
@@ -291,8 +303,8 @@ class TypeChecker:
         # print("visit_PointerType", node.pointee_type.__class__, node.pointee_type)
         return self.visit(node.pointee_type)
 
-    def visit_DereferenceExpr(Self, node):
-        pass
+    def visit_DereferenceExpr(self, node):
+        self.error(node, f"unsafe pointer dereferencing {node.expr}", 2)
 
     def visit_SafeNonNullWrapper(self, node):
         print("visit_SafeNonNullWrapper")
@@ -316,21 +328,21 @@ class TypeChecker:
             if isinstance(left, IntType) and isinstance(right, IntType):
                 return IntType()
             else:
-                self.error(node, "binary expression target and value type mismatch #1")
+                self.error(node, f"binary expression target and value type mismatch #1: {left} {op} {right}")
                 return IntType()
 
         elif op in ['==', '!=', '<', '>', '<=', '>=']:
-            if type(left) == type(right):
+            if type(left) == type(right) or isinstance(right, NoneType) or isinstance(left, NoneType):
                 return BoolType()
             else:
-                self.error(node, "binary expression target and value type mismatch #2")
+                self.error(node, f"binary expression target and value type mismatch #2: {left} {op} {right}")
                 return BoolType()
 
         elif op in ['&&', '||']:
             if isinstance(left, BoolType) and isinstance(right, BoolType):
                 return BoolType()
             else:
-                self.error(node, "binary expression target and value type mismatch #3")
+                self.error(node, f"binary expression target and value type mismatch #3: {left} {op} {right}")
                 return BoolType()
             
         elif op in ['&']:
@@ -354,7 +366,8 @@ class TypeChecker:
             result_stmts.append(result_stmt)
 
     def visit_UnsafeExpression(self, node):
-        self.error(node, "unsafe expression error")
+        # self.error(node, "unsafe expression error")
+        pass
 
     def visit_ExternBlock(self, node):
         pass
@@ -386,6 +399,9 @@ class TypeChecker:
             if target_info.get("borrowed", False):
                 self.error(node, "usage of not borrowed variable in compound assignment")
 
+            if target_info.get("owned", False):
+                self.error(node, "usage of not owned variable in compound assignment", 2)
+
         # Type compatibility check for compound ops
         if node.op in ['+=', '-=', '*=', '/=']:
             if (not isinstance(target_type, IntType)) or (not isinstance(value_type, IntType)):
@@ -395,34 +411,33 @@ class TypeChecker:
         
         print(self.error_count)
 
-
     def _handle_borrowing(self, var_def, value_expr):
         if isinstance(value_expr, IdentifierExpr):
             try:
                 value_info = self.env.lookup(value_expr.name)
             except Exception:
-                self.increase_error_count()
+                self.error(self, f"undefined variable: {value_expr.name}")
                 return
 
             if value_info:
                 if value_info["borrowed"]:
-                    self.increase_error_count()
+                    self.error(self, f"usage of a borrowed variable {value_expr.name}")
                 if not value_info["owned"]:
-                    self.increase_error_count()
+                    self.error(self, f"usage of a variable which ownership was moved: {value_expr.name}", 2)
                 value_info["owned"] = False
 
         elif isinstance(value_expr, BorrowExpr):
             try:
                 value_info = self.env.lookup(value_expr.name)
             except Exception:
-                self.increase_error_count()
+                self.error(self, f"undefined variable: {value_expr.name}")
                 return
 
             if value_info:
                 if value_expr.mutable and not value_info["mutable"]:
-                    self.increase_error_count()
+                    self.error(self, f"cannot mutably borrow an immutable variable in a let stmt: {value_expr.name}")
                 if value_info["borrowed"]:
-                    self.increase_error_count()
+                    self.error(self, f"usage of a borrowed variable {value_expr.name}")
                 value_info["borrowed"] = True
 
     def get_expr_identifier(self,expr):
@@ -451,6 +466,8 @@ class TypeChecker:
         if info["borrowed"]:
             self.error(node, f"assigning to a borrowed variable {self.get_expr_identifier(node.target)} = {self.get_expr_identifier(node.value)}")
 
+        target_type = self.visit(node.target)
+
         value_type = self.visit(node.value)
         if type(info["type"]) != type(value_type) and not isinstance(node.value, FunctionCallExpr) and not isinstance(node.target, FieldAccessExpr) and type(value_type) != NoneType:
             if info["type"] != value_type:
@@ -467,7 +484,7 @@ class TypeChecker:
             if ( value_type is IntType) or ( value_type is BoolType) or ( value_type is CharType):
                 if value_info:
                     if not value_info["owned"]:
-                        self.error(node, f"assigning a not-owned variable to target : {self.get_expr_identifier(node.target)} = {self.get_expr_identifier(node.value)}")
+                        self.error(node, f"assigning a not-owned variable to target : {self.get_expr_identifier(node.target)} = {self.get_expr_identifier(node.value)}", 2)
                     value_info["owned"] = False
 
         if isinstance(node.value, BorrowExpr):
@@ -504,8 +521,9 @@ class TypeChecker:
 
     def visit_ForStmt(self, node):
         iterable_type = self.visit(node.iterable)
+        print("visit_ForStmt", iterable_type, iterable_type.__class__)
 
-        if not isinstance(node.iterable, ArrayType) and not isinstance(node.iterable, RangeExpression):
+        if not isinstance(node.iterable, ArrayType) and not isinstance(node.iterable, RangeExpression) :
             self.error(node, "wrong iterative type")
             return
 
@@ -520,7 +538,6 @@ class TypeChecker:
 
         for stmt in node.body.getChildren():
             self.visit(stmt)
-
         return True
 
     def visit_RangeExpression(self, node):
@@ -577,15 +594,14 @@ class TypeChecker:
         return (name, typ)
 
     def visit_ParamNode(self, node):
-        pass
         name = node.name
-        checked_type = self.visit(node.typ)
-        # print("visit_ParamNode", name, checked_type, node.typ.__class__)
-        if isinstance(node.typ, PointerType) and node.mutable:
+        # checked_type = self.visit(node.typ)
+        # print("visit_ParamNode", node.mutable, node.typ, isinstance(node.typ, PointerType))
+        if isinstance(node.typ, PointerType) and( node.mutable or node.typ.mutability):
             self.error(node, "raw pointer usage in the function signature")
-        mutable = node.mutable
+        mutable = node.mutable 
         # self.env.declare(name, checked_type, mutable)
-        return (name, checked_type, mutable)
+        return (name, node.typ, mutable)
 
     def visit_FunctionParamList(self, ctx):
         print("visit_FunctionParamList")
@@ -680,13 +696,13 @@ class TypeChecker:
         print("visit_BorrowExpr", node.expr)
         info = self.env.lookup(self.get_expr_identifier(node.expr))
         if not info["owned"]:
-            self.increase_error_count()
+            self.error(node, "cannot borrow a variable which ownership already moved")
 
         if node.mutable:
             if not info["mutable"]:
-                self.increase_error_count()
+                self.error(node, "cannot mutably borrow an immutable variable")
             if info["borrowed"]:
-                self.increase_error_count()
+                self.error(node, "cannot mutably borrow a variable that's already borrowed", 2)
         else:
             if info["borrowed"]:
                 self.increase_error_count()
@@ -757,10 +773,13 @@ class TypeChecker:
 
     def visit_FieldAccessExpr(self, node):
         base_type = self.visit(node.receiver)
-        print("visit_FieldAccessExpr", base_type)
+        # print("visit_FieldAccessExpr", base_type, node.receiver, node.receiver.__class__)
+
+        if isinstance(node.receiver, DereferenceExpr):
+            self.error(node, "unprotected dereference in a field access expression")
 
         if not isinstance(base_type, StructType):
-            self.error(node, "access to a wrong type of variable (not a struct)")
+            # self.error(node, "access to a wrong type of variable (not a struct)")
             return None
 
         struct_name = base_type.name
@@ -815,6 +834,7 @@ class TypeChecker:
         return IntType()
 
     def visit_StrLiteral(self, node):
+        # print("visit_StrLiteral")
         return StringType()
 
     def visit_CallExpression(self, node):
