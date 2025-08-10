@@ -73,8 +73,9 @@ class Simulator(RustVisitor):
     # Let statement should assign something?
     # For now, implement some of the expressions
     def visitLet(self, ctx: LetStmt):
-        x = ctx.idexp().ID() # make idexp return identifier
-        y = ctx.vexp().accept(self) # exp will return the value
+        x = ctx.var_defs # make idexp return identifier
+        y = ctx.values # exp will return the value
+        res = ctx.accept()
         self.stack.update({str(x) : y})
         return
 
@@ -83,14 +84,14 @@ class Simulator(RustVisitor):
         # the fact that its syntax is very different)
     #    return
 
-    def visitPrint(self, ctx: XMLProgrammer.QXPrint):
-        # this prints the stringval, then does something with the exp?
-        # This would call my printer, I will implement later (will be harder)
-        print(ctx.str())
-        return
+    # def visitPrint(self, ctx: XMLProgrammer.QXPrint):
+    #     # this prints the stringval, then does something with the exp?
+    #     # This would call my printer, I will implement later (will be harder)
+    #     print(ctx.str())
+    #     return
 
-    def visitIfStmt(self, ctx: XMLProgrammer.QXIf):
-        if_result = ctx.vexp().accept(self)
+    def visitIfStmt(self, ctx: IfStmt):
+        if_result = ctx.accept(self) # .vexp()
         result = None
         if if_result:
             result = ctx.blockstmt.accept(self)
