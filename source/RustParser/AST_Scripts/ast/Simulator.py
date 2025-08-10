@@ -31,7 +31,7 @@ class Simulator(RustVisitor):
         self.stack = stack
         # self.heap = {}
         # self.stack_bools = deque()
-        
+
         # The goal is to enable all the examples (see slack): aggregate.rs, bst.rs, nfa.rs
         # aggregate and bst have some stuff that are missing
         # i may want to model lifetimes as well
@@ -62,6 +62,12 @@ class Simulator(RustVisitor):
     def get_state(self):
         return self.memory
 
+    def get_val_address(self):
+        return self.stack
+
+    def get_val(self):
+        return self.heap
+
     # I need to write the function of these grammar now, not just print them out
 
     # Let statement should assign something?
@@ -69,7 +75,7 @@ class Simulator(RustVisitor):
     def visitLet(self, ctx: LetStmt):
         x = ctx.idexp().ID() # make idexp return identifier
         y = ctx.vexp().accept(self) # exp will return the value
-        self.st.update({str(x) : y})
+        self.stack.update({str(x) : y})
         return
 
     #def visitMatch(self, ctx: XMLProgrammer.QXMatch):
