@@ -1,4 +1,3 @@
-// easy for debugging / knowing what is inside
 #[derive(Debug)]
 struct Node {
     key: i32,
@@ -57,12 +56,32 @@ impl Node {
     }
 }
 
-static mut listid: libc::c_int = 0;
+static mut listid: &str = "c2rust";
+pub struct List {
+    pub s: *mut *mut String, // keep your pointer type
+    pub n: i32,             // changed from libc::c_int
+}
 
 fn main() {
-    let a : i32 = 1;
-    pub struct List {
-        pub s: *mut *mut State,
-        pub n: libc::c_int,
-    }
+    let mut root = Node::new(5, String::from("five"));
+    println!("{:?}", root.search(5));
+    println!("{:?}", root.search(3));
+    root.insert(3, String::from("three"));
+    println!("{:?}", root.search(3));
+    println!("{:?}", root.search(7));
+    root.insert(7, String::from("seven"));
+    println!("{:?}", root.search(7));
+    println!("{:?}", root.search(4));
+    root.insert(4, String::from("four"));
+    println!("{:?}", root.search(4));
+    println!("{:?}", root.search(2));
+    root.insert(2, String::from("two"));
+    println!("{:?}", root.search(2));
+    println!("{:?}", root.search(6));
+    root.insert(6, String::from("six"));
+    println!("{:?}", root.search(6));
+    println!("{:?}", root.search(8));
+    root.insert(8, String::from("eight"));
+    println!("{:?}", root.search(8));
+    println!("{:?}", root);
 }
