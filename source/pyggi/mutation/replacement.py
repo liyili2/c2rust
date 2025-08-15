@@ -25,7 +25,7 @@ class ReplacementOperator:
             self.safe_wrap_struct_field,
             self.replace_raw_dereferences_in_unsafe_wrapper,
         ]
-        self.new_ast = self.apply_random_mutations(ast, node, 6)
+        self.new_ast = self.apply_random_mutations(ast, node, 5)
 
     def apply_random_mutations(self, ast, node, num_ops):
         selected_ops = random.sample(self.operators, k=num_ops)
@@ -84,10 +84,11 @@ class ReplacementOperator:
                 top.setBody(top_children)
             remaining_tops.append(top)
 
-        print(f"{label} result:", pretty_print_ast(Program(items=remaining_tops)))
+        # print(f"{label} result:", pretty_print_ast(Program(items=remaining_tops)))
         return Program(items=remaining_tops)
     
     def replace_raw_dereferences_in_unsafe_wrapper(self, ast_root, target_node):
+        print("OP: replace_raw_dereferences_in_unsafe_wrapper")
         def transform(stmt):
             if isinstance(stmt, LetStmt) and len(stmt.var_defs) == 1:
                 val = stmt.values[0]
@@ -105,6 +106,7 @@ class ReplacementOperator:
         return self.transform_let_stmt(ast_root, target_node, transform, label="replace_raw_dereferences_in_unsafe_wrapper")
 
     def flip_mutabilities(self, ast_root, target_node):
+        print("OP: flip_mutabilities")
         def transform(stmt):
             if isinstance(stmt, LetStmt) and len(stmt.var_defs) == 1:
                 return LetStmt(
@@ -120,6 +122,7 @@ class ReplacementOperator:
         return self.transform_let_stmt(ast_root, target_node, transform, label="flip_mutabilities")
 
     def safe_wrap_struct_field(self, ast_root, target_node):
+        print("OP: safe_wrap_struct_field")
         if not isinstance(ast_root, Program):
             return None
         remaining_tops = []
@@ -158,11 +161,13 @@ class ReplacementOperator:
         return Program(items=remaining_tops)
 
     def shuffle_and_update_block(self, node, block):
+        print("OP: shuffle_and_update_block")
         random.shuffle(block.getChildren())
         new_block = Block(block.getChildren(), block.isUnsafe)
         node.setBody(new_block)
 
     def replace_raw_pointer_defs_with_safe_wrappers(eslf, node, block):
+        print("OP: replace_raw_pointer_defs_with_safe_wrappers")
         new_stmts = []
         for stmt in block.getChildren():
             if isinstance(stmt, LetStmt):
@@ -182,14 +187,17 @@ class ReplacementOperator:
         node.setBody(new_block)
 
     def safe_wrap_raw_pointers(self, ast_root, target_node):
+        print("OP: safe_wrap_raw_pointers")
         return self.utils.transform_ast(ast_root, target_node, self.replace_raw_pointer_defs_with_safe_wrappers)
     
     def move_ast_node(self, ast_root, target_node):
+        print("OP: move_ast_node")
         if not isinstance(target_node, Block):
             return ast_root
         return self.utils.transform_ast(ast_root, target_node, self.shuffle_and_update_block)
 
     def make_global_static_pointers_unmutable(self, ast_root, target_node):
+        print("OP: make_global_static_pointers_unmutable")
         if isinstance(target_node, TopLevel):
             top_items = []
             for top in ast_root.getChildren():
@@ -204,6 +212,7 @@ class ReplacementOperator:
 
     # check param list parent
     def safe_wrap_raw_pointer_argumetns(self, ast_root, target_node):
+        print("OP: safe_wrap_raw_pointer_argumetns")
         parents = self.utils.get_all_parents(ast_root, target_node)
         if not isinstance(ast_root, Program):
             return None
@@ -235,6 +244,7 @@ class ReplacementOperator:
         return Program(items=remaining_tops)
 
     def shrink_unsafe_block_stmts(self, ast_root, target_node):
+        print("OP: shrink_unsafe_block_stmts")
         if not isinstance(target_node, UnsafeBlock):
             return ast_root
 
