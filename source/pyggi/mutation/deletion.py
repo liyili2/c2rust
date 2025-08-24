@@ -15,6 +15,7 @@ class DeletionOperator:
         return self.new_ast
 
     def remove_ast_node(self, ast_root, target_node):
+        print("OP: remove_ast_node")
         parents = self.utils.get_all_parents(ast_root, target_node)
         print("target node is ", target_node, target_node.parent, parents, len(parents))
         new_ast = self.remove_node(ast_root, target_node, parents)
