@@ -123,7 +123,6 @@ class RustEngine(AbstractTreeEngine):
             _, target_node = target_node
         replacementOperator = ReplacementOperator(trees[file_name], target_node)
         trees[file_name] = replacementOperator.get_new_ast()
-        print(";;;program", program.__class__)
         program.trees[file_name] = trees[file_name] 
         return trees
 
@@ -136,7 +135,6 @@ class RustEngine(AbstractTreeEngine):
             _, target_node = target_node
         replacementOperator = ReplacementOperator(trees[file_name], target_node)
         trees[file_name] = replacementOperator.get_new_ast()
-        print(";;;program", program.__class__)
         program.trees[file_name] = trees[file_name] 
         return trees
 
@@ -147,7 +145,6 @@ class RustEngine(AbstractTreeEngine):
             _, target_node = target_node
         deletionOperator = DeletionOperator(trees[file_name], target_node)
         trees[file_name] = deletionOperator.get_new_ast()
-        print(";;;program", program.__class__)
         program.trees[file_name] = trees[file_name] 
         return trees
 

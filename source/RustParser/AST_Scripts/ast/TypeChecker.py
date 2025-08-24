@@ -124,8 +124,8 @@ class TypeChecker:
         for stmt in node.body.getChildren():
             self.visit(stmt)
 
-        if not isinstance(return_type, VoidType) and not self.body_has_terminating_return(node.body.getChildren()):
-            self.error(node, f"missing return in function '{fn_name}'")
+        # if not isinstance(return_type, VoidType) and not self.body_has_terminating_return(node.body.getChildren()):
+        #     self.error(node, f"missing return in function '{fn_name}'")
 
         self.current_function_return = saved_return
         self.env.exit_scope()

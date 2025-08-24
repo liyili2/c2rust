@@ -63,6 +63,12 @@ class MyRustProgram(TreeProgram):
             status = "CRASH"
             print("✖︎", e)
 
+        if mutated_ast:
+            if len(mutated_ast.items) == 0:
+                fitness = None
+            status = "CRASH"
+            print("✖︎ Invalid AST Generated")
+
         res = Result()
         res.status = status
         res.fitness = fitness
