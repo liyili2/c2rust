@@ -10,6 +10,9 @@ from RustParser.AST_Scripts.antlr import RustVisitor
 
 from collections import ChainMap
 from collections import deque
+
+from source.RustParser.AST_Scripts.ast.Expression import *
+
 # from types import NoneType
 
 NoneType = type(None)
@@ -135,10 +138,10 @@ class Simulator(RustVisitor):
 
         return None
 
-    def visitFor(self, ctx: XMLProgrammer.QXFor):
+    def visitFor(self, ctx: ForStmt):
         # This is the traditional for loop
-        x = ctx.ID()
-        v = self.visit(ctx.vexp())
+        x = ctx.var
+        v = self.visit(ctx.accept())
         tmp = self.st.get(x)
         i = 0
         while i < v:
@@ -151,16 +154,16 @@ class Simulator(RustVisitor):
     # def visitIdexp(self, ctx: XMLExpParser.IdexpContext):
     #     return
 
-    def visitString(self, ctx: XMLProgrammer.QXString):
+    def visitString(self, ctx: StrLiteral):
         return ctx.str()
 
-    def visitNum(self, ctx: XMLProgrammer.QXNum):
+    def visitNum(self, ctx: IntLiteral):
         return ctx.num()
 
-    def visitBool(self, ctx: XMLProgrammer.QXBool):
+    def visitBool(self, ctx: BoolLiteral):
         return ctx.bool()
 
-    def visitBinexp(self, ctx: XMLExpParser.BinexpContext):
+    def visitBinexp(self, ctx: BinaryExpr):
         operator = str(ctx.OP())
         # This will be very complicated.
         a = ctx.vexp().accept(self)
@@ -194,16 +197,16 @@ class Simulator(RustVisitor):
 
         return None
 
-    def visitVexp(self, ctx: XMLExpParser.VexpContext):
-        if ctx.idexp() is not None:
-            return self.visitIDExp(ctx)
-        return
+    # def visitVexp(self, ctx: XMLExpParser.VexpContext):
+    #     if ctx.idexp() is not None:
+    #         return self.visitIDExp(ctx)
+    #     return
 
-    def visitBoolexp(self, ctx: XMLExpParser.BoolexpContext):
-        if ctx.TrueLiteral() is not None:
-            return True
-        else:
-            return False
+    # def visitBoolexp(self, ctx: XMLExpParser.BoolexpContext):
+    #     if ctx.TrueLiteral() is not None:
+    #         return True
+    #     else:
+    #         return False
 
     def visit(self, ctx: ParserRuleContext):
         if ctx.getChildCount() > 0:
@@ -211,8 +214,8 @@ class Simulator(RustVisitor):
         else:
             return self.visitTerminal(ctx)
 
-    def visitIDExp(self, ctx: XMLProgrammer.QXIDExp):
-        return ctx.ID()
+    def visitIDExp(self, ctx: IdentifierExpr):
+        return ctx.accept()
 
     # Visit a parse tree produced by XMLExpParser#vexp.
     # def visitVexp(self, ctx: XMLExpParser.VexpContext):
