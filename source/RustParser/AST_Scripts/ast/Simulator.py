@@ -97,9 +97,9 @@ class Simulator(RustVisitor):
         if_result = ctx.accept(self) # .vexp()
         result = None
         if if_result:
-            result = ctx.blockstmt.accept(self)
+            result = ctx.then_branch
         else:
-            result = ctx.blockstmt.accept(self)
+            result = ctx.else_branch
 
 
         return result
@@ -142,57 +142,73 @@ class Simulator(RustVisitor):
         # This is the traditional for loop
         x = ctx.var
         v = self.visit(ctx.accept())
-        tmp = self.st.get(x)
+        tmp = self.stack.get(x)
         i = 0
         while i < v:
-            self.st.update({x: v})
+            self.stack.update({x: v})
             ctx.block().accept(self)
             i = i + 1
 
-        self.st.update({x: tmp})
+        self.stack.update({x: tmp})
 
     # def visitIdexp(self, ctx: XMLExpParser.IdexpContext):
     #     return
 
     def visitString(self, ctx: StrLiteral):
-        return ctx.str()
+        return ctx.value
 
     def visitNum(self, ctx: IntLiteral):
-        return ctx.num()
+        return ctx.value
 
     def visitBool(self, ctx: BoolLiteral):
-        return ctx.bool()
+        return ctx.value
+
+    def visitStuctLiteral(self, ctx: StructLiteral):
+
+        # Maybe store struct in the stack as a dict or array?
+        struct_fields = ctx.fields
+        struct_name = ctx.type_name
+
+        self.stack.update({struct_name: struct_fields})
+
+        return ctx.accept()
 
     def visitBinexp(self, ctx: BinaryExpr):
-        operator = str(ctx.OP())
+        operator = str(ctx.op)
         # This will be very complicated.
-        a = ctx.vexp().accept(self)
-        b = ctx.vexp().accept(self)
+        a = ctx.left
+        b = ctx.right
         # range is more complicated due to there being an = operator. I can forget about this case for now.
         # Now, I need to write out the cases for each operator.
 
-        if operator == 'Plus':
+        if operator == '+':
             return a + b
-        elif operator == 'Minus':
+        elif operator == '-':
             return a - b
-        elif operator == 'Times':
+        elif operator == '*':
             return a * b
-        elif operator == 'Div':
+        elif operator == '/':
             return a / b
-        elif operator == 'Mod':
+        elif operator == '%':
             return a % b
-        elif operator == 'Exp':
-            return pow(a, b)
-        elif operator == 'And':
+        # elif operator == 'Exp':
+        #     return pow(a, b)
+        elif operator == '&&':
             return a and b
-        elif operator == 'Or':
+        elif operator == '||':
             return a or b
         elif operator == '<':
             return a < b
+        elif operator == '>':
+            return a > b
+        elif operator == '<=':
+            return a <= b
+        elif operator == '>=':
+            return a >= b
         elif operator == '==':
             return a == b
-        elif operator == '..':
-            return range(a, b)
+        elif operator == '!=':
+            return a != b
             #return result
 
         return None
