@@ -519,20 +519,40 @@ class TypeChecker:
             self.visit(node.else_branch)
         return
 
-    def visit_ForStmt(self, node):
-        iterable_type = self.visit(node.iterable)
-        print("visit_ForStmt", iterable_type, iterable_type.__class__)
+    def check_iterable_type(self, node):
+        type_correctness = True
+        if isinstance(node, FieldAccessExpr):
+            print(f"iterative type is a FieldAccessExpr: {node.receiver.__class__}, {node.name.__class__}")
+        if isinstance(node, FieldAccessExpr) and isinstance(node.receiver, RangeExpression):
+            return type_correctness
 
-        if not isinstance(node.iterable, ArrayType) and not isinstance(node.iterable, RangeExpression) :
-            self.error(node, "wrong iterative type")
+        if isinstance(node, ArrayType) or isinstance(node, RangeExpression):
+            return type_correctness
+
+        # if isinstance(node, FunctionCallExpr):
+        #     print(f"iterative type is a function call: {node.func}")
+        #     if isinstance(node.func, IdentifierExpr):
+        #         print(f"000: {node.func.name}")
+
+        self.error(node, f"wrong iterative type: {node}")
+        return False
+
+    def visit_ForStmt(self, node):
+        # iterable_type = self.visit(node.iterable)
+        # print("visit_ForStmt", iterable_type, iterable_type.__class__)
+
+        if not self.check_iterable_type(node.iterable):
             return
 
         range_type = None
         if isinstance(node.iterable, ArrayType):
-            range_type = iterable_type.var_type
+            range_type = node.iterable.__class__
+        elif isinstance(node.iterable, FieldAccessExpr):
+            range_type = node.iterable.receiver.initial.__class__
         else:
             range_type = node.iterable.initial.__class__
-        self.env.define(node.var, {
+
+        self.env.declare(node.var, {
             "type": range_type,
             "owned": True, "borrowed": False})
 

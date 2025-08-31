@@ -57,9 +57,10 @@ impl Node {
 }
 
 static mut listid: &str = "c2rust";
+
 pub struct List {
-    pub s: *mut *mut String, // keep your pointer type
-    pub n: i32,             // changed from libc::c_int
+    pub s: *mut *mut String, 
+    pub n: i32,             
 }
 
 fn main() {
