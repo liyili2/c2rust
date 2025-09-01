@@ -22,8 +22,8 @@ class FunctionDef(TopLevel):
         self.unsafe = unsafe
 
     def accept(self, visitor):
-        method_Identifier = f'visit_{self.__class__.__name__}'
-        return getattr(visitor, method_Identifier, visitor.generic_visit)(self)
+        #method_Identifier = f'visit_{self.__class__.__name__}'
+        return visitor.visit(self)
     
     def getChildren(self):
         return self.body
@@ -41,8 +41,8 @@ class StructDef(TopLevel):
         self.fields = fields
 
     def accept(self, visitor):
-        method_name = f'visit_{self.__class__.__name__}'
-        return getattr(visitor, method_name, visitor.generic_visit)(self)
+        #method_name = f'visit_{self.__class__.__name__}'
+        return visitor.visit(self) #getattr(visitor, method_name, visitor.generic_visit)(self)
     
     def getChildren(self):
         return self.fields

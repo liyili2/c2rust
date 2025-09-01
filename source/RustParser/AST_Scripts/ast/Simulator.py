@@ -20,7 +20,7 @@ NoneType = type(None)
 # I need to add Box maybe?
 # I also may need to add arrays
 
-class Simulator(TypeChecker):
+class Simulator(ProgramVisitor):
     # x, y, z, env : ChainMap{ x: n, y : m, z : v} , n m v are nat numbers 100, 100, 100, eg {x : 128}
     # st state map, {x : v1, y : v2 , z : v3}, eg {x : v1}: v1,
     # st {x : v1} --> Coq_nval case: v1 is a ChainMap of Coq_nval
@@ -32,6 +32,7 @@ class Simulator(TypeChecker):
         # need st --> state we are dealing with
         self.heap = memory
         self.stack = stack
+        self.funMap = dict()
         # self.heap = {}
         # self.stack_bools = deque()
 
@@ -93,7 +94,26 @@ class Simulator(TypeChecker):
     #     print(ctx.str())
     #     return
 
-    def visit_IfStmt(self, ctx: IfStmt):
+    def visitFunctionDef(self, node:FunctionDef):
+        self.funMap.update({node.identifier : node})
+        return None
+
+    def visitCallStmt(self, node: CallStmt):
+        newNode = self.funMap.get(node.callee)
+
+        newStack = self.stack.deepCopy()
+        for i in len(newNode.params):
+            arVar = newNode.params[i]
+            value = node.args[i].accept(self)
+            newStack.update({arVar : value})
+        oldStack = self.stack
+        self.stack = newStack
+        result = newNode.body.accept(self)
+        self.stack = oldStack
+        return result
+
+
+    def visitIfStmt(self, ctx: IfStmt):
         if_result = ctx.accept(self) # .vexp()
         result = None
         if if_result:
