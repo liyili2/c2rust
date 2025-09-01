@@ -6,7 +6,7 @@ from collections import deque
 from ast import *
 from Transformer import Transformer
 from Statement import *
-from RustParser.AST_Scripts.antlr import RustVisitor
+from TypeChecker import TypeChecker
 
 from collections import ChainMap
 from collections import deque
@@ -20,7 +20,7 @@ NoneType = type(None)
 # I need to add Box maybe?
 # I also may need to add arrays
 
-class Simulator(RustVisitor):
+class Simulator(TypeChecker):
     # x, y, z, env : ChainMap{ x: n, y : m, z : v} , n m v are nat numbers 100, 100, 100, eg {x : 128}
     # st state map, {x : v1, y : v2 , z : v3}, eg {x : v1}: v1,
     # st {x : v1} --> Coq_nval case: v1 is a ChainMap of Coq_nval
@@ -75,7 +75,7 @@ class Simulator(RustVisitor):
 
     # Let statement should assign something?
     # For now, implement some of the expressions
-    def visitLet(self, ctx: LetStmt):
+    def visit_LetStmt(self, ctx: LetStmt):
         x = ctx.var_defs # make idexp return identifier
         y = ctx.values # exp will return the value
         res = ctx.accept()
@@ -93,7 +93,7 @@ class Simulator(RustVisitor):
     #     print(ctx.str())
     #     return
 
-    def visitIfStmt(self, ctx: IfStmt):
+    def visit_IfStmt(self, ctx: IfStmt):
         if_result = ctx.accept(self) # .vexp()
         result = None
         if if_result:
@@ -104,7 +104,7 @@ class Simulator(RustVisitor):
 
         return result
 
-    def visitBreak(self, ctx: BreakStmt):
+    def visit_Break(self, ctx: BreakStmt):
         # This will be more complicated due to the different types of loops
         self.stack_bools.pop()
         self.stack_bools.append(False)
@@ -113,13 +113,13 @@ class Simulator(RustVisitor):
             return ctx.accept(self) # .vexp()
         return None # maybe this is better to return?
 
-    def visitReturn(self, ctx: ReturnStmt):
+    def visit_ReturnStmt(self, ctx: ReturnStmt):
         if ctx.accept(self) is None:
             return
         else:
             return ctx.value
 
-    def visitLoop(self, ctx: LoopStmt):
+    def visit_LoopStmt(self, ctx: LoopStmt):
         # This is the loop keyword. For this type of loop, break statement can return a value
         # A loop statement contains a block statement, and if a break appears in the immediate block statement,
         # this loop will end?
@@ -134,11 +134,11 @@ class Simulator(RustVisitor):
             return block_result # this means break statement was called and it is returned back?
         else:
             # call this function again?
-            self.visitLoopstmt(ctx) # is this correct?
+            self.visit_LoopStmt(ctx) # is this correct?
 
         return None
 
-    def visitFor(self, ctx: ForStmt):
+    def visit_ForStmt(self, ctx: ForStmt):
         # This is the traditional for loop
         x = ctx.var
         v = self.visit(ctx.accept())
@@ -154,16 +154,16 @@ class Simulator(RustVisitor):
     # def visitIdexp(self, ctx: XMLExpParser.IdexpContext):
     #     return
 
-    def visitString(self, ctx: StrLiteral):
+    def visit_StrLiteral(self, ctx: StrLiteral):
         return ctx.value
 
-    def visitNum(self, ctx: IntLiteral):
+    def visit_IntLiteral(self, ctx: IntLiteral):
         return ctx.value
 
-    def visitBool(self, ctx: BoolLiteral):
+    def visit_BoolLiteral(self, ctx: BoolLiteral):
         return ctx.value
 
-    def visitStuctLiteral(self, ctx: StructLiteral):
+    def visit_StructLiteral(self, ctx: StructLiteral):
 
         # Maybe store struct in the stack as a dict or array?
         struct_fields = ctx.fields
@@ -173,7 +173,7 @@ class Simulator(RustVisitor):
 
         return ctx.accept()
 
-    def visitBinexp(self, ctx: BinaryExpr):
+    def visit_BinaryExpr(self, ctx: BinaryExpr):
         operator = str(ctx.op)
         # This will be very complicated.
         a = ctx.left
@@ -224,13 +224,13 @@ class Simulator(RustVisitor):
     #     else:
     #         return False
 
-    def visit(self, ctx: ParserRuleContext):
-        if ctx.getChildCount() > 0:
-            return self.visitChildren(ctx)
-        else:
-            return self.visitTerminal(ctx)
+    # def visit(self, ctx: ParserRuleContext):
+    #     if ctx.getChildCount() > 0:
+    #         return self.visitChildren(ctx)
+    #     else:
+    #         return self.visitTerminal(ctx)
 
-    def visitIDExp(self, ctx: IdentifierExpr):
+    def visit_IdentifierExpr(self, ctx: IdentifierExpr):
         return ctx.accept()
 
     # Visit a parse tree produced by XMLExpParser#vexp.
