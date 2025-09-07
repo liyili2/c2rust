@@ -521,10 +521,10 @@ class TypeChecker:
 
     def check_iterable_type(self, node):
         type_correctness = True
-        if isinstance(node, FieldAccessExpr):
-            print(f"iterative type is a FieldAccessExpr: {node.receiver.__class__}, {node.name.__class__}")
-        if isinstance(node, FieldAccessExpr) and isinstance(node.receiver, RangeExpression):
-            return type_correctness
+        # if isinstance(node, FieldAccessExpr):
+        #     print(f"iterative type is a FieldAccessExpr: {node.receiver.__class__}, {node.name.__class__}")
+        # if isinstance(node, FieldAccessExpr) and isinstance(node.receiver, RangeExpression):
+        #     return type_correctness
 
         if isinstance(node, ArrayType) or isinstance(node, RangeExpression):
             return type_correctness

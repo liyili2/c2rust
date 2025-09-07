@@ -104,7 +104,7 @@ class RustEngine(AbstractTreeEngine):
             results.append(node)
 
         if isinstance(node, Statement) or isinstance(node, UnsafeBlock):
-            print("cllected_node_", node.__class__)
+            # print("cllected_node_", node.__class__)
             results.append(node)
 
         if isinstance(node, list):

@@ -8,9 +8,6 @@ from RustParser.AST_Scripts.antlr.RustLexer import RustLexer
 from RustParser.AST_Scripts.antlr.RustParser import RustParser
 from RustParser.AST_Scripts.ast.Transformer import Transformer, setParents
 from RustParser.AST_Scripts.ast.TypeChecker import TypeChecker
-from RustParser.AST_Scripts.ast.Program import Program
-from RustParser.AST_Scripts.ast.TopLevel import TopLevel
-from RustParser.AST_Scripts.ast.ASTNode import ASTNode
 
 def pretty_print_ast(node, indent=0, visited=None):
     if visited is None:
@@ -43,19 +40,18 @@ def pretty_print_ast(node, indent=0, visited=None):
 
     return '\n'.join(lines)
 
-file_path = os.path.join(os.path.dirname(__file__), "nfa.rs")
+file_path = os.path.join(os.path.dirname(__file__), "bst.rs")
 with open(file_path, "r", encoding="utf-8") as f:
     rust_code = f.read()
 lexer = RustLexer(InputStream(rust_code))
 tokens = CommonTokenStream(lexer)
 parser = RustParser(tokens)
 tree = parser.program()
-# print(pretty_print_ast(tree))
 builder = Transformer()
 custom_ast = builder.visit(tree)
 setParents(custom_ast)
-checker = TypeChecker()
-checker.visit(custom_ast)
-print("Type Error Count : ", checker.error_count)
-# print("Pretty AST:")
-# print(pretty_print_ast(custom_ast))
+print("Pretty AST:")
+print(pretty_print_ast(custom_ast))
+# checker = TypeChecker()
+# checker.visit(custom_ast)
+# print("Type Error Count : ", checker.error_count)
