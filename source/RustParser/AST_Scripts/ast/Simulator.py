@@ -136,6 +136,10 @@ class Simulator(ProgramVisitor):
 
         self.stack.update({x: tmp})
 
+    def visitWhileStmt(self, node: WhileStmt):
+
+        return
+
     # def visitIdexp(self, ctx: XMLExpParser.IdexpContext):
     #     return
 
