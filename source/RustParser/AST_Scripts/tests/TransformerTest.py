@@ -12,6 +12,7 @@ from RustParser.AST_Scripts.ast.Program import Program
 from RustParser.AST_Scripts.ast.TopLevel import TopLevel
 from RustParser.AST_Scripts.ast.ASTNode import ASTNode
 
+
 def pretty_print_ast(node, indent=0, visited=None):
     if visited is None:
         visited = set()
