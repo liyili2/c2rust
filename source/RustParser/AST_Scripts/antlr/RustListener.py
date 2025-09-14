@@ -521,15 +521,6 @@ class RustListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by RustParser#typeWrapper.
-    def enterTypeWrapper(self, ctx:RustParser.TypeWrapperContext):
-        pass
-
-    # Exit a parse tree produced by RustParser#typeWrapper.
-    def exitTypeWrapper(self, ctx:RustParser.TypeWrapperContext):
-        pass
-
-
     # Enter a parse tree produced by RustParser#safeWrapper.
     def enterSafeWrapper(self, ctx:RustParser.SafeWrapperContext):
         pass

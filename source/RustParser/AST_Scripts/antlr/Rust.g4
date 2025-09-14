@@ -81,7 +81,7 @@ statement
     | structLiteral
     | structDef
     | staticVarDecl
-    | typeWrapper
+    | safeWrapper
     | assignStmt
     | compoundAssignment
     | forStmt
@@ -96,7 +96,7 @@ statement
     | matchStmt
     ;
 
-conditionalAssignmentStmt: 'let'? (typeWrapper | expression) '=' expression 'else' block ';';
+conditionalAssignmentStmt: 'let'? (safeWrapper | expression) '=' expression 'else' block ';';
 callStmt: expression ('.' expression) callExpressionPostFix ';' | expression callExpressionPostFix ';' ;
 letStmt: 'let' varDef '=' expression ';' | 'let' varDef initBlock | 'let' '(' (varDef ','?)* ')' '=' '(' (expression ','?)* ')' ';';
 varDef: 'ref'? 'mut'? Identifier (':' typeExpr)?;
@@ -116,7 +116,6 @@ exprStmt: primaryExpression ';';
 returnStmt: 'return' (expression)? ';' | Identifier;
 loopStmt: 'loop' block;
 
-typeWrapper: 'Some' '(' expression ')' ;
 safeWrapper: 'Some' '(' expression ')' | 'Box' DOUBLE_COLON Identifier '(' expression ')' ;
 
 expression
