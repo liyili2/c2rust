@@ -653,25 +653,11 @@ class Transformer(RustVisitor):
             postfix = self.visitPrimaryExpression(ctx.fieldAccessPostFix().primaryExpression())
             return FieldAccessExpr(base, postfix)
 
-        elif ctx.booleanOps():
-            op = ctx.booleanOps().getText()
-            left = self.visit(ctx.expression(0))
-            right = self.visit(ctx.expression(1))
-            # print("boolean op is ", ctx.booleanOps().getText(), left, right)
-            return BinaryExpr(op=op, left=left, right=right)
-
         elif ctx.binaryOps():
             op = ctx.binaryOps().getText()
             left = self.visit(ctx.expression(0))
             right = self.visit(ctx.expression(1))
             # print("binary op is ", ctx.binaryOps().getText(), left, right)
-            return BinaryExpr(op=op, left=left, right=right)
-
-        elif ctx.conditionalOps():
-            left = self.visit(ctx.expression(0))
-            op = ctx.conditionalOps().getText()
-            right = self.visit(ctx.expression(1))
-            # print("conditional right is ", op, left, right)
             return BinaryExpr(op=op, left=left, right=right)
 
         elif ctx.rangeSymbol():

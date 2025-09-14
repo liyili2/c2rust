@@ -294,23 +294,8 @@ class RustVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by RustParser#boxWrappwer.
-    def visitBoxWrappwer(self, ctx:RustParser.BoxWrappwerContext):
-        return self.visitChildren(ctx)
-
-
     # Visit a parse tree produced by RustParser#typeWrapper.
     def visitTypeWrapper(self, ctx:RustParser.TypeWrapperContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by RustParser#boxWrapperPrefix.
-    def visitBoxWrapperPrefix(self, ctx:RustParser.BoxWrapperPrefixContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by RustParser#typeWrapperPrefix.
-    def visitTypeWrapperPrefix(self, ctx:RustParser.TypeWrapperPrefixContext):
         return self.visitChildren(ctx)
 
 
@@ -336,11 +321,6 @@ class RustVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by RustParser#qualifiedExpression.
     def visitQualifiedExpression(self, ctx:RustParser.QualifiedExpressionContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by RustParser#typeAccessPostfix.
-    def visitTypeAccessPostfix(self, ctx:RustParser.TypeAccessPostfixContext):
         return self.visitChildren(ctx)
 
 
@@ -384,18 +364,13 @@ class RustVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by RustParser#conditionalOps.
-    def visitConditionalOps(self, ctx:RustParser.ConditionalOpsContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by RustParser#booleanOps.
-    def visitBooleanOps(self, ctx:RustParser.BooleanOpsContext):
-        return self.visitChildren(ctx)
-
-
     # Visit a parse tree produced by RustParser#binaryOps.
     def visitBinaryOps(self, ctx:RustParser.BinaryOpsContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#binaryExpression.
+    def visitBinaryExpression(self, ctx:RustParser.BinaryExpressionContext):
         return self.visitChildren(ctx)
 
 
