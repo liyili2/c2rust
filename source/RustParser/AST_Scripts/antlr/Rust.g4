@@ -116,10 +116,7 @@ exprStmt: primaryExpression ';';
 returnStmt: 'return' (expression)? ';' | Identifier;
 loopStmt: 'loop' block;
 
-boxWrappwer: 'Box' typeExpr? '(' expression ')';
 typeWrapper: 'Some' '(' expression ')' ;
-boxWrapperPrefix: 'Box' typeExpr? ;
-typeWrapperPrefix: 'Some' ;
 safeWrapper: 'Some' '(' expression ')' | 'Box' DOUBLE_COLON Identifier '(' expression ')' ;
 
 expression
@@ -137,11 +134,9 @@ expression
     | borrowExpression
     | unsafeExpression
     | expression callExpressionPostFix
-    | expression typeAccessPostfix
+    | expression typeExpr
     | basicTypeCastExpr
     | expression rangeSymbol expression
-    | expression booleanOps expression
-    | expression conditionalOps expression
     | dereferenceExpression
     | expression compoundOps expression
     | expressionBlock
@@ -154,7 +149,6 @@ expression
 basicTypeCastExpr: typeExpr typePath;
 unsafeExpression: 'unsafe' '{' expression '}' ;
 qualifiedExpression: '<' expression '>';
-typeAccessPostfix: typeExpr;
 structDefInit: Identifier '=' '{' expression '}' ';' ;
 arrayDeclaration: Identifier '!'? '[' Number ';' expression ']' ;
 typePathExpression: (Identifier DOUBLE_COLON)+ ;
@@ -163,9 +157,9 @@ pattern: 'ref'? 'mut'? Identifier | Identifier '(' 'ref'? 'mut'? Identifier ')' 
 castExpressionPostFix: 'as' typeExpr ('as' typeExpr)*;
 compoundOps: '+=' | '-=' | '*=' | '/=' | '%=' | '&=' | '|=' | '^=';
 rangeSymbol: '..';
-conditionalOps: '==' | '!=' | '>' | '<' | '||' | '&&';
-booleanOps: '>>' | '&' | '>=' | '<=';
-binaryOps: '*' | '/' | '%' | '+' | '-';
+
+binaryOps: '*' | '/' | '%' | '+' | '-' | '==' | '!=' | '>' | '<' | '||' | '&&' | '>>' | '&' | '>=' | '<=';
+binaryExpression: expression binaryOps expression ;
 structFieldDec: Identifier '{' structLiteralField (',' structLiteralField)* ','? '}' ;
 mutableExpression: 'mut';
 unaryOpes: '!' | '+' | '-';
