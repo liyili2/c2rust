@@ -1,7 +1,7 @@
 
 from RustParser.AST_Scripts.ast.ASTNode import ASTNode
-from RustParser.AST_Scripts.ast.Expression import ArrayDeclaration, ArrayLiteral, BasicTypeCastExpr, BinaryExpr, BoolLiteral, BorrowExpr, BoxWrapperExpr, CastExpr, CharLiteral, CharLiteralExpr, DereferenceExpr, FieldAccessExpr, FunctionCallExpr, IdentifierExpr, IndexExpr, IntLiteral, MethodCallExpr, MutableExpr, ParenExpr, Pattern, PatternExpr, QualifiedExpression, RangeExpression, RepeatArrayLiteral, SafeWrapper, StrLiteral, StructDefInit, StructLiteralExpr, StructLiteralField, TypeAccessExpr, TypePathExpression, TypePathFullExpr, TypeWrapperExpr, UnaryExpr, UnsafeExpression
-from RustParser.AST_Scripts.ast.Statement import AssignStmt, BreakStmt, CallStmt, CompoundAssignment, ConditionalAssignmentStmt, ContinueStmt, ExpressionStmt, ForStmt, IfStmt, LetStmt, LoopStmt, MatchArm, MatchPattern, MatchStmt, ReturnStmt, StructLiteral, TypeWrapper, UnsafeBlock, WhileStmt
+from RustParser.AST_Scripts.ast.Expression import ArrayDeclaration, ArrayLiteral, BasicTypeCastExpr, BinaryExpr, BoolLiteral, BorrowExpr, BoxWrapperExpr, CastExpr, CharLiteral, CharLiteralExpr, DereferenceExpr, FieldAccessExpr, FunctionCallExpr, IdentifierExpr, IndexExpr, IntLiteral, MethodCallExpr, MutableExpr, ParenExpr, Pattern, PatternExpr, QualifiedExpression, RangeExpression, RepeatArrayLiteral, SafeWrapper, StrLiteral, StructDefInit, StructLiteralExpr, StructLiteralField, TypeAccessExpr, TypePathExpression, TypePathFullExpr, UnaryExpr, UnsafeExpression
+from RustParser.AST_Scripts.ast.Statement import AssignStmt, BreakStmt, CallStmt, CompoundAssignment, ConditionalAssignmentStmt, ContinueStmt, ExpressionStmt, ForStmt, IfStmt, LetStmt, LoopStmt, MatchArm, MatchPattern, MatchStmt, ReturnStmt, StructLiteral, UnsafeBlock, WhileStmt
 from RustParser.AST_Scripts.antlr.RustVisitor import RustVisitor
 from RustParser.AST_Scripts.ast.TopLevel import StaticVarDecl, ExternBlock, ExternFunctionDecl, ExternStaticVarDecl, ExternTypeDecl, FunctionDef, InterfaceDef, StructDef, Attribute, StructField, TopLevel, TopLevelVarDef, TypeAliasDecl, UseDecl, VarDefField
 from RustParser.AST_Scripts.ast.Program import Program
@@ -306,41 +306,41 @@ class Transformer(RustVisitor):
         value = self.visit(ctx.expression()) if ctx.expression() else None
         return StructLiteralField(field_name, value)
 
-    def visitAttributes(self, ctx):
-        return [self.visit(inner) for inner in ctx.innerAttribute()]
+    # def visitAttributes(self, ctx):
+    #     return [self.visit(inner) for inner in ctx.innerAttribute()]
 
-    def visitInnerAttribute(self, ctx):
-        return self.visit(ctx.attribute())
+    # def visitInnerAttribute(self, ctx):
+    #     return self.visit(ctx.attribute())
 
-    def visitAttribute(self, ctx):
-        name = ctx.Identifier().getText()
-        if ctx.attrValue():
-            value = self.visit(ctx.attrValue())
-            return Attribute(name=name, args=value)
-        elif ctx.attrArgs():
-            args = self.visit(ctx.attrArgs())
-            return Attribute(name=name, args=args)
-        else:
-            return Attribute(name=name)
+    # def visitAttribute(self, ctx):
+    #     name = ctx.Identifier().getText()
+    #     if ctx.attrValue():
+    #         value = self.visit(ctx.attrValue())
+    #         return Attribute(name=name, args=value)
+    #     elif ctx.attrArgs():
+    #         args = self.visit(ctx.attrArgs())
+    #         return Attribute(name=name, args=args)
+    #     else:
+    #         return Attribute(name=name)
 
-    def visitAttrArgs(self, ctx):
-        return [self.visit(arg) for arg in ctx.attrArg()]
+    # def visitAttrArgs(self, ctx):
+    #     return [self.visit(arg) for arg in ctx.attrArg()]
 
-    def visitAttrArg(self, ctx):
-        name = ctx.Identifier().getText()
-        if ctx.attrValue():
-            value = self.visit(ctx.attrValue())
-            return (name, value)
-        else:
-            return (name, None)
+    # def visitAttrArg(self, ctx):
+    #     name = ctx.Identifier().getText()
+    #     if ctx.attrValue():
+    #         value = self.visit(ctx.attrValue())
+    #         return (name, value)
+    #     else:
+    #         return (name, None)
 
-    def visitAttrValue(self, ctx):
-        if ctx.STRING_LITERAL():
-            return ctx.STRING_LITERAL().getText()
-        elif ctx.Number():
-            return int(ctx.Number().getText())  # or float, depending on your grammar
-        else:
-            return ctx.Identifier().getText()
+    # def visitAttrValue(self, ctx):
+    #     if ctx.STRING_LITERAL():
+    #         return ctx.STRING_LITERAL().getText()
+    #     elif ctx.Number():
+    #         return int(ctx.Number().getText())  # or float, depending on your grammar
+    #     else:
+    #         return ctx.Identifier().getText()
 
     def visitExternBlock(self, ctx):
         abi = ctx.STRING_LITERAL().getText().strip('"')
@@ -566,8 +566,6 @@ class Transformer(RustVisitor):
             return self.visit(ctx.exprStmt())
         elif ctx.structDef():
             return self.visit(ctx.structDef())
-        elif ctx.typeWrapper():
-            return self.visit(ctx.typeWrapper())
         elif ctx.conditionalAssignmentStmt():
             return self.visit(ctx.conditionalAssignmentStmt())
         elif ctx.unsafeBlcok():
@@ -579,17 +577,13 @@ class Transformer(RustVisitor):
 
     def visitConditionalAssignmentStmt(self, ctx):
         cond = self.visit(ctx.block())
-        if ctx.typeWrapper():
-            left = self.visit(ctx.typeWrapper())
+        if ctx.safeWrapper():
+            left = self.visit(ctx.safeWrapper())
             right = self.visit(ctx.expression(0))
         else:
             left = self.visit(ctx.expression(0))
             right = self.visit(ctx.expression(1))
         return ConditionalAssignmentStmt(cond=cond, assignment=AssignStmt(target=left, value=right))
-
-    def visitTypeWrapper(self, ctx):
-        expr = self.visit(ctx.expression())
-        return TypeWrapper(expr=expr)
 
     def visitLoopStmt(self, ctx):
         block = self.visit(ctx.block())
@@ -653,25 +647,11 @@ class Transformer(RustVisitor):
             postfix = self.visitPrimaryExpression(ctx.fieldAccessPostFix().primaryExpression())
             return FieldAccessExpr(base, postfix)
 
-        elif ctx.booleanOps():
-            op = ctx.booleanOps().getText()
-            left = self.visit(ctx.expression(0))
-            right = self.visit(ctx.expression(1))
-            # print("boolean op is ", ctx.booleanOps().getText(), left, right)
-            return BinaryExpr(op=op, left=left, right=right)
-
         elif ctx.binaryOps():
             op = ctx.binaryOps().getText()
             left = self.visit(ctx.expression(0))
             right = self.visit(ctx.expression(1))
             # print("binary op is ", ctx.binaryOps().getText(), left, right)
-            return BinaryExpr(op=op, left=left, right=right)
-
-        elif ctx.conditionalOps():
-            left = self.visit(ctx.expression(0))
-            op = ctx.conditionalOps().getText()
-            right = self.visit(ctx.expression(1))
-            # print("conditional right is ", op, left, right)
             return BinaryExpr(op=op, left=left, right=right)
 
         elif ctx.rangeSymbol():
@@ -737,9 +717,9 @@ class Transformer(RustVisitor):
         elif ctx.qualifiedExpression():
             return self.visit(ctx.qualifiedExpression())
 
-        elif ctx.typeAccessPostfix():
+        elif ctx.typeExpr():
             expr = self.visit(ctx.expression(0))
-            typeAccess = self.visit(ctx.typeAccessPostfix().typeExpr())
+            typeAccess = self.visit(ctx.typeExpr())
             return TypeAccessExpr(expr=expr, typeExpr=typeAccess)
 
         elif ctx.unsafeExpression():
@@ -753,20 +733,6 @@ class Transformer(RustVisitor):
 
         elif ctx.safeWrapper():
             return self.visit(ctx.safeWrapper())
-        
-        # elif ctx.safeNonNullWrapper():
-        #     return self.visit(ctx.safeNonNullWrapper())
-
-        # elif ctx.typeWrapperPrefix():
-        #     expr = self.visit(ctx.expression())
-        #     return TypeWrapperExpr(expr=expr)
-
-        # elif ctx.boxWrapperPrefix():
-        #     expr = self.visit(ctx.expression())
-        #     path = None
-        #     if ctx.typeExpr():
-        #         path = self.visit(ctx.typeExpr())
-        #     return BoxWrapperExpr(expr=expr, path=path)
 
         raise Exception(f"Unrecognized expression structure: {ctx.getText()}")
 
