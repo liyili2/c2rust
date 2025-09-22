@@ -146,6 +146,7 @@ expression
     ;
 
 basicTypeCastExpr: typeExpr typePath;
+unsafeExpression: 'unsafe' '{' expression '}' ;
 qualifiedExpression: '<' expression '>';
 structDefInit: Identifier '=' '{' expression '}' ';' ;
 arrayDeclaration: Identifier '!'? '[' Number ';' expression ']' ;
