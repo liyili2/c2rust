@@ -206,15 +206,6 @@ class FieldAccessExpr(Expression):
     def accept(self, visitor):
         return visitor.visit_FieldAccessExpr(self)
 
-class IndexExpr(Expression):
-    def __init__(self, target, index):
-        super().__init__()
-        self.target = target
-        self.index = index
-
-    def accept(self, visitor):
-        return visitor.visitIndexExpr(self)
-
 class ParenExpr(Expression):
     def __init__(self, expr):
         super().__init__()
