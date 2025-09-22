@@ -119,7 +119,7 @@ loopStmt: 'loop' block;
 safeWrapper: 'Some' '(' expression ')' | 'Box' DOUBLE_COLON Identifier '(' expression ')' ;
 
 expression
-    : mutableExpression expression
+    : MUT expression
     | safeWrapper
     | primaryExpression
     | expression binaryOps expression
@@ -160,7 +160,7 @@ rangeSymbol: '..';
 binaryOps: '*' | '/' | '%' | '+' | '-' | '==' | '!=' | '>' | '<' | '||' | '&&' | '>>' | '&' | '>=' | '<=';
 binaryExpression: expression binaryOps expression ;
 structFieldDec: Identifier '{' structLiteralField (',' structLiteralField)* ','? '}' ;
-mutableExpression: 'mut';
+MUT: 'mut';
 unaryOpes: '!' | '+' | '-';
 parenExpression: '(' expression ')';
 dereferenceExpression: '*' expression;
