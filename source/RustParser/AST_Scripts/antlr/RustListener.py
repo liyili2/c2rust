@@ -665,15 +665,6 @@ class RustListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by RustParser#mutableExpression.
-    def enterMutableExpression(self, ctx:RustParser.MutableExpressionContext):
-        pass
-
-    # Exit a parse tree produced by RustParser#mutableExpression.
-    def exitMutableExpression(self, ctx:RustParser.MutableExpressionContext):
-        pass
-
-
     # Enter a parse tree produced by RustParser#unaryOpes.
     def enterUnaryOpes(self, ctx:RustParser.UnaryOpesContext):
         pass

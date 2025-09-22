@@ -374,11 +374,6 @@ class RustVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by RustParser#mutableExpression.
-    def visitMutableExpression(self, ctx:RustParser.MutableExpressionContext):
-        return self.visitChildren(ctx)
-
-
     # Visit a parse tree produced by RustParser#unaryOpes.
     def visitUnaryOpes(self, ctx:RustParser.UnaryOpesContext):
         return self.visitChildren(ctx)

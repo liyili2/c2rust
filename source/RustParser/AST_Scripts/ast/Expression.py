@@ -5,25 +5,16 @@ from RustParser.AST_Scripts.ast.Type import BoolType, IntType, StringType, Float
 from RustParser.AST_Scripts.ast.common import DeclarationInfo
 
 class Expression(ASTNode):
-    def __init__(self, type=None):
+    def __init__(self, expr=None, type=None, isMutable=False):
         super().__init__()
         self.type = type
+        self.isMutable = isMutable
+        self.expr = expr
 
     def accept(self, visitor):
         #method_name = f'visit_{self.__class__.__name__}'
         return visitor.visit(self)
         #return getattr(visitor, method_name, visitor.generic_visit)(self)
-
-class MutableExpr(Expression):
-    def __init__(self, expr):
-        super().__init__()
-        self.expr = expr
-
-    def accept(self, visitor):
-        return visitor.visitMutableExpr(self)
-
-    def __repr__(self):
-        return f"MutableExpr(expr={self.expr})"
 
 class QualifiedExpression(Expression):
     def __init__(self, inner_expr):

@@ -4,7 +4,7 @@ from RustParser.AST_Scripts.ast.Program import Program
 from RustParser.AST_Scripts.ast.Block import Block
 from RustParser.AST_Scripts.ast.Type import SafeNonNullWrapper, ArrayType, BoolType, CharType, FloatType, IntType, PointerType, RefType, StringType, StructType, VoidType
 from RustParser.AST_Scripts.ast.TypeEnv import TypeEnv
-from RustParser.AST_Scripts.ast.Expression import BinaryExpr, BorrowExpr, CastExpr, DereferenceExpr, FieldAccessExpr, FunctionCallExpr, IdentifierExpr, IntLiteral, LiteralExpr, MutableExpr, RangeExpression, UnsafeExpression
+from RustParser.AST_Scripts.ast.Expression import BinaryExpr, BorrowExpr, CastExpr, DereferenceExpr, Expression, FieldAccessExpr, FunctionCallExpr, IdentifierExpr, IntLiteral, LiteralExpr, RangeExpression, UnsafeExpression
 from RustParser.AST_Scripts.ast.Statement import IfStmt, ReturnStmt, Statement, WhileStmt
 from RustParser.AST_Scripts.ast.TopLevel import TopLevel
 
@@ -449,7 +449,7 @@ class TypeChecker:
         elif isinstance(expr, FieldAccessExpr):
             receiver = expr.receiver
             return self.get_expr_identifier(receiver)
-        elif isinstance(expr, MutableExpr):
+        elif isinstance(expr, Expression):
             return self.get_expr_identifier(expr.expr)
 
     def visit_Assignment(self, node):
@@ -689,23 +689,6 @@ class TypeChecker:
     def visit_QualifiedExpression(self, node):
         inner_type = self.visit(node.inner_expr)
         return inner_type
-
-    def visit_MutableExpr(self, node):
-        inner_expr = self.visit(node.expr)
-        if not isinstance(node.expr, IdentifierExpr):
-            self.error(f"Only variables (identifiers) can be marked mutable. Got: {type(node.expr).__name__}")
-            return None
-
-        var_name = node.expr.name
-        if not self.env.is_declared(var_name):
-            self.error(f"Variable '{var_name}' used before declaration.")
-            return None
-
-        var_type = self.env.get_type(var_name)
-        self.env.set_mutability(var_name, True)
-        self.symbol_table[var_name]['mutable'] = True
-
-        return var_type
 
     def visit_BorrowExpr(self, node):
         info = self.env.lookup(self.get_expr_identifier(node.expr))
