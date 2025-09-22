@@ -52,9 +52,6 @@ class TypeChecker:
     def visit_Attribute(self, node):
         pass
 
-    def visit_TypeFullPathExpression(self, node):
-        pass
-
     def visit_safeWrapper(self, node):
         pass
 
@@ -810,6 +807,8 @@ class TypeChecker:
 
     def visit_TypePathExpression(self, node):
         # print("visit_TypePathExpression", node.last_type.__class__, node.last_type)
+        if isinstance(node.last_type, IdentifierExpr):
+            return node.last_type
         if str.__contains__(node.last_type, "int"):
             return IntType()
         if str.__contains__(node.last_type, "str"):
