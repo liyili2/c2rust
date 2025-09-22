@@ -86,7 +86,7 @@ class CastExpr(Expression):
     def accept(self, visitor):
         return visitor.visit_CastExpr(self)
 
-class TypeWrapperExpr(Expression):
+class TypeWrapper(Expression):
     def __init__(self, expr):
         super().__init__(type)
         self.expr = expr

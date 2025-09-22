@@ -444,11 +444,13 @@ class TypeChecker:
             return self.get_expr_identifier(expr.expr)
 
     def visit_Assignment(self, node):
-        # print("visit_Assignment1" , self.get_expr_identifier(node.target),self.env.lookup(self.get_expr_identifier(node.target)), self.get_expr_identifier(node.value), self.env.lookup(self.get_expr_identifier(node.value)))
         try:
             if self.get_expr_identifier(node.target) is not None:
                 info = self.env.lookup(self.get_expr_identifier(node.target))
-                # print("visit_Assignment2", info, node.target, node.value)
+                if info is None:
+                    return
+            else:
+                return
         except Exception:
             # self.error(node, f"undefined variable {self.get_expr_identifier(node.target)} in assignment {self.get_expr_identifier(node.target)} = {self.get_expr_identifier(node.value)}")
             return
@@ -800,8 +802,11 @@ class TypeChecker:
         for arm in node.arms:
             self.visit(arm.body)
 
-    def visit_ExpressionStmt(self, node):
-        pass
+    def visit_Statement(self, node):
+        return self.visit(node.body)
+    
+    def visit_ConditionalAssignmentStmt(self, node):
+        return self.visit(node.body)
 
     def visit_TypePathExpression(self, node):
         if isinstance(node.last_type, IdentifierExpr):

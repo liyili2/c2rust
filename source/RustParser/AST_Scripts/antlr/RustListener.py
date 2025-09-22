@@ -332,15 +332,6 @@ class RustListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by RustParser#unsafeBlcok.
-    def enterUnsafeBlcok(self, ctx:RustParser.UnsafeBlcokContext):
-        pass
-
-    # Exit a parse tree produced by RustParser#unsafeBlcok.
-    def exitUnsafeBlcok(self, ctx:RustParser.UnsafeBlcokContext):
-        pass
-
-
     # Enter a parse tree produced by RustParser#statement.
     def enterStatement(self, ctx:RustParser.StatementContext):
         pass
