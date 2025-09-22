@@ -4,7 +4,8 @@ from RustParser.AST_Scripts.ast.Program import Program
 from RustParser.AST_Scripts.ast.Block import Block
 from RustParser.AST_Scripts.ast.Type import SafeNonNullWrapper, ArrayType, BoolType, CharType, FloatType, IntType, PointerType, RefType, StringType, StructType, VoidType
 from RustParser.AST_Scripts.ast.TypeEnv import TypeEnv
-from RustParser.AST_Scripts.ast.Expression import BinaryExpr, BorrowExpr, CastExpr, DereferenceExpr, Expression, FieldAccessExpr, FunctionCallExpr, IdentifierExpr, IntLiteral, LiteralExpr, RangeExpression, UnsafeExpression
+from RustParser.AST_Scripts.ast.Expression import BinaryExpr, BorrowExpr, CastExpr, DereferenceExpr, Expression, FieldAccessExpr, FunctionCall, IdentifierExpr, IntLiteral, LiteralExpr, RangeExpression, UnsafeExpression
+from RustParser.AST_Scripts.ast.Expression import FunctionCall as FunctionCallExpr
 from RustParser.AST_Scripts.ast.Statement import IfStmt, ReturnStmt, Statement, WhileStmt
 from RustParser.AST_Scripts.ast.TopLevel import TopLevel
 
@@ -573,42 +574,43 @@ class TypeChecker:
             return_type = self.visit(node.value)
         return return_type
 
-    def visit_FunctionCallExpr(self, node):
-        func_info = self.env.lookup_function(node.func)
-        if not func_info or func_info["kind"] != "function":
-            # self.error(node.func, f"calling an undefined function")
-            return None
+    def visit_FunctionCall(self, node):
+        if isinstance(node, Expression):
+            func_info = self.env.lookup_function(node.callee)
+            if not func_info or func_info["kind"] != "function":
+                # self.error(node.func, f"calling an undefined function")
+                return None
 
-        for arg in node.args:
-            if isinstance(arg, IdentifierExpr):
-                try:
+            for arg in node.args:
+                if isinstance(arg, IdentifierExpr):
+                    try:
+                        info = self.env.lookup(arg.name)
+                    except Exception:
+                        # self.error(arg.name, f"undefined arg in {node.func}")
+                        continue
+
+                    if not info["owned"] or info["borrowed"]:
+                        self.error(arg.name, f"no owners found for the argument {arg.name} in {node.callee}")
+
+                    info["borrowed"] = True
+
+            arg_types = [self.visit(arg) for arg in node.args]
+            expected_types = func_info["param_types"]
+
+            if len(arg_types) != len(expected_types):
+                self.error(node.callee, f"wrong number of arguments")
+            else:
+                for actual, expected in zip(arg_types, expected_types):
+                    if type(actual) != type(expected):
+                        self.error(node.callee, f"wrong number of arguments")
+
+            for arg in node.args:
+                if isinstance(arg, IdentifierExpr):
                     info = self.env.lookup(arg.name)
-                except Exception:
-                    # self.error(arg.name, f"undefined arg in {node.func}")
-                    continue
+                    info["borrowed"] = False
+                    info["owned"] = False
 
-                if not info["owned"] or info["borrowed"]:
-                    self.error(arg.name, f"no owners found for the argument {arg.name} in {node.func}")
-
-                info["borrowed"] = True
-
-        arg_types = [self.visit(arg) for arg in node.args]
-        expected_types = func_info["param_types"]
-
-        if len(arg_types) != len(expected_types):
-            self.error(node.func, f"wrong number of arguments")
-        else:
-            for actual, expected in zip(arg_types, expected_types):
-                if type(actual) != type(expected):
-                    self.error(node.func, f"wrong number of arguments")
-
-        for arg in node.args:
-            if isinstance(arg, IdentifierExpr):
-                info = self.env.lookup(arg.name)
-                info["borrowed"] = False
-                info["owned"] = False
-
-        return func_info["return_type"]
+            return func_info["return_type"]
 
     def visit_VarDef(self, ctx):
         name = ctx.name
@@ -703,6 +705,10 @@ class TypeChecker:
 
         info["borrowed"] = True
         return RefType(info["type"])
+    
+    def visit_FunctionCallExpression(self, node):
+        print("visit_FunctionCallExpression")
+        pass
 
     def visit_ArrayLiteral(self, node):
         if not node.elements:
@@ -831,10 +837,6 @@ class TypeChecker:
     def visit_StrLiteral(self, node):
         # print("visit_StrLiteral")
         return StringType()
-
-    def visit_CallExpression(self, node):
-        pass
-        # return FunctionCallExpr(func=node.func, args=node.args)
 
     def visit_PrimaryExpression(self, node):
         print("visit_PrimaryExpression")

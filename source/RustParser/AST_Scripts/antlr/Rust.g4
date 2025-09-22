@@ -86,7 +86,7 @@ statement
     | compoundAssignment
     | forStmt
     | ifStmt 
-    | callStmt
+    | functionCall
     | exprStmt
     | whileStmt
     | returnStmt
@@ -97,7 +97,7 @@ statement
     ;
 
 conditionalAssignmentStmt: 'let'? (safeWrapper | expression) '=' expression 'else' block ';';
-callStmt: expression ('.' expression) callExpressionPostFix ';' | expression callExpressionPostFix ';' ;
+functionCall: expression ('.' expression) callExpressionPostFix ';' | expression callExpressionPostFix ';' ;
 letStmt: 'let' varDef '=' expression ';' | 'let' varDef initBlock | 'let' '(' (varDef ','?)* ')' '=' '(' (expression ','?)* ')' ';';
 varDef: 'ref'? 'mut'? Identifier (':' typeExpr)?;
 compoundOp: '+=' | '-=' | '*=' | '/=' | '%=' | '&=' | '|=' | '^=' ;

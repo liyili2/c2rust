@@ -537,7 +537,7 @@ class RustParser ( Parser ):
     RULE_unsafeBlcok = 36
     RULE_statement = 37
     RULE_conditionalAssignmentStmt = 38
-    RULE_callStmt = 39
+    RULE_functionCall = 39
     RULE_letStmt = 40
     RULE_varDef = 41
     RULE_compoundOp = 42
@@ -595,14 +595,14 @@ class RustParser ( Parser ):
                    "structLiteralField", "functionDef", "paramList", "param", 
                    "typeExpr", "pointerType", "basicType", "safeNonNullWrapper", 
                    "typePath", "arrayType", "block", "unsafeBlcok", "statement", 
-                   "conditionalAssignmentStmt", "callStmt", "letStmt", "varDef", 
-                   "compoundOp", "compoundAssignment", "matchStmt", "matchArm", 
-                   "matchPattern", "whileStmt", "initializer", "staticVarDecl", 
-                   "initBlock", "assignStmt", "forStmt", "ifStmt", "exprStmt", 
-                   "returnStmt", "loopStmt", "safeWrapper", "expression", 
-                   "basicTypeCastExpr", "unsafeExpression", "qualifiedExpression", 
-                   "structDefInit", "arrayDeclaration", "typePathExpression", 
-                   "patternPrefix", "pattern", "castExpressionPostFix", 
+                   "conditionalAssignmentStmt", "functionCall", "letStmt", 
+                   "varDef", "compoundOp", "compoundAssignment", "matchStmt", 
+                   "matchArm", "matchPattern", "whileStmt", "initializer", 
+                   "staticVarDecl", "initBlock", "assignStmt", "forStmt", 
+                   "ifStmt", "exprStmt", "returnStmt", "loopStmt", "safeWrapper", 
+                   "expression", "basicTypeCastExpr", "unsafeExpression", 
+                   "qualifiedExpression", "structDefInit", "arrayDeclaration", 
+                   "typePathExpression", "patternPrefix", "pattern", "castExpressionPostFix", 
                    "compoundOps", "rangeSymbol", "binaryOps", "binaryExpression", 
                    "structFieldDec", "unaryOpes", "parenExpression", "dereferenceExpression", 
                    "expressionBlock", "borrowExpression", "primaryExpression", 
@@ -3936,8 +3936,8 @@ class RustParser ( Parser ):
             return self.getTypedRuleContext(RustParser.IfStmtContext,0)
 
 
-        def callStmt(self):
-            return self.getTypedRuleContext(RustParser.CallStmtContext,0)
+        def functionCall(self):
+            return self.getTypedRuleContext(RustParser.FunctionCallContext,0)
 
 
         def exprStmt(self):
@@ -4057,7 +4057,7 @@ class RustParser ( Parser ):
             elif la_ == 12:
                 self.enterOuterAlt(localctx, 12)
                 self.state = 619
-                self.callStmt()
+                self.functionCall()
                 pass
 
             elif la_ == 13:
@@ -4205,7 +4205,7 @@ class RustParser ( Parser ):
         return localctx
 
 
-    class CallStmtContext(ParserRuleContext):
+    class FunctionCallContext(ParserRuleContext):
         __slots__ = 'parser'
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
@@ -4224,29 +4224,29 @@ class RustParser ( Parser ):
 
 
         def getRuleIndex(self):
-            return RustParser.RULE_callStmt
+            return RustParser.RULE_functionCall
 
         def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterCallStmt" ):
-                listener.enterCallStmt(self)
+            if hasattr( listener, "enterFunctionCall" ):
+                listener.enterFunctionCall(self)
 
         def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitCallStmt" ):
-                listener.exitCallStmt(self)
+            if hasattr( listener, "exitFunctionCall" ):
+                listener.exitFunctionCall(self)
 
         def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitCallStmt" ):
-                return visitor.visitCallStmt(self)
+            if hasattr( visitor, "visitFunctionCall" ):
+                return visitor.visitFunctionCall(self)
             else:
                 return visitor.visitChildren(self)
 
 
 
 
-    def callStmt(self):
+    def functionCall(self):
 
-        localctx = RustParser.CallStmtContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 78, self.RULE_callStmt)
+        localctx = RustParser.FunctionCallContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 78, self.RULE_functionCall)
         try:
             self.state = 655
             self._errHandler.sync(self)

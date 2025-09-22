@@ -64,15 +64,15 @@ class LiteralExpr(Expression):
         else:
             return None
 
-class FunctionCallExpr(Expression):
-    def __init__(self, func, args, caller=None,):
+class FunctionCall(Expression):
+    def __init__(self, callee, args, caller=None):
         super().__init__()
-        # self.caller = caller
-        self.func = func
+        self.caller = caller
+        self.callee = callee
         self.args = args
 
     def accept(self, visitor):
-        return visitor.visit_CallExpression(self)
+        return visitor.visit_FunctionCall(self)
 
 class UnsafeExpression(Expression):
     def __init__(self, expr):
@@ -212,13 +212,6 @@ class UnaryExpr(Expression):
 
     def accept(self, visitor):
         return visitor.visit_UnaryExpr(self.expr)
-
-class MethodCallExpr(Expression):
-    def __init__(self, receiver, method_name, args, line=None, column=None):
-        super().__init__()
-        self.receiver = receiver
-        self.method_name = method_name
-        self.args = args or []
 
 class DereferenceExpr(Expression):
     def __init__(self, expr):

@@ -359,12 +359,12 @@ class RustListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by RustParser#callStmt.
-    def enterCallStmt(self, ctx:RustParser.CallStmtContext):
+    # Enter a parse tree produced by RustParser#functionCall.
+    def enterFunctionCall(self, ctx:RustParser.FunctionCallContext):
         pass
 
-    # Exit a parse tree produced by RustParser#callStmt.
-    def exitCallStmt(self, ctx:RustParser.CallStmtContext):
+    # Exit a parse tree produced by RustParser#functionCall.
+    def exitFunctionCall(self, ctx:RustParser.FunctionCallContext):
         pass
 
 
