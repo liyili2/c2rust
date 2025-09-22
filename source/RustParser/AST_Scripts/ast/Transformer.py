@@ -39,7 +39,6 @@ class Transformer(RustVisitor):
 
     topNode = None
     def visitProgram(self, ctx):
-        topNode = ctx
         items = []
         for item_ctx in ctx.topLevelItem():
             result = self.visit(item_ctx)
@@ -271,8 +270,7 @@ class Transformer(RustVisitor):
         identifier = ctx.Identifier().getText()
         type_ctx = ctx.typeExpr()
         typ = self.visit(type_ctx) if type_ctx else None
-        # print("visitParam: ", )
-        return Param(name=identifier, typ=typ, mutable=is_mut)
+        return Param(name=identifier, typ=typ, isMutable=is_mut)
 
     def visitParamList(self, ctx):
         param_list = FunctionParamList([])
@@ -356,7 +354,7 @@ class Transformer(RustVisitor):
             mutable = ctx.getChild(1).getText() == "mut"
             name = ctx.Identifier().getText()
             var_type = self.visit(ctx.typeExpr())
-            return StaticVarDecl(name=name, var_type=var_type, initial_value= None, mutable=mutable, visibility=visibility, isExtern=True)
+            return StaticVarDecl(name=name, var_type=var_type, initial_value= None, isMutable=mutable, visibility=visibility, isExtern=True)
 
         elif ctx.LPAREN() and ctx.RPAREN() and ctx.externParams():
             visibility = ctx.visibility().getText() if ctx.visibility() else None
@@ -417,7 +415,7 @@ class Transformer(RustVisitor):
         if ':' in tokens:
             var_type = self.visit(ctx.typeExpr())
 
-        return VarDef(name=name, mutable=mutable, by_ref=by_ref, var_type=var_type)
+        return VarDef(name=name, isMutable=mutable, by_ref=by_ref, var_type=var_type)
 
     def visitStaticItem(self, ctx):
         visibility = ctx.visibility().getText() if ctx.visibility() else None
@@ -428,7 +426,7 @@ class Transformer(RustVisitor):
         return StaticVarDecl(
             name=name,
             var_type=var_type,
-            mutable=mutable,
+            isMutable=mutable,
             visibility=visibility,
             initial_value=value,
             isExtern=True)
@@ -437,13 +435,13 @@ class Transformer(RustVisitor):
         name = ctx.Identifier().getText()
         type_node = ctx.typeExpr()
         declared_type = self.visit(type_node) if type_node else None
-        return VarDef(name=name, type=declared_type, mutable=True)
+        return VarDef(name=name, type=declared_type, isMutable=True)
 
     def visitImmutableDef(self, ctx):
         name = ctx.Identifier().getText()
         type_node = ctx.typeExpr()
         declared_type = self.visit(type_node) if type_node else None
-        return VarDef(name=name, type=declared_type, mutable=False)
+        return VarDef(name=name, type=declared_type, isMutable=False)
 
     def visitIfStmt(self, ctx):
         # Initial "if" condition and block
@@ -581,7 +579,6 @@ class Transformer(RustVisitor):
             raise Exception("Unrecognized return statement")
 
     def visitStaticVarDecl(self, ctx):
-        # print("visitStaticVarDecl")
         visibility = ctx.visibility().getText() if ctx.visibility() else None
         mutable = (ctx.getChild(1).getText() == 'mut' or ctx.getChild(2).getText() == 'mut')
         identifier_index = 3 if mutable else 2
@@ -600,7 +597,7 @@ class Transformer(RustVisitor):
         return StaticVarDecl(
             name=name,
             var_type=var_type,
-            mutable=mutable,
+            isMutable=mutable,
             visibility=visibility,
             initial_value=initializer)
 
