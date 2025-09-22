@@ -53,7 +53,7 @@ class MyRustProgram(TreeProgram):
         try:
             checker = TypeChecker()
             checker.visit(mutated_ast)
-            print("eval type ", checker.error_count)
+            print("eval type ", checker.error_count, len(mutated_ast.items))
             # fitness = 1 / (checker.error_count + 1)
             fitness = checker.error_count
             status = "SUCCESS"
@@ -66,8 +66,8 @@ class MyRustProgram(TreeProgram):
         if mutated_ast:
             if len(mutated_ast.items) == 0:
                 fitness = None
-            status = "CRASH"
-            print("✖︎ Invalid AST Generated")
+                status = "CRASH"
+                print("✖︎ Invalid AST Generated")
 
         res = Result()
         res.status = status

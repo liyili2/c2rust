@@ -19,13 +19,13 @@ class ReplacementOperator:
             self.safe_wrap_raw_pointers,
             self.safe_wrap_raw_pointer_argumetns,
             self.make_global_static_pointers_unmutable,
-            self.move_ast_node,
-            self.shrink_unsafe_block_stmts,
+            # self.move_ast_node,
+            # self.shrink_unsafe_block_stmts,
             self.flip_mutabilities,
             self.safe_wrap_struct_field,
             self.replace_raw_dereferences_in_unsafe_wrapper,
         ]
-        self.new_ast = self.apply_random_mutations(ast, node, 5)
+        self.new_ast = self.apply_random_mutations(ast, node, 3)
 
     def apply_random_mutations(self, ast, node, num_ops):
         selected_ops = random.sample(self.operators, k=num_ops)

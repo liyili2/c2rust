@@ -306,41 +306,41 @@ class Transformer(RustVisitor):
         value = self.visit(ctx.expression()) if ctx.expression() else None
         return StructLiteralField(field_name, value)
 
-    # def visitAttributes(self, ctx):
-    #     return [self.visit(inner) for inner in ctx.innerAttribute()]
+    def visitAttributes(self, ctx):
+        return [self.visit(inner) for inner in ctx.innerAttribute()]
 
-    # def visitInnerAttribute(self, ctx):
-    #     return self.visit(ctx.attribute())
+    def visitInnerAttribute(self, ctx):
+        return self.visit(ctx.attribute())
 
-    # def visitAttribute(self, ctx):
-    #     name = ctx.Identifier().getText()
-    #     if ctx.attrValue():
-    #         value = self.visit(ctx.attrValue())
-    #         return Attribute(name=name, args=value)
-    #     elif ctx.attrArgs():
-    #         args = self.visit(ctx.attrArgs())
-    #         return Attribute(name=name, args=args)
-    #     else:
-    #         return Attribute(name=name)
+    def visitAttribute(self, ctx):
+        name = ctx.Identifier().getText()
+        if ctx.attrValue():
+            value = self.visit(ctx.attrValue())
+            return Attribute(name=name, args=value)
+        elif ctx.attrArgs():
+            args = self.visit(ctx.attrArgs())
+            return Attribute(name=name, args=args)
+        else:
+            return Attribute(name=name)
 
-    # def visitAttrArgs(self, ctx):
-    #     return [self.visit(arg) for arg in ctx.attrArg()]
+    def visitAttrArgs(self, ctx):
+        return [self.visit(arg) for arg in ctx.attrArg()]
 
-    # def visitAttrArg(self, ctx):
-    #     name = ctx.Identifier().getText()
-    #     if ctx.attrValue():
-    #         value = self.visit(ctx.attrValue())
-    #         return (name, value)
-    #     else:
-    #         return (name, None)
+    def visitAttrArg(self, ctx):
+        name = ctx.Identifier().getText()
+        if ctx.attrValue():
+            value = self.visit(ctx.attrValue())
+            return (name, value)
+        else:
+            return (name, None)
 
-    # def visitAttrValue(self, ctx):
-    #     if ctx.STRING_LITERAL():
-    #         return ctx.STRING_LITERAL().getText()
-    #     elif ctx.Number():
-    #         return int(ctx.Number().getText())  # or float, depending on your grammar
-    #     else:
-    #         return ctx.Identifier().getText()
+    def visitAttrValue(self, ctx):
+        if ctx.STRING_LITERAL():
+            return ctx.STRING_LITERAL().getText()
+        elif ctx.Number():
+            return int(ctx.Number().getText())  # or float, depending on your grammar
+        else:
+            return ctx.Identifier().getText()
 
     def visitExternBlock(self, ctx):
         abi = ctx.STRING_LITERAL().getText().strip('"')
