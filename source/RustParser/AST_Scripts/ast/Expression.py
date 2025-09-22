@@ -5,11 +5,12 @@ from RustParser.AST_Scripts.ast.Type import BoolType, IntType, StringType, Float
 from RustParser.AST_Scripts.ast.common import DeclarationInfo
 
 class Expression(ASTNode):
-    def __init__(self, expr=None, type=None, isMutable=False):
+    def __init__(self, expr=None, type=None, isMutable=False, isUnsafe=False):
         super().__init__()
         self.type = type
         self.isMutable = isMutable
         self.expr = expr
+        self.isUnsafe=isUnsafe
 
     def accept(self, visitor):
         method_name = f'visit_{self.__class__.__name__}'
@@ -73,14 +74,6 @@ class FunctionCall(Expression):
 
     def accept(self, visitor):
         return visitor.visit_FunctionCall(self)
-
-class UnsafeExpression(Expression):
-    def __init__(self, expr):
-        super().__init__()
-        self.expr = expr
-
-    def accept(self, visitor):
-        return super().accept(visitor)
 
 class BasicTypeCastExpr(Expression):
     def __init__(self, basicType, typePath):

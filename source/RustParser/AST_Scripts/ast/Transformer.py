@@ -1,6 +1,6 @@
 
 from RustParser.AST_Scripts.ast.ASTNode import ASTNode
-from RustParser.AST_Scripts.ast.Expression import ArrayDeclaration, ArrayLiteral, BasicTypeCastExpr, BinaryExpr, BoolLiteral, BorrowExpr, BoxWrapperExpr, CastExpr, CharLiteral, CharLiteralExpr, DereferenceExpr, Expression, FieldAccessExpr, IdentifierExpr, IndexExpr, IntLiteral, ParenExpr, Pattern, PatternExpr, QualifiedExpression, RangeExpression, RepeatArrayLiteral, SafeWrapper, StrLiteral, StructLiteralField, TypeAccessExpr, TypePathExpression, TypePathFullExpr, UnaryExpr, UnsafeExpression
+from RustParser.AST_Scripts.ast.Expression import ArrayDeclaration, ArrayLiteral, BasicTypeCastExpr, BinaryExpr, BoolLiteral, BorrowExpr, BoxWrapperExpr, CastExpr, CharLiteral, CharLiteralExpr, DereferenceExpr, Expression, FieldAccessExpr, IdentifierExpr, IndexExpr, IntLiteral, ParenExpr, Pattern, PatternExpr, QualifiedExpression, RangeExpression, RepeatArrayLiteral, SafeWrapper, StrLiteral, StructLiteralField, TypeAccessExpr, TypePathExpression, TypePathFullExpr, UnaryExpr
 from RustParser.AST_Scripts.ast.Statement import AssignStmt, BreakStmt, CompoundAssignment, ConditionalAssignmentStmt, ContinueStmt, ExpressionStmt, ForStmt, FunctionCall, IfStmt, LetStmt, LoopStmt, MatchArm, MatchPattern, MatchStmt, ReturnStmt, UnsafeBlock, WhileStmt
 from RustParser.AST_Scripts.antlr.RustVisitor import RustVisitor
 from RustParser.AST_Scripts.ast.TopLevel import StaticVarDecl, ExternBlock, ExternFunctionDecl, ExternTypeDecl, FunctionDef, InterfaceDef, StructDef, Attribute, StructField, TopLevel, TopLevelVarDef, TypeAliasDecl, UseDecl, VarDefField
@@ -695,9 +695,9 @@ class Transformer(RustVisitor):
             typeAccess = self.visit(ctx.typeExpr())
             return TypeAccessExpr(expr=expr, typeExpr=typeAccess)
 
-        elif ctx.unsafeExpression():
+        elif ctx.unsafeModifier():
             expr = self.visit(ctx.unsafeExpression().expression())
-            return UnsafeExpression(expr=expr)
+            return Expression(expr=expr, isUnsafe=True)
 
         elif ctx.basicTypeCastExpr():
             basicType = self.visit(ctx.basicTypeCastExpr().typeExpr())

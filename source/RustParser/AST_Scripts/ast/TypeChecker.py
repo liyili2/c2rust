@@ -4,7 +4,7 @@ from RustParser.AST_Scripts.ast.Program import Program
 from RustParser.AST_Scripts.ast.Block import Block
 from RustParser.AST_Scripts.ast.Type import SafeNonNullWrapper, ArrayType, BoolType, CharType, FloatType, IntType, PointerType, RefType, StringType, StructType, VoidType
 from RustParser.AST_Scripts.ast.TypeEnv import TypeEnv
-from RustParser.AST_Scripts.ast.Expression import BinaryExpr, BorrowExpr, CastExpr, DereferenceExpr, Expression, FieldAccessExpr, FunctionCall, IdentifierExpr, IntLiteral, LiteralExpr, RangeExpression, UnsafeExpression
+from RustParser.AST_Scripts.ast.Expression import BinaryExpr, BorrowExpr, CastExpr, DereferenceExpr, Expression, FieldAccessExpr, FunctionCall, IdentifierExpr, IntLiteral, LiteralExpr, RangeExpression
 from RustParser.AST_Scripts.ast.Expression import FunctionCall as FunctionCallExpr
 from RustParser.AST_Scripts.ast.Statement import IfStmt, ReturnStmt, Statement, WhileStmt
 from RustParser.AST_Scripts.ast.TopLevel import TopLevel
@@ -290,7 +290,7 @@ class TypeChecker:
             if (
                 not isinstance(expr_type, var_def_type.__class__) and
                 not isinstance(var_def_type, SafeNonNullWrapper) and
-                not isinstance(node.values[0], UnsafeExpression)
+                not node.values[0].isUnsafe == True
             ):
                 self.error(node, f"type of the value and target do not match: {(var_def_type.__class__)} and {(expr_type.__class__)}")
 
@@ -366,10 +366,6 @@ class TypeChecker:
         for stmt in node.stmts:
             result_stmt = self.visit(stmt)
             result_stmts.append(result_stmt)
-
-    def visit_UnsafeExpression(self, node):
-        # self.error(node, "unsafe expression error")
-        pass
 
     def visit_ExternBlock(self, node):
         pass

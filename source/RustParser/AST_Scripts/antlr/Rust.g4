@@ -131,7 +131,7 @@ expression
     | structDefInit
     | unaryOpes expression
     | borrowExpression
-    | unsafeExpression
+    | unsafeModifier parenExpression
     | expression callExpressionPostFix
     | expression typeExpr
     | basicTypeCastExpr
@@ -146,7 +146,6 @@ expression
     ;
 
 basicTypeCastExpr: typeExpr typePath;
-unsafeExpression: 'unsafe' '{' expression '}' ;
 qualifiedExpression: '<' expression '>';
 structDefInit: Identifier '=' '{' expression '}' ';' ;
 arrayDeclaration: Identifier '!'? '[' Number ';' expression ']' ;
@@ -162,7 +161,7 @@ binaryExpression: expression binaryOps expression ;
 structFieldDec: Identifier '{' structLiteralField (',' structLiteralField)* ','? '}' ;
 MUT: 'mut';
 unaryOpes: '!' | '+' | '-';
-parenExpression: '(' expression ')';
+parenExpression: '(' expression ')' | '{' expression '}';
 dereferenceExpression: '*' expression;
 expressionBlock: '{' statement* expression '}';
 borrowExpression: '&' expression;
