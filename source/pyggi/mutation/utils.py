@@ -1,9 +1,12 @@
 from RustParser.AST_Scripts.ast.Program import Program
-from RustParser.AST_Scripts.ast.TopLevel import FunctionDef, StaticVarDecl, TypeAliasDecl, UseDecl
-from RustParser.AST_Scripts.ast.Block import Block
-from RustParser.AST_Scripts.ast.Statement import LetStmt, ForStmt, IfStmt, CallStmt, AssignStmt, WhileStmt
-from RustParser.AST_Scripts.ast.Expression import FieldAccessExpr, IdentifierExpr, MethodCallExpr, BinaryExpr
-from RustParser.AST_Scripts.ast.Expression import BoolLiteral, IntLiteral, StrLiteral
+from RustParser.AST_Scripts.ast.Expression import *
+from RustParser.AST_Scripts.ast.Statement import *
+from RustParser.AST_Scripts.ast.Func import *
+from RustParser.AST_Scripts.ast.Block import *
+from RustParser.AST_Scripts.ast.TopLevel import *
+from RustParser.AST_Scripts.ast.TypeChecker import *
+from RustParser.AST_Scripts.ast.Type import *
+from RustParser.AST_Scripts.ast.VarDef import *
 
 class MutationUtils:
     def get_all_parents(self, ast_root, target_node, parent=None):
@@ -51,7 +54,7 @@ class MutationUtils:
 
                 remaining_tops.append(top)
 
-            elif isinstance(top_children, list):
+            elif isinstance(top_children, InterfaceDef):
                 matched_children = []
                 for item in top_children:
                     if isinstance(parent_2, type(item)) and isinstance(item.body, Block):
@@ -92,7 +95,7 @@ class MutationUtils:
                 self.expr_eq(stmt1.iterable, stmt2.iterable) and
                 self.statements_eq(stmt1.body, stmt2.body))
 
-        if isinstance(stmt1, CallStmt):
+        if isinstance(stmt1, FunctionCall):
             if not self.expr_eq(stmt1.callee, stmt2.callee):
                 return False
             if len(stmt1.args) != len(stmt2.args):
@@ -131,7 +134,7 @@ class MutationUtils:
             return (self.expr_eq(expr1.left, expr2.left) and
                     self.expr_eq(expr1.right, expr2.right) and
                     expr1.op == expr2.op)
-        if isinstance(expr1, MethodCallExpr):
+        if isinstance(expr1, FunctionCall):
             return (
                 self.expr_eq(expr1.receiver, expr2.receiver) and
                 expr1.method_name == expr2.method_name and

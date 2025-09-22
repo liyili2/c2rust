@@ -10,13 +10,13 @@ class TopLevel(ASTNode):
         return getattr(visitor, method_name, visitor.generic_visit)(self)
 
 class FunctionDef(TopLevel):
-    def __init__(self, identifier, params, return_type, body, unsafe=False):
+    def __init__(self, identifier, params, return_type, body, isUnsafe=False):
         super().__init__()
         self.identifier = identifier
         self.params = params
         self.return_type = return_type
         self.body = body
-        self.unsafe = unsafe
+        self.isUnsafe = isUnsafe
 
     def accept(self, visitor):
         #method_Identifier = f'visit_{self.__class__.__name__}'
@@ -92,10 +92,10 @@ class StaticVarDecl(TopLevel):
 
     def __repr__(self):
         return (
-            f"StaticVarDecl(name={self.name}, "
-            f"type={self.var_type}, "
+            f"StaticVarDecl(name={self.declarationInfo.name}, "
+            f"type={self.declarationInfo.type}, "
             f"isMutable={self.isMutable}, "
-            f"visibility={self.visibility}, "
+            f"visibility={self.declarationInfo.visibility}, "
             f"initial_value={self.initial_value})")
     
     def accept(self, visitor):

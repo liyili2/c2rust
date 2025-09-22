@@ -5,6 +5,33 @@
     "version": "0.2.0",
     "configurations": [
         {
+        "name": "Python: replacement (as module)",
+        "type": "python",
+        "request": "launch",
+        "module": "pyggi.mutation.replacement",
+        "cwd": "${workspaceFolder}/source",
+        "env": {
+            "PYTHONPATH": "${workspaceFolder}/source"
+        },
+        "console": "integratedTerminal",
+        "justMyCode": false,
+        "subProcess": true
+        },
+
+        {
+        "name": "Python: replacement (direct file)",
+        "type": "python",
+        "request": "launch",
+        "program": "${workspaceFolder}/source/pyggi/mutation/replacement.py",
+        "cwd": "${workspaceFolder}/source",
+        "env": {
+            "PYTHONPATH": "${workspaceFolder}/source"
+        },
+        "console": "integratedTerminal",
+        "subProcess": true
+        },
+
+        {
             "type": "lldb",
             "request": "launch",
             "name": "Cargo launch",
@@ -16,10 +43,5 @@
             },
             "args": []
         }
-
-
-        
-
-
     ]
 }

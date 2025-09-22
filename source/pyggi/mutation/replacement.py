@@ -1,16 +1,16 @@
 
-from RustParser.AST_Scripts.tests.TransformerTest import pretty_print_ast
 from RustParser.AST_Scripts.ast.Program import Program
-from RustParser.AST_Scripts.ast.TopLevel import FunctionDef, InterfaceDef, StructDef, StructField, TopLevel, StaticVarDecl
-from RustParser.AST_Scripts.ast.Func import FunctionParamList, Param
-from RustParser.AST_Scripts.ast.Block import Block
-from RustParser.AST_Scripts.ast.Statement import LetStmt, UnsafeBlock
-from RustParser.AST_Scripts.ast.VarDef import VarDef
-from RustParser.AST_Scripts.ast.Type import PointerType, RefType, SafeNonNullWrapper, VoidType
+from RustParser.AST_Scripts.ast.Expression import *
+from RustParser.AST_Scripts.ast.Statement import *
+from RustParser.AST_Scripts.ast.Func import *
+from RustParser.AST_Scripts.ast.Block import *
+from RustParser.AST_Scripts.ast.TopLevel import *
+from RustParser.AST_Scripts.ast.TypeChecker import *
+from RustParser.AST_Scripts.ast.ASTNode import *
+from RustParser.AST_Scripts.ast.Type import *
+from RustParser.AST_Scripts.ast.VarDef import *
 from pyggi.mutation.utils import MutationUtils
 import random
-
-from RustParser.AST_Scripts.ast.Expression import DereferenceExpr, Expression, ReferenceExpr
 
 class ReplacementOperator:
     def __init__(self, ast, node):
@@ -19,13 +19,13 @@ class ReplacementOperator:
             self.safe_wrap_raw_pointers,
             self.safe_wrap_raw_pointer_argumetns,
             self.make_global_static_pointers_unmutable,
-            # self.move_ast_node,
-            # self.shrink_unsafe_block_stmts,
+            self.move_ast_node,
+            self.shrink_unsafe_block_stmts,
             self.flip_mutabilities,
             self.safe_wrap_struct_field,
             self.replace_raw_dereferences_in_unsafe_wrapper,
         ]
-        self.new_ast = self.apply_random_mutations(ast, node, 3)
+        self.new_ast = self.apply_random_mutations(ast, node, 1)
 
     def apply_random_mutations(self, ast, node, num_ops):
         selected_ops = random.sample(self.operators, k=num_ops)
@@ -84,9 +84,8 @@ class ReplacementOperator:
                 top.setBody(top_children)
             remaining_tops.append(top)
 
-        # print(f"{label} result:", pretty_print_ast(Program(items=remaining_tops)))
         return Program(items=remaining_tops)
-    
+
     def replace_raw_dereferences_in_unsafe_wrapper(self, ast_root, target_node):
         print("OP: replace_raw_dereferences_in_unsafe_wrapper")
         def transform(stmt):
@@ -95,12 +94,12 @@ class ReplacementOperator:
                 if isinstance(val, DereferenceExpr):
                     return LetStmt(
                         var_defs=VarDef(
-                            name=stmt.var_defs[0].name,
+                            name=stmt.var_defs[0].declarationInfo.name,
                             mutable=stmt.var_defs[0].mutable,
                             by_ref=stmt.var_defs[0].by_ref,
-                            var_type=RefType("T")
+                            type=RefType("T")
                         ),
-                        values=Expression(expr=ReferenceExpr(expr=val), isUnsafe=True)
+                        values=Expression(expr=BorrowExpr(expr=val), isUnsafe=True)
                     )
             return None  # No change
         return self.transform_let_stmt(ast_root, target_node, transform, label="replace_raw_dereferences_in_unsafe_wrapper")
@@ -130,9 +129,9 @@ class ReplacementOperator:
             new_fields = []
             if isinstance(top, StructDef):
                 for field in top.getChildren():
-                    if isinstance(field.type, PointerType) and field.type.mutability:
-                        new_field = StructField(name=field.name, typeExpr=SafeNonNullWrapper(
-                            typeExpr=field.type), visibility=field.visibility)
+                    if isinstance(field.declarationInfo.type, PointerType) and field.declarationInfo.type.isMutable:
+                        new_field = StructField(name=field.declarationInfo.name, typeExpr=SafeNonNullWrapper(
+                            typeExpr=field.declarationInfo.type), visibility=field.declarationInfo.visibility)
                         new_fields.append(new_field)
                     else:
                         new_fields.append(field)
@@ -143,9 +142,9 @@ class ReplacementOperator:
                 for stmt in top.body.getChildren():
                     if isinstance(stmt, StructDef):
                         for field in stmt.getChildren():
-                            if isinstance(field.type, PointerType) and field.type.mutability:
-                                new_field = StructField(name=field.name, typeExpr=SafeNonNullWrapper(
-                                    typeExpr=field.type), visibility=field.visibility)
+                            if isinstance(field.declarationInfo.type, PointerType) and field.type.mutability:
+                                new_field = StructField(name=field.declarationInfo.name, typeExpr=SafeNonNullWrapper(
+                                    typeExpr=field.declarationInfo.type), visibility=field.declarationInfo.visibility)
                                 new_fields.append(new_field)
                             else:
                                 new_fields.append(field)
@@ -228,11 +227,9 @@ class ReplacementOperator:
             if isinstance(parent_1, type(top)) and isinstance(parent_1, FunctionDef):
                 if self.utils.function_def_eq(parent_1, top):
                     for param in parent_1.params.params:
-                        if isinstance(param.typ, PointerType) and param.mutable:
-                            new_param = Param(name=param.name, typ=SafeNonNullWrapper(
-                                typeExpr=param.typ
-                            ), mutable=param.mutable)
-
+                        if isinstance(param.declarationInfo.type, PointerType) and param.isMutable:
+                            new_param = Param(name=param.declarationInfo.name, type=SafeNonNullWrapper(
+                                typeExpr=param.declarationInfo.type), mutable=param.isMutable)
                             new_params.append(new_param)
                         else:
                             new_params.append(param)
@@ -245,7 +242,7 @@ class ReplacementOperator:
 
     def shrink_unsafe_block_stmts(self, ast_root, target_node):
         print("OP: shrink_unsafe_block_stmts")
-        if not isinstance(target_node, UnsafeBlock):
+        if isinstance(target_node, Block) and not target_node.isUnsafe:
             return ast_root
 
         remaining_tops = []
@@ -254,7 +251,7 @@ class ReplacementOperator:
                 top_block = top.body
                 for stmt in top_block.getChildren():
                     remaining_block_stmts = []
-                    if isinstance(stmt, UnsafeBlock):
+                    if isinstance(stmt, Block) and stmt.isUnsafe:
                         if self.utils.blocks_eq(stmt, target_node):
                             stmts = stmt.getChildren()
                             if len(stmts) == 0:
@@ -264,7 +261,7 @@ class ReplacementOperator:
                                 slice_point = random.randint(0, len(stmts) - 1)
                                 remaining_stmts = stmts[:slice_point]
                                 out_stmts = stmts[slice_point:]
-                            unsafe_block = UnsafeBlock(stmts=remaining_stmts)
+                            unsafe_block = Block(stmts=remaining_stmts, isUnsafe=True)
                             remaining_block_stmts.append(unsafe_block)
                             remaining_block_stmts.append(out_stmts)
                             remaining_tops.append(top)

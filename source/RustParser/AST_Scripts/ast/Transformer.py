@@ -199,7 +199,7 @@ class Transformer(RustVisitor):
         unsafe = False
         if ctx.unsafeModifier():
             unsafe = True
-        return FunctionDef(identifier=name, params=params, return_type=return_type, body=body, unsafe=unsafe)
+        return FunctionDef(identifier=name, params=params, return_type=return_type, body=body, isUnsafe=unsafe)
 
     def visitParam(self, ctx):
         is_mut = ctx.getChild(0).getText() == "mut"

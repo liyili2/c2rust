@@ -55,8 +55,7 @@ class TypeChecker:
         pass
 
     def visit_FunctionDef(self, node: FunctionDef):
-        # print("visit_function_def", self.error_count)
-        if node.unsafe:
+        if node.isUnsafe:
             self.error(node, "unsafe function definition")
 
         fn_name = node.identifier
