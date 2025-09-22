@@ -3,15 +3,13 @@ from RustParser.AST_Scripts.ast.ASTNode import ASTNode
 from RustParser.AST_Scripts.ast.Expression import ArrayDeclaration, ArrayLiteral, BasicTypeCastExpr, BinaryExpr, BoolLiteral, BorrowExpr, BoxWrapperExpr, CastExpr, CharLiteral, CharLiteralExpr, DereferenceExpr, FieldAccessExpr, FunctionCallExpr, IdentifierExpr, IndexExpr, IntLiteral, MethodCallExpr, MutableExpr, ParenExpr, Pattern, PatternExpr, QualifiedExpression, RangeExpression, RepeatArrayLiteral, SafeWrapper, StrLiteral, StructDefInit, StructLiteralExpr, StructLiteralField, TypeAccessExpr, TypePathExpression, TypePathFullExpr, UnaryExpr, UnsafeExpression
 from RustParser.AST_Scripts.ast.Statement import AssignStmt, BreakStmt, CallStmt, CompoundAssignment, ConditionalAssignmentStmt, ContinueStmt, ExpressionStmt, ForStmt, IfStmt, LetStmt, LoopStmt, MatchArm, MatchPattern, MatchStmt, ReturnStmt, StructLiteral, UnsafeBlock, WhileStmt
 from RustParser.AST_Scripts.antlr.RustVisitor import RustVisitor
-from RustParser.AST_Scripts.ast.TopLevel import StaticVarDecl, ExternBlock, ExternFunctionDecl, ExternStaticVarDecl, ExternTypeDecl, FunctionDef, InterfaceDef, StructDef, Attribute, StructField, TopLevel, TopLevelVarDef, TypeAliasDecl, UseDecl, VarDefField
+from RustParser.AST_Scripts.ast.TopLevel import StaticVarDecl, ExternBlock, ExternFunctionDecl, ExternTypeDecl, FunctionDef, InterfaceDef, StructDef, Attribute, StructField, TopLevel, TopLevelVarDef, TypeAliasDecl, UseDecl, VarDefField
 from RustParser.AST_Scripts.ast.Program import Program
 from RustParser.AST_Scripts.ast.Expression import LiteralExpr
 from RustParser.AST_Scripts.ast.Type import SafeNonNullWrapper, ArrayType, BoolType, IntType, PathType, PointerType, StringType, Type
-from RustParser.AST_Scripts.antlr import RustLexer, RustParser
 from RustParser.AST_Scripts.ast.VarDef import VarDef
-from RustParser.AST_Scripts.antlr import RustParser
-from RustParser.AST_Scripts.ast.Block import Block, InitBlock
 from RustParser.AST_Scripts.ast.Func import FunctionParamList, Param
+from RustParser.AST_Scripts.ast.Block import Block
 
 class Transformer(RustVisitor):
     def __init__(self):
@@ -358,31 +356,20 @@ class Transformer(RustVisitor):
             mutable = ctx.getChild(1).getText() == "mut"
             name = ctx.Identifier().getText()
             var_type = self.visit(ctx.typeExpr())
-            return ExternStaticVarDecl(name=name, var_type=var_type, initial_value= None, mutable=mutable, visibility=visibility)
+            return StaticVarDecl(name=name, var_type=var_type, initial_value= None, mutable=mutable, visibility=visibility, extern=True)
 
         elif ctx.LPAREN() and ctx.RPAREN() and ctx.externParams():
             visibility = ctx.visibility().getText() if ctx.visibility() else None
             name = ctx.Identifier().getText()
             params = []
-            variadic = False
 
             for param_ctx in ctx.externParams().externParam():
-                if param_ctx.getText() == "...":
-                    variadic = True
-                elif param_ctx.typeExpr():
+                if param_ctx.typeExpr():
                     type_node = self.visit(param_ctx.typeExpr())
                     params.append(type_node)
 
-            if str(ctx.externParams().getText()).endswith("..."):
-                variadic = True
-
             return_type = self.visit(ctx.typeExpr()) if ctx.typeExpr() else None
-            return ExternFunctionDecl(
-                name=name,
-                params=params,
-                return_type=return_type,
-                variadic=variadic,
-                visibility=visibility)
+            return ExternFunctionDecl(name=name, params=params, return_type=return_type, visibility=visibility)
 
         raise Exception("Unsupported externItem structure")
 
