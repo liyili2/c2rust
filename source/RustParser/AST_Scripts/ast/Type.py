@@ -127,17 +127,6 @@ class PointerType(Type):
             "pointee": self.pointee_type.to_dict() if isinstance(self.pointee_type, ASTNode) else self.pointee_type
         }
 
-class ExternStaticVarDecl:
-    def __init__(self, name: str, mutable: bool, var_type: Type):
-        super().__init__()
-        self.name = name
-        self.mutable = mutable
-        self.var_type = var_type
-
-    def __repr__(self):
-        mut = "mut " if self.mutable else ""
-        return f"<ExternStaticVarDecl {mut}{self.name}: {self.var_type}>"
-
 class PathType:
     def __init__(self, segments):
         super().__init__()
