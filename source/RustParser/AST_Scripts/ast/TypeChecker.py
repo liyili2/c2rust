@@ -662,19 +662,16 @@ class TypeChecker:
         return pattern_type
 
     def visit_LiteralExpr(self, node):
-        print("visit_LiteralExpr")
-        if isinstance(node.value, int):
+        if isinstance(node.expr, int):
             return IntType()
-
-        if isinstance(node.value, str):
+        if isinstance(node.expr, str):
             return StringType()
-        
-        if isinstance(node.value, bool):
+        if isinstance(node.expr, bool):
             return BoolType()
-        if isinstance(node.value, NoneType):
+        if isinstance(node.expr, NoneType):
             return NoneType()
         else:
-            self.error(node, f"unknown literal type for {node.value}")
+            self.error(node, f"unknown literal type for {node.expr}")
 
     def visit_IdentifierExpr(self, node):
         info = None
@@ -687,7 +684,7 @@ class TypeChecker:
         return info["type"]
 
     def visit_QualifiedExpression(self, node):
-        inner_type = self.visit(node.inner_expr)
+        inner_type = self.visit(node.expr)
         return inner_type
 
     def visit_BorrowExpr(self, node):

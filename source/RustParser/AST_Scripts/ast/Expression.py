@@ -16,9 +16,9 @@ class Expression(ASTNode):
         return getattr(visitor, method_name, visitor.generic_visit)(self)
 
 class QualifiedExpression(Expression):
-    def __init__(self, inner_expr):
+    def __init__(self, expr):
         super().__init__()
-        self.inner_expr = inner_expr
+        self.expr = expr
 
     def accept(self, visitor):
         return visitor.visit_QualifiedExpression(self)
@@ -42,24 +42,24 @@ class BinaryExpr(Expression):
         return visitor.visit_binaryExpr(self)
 
 class LiteralExpr(Expression):
-    def __init__(self, value):
+    def __init__(self, expr):
         super().__init__()
-        self.value = value
+        self.expr = expr
         self.type = self.get_type()
 
     def accept(self, visitor):
         return visitor.visit_LiteralExpr(self)
 
     def get_type(self):
-        if isinstance(self.value, int):
+        if isinstance(self.expr, int):
             return IntType()
-        elif isinstance(self.value, float):
+        elif isinstance(self.expr, float):
             return FloatType()
-        elif isinstance(self.value, str):
+        elif isinstance(self.expr, str):
             return StringType()
-        elif isinstance(self.value, bool):
+        elif isinstance(self.expr, bool):
             return BoolLiteral()
-        elif isinstance(self.value, bytes):
+        elif isinstance(self.expr, bytes):
             return bytes()
         else:
             return None

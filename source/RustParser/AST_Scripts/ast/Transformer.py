@@ -82,11 +82,11 @@ class Transformer(RustVisitor):
         # print("_expr_from_text")
         text = text.strip()
         if text.isdigit():
-            return LiteralExpr(value=int(text))
+            return LiteralExpr(expr=int(text))
         elif text.startswith("'") and text.endswith("'"):
             return CharLiteralExpr(text[1:-1])
         try:
-            return LiteralExpr(value=float(text))
+            return LiteralExpr(expr=float(text))
         except ValueError:
             pass
         return IdentifierExpr(name=text)
@@ -788,7 +788,7 @@ class Transformer(RustVisitor):
         return DereferenceExpr(target_expr)
 
     def visitCharLiteralExpr(self, ctx):
-        return ctx.value
+        return ctx.expr
 
     def visitBorrowExpression(self, ctx):
         mutable = ctx.getChild(1).getText() == "mut"
@@ -896,7 +896,7 @@ class Transformer(RustVisitor):
             raise ValueError("Unknown literal type")
 
     def visitByteLiteral(self, ctx):
-        return LiteralExpr(value=ctx.getText())
+        return LiteralExpr(expr=ctx.getText())
 
     def visitParenExpr(self, ctx):
         inner_expr = ctx.expression()
