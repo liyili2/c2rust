@@ -40,7 +40,6 @@ class TypeChecker:
     def visit_StructField(self, node):
         if isinstance(node.declarationInfo.type, PointerType):
             self.error(node, "raw pointer usage in a struct field")
-        # print("visit_StructField", node.name, node.type)
 
     def visit_BasicTypeCastExpr(self, node):
         pass
@@ -79,7 +78,7 @@ class TypeChecker:
             self.error(node, "unsafe function definition")
 
         fn_name = node.identifier
-        param_types = [param.typ for param in node.params]
+        param_types = [param.declarationInfo.type for param in node.params]
         return_type = node.return_type or VoidType()
 
         if self.env.top().get(fn_name) is None:
@@ -93,11 +92,9 @@ class TypeChecker:
 
         self.env.enter_scope()
         for i, param in enumerate(node.params):
-            param_name = param.name
-            param_type = self.visit(param.typ)
-            is_mut = param.mutable
-
-            # print("param", is_mut, param_type, param_type.__class__, param.__class__, param.typ.__class__)
+            param_name = param.declarationInfo.name
+            param_type = self.visit(param.declarationInfo.type)
+            is_mut = param.isMutable
             self.visit(param)
 
             if i == 0 and param_name == "self":
@@ -106,7 +103,7 @@ class TypeChecker:
 
                 if is_mut and not getattr(param_type, "mutable", False):
                     self.error(param, "`self` is marked mutable, but its type is not a mutable reference")
-                if is_mut and isinstance (param.typ, PointerType):
+                if is_mut and isinstance (param.declarationInfo.type, PointerType):
                     self.error(node, f"raw pointer passed as argument to function {node.name}")
 
             if param_name in self.env.top():
@@ -282,7 +279,7 @@ class TypeChecker:
 
             if isinstance(var_def_type, NoneType):
                 var_def_type = expr_type
-            self.detect_raw_pointer_definition(var_def.declarationInfo.name, var_def.declarationInfo.type, var_def.mutable)
+            self.detect_raw_pointer_definition(var_def.declarationInfo.name, var_def.declarationInfo.type, var_def.isMutable)
 
             if isinstance(expr_type, NoneType):
                 expr_type = var_def_type
@@ -294,7 +291,7 @@ class TypeChecker:
             ):
                 self.error(node, f"type of the value and target do not match: {(var_def_type.__class__)} and {(expr_type.__class__)}")
 
-            self.env.declare(var_def.declarationInfo.name, var_def_type, mutable=var_def.mutable)
+            self.env.declare(var_def.declarationInfo.name, var_def_type, mutable=var_def.isMutable)
             self.symbol_table[var_def.declarationInfo.name] = var_def_type
             self._handle_borrowing(var_def, node.values[0])
 
@@ -303,7 +300,6 @@ class TypeChecker:
             self.error(self, f"raw pointer definition: {name} = *mut {type.accept(self)}")
 
     def visit_PointerType(self, node):
-        # print("visit_PointerType", node.pointee_type.__class__, node.pointee_type)
         return self.visit(node.pointee_type)
 
     def visit_DereferenceExpr(self, node):
@@ -618,26 +614,21 @@ class TypeChecker:
         return (name, typ)
 
     def visit_ParamNode(self, node):
-        name = node.name
-        # checked_type = self.visit(node.typ)
-        # print("visit_ParamNode", node.mutable, node.typ, isinstance(node.typ, PointerType))
-        if isinstance(node.typ, PointerType) and( node.mutable or node.typ.mutability):
+        name = node.declarationInfo.name
+        if isinstance(node.declarationInfo.type, PointerType) and(node.isMutable or node.declarationInfo.type.isMutable):
             self.error(node, "raw pointer usage in the function signature")
-        mutable = node.mutable 
-        # self.env.declare(name, checked_type, mutable)
-        return (name, node.typ, mutable)
+        isMutable = node.isMutable 
+        self.env.declare(name, node.declarationInfo.type, isMutable)
+        return (name, node.declarationInfo.type, isMutable)
 
     def visit_FunctionParamList(self, ctx):
-        print("visit_FunctionParamList")
         params = []
         for param_ctx in ctx.params:
-            print("param_ctx", ctx.param)
             name, typ, mutable = self.visit(param_ctx)
             params.append((name, typ, mutable))
         return params
 
     def visit_IntType(self, node):
-        # print("visit_IntType")
         return IntType()
 
     def visit_BoolType(self, node):
@@ -876,6 +867,6 @@ class TypeChecker:
     def visit_StaticVarDecl(self, node):
         node_type = self.visit(node.declarationInfo.type)
         # print("visit_StaticVarDecl", node.name, node.parent.__class__, node_type)
-        self.env.declare(name=node.declarationInfo.name, typ=node_type, mutable=node.mutable)
-        if node.mutable and isinstance(node, TopLevel):
+        self.env.declare(name=node.declarationInfo.name, typ=node_type, mutable=node.isMutable)
+        if node.isMutable and isinstance(node, TopLevel):
             self.error(node, f"global static mutable struct declaration: {node.declarationInfo.name}")

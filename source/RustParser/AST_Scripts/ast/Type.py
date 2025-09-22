@@ -108,15 +108,15 @@ class ArrayType(Type):
         return visitor.visit_ArrayType(self)
 
 class PointerType(Type):
-    def __init__(self, mutability: str, pointee_type):
+    def __init__(self, isMutable: str, pointee_type):
         super().__init__()
-        self.mutability = mutability
+        self.isMutable = isMutable
         self.pointee_type = pointee_type
 
     def __repr__(self):
-        mutability = "mut" if self.mutability else "const"
+        isMutable = "mut" if self.isMutable else "const"
         pointee = repr(self.pointee_type) if self.pointee_type else "?"
-        return f"*{mutability} {pointee}"
+        return f"*{isMutable} {pointee}"
     
     def accept(self, visitor):
         return visitor.visit_PointerType(self)

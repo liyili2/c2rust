@@ -93,10 +93,10 @@ class ExternTypeDecl(ExternItem):
         pass
 
 class StaticVarDecl(TopLevel):
-    def __init__(self, name, var_type, mutable, initial_value, visibility=None, isExtern=False):
+    def __init__(self, name, var_type, isMutable, initial_value, visibility=None, isExtern=False):
         super().__init__()
         self.declarationInfo = DeclarationInfo(name=name, type=var_type, visibility=visibility)
-        self.mutable = mutable
+        self.isMutable = isMutable
         self.initial_value = initial_value  # Expr: value assigned at declaration
         self.isExtern = isExtern
 
@@ -104,7 +104,7 @@ class StaticVarDecl(TopLevel):
         return (
             f"StaticVarDecl(name={self.name}, "
             f"type={self.var_type}, "
-            f"mutable={self.mutable}, "
+            f"isMutable={self.isMutable}, "
             f"visibility={self.visibility}, "
             f"initial_value={self.initial_value})")
     
