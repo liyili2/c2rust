@@ -259,30 +259,30 @@ class TypeChecker:
                 return
 
             for var_def, expr_type in zip(node.var_defs, expr_types):
-                declared_type = self.visit(var_def.type) if var_def.type else expr_type
+                declared_type = self.visit(var_def.declarationInfo.type) if var_def.declarationInfo.type else expr_type
 
-                if var_def.type and type(declared_type) != type(expr_type) and not isinstance(expr_type, RefType):
+                if var_def.declarationInfo.type and type(declared_type) != type(expr_type) and not isinstance(expr_type, RefType):
                     self.error(node, "in the group-let, type of one of the values do not match its target")
 
-                self.env.declare(var_def.name, declared_type)
-                self.symbol_table[var_def.name] = declared_type
+                self.env.declare(var_def.declarationInfo.name, declared_type)
+                self.symbol_table[var_def.declarationInfo.name] = declared_type
                 self._handle_borrowing(var_def, node.values[0])
 
         else:
             var_def = node.var_defs[0]
             expr_type = self.visit(expr_types[0])
 
-            if isinstance(var_def.type, str):
-                var_def_type = self.visit_Type(var_def.type)
+            if isinstance(var_def.declarationInfo.type, str):
+                var_def_type = self.visit_Type(var_def.declarationInfo.type)
             else:
-                var_def_type = self.visit(var_def.type)
+                var_def_type = self.visit(var_def.declarationInfo.type)
 
             if var_def_type is None:
                 var_def_type = expr_type
 
             if isinstance(var_def_type, NoneType):
                 var_def_type = expr_type
-            self.detect_raw_pointer_definition(var_def.name, var_def.type, var_def.mutable)
+            self.detect_raw_pointer_definition(var_def.declarationInfo.name, var_def.declarationInfo.type, var_def.mutable)
 
             if isinstance(expr_type, NoneType):
                 expr_type = var_def_type
@@ -294,8 +294,8 @@ class TypeChecker:
             ):
                 self.error(node, f"type of the value and target do not match: {(var_def_type.__class__)} and {(expr_type.__class__)}")
 
-            self.env.declare(var_def.name, var_def_type, mutable=var_def.mutable)
-            self.symbol_table[var_def.name] = var_def_type
+            self.env.declare(var_def.declarationInfo.name, var_def_type, mutable=var_def.mutable)
+            self.symbol_table[var_def.declarationInfo.name] = var_def_type
             self._handle_borrowing(var_def, node.values[0])
 
     def detect_raw_pointer_definition(self, name, type, isMutable):

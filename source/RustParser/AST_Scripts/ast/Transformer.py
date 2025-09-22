@@ -416,7 +416,7 @@ class Transformer(RustVisitor):
 
         if ':' in tokens:
             var_type = self.visit(ctx.typeExpr())
-        
+
         return VarDef(name=name, mutable=mutable, by_ref=by_ref, var_type=var_type)
 
     def visitStaticItem(self, ctx):
@@ -425,13 +425,13 @@ class Transformer(RustVisitor):
         name = ctx.Identifier().getText()
         var_type = self.visit(ctx.typeExpr())
         value = self.visit(ctx.expr()) if ctx.expr() else None
-        return ExternStaticVarDecl(
+        return StaticVarDecl(
             name=name,
             var_type=var_type,
             mutable=mutable,
             visibility=visibility,
             initial_value=value,
-        )
+            isExtern=True)
 
     def visitMutableDef(self, ctx):
         name = ctx.Identifier().getText()
