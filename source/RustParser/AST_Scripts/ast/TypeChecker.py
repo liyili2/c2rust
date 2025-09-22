@@ -554,7 +554,6 @@ class TypeChecker:
         return True
 
     def visit_RangeExpression(self, node):
-        # print("visit_RangeExpression", node.initial, node.last)
         return RangeExpression(node.initial, node.last)
 
     def visit_ReturnStmt(self, node):
@@ -764,7 +763,6 @@ class TypeChecker:
 
     def visit_FieldAccessExpr(self, node):
         base_type = self.visit(node.receiver)
-        # print("visit_FieldAccessExpr", base_type, node.receiver, node.receiver.__class__)
 
         if isinstance(node.receiver, DereferenceExpr):
             self.error(node, "unprotected dereference in a field access expression")
@@ -806,7 +804,6 @@ class TypeChecker:
         pass
 
     def visit_TypePathExpression(self, node):
-        # print("visit_TypePathExpression", node.last_type.__class__, node.last_type)
         if isinstance(node.last_type, IdentifierExpr):
             return node.last_type
         if str.__contains__(node.last_type, "int"):
@@ -817,17 +814,15 @@ class TypeChecker:
             return CharType()
         if str.__contains__(node.last_type, "bool"):
             return BoolType()
-        # self.error(node, "type path expression instead of simple types")
+        # self.error(node, "type path expression instead of primitive types")
 
     def visit_BoolLiteral(self, node):
         return BoolType()
 
     def visit_IntLiteral(self, node):
-        # print("visit_IntLiteral")
         return IntType()
 
     def visit_StrLiteral(self, node):
-        # print("visit_StrLiteral")
         return StringType()
 
     def visit_PrimaryExpression(self, node):
@@ -842,7 +837,6 @@ class TypeChecker:
 
     def visit_StaticVarDecl(self, node):
         node_type = self.visit(node.declarationInfo.type)
-        # print("visit_StaticVarDecl", node.name, node.parent.__class__, node_type)
         self.env.declare(name=node.declarationInfo.name, typ=node_type, mutable=node.isMutable)
         if node.isMutable and isinstance(node, TopLevel):
             self.error(node, f"global static mutable struct declaration: {node.declarationInfo.name}")

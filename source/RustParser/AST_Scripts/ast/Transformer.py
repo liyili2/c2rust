@@ -1,6 +1,6 @@
 
 from RustParser.AST_Scripts.ast.ASTNode import ASTNode
-from RustParser.AST_Scripts.ast.Expression import ArrayDeclaration, ArrayLiteral, BinaryExpr, BoolLiteral, BorrowExpr, BoxWrapperExpr, CastExpr, CharLiteral, CharLiteralExpr, DereferenceExpr, Expression, FieldAccessExpr, IdentifierExpr, IndexExpr, IntLiteral, ParenExpr, PatternExpr, QualifiedExpression, RangeExpression, SafeWrapper, StrLiteral, StructLiteralField, TypeAccessExpr, TypePathExpression, UnaryExpr
+from RustParser.AST_Scripts.ast.Expression import ArrayDeclaration, ArrayLiteral, BinaryExpr, BoolLiteral, BorrowExpr, BoxWrapperExpr, CastExpr, CharLiteral, CharLiteralExpr, DereferenceExpr, Expression, FieldAccessExpr, IdentifierExpr, IndexExpr, IntLiteral, PatternExpr, QualifiedExpression, RangeExpression, SafeWrapper, StrLiteral, StructLiteralField, TypePathExpression, UnaryExpr
 from RustParser.AST_Scripts.ast.Statement import AssignStmt, BreakStmt, CompoundAssignment, ConditionalAssignmentStmt, ContinueStmt, ExpressionStmt, ForStmt, FunctionCall, IfStmt, LetStmt, LoopStmt, MatchArm, MatchPattern, MatchStmt, ReturnStmt, UnsafeBlock, WhileStmt
 from RustParser.AST_Scripts.antlr.RustVisitor import RustVisitor
 from RustParser.AST_Scripts.ast.TopLevel import StaticVarDecl, ExternBlock, ExternFunctionDecl, ExternTypeDecl, FunctionDef, InterfaceDef, StructDef, Attribute, StructField, TopLevel, TopLevelVarDef, TypeAliasDecl, UseDecl, VarDefField
@@ -698,7 +698,7 @@ class Transformer(RustVisitor):
         elif ctx.typeExpr():
             expr = self.visit(ctx.expression(0))
             typeAccess = self.visit(ctx.typeExpr())
-            return TypeAccessExpr(expr=expr, typeExpr=typeAccess)
+            return Expression(expr=expr, type=typeAccess)
 
         elif ctx.unsafeModifier():
             expr = self.visit(ctx.unsafeExpression().expression())

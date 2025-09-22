@@ -85,15 +85,6 @@ class CastExpr(Expression):
     def accept(self, visitor):
         return visitor.visit_CastExpr(self)
 
-class TypeAccessExpr(Expression):
-    def __init__(self, expr, typeExpr):
-        super().__init__(type)
-        self.expr = expr
-        self.type = typeExpr
-
-    def accept(self, visitor):
-        return super().accept(visitor)
-    
 class TypeWrapperExpr(Expression):
     def __init__(self, expr):
         super().__init__(type)
@@ -155,6 +146,17 @@ class StrLiteral(Expression):
 
     def accept(self, visitor):
         return visitor.visit_StrLiteral(self)
+    
+class ArrayDeclaration(Expression):
+    def __init__(self, identifier, size, force, value):
+        super().__init__()
+        self.identifier = identifier
+        self.size = size
+        self.force = force
+        self.value = value
+
+    def accept(self, visitor):
+        pass
 
 class ArrayLiteral(Expression):
     def __init__(self, elements,name=None, count=None):
@@ -252,17 +254,6 @@ class TypePathExpression(Expression):
 
     def __repr__(self):
         return f"TypePathExpression(type_path={self.type_path}, value_expr={self.value_expr})"
-
-class ArrayDeclaration(Expression):
-    def __init__(self, identifier, size, force, value):
-        super().__init__()
-        self.identifier = identifier
-        self.size = size
-        self.force = force
-        self.value = value
-
-    def accept(self, visitor):
-        pass
 
 class RangeExpression(Expression):
     def __init__(self, initial, last):
