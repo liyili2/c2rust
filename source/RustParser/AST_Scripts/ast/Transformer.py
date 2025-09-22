@@ -1,14 +1,13 @@
 
 from RustParser.AST_Scripts.ast.ASTNode import ASTNode
-from RustParser.AST_Scripts.ast.Expression import ArrayDeclaration, ArrayLiteral, BinaryExpr, BoolLiteral, BorrowExpr, BoxWrapperExpr, CastExpr, CharLiteral, CharLiteralExpr, DereferenceExpr, Expression, FieldAccessExpr, IdentifierExpr, IndexExpr, IntLiteral, PatternExpr, QualifiedExpression, RangeExpression, SafeWrapper, StrLiteral, StructLiteralField, TypePathExpression, UnaryExpr
-from RustParser.AST_Scripts.ast.Statement import AssignStmt, BreakStmt, CompoundAssignment, ConditionalAssignmentStmt, ContinueStmt, ExpressionStmt, ForStmt, FunctionCall, IfStmt, LetStmt, LoopStmt, MatchArm, MatchPattern, MatchStmt, ReturnStmt, UnsafeBlock, WhileStmt
+from RustParser.AST_Scripts.ast.Expression import *
+from RustParser.AST_Scripts.ast.Statement import *
 from RustParser.AST_Scripts.antlr.RustVisitor import RustVisitor
-from RustParser.AST_Scripts.ast.TopLevel import StaticVarDecl, ExternBlock, ExternFunctionDecl, ExternTypeDecl, FunctionDef, InterfaceDef, StructDef, Attribute, StructField, TopLevel, TopLevelVarDef, TypeAliasDecl, UseDecl, VarDefField
+from RustParser.AST_Scripts.ast.TopLevel import *
 from RustParser.AST_Scripts.ast.Program import Program
-from RustParser.AST_Scripts.ast.Expression import LiteralExpr
-from RustParser.AST_Scripts.ast.Type import SafeNonNullWrapper, ArrayType, BoolType, IntType, PathType, PointerType, StringType, Type
+from RustParser.AST_Scripts.ast.Type import *
 from RustParser.AST_Scripts.ast.VarDef import VarDef
-from RustParser.AST_Scripts.ast.Func import FunctionParamList, Param
+from RustParser.AST_Scripts.ast.Func import *
 from RustParser.AST_Scripts.ast.Block import Block
 
 class Transformer(RustVisitor):
@@ -131,75 +130,12 @@ class Transformer(RustVisitor):
             method_name = part
             args = []
             for i in range(ctx.getChildCount()):
-                    # print(f"Child {i}: {type(ctx.getChild(i))} → {ctx.getChild(i).getText()}")
                     args = [self.visit(child) for child in ctx.getChild(i).expression()]
                     break
 
             current = FunctionCall(caller=current, callee=method_name, args=args)
         return current
-
-    def visitPostfixExpression(self, ctx):
-        expr = self.visit(ctx.primaryExpression())
-        i = 1
-        while i < ctx.getChildCount():
-            token = ctx.getChild(i).getText()
-
-            if token == '(':
-                arg_list_ctx = ctx.getChild(i + 1)
-                if hasattr(arg_list_ctx, 'expression'):
-                    args = [self.visit(e) for e in arg_list_ctx.expression()]
-                else:
-                    args = []
-                expr = FunctionCall(caller=expr, callee=None, args=args)
-                i += 3
-
-            elif token == '.':
-                next_token = ctx.getChild(i + 1)
-                method_or_field = next_token.getText()
-                if (i + 2 < ctx.getChildCount() and ctx.getChild(i + 2).getText() in ['(', '()']):
-                    if ctx.getChild(i + 2).getText() == '()':
-                        args = []
-                        i += 3
-                    else:
-                        arg_list_ctx = ctx.getChild(i + 3)
-                        if hasattr(arg_list_ctx, 'expression'):
-                            args = [self.visit(e) for e in arg_list_ctx.expression()]
-                        else:
-                            args = []
-                        i += 5
-                    expr = FunctionCall(caller=expr, callee=method_or_field, args=args)
-                else:
-                    expr = FieldAccessExpr(receiver=expr, name=method_or_field)
-                    i += 2
-            elif token == '[':
-                index_expr = self.visit(ctx.getChild(i + 1))
-                expr = IndexExpr(target=expr, index=index_expr)
-                i += 3
-            else:
-                i += 1
-        return expr
-
-    # def visitFieldAccessExpr(self, expr):
-    #     print("visitFieldAccessExpr")
-    #     receiver_val = self.visit(expr.receiver)
-    #     field_name = self.visit(expr.primaryExpression())
-    #     return field_name
-        if isinstance(receiver_val, dict):
-            if field_name in receiver_val:
-                return receiver_val[field_name]
-            else:
-                raise Exception(f"Field '{field_name}' not found in {receiver_val}")
-        else:
-            raise Exception(f"Cannot access field '{field_name}' on non-object type: {type(receiver_val)}")
-
-    def visitIndexExpr(self, expr):
-        target_val = self.visit(expr.target)
-        index_val = self.visit(expr.index)
-        try:
-            return target_val[index_val]
-        except (IndexError, TypeError, KeyError) as e:
-            raise Exception(f"Indexing error: {e}")
-    
+   
     def get_literal_type(self, value):
         if isinstance(value, IntLiteral):
             return IntType()
