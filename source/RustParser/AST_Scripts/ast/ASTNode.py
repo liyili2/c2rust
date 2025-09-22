@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from RustParser.AST_Scripts.ast.common import DeclarationInfo
 
 class ASTNode(ABC):
     @abstractmethod
@@ -39,3 +40,12 @@ class ASTNode(ABC):
             "type": self.__class__.__name__,
             **{k: convert(v) for k, v in self.__dict__.items() if not k.startswith('_')}
         }
+    
+class StructField(ASTNode):
+    def __init__(self, name, typeExpr, visibility):
+        super().__init__()
+        self.declarationInfo = DeclarationInfo(name=name, type=typeExpr, visibility=visibility)
+
+    def accept(self, visitor):
+        method_name = f'visit_{self.__class__.__name__}'
+        return getattr(visitor, method_name, visitor.generic_visit)(self)

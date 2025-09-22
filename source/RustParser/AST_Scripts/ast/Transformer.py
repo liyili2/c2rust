@@ -1,14 +1,14 @@
 
-from RustParser.AST_Scripts.ast.ASTNode import ASTNode
+from RustParser.AST_Scripts.ast.ASTNode import *
 from RustParser.AST_Scripts.ast.Expression import *
 from RustParser.AST_Scripts.ast.Statement import *
 from RustParser.AST_Scripts.antlr.RustVisitor import RustVisitor
 from RustParser.AST_Scripts.ast.TopLevel import *
-from RustParser.AST_Scripts.ast.Program import Program
+from RustParser.AST_Scripts.ast.Program import *
 from RustParser.AST_Scripts.ast.Type import *
-from RustParser.AST_Scripts.ast.VarDef import VarDef
+from RustParser.AST_Scripts.ast.VarDef import *
 from RustParser.AST_Scripts.ast.Func import *
-from RustParser.AST_Scripts.ast.Block import Block
+from RustParser.AST_Scripts.ast.Block import *
 
 class Transformer(RustVisitor):
     def __init__(self):
