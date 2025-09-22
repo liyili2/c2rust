@@ -5,7 +5,7 @@ from RustParser.AST_Scripts.ast.Block import Block
 from RustParser.AST_Scripts.ast.Type import SafeNonNullWrapper, ArrayType, BoolType, CharType, FloatType, IntType, PointerType, RefType, StringType, StructType, VoidType
 from RustParser.AST_Scripts.ast.TypeEnv import TypeEnv
 from RustParser.AST_Scripts.ast.Expression import BinaryExpr, BorrowExpr, CastExpr, DereferenceExpr, FieldAccessExpr, FunctionCallExpr, IdentifierExpr, IntLiteral, LiteralExpr, MutableExpr, RangeExpression, UnsafeExpression
-from RustParser.AST_Scripts.ast.Statement import IfStmt, ReturnStmt, WhileStmt
+from RustParser.AST_Scripts.ast.Statement import IfStmt, ReturnStmt, Statement, WhileStmt
 from RustParser.AST_Scripts.ast.TopLevel import TopLevel
 
 class TypeChecker:
@@ -54,19 +54,7 @@ class TypeChecker:
     def visit_Attribute(self, node):
         pass
 
-    def visit_StructDef(self, node):
-        field_dict = {}
-        for field in node.fields:
-            field_type = self.visit(field)
-            field_name = field.declarationInfo.name
-            field_dict[field_name] = field_type
-
-        self.env.declare(name=node.name, typ=StructType(name=node.name, fields=field_dict))
-
     def visit_TypeFullPathExpression(self, node):
-        pass
-
-    def visit_StructLiteral(self, node):
         pass
 
     def visit_safeWrapper(self, node):
@@ -105,9 +93,6 @@ class TypeChecker:
                     self.error(param, "`self` is marked mutable, but its type is not a mutable reference")
                 if is_mut and isinstance (param.declarationInfo.type, PointerType):
                     self.error(node, f"raw pointer passed as argument to function {node.name}")
-
-            if param_name in self.env.top():
-                self.error(param, f"duplicate parameter name '{param_name}'")
 
             self.env.top()[param_name] = {
                 "type": param_type,
@@ -190,7 +175,6 @@ class TypeChecker:
             self.visit(item)
 
     def visit_WhileStmt(self, node):
-        # print("visit_WhileStmt", node.condition.__class__)
         cond_type = self.visit(node.condition)
         # self.visit(node.condition)
 
@@ -211,10 +195,26 @@ class TypeChecker:
 
         return target_type
 
+    def visit_Struct(self, node):
+        if isinstance(node, TopLevel):
+            self.visit_StructDef(node)
+        if isinstance(node, Statement):
+            self.visit_StructLiteral(node)
+        else:
+            return None
+
+    def visit_StructDef(self, node):
+        field_dict = {}
+        for field in node.fields:
+            field_type = self.visit(field)
+            field_name = field.declarationInfo.name
+            field_dict[field_name] = field_type
+
+        self.env.declare(name=node.name, typ=StructType(name=node.name, fields=field_dict))
+
     def visit_StructLiteral(self, node):
         struct_type = self.visit(node.type_name)
         info = self.env.lookup(struct_type)
-        # print("struct_type", info, struct_type, node.type_name, node.__class__, isinstance(info['type'], StructType))
         if not isinstance(info['type'], StructType):
             self.error(node, f"{struct_type} is not a valid struct type")
             return
@@ -238,8 +238,10 @@ class TypeChecker:
         # if missing_fields:
         #     for mf in missing_fields:
         #         self.error(node, f"Missing field '{mf}' in struct literal of type '{struct_type}'")
-
         return
+
+    def visit_StructLiteralField(self, node):
+        pass
 
     def visit_UnsafeBlock(self, node):
         for stmt in node.getChildren():
