@@ -40,7 +40,7 @@ class BinaryExpr(Expression):
         self.right = right
 
     def accept(self, visitor):
-        return visitor.visit_binaryExpr(self)
+        return visitor.visit_BinaryExpr(self)
 
 class LiteralExpr(Expression):
     def __init__(self, expr):
@@ -186,13 +186,6 @@ class DereferenceExpr(Expression):
     def accept(self, visitor):
         return visitor.visit_DereferenceExpr(self)
 
-class BinaryExpr(Expression):
-    def __init__(self, left, op, right):
-        super().__init__()
-        self.left = left
-        self.op = op
-        self.right = right
-
 class CharLiteralExpr(Expression):
     def __init__(self, value):
         super().__init__()
@@ -220,15 +213,15 @@ class IndexExpr(Expression):
         return visitor.visitIndexExpr(self)
 
 class ParenExpr(Expression):
-    def __init__(self, inner_expr):
+    def __init__(self, expr):
         super().__init__()
-        self.inner_expr = inner_expr
+        self.expr = expr
 
     def accept(self, visitor):
         return visitor.visitParenExpr(self)
 
     def __repr__(self):
-        return f"ParenExpr({self.inner_expr})"
+        return f"ParenExpr({self.expr})"
 
 class StructLiteralField(Expression):
     def __init__(self, name, value, field_type=None):
@@ -239,45 +232,26 @@ class StructLiteralField(Expression):
     def accept(self, visitor):
         return visitor.visit_StructLiteralField(self)
 
-class Pattern(Expression):
-    def __init__(self, name):
-        super().__init__()
-        self.name = name
-
-    def accept(self, visitor):
-        return visitor.visitPattern(self)
-
 class PatternExpr(Expression):
-    def __init__(self, expression, pattern):
+    def __init__(self, expr, pattern):
         super().__init__()
-        self.expression = expression
+        self.expr = expr
         self.pattern = pattern
-        # print("accept: ", self.pattern, self.expression)
 
     def accept(self, visitor):
-        # print("accept: ", self.pattern, self.expression)
         return self
 
 class TypePathExpression(Expression):
     def __init__(self, type_path, last_type):
         super().__init__()
         self.last_type = last_type
-        self.type_path = type_path  # list of strings
+        self.type_path = type_path
 
     def accept(self, visitor):
         return visitor.visit_TypePathExpression(self)
 
-    # def __repr__(self):
-    #     return f"TypePathExpression(type_path={self.type_path}, value_expr={self.value_expr})"
-
-class TypePathFullExpr(Expression):
-    def __init__(self, type_path, value_expr):
-        super().__init__()
-        self.type_path = type_path
-        self.value_expr = value_expr
-
-    def accept(self, visitor):
-        return visitor.visit_TypeFullPathExpression(self)
+    def __repr__(self):
+        return f"TypePathExpression(type_path={self.type_path}, value_expr={self.value_expr})"
 
 class ArrayDeclaration(Expression):
     def __init__(self, identifier, size, force, value):

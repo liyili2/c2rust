@@ -1,6 +1,6 @@
 
 from RustParser.AST_Scripts.ast.ASTNode import ASTNode
-from RustParser.AST_Scripts.ast.Expression import ArrayDeclaration, ArrayLiteral, BinaryExpr, BoolLiteral, BorrowExpr, BoxWrapperExpr, CastExpr, CharLiteral, CharLiteralExpr, DereferenceExpr, Expression, FieldAccessExpr, IdentifierExpr, IndexExpr, IntLiteral, ParenExpr, Pattern, PatternExpr, QualifiedExpression, RangeExpression, SafeWrapper, StrLiteral, StructLiteralField, TypeAccessExpr, TypePathExpression, TypePathFullExpr, UnaryExpr
+from RustParser.AST_Scripts.ast.Expression import ArrayDeclaration, ArrayLiteral, BinaryExpr, BoolLiteral, BorrowExpr, BoxWrapperExpr, CastExpr, CharLiteral, CharLiteralExpr, DereferenceExpr, Expression, FieldAccessExpr, IdentifierExpr, IndexExpr, IntLiteral, ParenExpr, PatternExpr, QualifiedExpression, RangeExpression, SafeWrapper, StrLiteral, StructLiteralField, TypeAccessExpr, TypePathExpression, UnaryExpr
 from RustParser.AST_Scripts.ast.Statement import AssignStmt, BreakStmt, CompoundAssignment, ConditionalAssignmentStmt, ContinueStmt, ExpressionStmt, ForStmt, FunctionCall, IfStmt, LetStmt, LoopStmt, MatchArm, MatchPattern, MatchStmt, ReturnStmt, UnsafeBlock, WhileStmt
 from RustParser.AST_Scripts.antlr.RustVisitor import RustVisitor
 from RustParser.AST_Scripts.ast.TopLevel import StaticVarDecl, ExternBlock, ExternFunctionDecl, ExternTypeDecl, FunctionDef, InterfaceDef, StructDef, Attribute, StructField, TopLevel, TopLevelVarDef, TypeAliasDecl, UseDecl, VarDefField
@@ -678,7 +678,7 @@ class Transformer(RustVisitor):
         elif ctx.typePathExpression():
             typePath = self.visit(ctx.typePathExpression())
             identifier = self.visit(ctx.expression(0))
-            return  TypePathFullExpr(type_path=typePath, value_expr=identifier)
+            return  TypePathExpression(type_path=typePath, last_type=identifier)
 
         elif ctx.patternPrefix():
             value_expr = self.visit(ctx.expression(0))
@@ -793,12 +793,6 @@ class Transformer(RustVisitor):
         expr = self.visit(node.expr)
         target_type = self.visit(node.type)
         return CastExpr(expr=expr, type=target_type)
-
-    def visitPattern(self, ctx):
-        ids = []
-        for id in ctx.Identifier():
-            ids.append(id.getText())
-        return Pattern(ids)
 
     def visitTypeExpr(self, ctx):
         type_str = ctx.getText()
