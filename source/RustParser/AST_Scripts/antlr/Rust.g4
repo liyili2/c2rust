@@ -73,9 +73,8 @@ typePath: Identifier DOUBLE_COLON | DOUBLE_COLON? Identifier (DOUBLE_COLON Ident
 arrayType: '[' basicType ';' Number ']' ;
 
 block: unsafeModifier? '{' statement* returnStmt? '}';
-unsafeBlcok: unsafeModifier '{' statement* returnStmt? '}';
 statement
-    : unsafeBlcok
+    : block
     | letStmt
     | conditionalAssignmentStmt
     | structLiteral

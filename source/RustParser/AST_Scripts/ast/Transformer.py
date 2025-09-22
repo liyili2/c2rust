@@ -421,12 +421,12 @@ class Transformer(RustVisitor):
             result = self.visit(stmt_ctx)
             stmts.append(result)
         if isUnsafe:
-            return UnsafeBlock(stmts=stmts)
+            return Block(stmts=stmts, isUnsafe=isUnsafe)
         return Block(stmts=stmts, isUnsafe=False)
 
     def visitExprStmt(self, ctx):
         expr = self.visit(ctx.primaryExpression())
-        return ExpressionStmt(expr=expr, line=ctx.start.line, column=ctx.start.column)
+        return Statement(body=expr)
 
     def visitFunctionCall(self, ctx):
         function_expr = self.visit(ctx.expression())
@@ -438,10 +438,6 @@ class Transformer(RustVisitor):
             print("⚠️ callExpressionPostFix not recognized format")
             args = []
         return FunctionCall(callee=function_expr, args=args)
-
-    def visitUnsafeBlock(self, ctx):
-        block = self.visit(ctx.block())
-        return UnsafeBlock(block)
 
     def visitStatement(self, ctx):
         # print("stmt is ", ctx.__class__, ctx.getText())
@@ -481,9 +477,8 @@ class Transformer(RustVisitor):
             return self.visit(ctx.structDef())
         elif ctx.conditionalAssignmentStmt():
             return self.visit(ctx.conditionalAssignmentStmt())
-        elif ctx.unsafeBlcok():
-            print("unsafeBlcok case")
-            return self.visitBlock(ctx.unsafeBlcok())
+        elif ctx.block():
+            return self.visitBlock(ctx.block())
         else:
             print("⚠️ Unknown statement:", ctx.getText())
             return None
@@ -496,7 +491,7 @@ class Transformer(RustVisitor):
         else:
             left = self.visit(ctx.expression(0))
             right = self.visit(ctx.expression(1))
-        return ConditionalAssignmentStmt(cond=cond, assignment=AssignStmt(target=left, value=right))
+        return ConditionalAssignmentStmt(cond=cond, body=AssignStmt(target=left, value=right))
 
     def visitLoopStmt(self, ctx):
         block = self.visit(ctx.block())
@@ -860,12 +855,12 @@ class Transformer(RustVisitor):
     def visitWhileStmt(self, ctx):
         condition = self.visit(ctx.expression())
         body = [self.visit(stmt) for stmt in ctx.block().statement()]
-        return WhileStmt(condition=condition, body=body, line=ctx.start.line, column=ctx.start.column)
+        return WhileStmt(condition=condition, body=body)
 
     def visitMatchStmt(self, ctx):
         expr = self.visit(ctx.expression())
         arms = [self.visit(arm_ctx) for arm_ctx in ctx.matchArm()]
-        return MatchStmt(expr=expr, arms=arms, line=ctx.start.line, column=ctx.start.column)
+        return MatchStmt(expr=expr, arms=arms)
 
     def visitMatchArm(self, ctx):
         patterns = [self.visit(pat_ctx) for pat_ctx in ctx.matchPattern()]
@@ -892,8 +887,7 @@ class Transformer(RustVisitor):
         value = self.visit(rhs_ctx)
         op = ctx.compoundOp().getText()
         return CompoundAssignment(
-            target=target, op=op, value=value,
-            line=ctx.start.line, column=ctx.start.column)
+            target=target, op=op, value=value)
 
     # def visitUnionDef(self, ctx):
     #     visibility = ctx.visibility().getText() if ctx.visibility() else None
