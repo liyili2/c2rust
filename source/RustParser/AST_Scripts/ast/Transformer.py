@@ -1,7 +1,7 @@
 
 from RustParser.AST_Scripts.ast.ASTNode import ASTNode
-from RustParser.AST_Scripts.ast.Expression import ArrayDeclaration, ArrayLiteral, BasicTypeCastExpr, BinaryExpr, BoolLiteral, BorrowExpr, BoxWrapperExpr, CastExpr, CharLiteral, CharLiteralExpr, DereferenceExpr, Expression, FieldAccessExpr, FunctionCallExpr, IdentifierExpr, IndexExpr, IntLiteral, MethodCallExpr, ParenExpr, Pattern, PatternExpr, QualifiedExpression, RangeExpression, RepeatArrayLiteral, SafeWrapper, StrLiteral, StructLiteralField, TypeAccessExpr, TypePathExpression, TypePathFullExpr, UnaryExpr, UnsafeExpression
-from RustParser.AST_Scripts.ast.Statement import AssignStmt, BreakStmt, CallStmt, CompoundAssignment, ConditionalAssignmentStmt, ContinueStmt, ExpressionStmt, ForStmt, IfStmt, LetStmt, LoopStmt, MatchArm, MatchPattern, MatchStmt, ReturnStmt, UnsafeBlock, WhileStmt
+from RustParser.AST_Scripts.ast.Expression import ArrayDeclaration, ArrayLiteral, BasicTypeCastExpr, BinaryExpr, BoolLiteral, BorrowExpr, BoxWrapperExpr, CastExpr, CharLiteral, CharLiteralExpr, DereferenceExpr, Expression, FieldAccessExpr, IdentifierExpr, IndexExpr, IntLiteral, ParenExpr, Pattern, PatternExpr, QualifiedExpression, RangeExpression, RepeatArrayLiteral, SafeWrapper, StrLiteral, StructLiteralField, TypeAccessExpr, TypePathExpression, TypePathFullExpr, UnaryExpr, UnsafeExpression
+from RustParser.AST_Scripts.ast.Statement import AssignStmt, BreakStmt, CompoundAssignment, ConditionalAssignmentStmt, ContinueStmt, ExpressionStmt, ForStmt, FunctionCall, IfStmt, LetStmt, LoopStmt, MatchArm, MatchPattern, MatchStmt, ReturnStmt, UnsafeBlock, WhileStmt
 from RustParser.AST_Scripts.antlr.RustVisitor import RustVisitor
 from RustParser.AST_Scripts.ast.TopLevel import StaticVarDecl, ExternBlock, ExternFunctionDecl, ExternTypeDecl, FunctionDef, InterfaceDef, StructDef, Attribute, StructField, TopLevel, TopLevelVarDef, TypeAliasDecl, UseDecl, VarDefField
 from RustParser.AST_Scripts.ast.Program import Program
@@ -135,7 +135,7 @@ class Transformer(RustVisitor):
                     args = [self.visit(child) for child in ctx.getChild(i).expression()]
                     break
 
-            current = MethodCallExpr(receiver=current, method_name=method_name, args=args)
+            current = FunctionCall(caller=current, callee=method_name, args=args)
         return current
 
     def visitPostfixExpression(self, ctx):
@@ -150,7 +150,7 @@ class Transformer(RustVisitor):
                     args = [self.visit(e) for e in arg_list_ctx.expression()]
                 else:
                     args = []
-                expr = MethodCallExpr(receiver=expr, method_name=None, args=args)
+                expr = FunctionCall(caller=expr, callee=None, args=args)
                 i += 3
 
             elif token == '.':
@@ -167,7 +167,7 @@ class Transformer(RustVisitor):
                         else:
                             args = []
                         i += 5
-                    expr = MethodCallExpr(receiver=expr, method_name=method_or_field, args=args)
+                    expr = FunctionCall(caller=expr, callee=method_or_field, args=args)
                 else:
                     expr = FieldAccessExpr(receiver=expr, name=method_or_field)
                     i += 2
@@ -492,7 +492,7 @@ class Transformer(RustVisitor):
         expr = self.visit(ctx.primaryExpression())
         return ExpressionStmt(expr=expr, line=ctx.start.line, column=ctx.start.column)
 
-    def visitCallStmt(self, ctx):
+    def visitFunctionCall(self, ctx):
         function_expr = self.visit(ctx.expression())
         postfix = ctx.callExpressionPostFix()
         if postfix.functionCallArgs():
@@ -501,7 +501,7 @@ class Transformer(RustVisitor):
         else:
             print("⚠️ callExpressionPostFix not recognized format")
             args = []
-        return CallStmt(callee=function_expr, args=args)
+        return FunctionCall(callee=function_expr, args=args)
 
     def visitUnsafeBlock(self, ctx):
         block = self.visit(ctx.block())
@@ -515,8 +515,8 @@ class Transformer(RustVisitor):
             return self.visit(ctx.letStmt())
         elif ctx.ifStmt():
             return self.visit(ctx.ifStmt())
-        elif ctx.callStmt():
-            return self.visit(ctx.callStmt())
+        elif ctx.functionCall():
+            return self.visit(ctx.functionCall())
         elif ctx.structLiteral():
             return self.visit(ctx.structLiteral())
         elif ctx.assignStmt():
@@ -653,7 +653,7 @@ class Transformer(RustVisitor):
         elif ctx.callExpressionPostFix():
             func = self.visit(ctx.expression(0))
             args = self.visit(ctx.callExpressionPostFix())
-            return FunctionCallExpr(func, args, id)
+            return FunctionCall(callee=func, args=args, caller=id)
 
         elif ctx.parenExpression():
             return self.visit(ctx.parenExpression().expression())
@@ -743,14 +743,6 @@ class Transformer(RustVisitor):
 
         return args
 
-    # def visitCallExpression(self, ctx):
-    #     print("in call expression")
-        # callee = self.visit(ctx.expression(0))  # the function being called
-        # postfix = ctx.callExpressionPostFix()   # the arguments (ctx)
-        # args = self.visit(postfix)  # returns a list of expressions
-        # print("call exp result: ", ctx.func, ctx.args)
-        # return FunctionCallExpr(func=ctx.func, args=ctx.args)
-
     # TODO: Problematic
     def visitTypePathExpression(self, ctx):
         type_str = ctx.getText()
@@ -777,7 +769,7 @@ class Transformer(RustVisitor):
             args = self.visit(ctx.argumentList())
         else:
             args = []
-        return MethodCallExpr(method_name=function_name, args=args)
+        return FunctionCall(callee=function_name, args=args)
 
     def visitGenericArgs(self, ctx):
         print("generic arg call")

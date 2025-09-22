@@ -180,14 +180,15 @@ class StructDef(Statement):
     def __repr__(self):
         return f"StructDef(type_name={self.type_name}, fields={self.fields})"
 
-class CallStmt(Statement):
-    def __init__(self, callee, args):
+class FunctionCall(Statement):
+    def __init__(self, callee, args, caller=None):
         super().__init__()
-        self.callee = callee  # Could be an IdentifierExpr or a MethodCallExpr
-        self.args = args      # List of expressions
+        self.callee = callee
+        self.args = args
+        self.caller = caller
 
     def accept(self, visitor):
-        return visitor.visitCallStmt(self)
+        return visitor.visit_FunctionCall(self)
 
 class UnsafeBlock(Statement):
     def __init__(self, stmts):

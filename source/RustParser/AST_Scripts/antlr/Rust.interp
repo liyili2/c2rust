@@ -240,7 +240,7 @@ block
 unsafeBlcok
 statement
 conditionalAssignmentStmt
-callStmt
+functionCall
 letStmt
 varDef
 compoundOp
