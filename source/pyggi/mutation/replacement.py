@@ -10,7 +10,7 @@ from RustParser.AST_Scripts.ast.Type import PointerType, RefType, SafeNonNullWra
 from pyggi.mutation.utils import MutationUtils
 import random
 
-from RustParser.AST_Scripts.ast.Expression import DereferenceExpr, ReferenceExpr, UnsafeExpression
+from RustParser.AST_Scripts.ast.Expression import DereferenceExpr, Expression, ReferenceExpr
 
 class ReplacementOperator:
     def __init__(self, ast, node):
@@ -100,7 +100,7 @@ class ReplacementOperator:
                             by_ref=stmt.var_defs[0].by_ref,
                             var_type=RefType("T")
                         ),
-                        values=UnsafeExpression(expr=ReferenceExpr(expr=val))
+                        values=Expression(expr=ReferenceExpr(expr=val), isUnsafe=True)
                     )
             return None  # No change
         return self.transform_let_stmt(ast_root, target_node, transform, label="replace_raw_dereferences_in_unsafe_wrapper")
