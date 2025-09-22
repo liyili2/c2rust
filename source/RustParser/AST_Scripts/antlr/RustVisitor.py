@@ -309,6 +309,11 @@ class RustVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by RustParser#unsafeExpression.
+    def visitUnsafeExpression(self, ctx:RustParser.UnsafeExpressionContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by RustParser#qualifiedExpression.
     def visitQualifiedExpression(self, ctx:RustParser.QualifiedExpressionContext):
         return self.visitChildren(ctx)

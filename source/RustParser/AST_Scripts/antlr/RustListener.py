@@ -548,6 +548,15 @@ class RustListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by RustParser#unsafeExpression.
+    def enterUnsafeExpression(self, ctx:RustParser.UnsafeExpressionContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#unsafeExpression.
+    def exitUnsafeExpression(self, ctx:RustParser.UnsafeExpressionContext):
+        pass
+
+
     # Enter a parse tree produced by RustParser#qualifiedExpression.
     def enterQualifiedExpression(self, ctx:RustParser.QualifiedExpressionContext):
         pass

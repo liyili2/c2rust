@@ -42,9 +42,6 @@ class TypeChecker:
         if isinstance(node.declarationInfo.type, PointerType):
             self.error(node, "raw pointer usage in a struct field")
 
-    def visit_BasicTypeCastExpr(self, node):
-        pass
-
     def visit_TopLevelVarDef(Self, node):
         pass
 
@@ -432,7 +429,7 @@ class TypeChecker:
                 return
 
             if value_info:
-                if value_expr.mutable and not value_info["mutable"]:
+                if value_expr.isMutable and not value_info["mutable"]:
                     self.error(self, f"cannot mutably borrow an immutable variable in a let stmt: {value_expr.name}")
                 if value_info["borrowed"]:
                     self.error(self, f"usage of a borrowed variable {value_expr.name}")
@@ -690,7 +687,7 @@ class TypeChecker:
         if not info["owned"]:
             self.error(node, "cannot borrow a variable which ownership already moved")
 
-        if node.mutable:
+        if node.isMutable:
             if not info["mutable"]:
                 self.error(node, "cannot mutably borrow an immutable variable")
             if info["borrowed"]:

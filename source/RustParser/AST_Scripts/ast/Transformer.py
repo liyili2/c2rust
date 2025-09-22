@@ -1,6 +1,6 @@
 
 from RustParser.AST_Scripts.ast.ASTNode import ASTNode
-from RustParser.AST_Scripts.ast.Expression import ArrayDeclaration, ArrayLiteral, BasicTypeCastExpr, BinaryExpr, BoolLiteral, BorrowExpr, BoxWrapperExpr, CastExpr, CharLiteral, CharLiteralExpr, DereferenceExpr, Expression, FieldAccessExpr, IdentifierExpr, IndexExpr, IntLiteral, ParenExpr, Pattern, PatternExpr, QualifiedExpression, RangeExpression, RepeatArrayLiteral, SafeWrapper, StrLiteral, StructLiteralField, TypeAccessExpr, TypePathExpression, TypePathFullExpr, UnaryExpr
+from RustParser.AST_Scripts.ast.Expression import ArrayDeclaration, ArrayLiteral, BinaryExpr, BoolLiteral, BorrowExpr, BoxWrapperExpr, CastExpr, CharLiteral, CharLiteralExpr, DereferenceExpr, Expression, FieldAccessExpr, IdentifierExpr, IndexExpr, IntLiteral, ParenExpr, Pattern, PatternExpr, QualifiedExpression, RangeExpression, SafeWrapper, StrLiteral, StructLiteralField, TypeAccessExpr, TypePathExpression, TypePathFullExpr, UnaryExpr
 from RustParser.AST_Scripts.ast.Statement import AssignStmt, BreakStmt, CompoundAssignment, ConditionalAssignmentStmt, ContinueStmt, ExpressionStmt, ForStmt, FunctionCall, IfStmt, LetStmt, LoopStmt, MatchArm, MatchPattern, MatchStmt, ReturnStmt, UnsafeBlock, WhileStmt
 from RustParser.AST_Scripts.antlr.RustVisitor import RustVisitor
 from RustParser.AST_Scripts.ast.TopLevel import StaticVarDecl, ExternBlock, ExternFunctionDecl, ExternTypeDecl, FunctionDef, InterfaceDef, StructDef, Attribute, StructField, TopLevel, TopLevelVarDef, TypeAliasDecl, UseDecl, VarDefField
@@ -643,11 +643,16 @@ class Transformer(RustVisitor):
             # print("compound op is ", op)
             return BinaryExpr(op, left, right)
 
+        elif ctx.basicTypeCastExpr():
+            basicType = self.visit(ctx.basicTypeCastExpr().typeExpr())
+            typePath = self.visit(ctx.basicTypeCastExpr().typePath())
+            return CastExpr(type=basicType, typePath=typePath)
+
         elif ctx.castExpressionPostFix():
             expr = self.visit(ctx.expression(0))
             cast = self.visit(ctx.castExpressionPostFix())
             # print("cast result: ", expr, " and ", cast)
-            return CastExpr(expr, cast)
+            return CastExpr(expr=expr, type=cast)
 
         # Add caller and callee
         elif ctx.callExpressionPostFix():
@@ -698,11 +703,6 @@ class Transformer(RustVisitor):
         elif ctx.unsafeModifier():
             expr = self.visit(ctx.unsafeExpression().expression())
             return Expression(expr=expr, isUnsafe=True)
-
-        elif ctx.basicTypeCastExpr():
-            basicType = self.visit(ctx.basicTypeCastExpr().typeExpr())
-            typePath = self.visit(ctx.basicTypeCastExpr().typePath())
-            return BasicTypeCastExpr(basicType, typePath)
 
         elif ctx.safeWrapper():
             return self.visit(ctx.safeWrapper())
@@ -787,7 +787,7 @@ class Transformer(RustVisitor):
         expr_index = 2 if mutable else 1
         expr = self.visit(ctx.getChild(expr_index))
         mutable = expr.isMutable
-        return BorrowExpr(expr=expr, mutable=mutable)
+        return BorrowExpr(expr=expr, isMutable=mutable)
 
     def visitCastExpr(self, node):
         expr = self.visit(node.expr)

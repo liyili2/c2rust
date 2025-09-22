@@ -75,13 +75,15 @@ class FunctionCall(Expression):
     def accept(self, visitor):
         return visitor.visit_FunctionCall(self)
 
-class BasicTypeCastExpr(Expression):
-    def __init__(self, basicType, typePath):
-        self.basicType = basicType
+class CastExpr(Expression):
+    def __init__(self, type, expr=None, typePath=None):
+        super().__init__(type)
+        self.expr = expr
+        self.type = type
         self.typePath = typePath
 
     def accept(self, visitor):
-        return super().accept(visitor)
+        return visitor.visit_CastExpr(self)
 
 class TypeAccessExpr(Expression):
     def __init__(self, expr, typeExpr):
@@ -110,29 +112,13 @@ class BoxWrapperExpr(Expression):
         return super().accept(visitor)
 
 class BorrowExpr(Expression):
-    def __init__(self, expr, mutable=False):
+    def __init__(self, expr, isMutable=False):
         super().__init__()
         self.expr = expr
-        self.mutable = mutable
+        self.isMutable = isMutable
 
     def accept(self, visitor):
         return visitor.visit_BorrowExpr(self)
-
-class VariableRef(Expression):
-    def __init__(self, name):
-        super().__init__()
-        self.name = name
-
-    def accept(self, visitor):
-        return visitor.visit_VariableRef(self)
-    
-class ReferenceExpr(Expression):
-    def __init__(self, expr):
-        super().__init__()
-        self.expr = expr
-
-    def accept(self, visitor):
-        return visitor.visit_ReferenceExpression(self)
 
 class BoolLiteral(Expression):
     def __init__(self, value: bool):
@@ -171,8 +157,9 @@ class StrLiteral(Expression):
         return visitor.visit_StrLiteral(self)
 
 class ArrayLiteral(Expression):
-    def __init__(self, name, elements):
+    def __init__(self, elements,name=None, count=None):
         super().__init__()
+        self.count = count
         self.name = name
         self.elements = elements
 
@@ -181,21 +168,6 @@ class ArrayLiteral(Expression):
 
     def __repr__(self):
         return f"ArrayLiteral({self.elements})"
-
-class RepeatArrayLiteral(Expression):
-    def __init__(self, elements, count, line=None, column=None):
-        super().__init__()
-        self.elements = elements
-        self.count = count
-
-class CastExpr(Expression):
-    def __init__(self, expr, type):
-        super().__init__(type)
-        self.expr = expr
-        self.type = type
-
-    def accept(self, visitor):
-        return visitor.visit_CastExpr(self)
 
 class UnaryExpr(Expression):
     def __init__(self, op, expr):
