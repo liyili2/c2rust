@@ -38,7 +38,7 @@ class TypeChecker:
         raise NotImplementedError(f"No visit_{type(node).__name__} method defined.")
 
     def visit_StructField(self, node):
-        if isinstance(node.type, PointerType):
+        if isinstance(node.declarationInfo.type, PointerType):
             self.error(node, "raw pointer usage in a struct field")
         # print("visit_StructField", node.name, node.type)
 
@@ -59,7 +59,7 @@ class TypeChecker:
         field_dict = {}
         for field in node.fields:
             field_type = self.visit(field)
-            field_name = field.name
+            field_name = field.declarationInfo.name
             field_dict[field_name] = field_type
 
         self.env.declare(name=node.name, typ=StructType(name=node.name, fields=field_dict))
@@ -874,8 +874,8 @@ class TypeChecker:
         pass
 
     def visit_StaticVarDecl(self, node):
-        node_type = self.visit(node.var_type)
+        node_type = self.visit(node.declarationInfo.type)
         # print("visit_StaticVarDecl", node.name, node.parent.__class__, node_type)
-        self.env.declare(name=node.name, typ=node_type, mutable=node.mutable)
+        self.env.declare(name=node.declarationInfo.name, typ=node_type, mutable=node.mutable)
         if node.mutable and isinstance(node, TopLevel):
-            self.error(node, f"global static mutable struct declaration: {node.name}")
+            self.error(node, f"global static mutable struct declaration: {node.declarationInfo.name}")
