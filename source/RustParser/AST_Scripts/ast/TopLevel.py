@@ -46,15 +46,6 @@ class StructDef(TopLevel):
     def setChildren(self, fields):
         self.fields = fields
 
-class StructField(ASTNode):
-    def __init__(self, name, typeExpr, visibility):
-        super().__init__()
-        self.declarationInfo = DeclarationInfo(name=name, type=typeExpr, visibility=visibility)
-
-    def accept(self, visitor):
-        method_name = f'visit_{self.__class__.__name__}'
-        return getattr(visitor, method_name, visitor.generic_visit)(self)
-
 class Attribute(TopLevel):
     def __init__(self, name, args=None):
         super().__init__()
@@ -131,7 +122,7 @@ class TopLevelVarDef(TopLevel):
     def __init__(self, name, fields, type, def_kind, visibility=None):
         self.declarationInfo = DeclarationInfo(name=name, type=type, visibility=visibility)
         self.fields = fields
-        self.def_kind = def_kind
+        self.def_kind = def_kind # union, const, etc.
 
     def getChildren(self):
         return self.fields

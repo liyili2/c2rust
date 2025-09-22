@@ -1,13 +1,12 @@
 from ast import FunctionDef
 from types import NoneType
-from RustParser.AST_Scripts.ast.Program import Program
-from RustParser.AST_Scripts.ast.Block import Block
-from RustParser.AST_Scripts.ast.Type import SafeNonNullWrapper, ArrayType, BoolType, CharType, FloatType, IntType, PointerType, RefType, StringType, StructType, VoidType
-from RustParser.AST_Scripts.ast.TypeEnv import TypeEnv
-from RustParser.AST_Scripts.ast.Expression import BinaryExpr, BorrowExpr, CastExpr, DereferenceExpr, Expression, FieldAccessExpr, FunctionCall, IdentifierExpr, IntLiteral, LiteralExpr, RangeExpression
+from RustParser.AST_Scripts.ast.Block import *
+from RustParser.AST_Scripts.ast.Type import *
+from RustParser.AST_Scripts.ast.TypeEnv import *
+from RustParser.AST_Scripts.ast.Expression import *
 from RustParser.AST_Scripts.ast.Expression import FunctionCall as FunctionCallExpr
-from RustParser.AST_Scripts.ast.Statement import IfStmt, ReturnStmt, Statement, WhileStmt
-from RustParser.AST_Scripts.ast.TopLevel import TopLevel
+from RustParser.AST_Scripts.ast.Statement import *
+from RustParser.AST_Scripts.ast.TopLevel import *
 
 class TypeChecker:
     def __init__(self):
