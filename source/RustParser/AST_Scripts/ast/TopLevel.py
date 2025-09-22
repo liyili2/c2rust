@@ -38,8 +38,7 @@ class StructDef(TopLevel):
         self.fields = fields
 
     def accept(self, visitor):
-        #method_name = f'visit_{self.__class__.__name__}'
-        return visitor.visit(self) #getattr(visitor, method_name, visitor.generic_visit)(self)
+        return visitor.visit_Struct(self)
     
     def getChildren(self):
         return self.fields

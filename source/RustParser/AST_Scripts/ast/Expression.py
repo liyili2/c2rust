@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from typing import List, Optional
 from RustParser.AST_Scripts.ast.ASTNode import ASTNode
 from RustParser.AST_Scripts.ast.Type import BoolType, IntType, StringType, FloatType
+from RustParser.AST_Scripts.ast.common import DeclarationInfo
 
 class Expression(ASTNode):
     def __init__(self, type=None):
@@ -191,8 +192,6 @@ class ArrayLiteral(Expression):
         super().__init__()
         self.name = name
         self.elements = elements
-        # self.line = None
-        # self.column = None
 
     def accept(self, visitor):
         return visitor.visitArrayLiteral(self)
@@ -205,8 +204,6 @@ class RepeatArrayLiteral(Expression):
         super().__init__()
         self.elements = elements
         self.count = count
-        # self.line = line
-        # self.column = column
 
 class CastExpr(Expression):
     def __init__(self, expr, type):
@@ -232,8 +229,6 @@ class MethodCallExpr(Expression):
         self.receiver = receiver
         self.method_name = method_name
         self.args = args or []
-        # self.line = line
-        # self.column = column
 
 class DereferenceExpr(Expression):
     def __init__(self, expr):
@@ -241,18 +236,31 @@ class DereferenceExpr(Expression):
         self.expr = expr
 
     def accept(self, visitor):
-        return visitor.visitDereferenceExpr(self)
+        return visitor.visit_DereferenceExpr(self)
+
+class BinaryExpr(Expression):
+    def __init__(self, left, op, right):
+        super().__init__()
+        self.left = left
+        self.op = op
+        self.right = right
+
+class CharLiteralExpr(Expression):
+    def __init__(self, value):
+        super().__init__()
+        self.value = value
+
+    def accept(self, visitor):
+        return visitor.visitCharLiteralExpr(self)
 
 class FieldAccessExpr(Expression):
     def __init__(self, receiver, field_name):
         super().__init__()
-        # print("class FieldAccessExpr")
         self.receiver = receiver
         self.name = field_name
 
     def accept(self, visitor):
-        # print("accept FieldAccessExpr")
-        return visitor.visitFieldAccessExpr(self)
+        return visitor.visit_FieldAccessExpr(self)
 
 class IndexExpr(Expression):
     def __init__(self, target, index):
@@ -273,25 +281,15 @@ class ParenExpr(Expression):
 
     def __repr__(self):
         return f"ParenExpr({self.inner_expr})"
-    
+
 class StructLiteralField(Expression):
     def __init__(self, name, value, field_type=None):
         super().__init__()
-        self.name = name
+        self.declarationInfo = DeclarationInfo(name=name, type=field_type)
         self.value = value
-        self.field_type = field_type
 
     def accept(self, visitor):
-        return visitor.visitStructLiteralField(self)
-
-class StructLiteralExpr(Expression):
-    def __init__(self, struct_name, fields):
-        super().__init__()
-        self.struct_name = struct_name
-        self.fields = fields
-
-    def accept(self, visitor):
-        return visitor.visitStructLiteralExpr(self)
+        return visitor.visit_StructLiteralField(self)
 
 class Pattern(Expression):
     def __init__(self, name):
@@ -351,16 +349,7 @@ class RangeExpression(Expression):
         self.last = last
 
     def accept(self, visitor):
-        visitor.visitRangeExpression(self)
-
-class StructDefInit(Expression):
-    def __init__(self, name, expr):
-        super().__init__()
-        self.name = name  # e.g., 'my_struct'
-        self.expr = expr
-
-    def accept(self, visitor):
-        pass
+        visitor.visit_RangeExpression(self)
 
 class SafeWrapper(Expression):
     def __init__(self, expr):
