@@ -356,7 +356,7 @@ class Transformer(RustVisitor):
             mutable = ctx.getChild(1).getText() == "mut"
             name = ctx.Identifier().getText()
             var_type = self.visit(ctx.typeExpr())
-            return StaticVarDecl(name=name, var_type=var_type, initial_value= None, mutable=mutable, visibility=visibility, extern=True)
+            return StaticVarDecl(name=name, var_type=var_type, initial_value= None, mutable=mutable, visibility=visibility, isExtern=True)
 
         elif ctx.LPAREN() and ctx.RPAREN() and ctx.externParams():
             visibility = ctx.visibility().getText() if ctx.visibility() else None
@@ -384,19 +384,11 @@ class Transformer(RustVisitor):
             expr = self.visit(expressions[0])
             return LetStmt(var_def, expr)
 
-        # case 2: let varDef initBlock
-        elif len(var_defs) == 1 and init_block is not None:
-            var_def = self.visit(var_defs[0])
-            expr = self.visit(init_block)
-            return LetStmt(var_def, expr)
-
         # case 3: let (varDef, ...) = (expression, ...)
         elif len(var_defs) > 1 and len(expressions) > 1:
             var_defs_visited = [self.visit(vd) for vd in var_defs]
             expressions_visited = [self.visit(ex) for ex in expressions]
             return LetStmt(var_defs_visited, expressions_visited)
-        
-        # elif len(var_defs) == 1:
 
         else:
             raise NotImplementedError("Unsupported let statement structure")
@@ -933,8 +925,7 @@ class Transformer(RustVisitor):
                     index_exprs += [self.visit(expr) for expr in ctx.expression()[1:]]
                 return ArrayLiteral(
                     name=IdentifierExpr(name=name),
-                    elements=index_exprs
-                )
+                    elements=index_exprs)
         
         element_exprs = [self.visit(expr) for expr in ctx.expression()]
         return ArrayLiteral(name=name, elements=element_exprs)
@@ -951,9 +942,6 @@ class Transformer(RustVisitor):
         elif ctx.block():
             # print("2")
             return self.visit(ctx.block())
-        elif ctx.initBlock():
-            # print("3")
-            return self.visit(ctx.initBlock())
         else:
             print("Unhandled initializer kind")
             return None
