@@ -4,33 +4,26 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-        {
-        "name": "Python: replacement (as module)",
-        "type": "python",
-        "request": "launch",
-        "module": "pyggi.mutation.replacement",
-        "cwd": "${workspaceFolder}/source",
-        "env": {
-            "PYTHONPATH": "${workspaceFolder}/source"
-        },
-        "console": "integratedTerminal",
-        "justMyCode": false,
-        "subProcess": true
-        },
-
-        {
-        "name": "Python: replacement (direct file)",
-        "type": "python",
-        "request": "launch",
-        "program": "${workspaceFolder}/source/pyggi/mutation/replacement.py",
-        "cwd": "${workspaceFolder}/source",
-        "env": {
-            "PYTHONPATH": "${workspaceFolder}/source"
-        },
-        "console": "integratedTerminal",
-        "subProcess": true
-        },
-
+       {
+    "name": "Python: Debug bst_rust",
+    "type": "debugpy",
+    "request": "launch",
+    "program": "${workspaceFolder}/source/pyggi/example/bst_rust.py",   // adjust path if needed
+    "cwd": "${workspaceFolder}/source",
+    "env": {
+        "PYTHONPATH": "${workspaceFolder}/source"
+    },
+    "args": [
+        "--project_path", "../source/pyggi/sample/bst_rust",
+        "--mode", "tree",
+        "--epoch", "1",
+        "--iter", "10"
+    ],
+    "console": "integratedTerminal",
+    "justMyCode": true,
+    "subProcess": true
+}
+,
         {
             "type": "lldb",
             "request": "launch",

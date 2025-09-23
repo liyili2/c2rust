@@ -74,7 +74,7 @@ class AbstractProgram(ABC):
         self.logger = Logger(self.name + '_' + self.timestamp)
 
         # Create the temporary directory
-        self.create_tmp_variant()
+        # self.create_tmp_variant()
         self.setup()
 
         # Configuration
@@ -210,7 +210,8 @@ class AbstractProgram(ABC):
             ignore=shutil.ignore_patterns('tmp_variants', '__pycache__'))
 
     def remove_tmp_variant(self):
-        shutil.rmtree(self.tmp_path)
+        pass
+        # shutil.rmtree(self.tmp_path)
 
     def write_to_tmp_dir(self, new_contents):
         """
@@ -265,7 +266,7 @@ class AbstractProgram(ABC):
         """
         print("apply")
         new_contents = self.get_modified_contents(patch)
-        self.write_to_tmp_dir(new_contents)
+        # self.write_to_tmp_dir(new_contents)
         return new_contents
 
     def exec_cmd(self, cmd, timeout=15):

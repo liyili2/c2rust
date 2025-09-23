@@ -77,7 +77,7 @@ def pretty_print_ast(node, indent=0):
     else:
         return f"{spacer}{repr(node)}"
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--project_path", type=str, default="../sample/bst_rust")
     parser.add_argument("--mode", choices=["line", "tree"], default="tree")
@@ -94,10 +94,6 @@ if __name__ == "__main__":
         program = MyRustProgram(args.project_path, config=cfg)
         ops     = [StmtReplacement, StmtInsertion, StmtDeletion]
 
-        # test_op = StmtDeletion.create(program, method="random")
-        # print("🚀 deletion picked:", test_op.target)
-        # print("👉 AST node type:", type(test_op.target[1]).__name__)
-
     search = MyLocalSearch(program)
     search.operators = ops
     results = search.run(warmup_reps=5, epoch=args.epoch, max_iter=args.iter, timeout=15)
@@ -108,3 +104,6 @@ if __name__ == "__main__":
         #     print(r["diff"])
 
     program.remove_tmp_variant()
+
+if __name__ == "__main__":
+    main()
