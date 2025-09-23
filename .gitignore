@@ -59,4 +59,4 @@ logs/
 tmp_variants/
 
 *.pyc
-*:Zone.Identifier
+*Zone.Identifier
