@@ -73,10 +73,11 @@ class FloatType(Type):
         return super().accept(visitor)
 
 class StructType(Type):
-    def __init__(self, name, fields):
+    def __init__(self, name, fields, isUnion=False):
         super().__init__()
         self.name = name
         self.fields = fields
+        self.isUnion = isUnion
 
     def __repr__(self):
         return f"Struct<{self.name}>"

@@ -41,8 +41,10 @@ class TypeChecker:
         if isinstance(node.declarationInfo.type, PointerType):
             self.error(node, "raw pointer usage in a struct field")
 
-    def visit_TopLevelVarDef(Self, node):
-        pass
+    def visit_TopLevelVarDef(self, node):
+        isUnion = str.__eq__(node.def_kind, "union")
+        self.env.declare(name=node.declarationInfo.name, 
+                         typ=StructType(name=node.declarationInfo.name, fields=node.fields, isUnion=isUnion))
 
     def visit_InterfaceDef(self, node):
         for item in node.functions:
@@ -763,35 +765,33 @@ class TypeChecker:
 
     def visit_FieldAccessExpr(self, node):
         base_type = self.visit(node.receiver)
+        print("visit_FieldAccessExpr" , node.receiver, node.name)
 
         if isinstance(node.receiver, DereferenceExpr):
             self.error(node, "unprotected dereference in a field access expression")
+            base_type = self.visit(node.receiver.expr)
+            print("base_type", base_type)
+            try:
+                base_info = self.env.lookup(base_type)
+                base_type = base_info["type"]
+            except Exception:
+                self.error(node, f"access to an undefined struct {node.receiver}")
+                return
 
         if not isinstance(base_type, StructType):
-            # self.error(node, "access to a wrong type of variable (not a struct)")
-            return None
+            self.error(node, "access to a wrong type of variable (not a struct)")
+            return
 
-        struct_name = base_type.name
-        struct_info = self.env.lookup_struct(struct_name)
+        if isinstance(base_type, StructType) and base_type.isUnion:
+            self.error(node, f"union struct {base_type.name} field {node.name.name} access ")
 
-        if struct_info is None:
-            # self.error(node, "access to an undefined struct")
-            return None
-
-        field_type = struct_info.get(node.field)
+        for field in base_info["type"].fields:
+            if str.__eq__(field.declarationInfo.name, node.name.name):
+                field_type = field.declarationInfo.type
+                break
         if field_type is None:
             self.error(node, "no such a field to access")
             return None
-
-        if isinstance(node.base, IdentifierExpr):
-            try:
-                var_info = self.env.lookup(node.base.name)
-            except Exception:
-                self.error(node, "no such a identifier to access")
-                return None
-
-            if not var_info["owned"] or var_info["borrowed"]:
-                self.error(node, "the identifier is not owned or borrowed")
 
         return field_type
 

@@ -39,10 +39,10 @@ class StructDef(TopLevel):
 
     def accept(self, visitor):
         return visitor.visit_Struct(self)
-    
+
     def getChildren(self):
         return self.fields
-    
+
     def setChildren(self, fields):
         self.fields = fields
 
@@ -119,10 +119,11 @@ class TypeAliasDecl(TopLevel):
         self.declarationInfo = DeclarationInfo(name=name, type=type, visibility=visibility)
 
 class TopLevelVarDef(TopLevel):
-    def __init__(self, name, fields, type, def_kind, visibility=None):
+    def __init__(self, name, fields, type, def_kind, isUnsafe=False, visibility=None):
         self.declarationInfo = DeclarationInfo(name=name, type=type, visibility=visibility)
         self.fields = fields
         self.def_kind = def_kind # union, const, etc.
+        self.isUnsafe = isUnsafe
 
     def getChildren(self):
         return self.fields
