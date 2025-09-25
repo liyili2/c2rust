@@ -13,9 +13,7 @@ class Expression(ASTNode):
         self.isUnsafe=isUnsafe
 
     def accept(self, visitor):
-        #method_name = f'visit_{self.__class__.__name__}'
         return visitor.visit(self)
-        #return getattr(visitor, method_name, visitor.generic_visit)(self)
 
 class QualifiedExpression(Expression):
     def __init__(self, expr):
@@ -23,7 +21,7 @@ class QualifiedExpression(Expression):
         self.expr = expr
 
     def accept(self, visitor):
-        return visitor.visitQualifiedExpression(self)
+        return visitor.visit_QualifiedExpression(self)
 
 class IdentifierExpr(Expression):
     def __init__(self, name, type=None):
@@ -31,7 +29,7 @@ class IdentifierExpr(Expression):
         self.name = name
 
     def accept(self, visitor):
-        return visitor.visitIdentifierExpr(self)
+        return visitor.visit_IdentifierExpr(self)
 
 class BinaryExpr(Expression):
     def __init__(self, left, op, right):
@@ -50,7 +48,7 @@ class LiteralExpr(Expression):
         self.type = self.get_type()
 
     def accept(self, visitor):
-        return visitor.visitLiteralExpr(self)
+        return visitor.visit_LiteralExpr(self)
 
     def get_type(self):
         if isinstance(self.expr, int):
@@ -110,7 +108,7 @@ class BorrowExpr(Expression):
         self.isMutable = isMutable
 
     def accept(self, visitor):
-        return visitor.visitBorrowExpr(self)
+        return visitor.visit_BorrowExpr(self)
 
 class BoolLiteral(Expression):
     def __init__(self, value: bool):
@@ -119,7 +117,7 @@ class BoolLiteral(Expression):
         self.type = BoolType()
 
     def accept(self, visitor):
-        return visitor.visitBoolLiteral(self)
+        return visitor.visit_BoolLiteral(self)
 
 class CharLiteral(Expression):
     def __init__(self, value: bool):
@@ -137,7 +135,7 @@ class IntLiteral(Expression):
         self.value = value
 
     def accept(self, visitor):
-        return visitor.visitIntLiteral(self)
+        return visitor.visit_IntLiteral(self)
 
 class StrLiteral(Expression):
     def __init__(self, value: str):
@@ -167,7 +165,7 @@ class ArrayLiteral(Expression):
         self.elements = elements
 
     def accept(self, visitor):
-        return visitor.visitArrayLiteral(self)
+        return visitor.visit_ArrayLiteral(self)
 
     def __repr__(self):
         return f"ArrayLiteral({self.elements})"
@@ -195,7 +193,7 @@ class CharLiteralExpr(Expression):
         self.value = value
 
     def accept(self, visitor):
-        return visitor.visitCharLiteralExpr(self)
+        return visitor.visit_CharLiteralExpr(self)
 
 class FieldAccessExpr(Expression):
     def __init__(self, receiver, field_name):
@@ -212,7 +210,7 @@ class ParenExpr(Expression):
         self.expr = expr
 
     def accept(self, visitor):
-        return visitor.visitParenExpr(self)
+        return visitor.visit_ParenExpr(self)
 
     def __repr__(self):
         return f"ParenExpr({self.expr})"
@@ -261,4 +259,4 @@ class SafeWrapper(Expression):
         self.expr = expr
 
     def accept(self, visitor):
-        visitor.visitSafeWrapper(self)
+        return visitor.visit_SafeWrapper(self)

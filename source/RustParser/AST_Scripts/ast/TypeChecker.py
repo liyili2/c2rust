@@ -53,7 +53,7 @@ class TypeChecker:
     def visit_Attribute(self, node):
         pass
 
-    def visit_safeWrapper(self, node):
+    def visit_SafeWrapper(self, node):
         pass
 
     def visit_FunctionDef(self, node: FunctionDef):
@@ -305,6 +305,12 @@ class TypeChecker:
     def visit_SafeNonNullWrapper(self, node):
         print("visit_SafeNonNullWrapper")
         return node
+    
+    def visit_BreakStmt(self, node):
+        pass
+
+    def visit_ContinueStmt(self, node):
+        pass
 
     def visit_BinaryExpr(self, node):
         left = self.visit(node.left)
@@ -786,9 +792,14 @@ class TypeChecker:
             self.error(node, f"union struct {base_type.name} field {node.name.name} access ")
 
         for field in base_info["type"].fields:
-            if str.__eq__(field.declarationInfo.name, node.name.name):
-                field_type = field.declarationInfo.type
-                break
+            if isinstance(field, str):
+                if str.__eq__(field, node.name.name):
+                    field_type = field.__class__
+                    break
+            else:
+                if str.__eq__(field.declarationInfo.name, node.name.name):
+                    field_type = field.declarationInfo.type
+                    break
         if field_type is None:
             self.error(node, "no such a field to access")
             return None

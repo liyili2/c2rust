@@ -20,7 +20,7 @@ class FunctionDef(TopLevel):
 
     def accept(self, visitor):
         #method_Identifier = f'visit_{self.__class__.__name__}'
-        return visitor.visit(self)
+        return visitor.visit_FunctionDef(self)
     
     def getChildren(self):
         return self.body

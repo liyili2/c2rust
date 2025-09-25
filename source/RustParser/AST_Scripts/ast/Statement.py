@@ -29,7 +29,7 @@ class LetStmt(Statement):
             return f"LetStmt({var.declarationInfo.name} = {val})"
 
     def accept(self, visitor):
-        return visitor.visitLetStmt(self)
+        return visitor.visit_LetStmt(self)
 
 class ForStmt(Statement):
     def __init__(self, var, iterable, body):
@@ -39,7 +39,7 @@ class ForStmt(Statement):
         self.body = body
 
     def accept(self, visitor):
-        return visitor.visitForStmt(self)
+        return visitor.visit_ForStmt(self)
 
 class IfStmt(Statement):
     def __init__(self, condition, then_branch, else_branch=None):
@@ -48,7 +48,7 @@ class IfStmt(Statement):
         self.then_branch = then_branch
         self.else_branch = else_branch
     def accept(self, visitor):
-        return visitor.visitIfStmt(self)
+        return visitor.visit_IfStmt(self)
 
 class AssignStmt(Statement):
     def __init__(self, target, value):
@@ -78,7 +78,7 @@ class WhileStmt(Statement):
         self.body = body
 
     def accept(self, visitor):
-        return visitor.visitWhileStmt(self)
+        return visitor.visit_WhileStmt(self)
 
 class MatchStmt(Statement):
     def __init__(self, expr, arms):
@@ -87,7 +87,7 @@ class MatchStmt(Statement):
         self.arms = arms
 
     def accept(self, visitor):
-        return visitor.visitMatchStmt(self)
+        return visitor.visit_MatchStmt(self)
 
 class MatchArm(Statement):
     def __init__(self, patterns, body):
@@ -96,7 +96,7 @@ class MatchArm(Statement):
         self.body = body
 
     def accept(self, visitor):
-        return visitor.visit(self)
+        return visitor.visit_(self)
 
 class MatchPattern(Statement):
     def __init__(self, value):
@@ -104,7 +104,7 @@ class MatchPattern(Statement):
         self.value = value
 
     def accept(self, visitor):
-        return visitor.visitMatchPattern()
+        return visitor.visit_MatchPattern()
 
 class CompoundAssignment(Statement):
     def __init__(self, target, op, value):
@@ -114,7 +114,7 @@ class CompoundAssignment(Statement):
         self.value = value
 
     def accept(self, visitor):
-        return visitor.visitCompoundAssignment(self)
+        return visitor.visit_CompoundAssignment(self)
 
 class ReturnStmt(Statement):
     def __init__(self, value=None):
@@ -122,7 +122,7 @@ class ReturnStmt(Statement):
         self.value = value
 
     def accept(self, visitor):
-        return visitor.visitReturnStmt(self)
+        return visitor.visit_ReturnStmt(self)
     
     def __repr__(self):
         return f"ReturnStmt(value={self.value})"
@@ -133,7 +133,7 @@ class LoopStmt(Statement):
         self.body = body
 
     def accept(self, visitor):
-        return visitor.visitLoopStmt(self)
+        return visitor.visit_LoopStmt(self)
 
     def __repr__(self):
         return f"LoopStmt(body={repr(self.body)})"
@@ -143,13 +143,13 @@ class BreakStmt(Statement):
         super().__init__()
 
     def accept(self, visitor):
-        return visitor.visit(self)
+        return visitor.visit_BreakStmt(self)
 
 class ContinueStmt(Statement):
     def __init__(self):
         super().__init__()
     def accept(self, visitor):
-        return visitor.visit(self)
+        return visitor.visit_ContinueStmt(self)
 
 class StructDef(Statement):
     def __init__(self, type_name: str, fields: list):
