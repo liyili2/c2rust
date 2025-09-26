@@ -332,15 +332,6 @@ class RustListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by RustParser#unsafeBlcok.
-    def enterUnsafeBlcok(self, ctx:RustParser.UnsafeBlcokContext):
-        pass
-
-    # Exit a parse tree produced by RustParser#unsafeBlcok.
-    def exitUnsafeBlcok(self, ctx:RustParser.UnsafeBlcokContext):
-        pass
-
-
     # Enter a parse tree produced by RustParser#statement.
     def enterStatement(self, ctx:RustParser.StatementContext):
         pass
@@ -359,12 +350,12 @@ class RustListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by RustParser#callStmt.
-    def enterCallStmt(self, ctx:RustParser.CallStmtContext):
+    # Enter a parse tree produced by RustParser#functionCall.
+    def enterFunctionCall(self, ctx:RustParser.FunctionCallContext):
         pass
 
-    # Exit a parse tree produced by RustParser#callStmt.
-    def exitCallStmt(self, ctx:RustParser.CallStmtContext):
+    # Exit a parse tree produced by RustParser#functionCall.
+    def exitFunctionCall(self, ctx:RustParser.FunctionCallContext):
         pass
 
 
@@ -662,15 +653,6 @@ class RustListener(ParseTreeListener):
 
     # Exit a parse tree produced by RustParser#structFieldDec.
     def exitStructFieldDec(self, ctx:RustParser.StructFieldDecContext):
-        pass
-
-
-    # Enter a parse tree produced by RustParser#mutableExpression.
-    def enterMutableExpression(self, ctx:RustParser.MutableExpressionContext):
-        pass
-
-    # Exit a parse tree produced by RustParser#mutableExpression.
-    def exitMutableExpression(self, ctx:RustParser.MutableExpressionContext):
         pass
 
 

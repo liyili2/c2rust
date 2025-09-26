@@ -2,86 +2,94 @@
 struct Node {
     key: i32,
     value: String,
-    left: Option<Box<Node> >,
-    right: Option<Box<Node> >,
+    left: Option<Box<Node>>,
+    right: Option<Box<Node>>,
+    parent_ptr: *mut Node, // raw pointer to parent node
 }
+
+// static mutable counter of nodes (example of global unsafe variable)
+static mut NODE_COUNT: i32 = 0;
 
 impl Node {
     fn new(key: i32, value: String) -> Self {
+        unsafe { NODE_COUNT += 1; } // increment global counter
         Node {
             key,
             value,
             left: None,
             right: None,
+            parent_ptr: std::ptr::null_mut(), // initially null
         }
     }
 
-    // looks like Box is helpful here
     fn insert(&mut self, key: i32, value: String) {
         if key < self.key {
             if let Some(ref mut left) = self.left {
+                // update parent_ptr for child
+                unsafe { left.parent_ptr = self; }
                 left.insert(key, value);
             } else {
-                self.left = Some(Box::new(Node::new(key, value)));
+                let mut new_node = Box::new(Node::new(key, value));
+                unsafe { new_node.parent_ptr = self; } // set raw pointer to parent
+                self.left = Some(new_node);
             }
         } else if key > self.key {
             if let Some(ref mut right) = self.right {
+                unsafe { right.parent_ptr = self; }
                 right.insert(key, value);
             } else {
-                self.right = Some(Box::new(Node::new(key, value)));
+                let mut new_node = Box::new(Node::new(key, value));
+                unsafe { new_node.parent_ptr = self; }
+                self.right = Some(new_node);
             }
         } else {
             self.value = value;
         }
     }
 
-    // self.left is owned by current function
-    // but looks like left in Some(ref mut left) is something can be passed to other functions
     fn search(&mut self, key: i32) -> Option<&String> {
         if key < self.key {
             if let Some(ref mut left) = self.left {
-                return left.search(key);
+                left.search(key)
             } else {
-                return None;
+                None
             }
         } else if key > self.key {
             if let Some(ref mut right) = self.right {
-                return right.search(key);
+                right.search(key)
             } else {
-                return None;
+                None
             }
         } else {
-            return Some(&self.value);
+            // unsafe raw pointer dereference example
+            unsafe {
+                if !self.parent_ptr.is_null() {
+                    println!("Parent key (via raw pointer): {}", (*self.parent_ptr).key);
+                }
+            }
+            Some(&self.value)
         }
     }
 }
 
-static mut listid: &str = "c2rust";
-pub struct List {
-    pub s: *mut *mut String, // keep your pointer type
-    pub n: i32,             // changed from libc::c_int
-}
-
 fn main() {
     let mut root = Node::new(5, String::from("five"));
+
     println!("{:?}", root.search(5));
-    println!("{:?}", root.search(3));
     root.insert(3, String::from("three"));
     println!("{:?}", root.search(3));
-    println!("{:?}", root.search(7));
     root.insert(7, String::from("seven"));
     println!("{:?}", root.search(7));
-    println!("{:?}", root.search(4));
     root.insert(4, String::from("four"));
     println!("{:?}", root.search(4));
-    println!("{:?}", root.search(2));
     root.insert(2, String::from("two"));
     println!("{:?}", root.search(2));
-    println!("{:?}", root.search(6));
     root.insert(6, String::from("six"));
     println!("{:?}", root.search(6));
-    println!("{:?}", root.search(8));
     root.insert(8, String::from("eight"));
     println!("{:?}", root.search(8));
-    println!("{:?}", root);
+
+    unsafe {
+        println!("Total nodes (via static mutable global): {}", NODE_COUNT);
+    }
 }

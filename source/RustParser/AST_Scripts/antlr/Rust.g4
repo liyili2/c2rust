@@ -73,9 +73,8 @@ typePath: Identifier DOUBLE_COLON | DOUBLE_COLON? Identifier (DOUBLE_COLON Ident
 arrayType: '[' basicType ';' Number ']' ;
 
 block: unsafeModifier? '{' statement* returnStmt? '}';
-unsafeBlcok: unsafeModifier '{' statement* returnStmt? '}';
 statement
-    : unsafeBlcok
+    : block
     | letStmt
     | conditionalAssignmentStmt
     | structLiteral
@@ -86,7 +85,7 @@ statement
     | compoundAssignment
     | forStmt
     | ifStmt 
-    | callStmt
+    | functionCall
     | exprStmt
     | whileStmt
     | returnStmt
@@ -97,7 +96,7 @@ statement
     ;
 
 conditionalAssignmentStmt: 'let'? (safeWrapper | expression) '=' expression 'else' block ';';
-callStmt: expression ('.' expression) callExpressionPostFix ';' | expression callExpressionPostFix ';' ;
+functionCall: expression ('.' expression) callExpressionPostFix ';' | expression callExpressionPostFix ';' ;
 letStmt: 'let' varDef '=' expression ';' | 'let' varDef initBlock | 'let' '(' (varDef ','?)* ')' '=' '(' (expression ','?)* ')' ';';
 varDef: 'ref'? 'mut'? Identifier (':' typeExpr)?;
 compoundOp: '+=' | '-=' | '*=' | '/=' | '%=' | '&=' | '|=' | '^=' ;
@@ -119,7 +118,7 @@ loopStmt: 'loop' block;
 safeWrapper: 'Some' '(' expression ')' | 'Box' DOUBLE_COLON Identifier '(' expression ')' ;
 
 expression
-    : mutableExpression expression
+    : MUT expression
     | safeWrapper
     | primaryExpression
     | expression binaryOps expression
@@ -131,7 +130,7 @@ expression
     | structDefInit
     | unaryOpes expression
     | borrowExpression
-    | unsafeExpression
+    | unsafeModifier parenExpression
     | expression callExpressionPostFix
     | expression typeExpr
     | basicTypeCastExpr
@@ -160,9 +159,9 @@ rangeSymbol: '..';
 binaryOps: '*' | '/' | '%' | '+' | '-' | '==' | '!=' | '>' | '<' | '||' | '&&' | '>>' | '&' | '>=' | '<=';
 binaryExpression: expression binaryOps expression ;
 structFieldDec: Identifier '{' structLiteralField (',' structLiteralField)* ','? '}' ;
-mutableExpression: 'mut';
+MUT: 'mut';
 unaryOpes: '!' | '+' | '-';
-parenExpression: '(' expression ')';
+parenExpression: '(' expression ')' | '{' expression '}';
 dereferenceExpression: '*' expression;
 expressionBlock: '{' statement* expression '}';
 borrowExpression: '&' expression;

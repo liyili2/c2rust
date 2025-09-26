@@ -10,7 +10,7 @@ from RustParser.AST_Scripts.ast.Type import PointerType, RefType, SafeNonNullWra
 from pyggi.mutation.utils import MutationUtils
 import random
 
-from RustParser.AST_Scripts.ast.Expression import DereferenceExpr, ReferenceExpr, UnsafeExpression
+from RustParser.AST_Scripts.ast.Expression import DereferenceExpr, Expression, ReferenceExpr
 
 class ReplacementOperator:
     def __init__(self, ast, node):
@@ -19,13 +19,13 @@ class ReplacementOperator:
             self.safe_wrap_raw_pointers,
             self.safe_wrap_raw_pointer_argumetns,
             self.make_global_static_pointers_unmutable,
-            self.move_ast_node,
-            self.shrink_unsafe_block_stmts,
+            # self.move_ast_node,
+            # self.shrink_unsafe_block_stmts,
             self.flip_mutabilities,
             self.safe_wrap_struct_field,
             self.replace_raw_dereferences_in_unsafe_wrapper,
         ]
-        self.new_ast = self.apply_random_mutations(ast, node, 5)
+        self.new_ast = self.apply_random_mutations(ast, node, 3)
 
     def apply_random_mutations(self, ast, node, num_ops):
         selected_ops = random.sample(self.operators, k=num_ops)
@@ -100,7 +100,7 @@ class ReplacementOperator:
                             by_ref=stmt.var_defs[0].by_ref,
                             var_type=RefType("T")
                         ),
-                        values=UnsafeExpression(expr=ReferenceExpr(expr=val))
+                        values=Expression(expr=ReferenceExpr(expr=val), isUnsafe=True)
                     )
             return None  # No change
         return self.transform_let_stmt(ast_root, target_node, transform, label="replace_raw_dereferences_in_unsafe_wrapper")

@@ -41,7 +41,7 @@ def pretty_print_ast(node, indent=0, visited=None):
 
     return '\n'.join(lines)
 
-file_path = os.path.join(os.path.dirname(__file__), "bst.rs")
+file_path = os.path.join(os.path.dirname(__file__), "output.rs")
 with open(file_path, "r", encoding="utf-8") as f:
     rust_code = f.read()
 lexer = RustLexer(InputStream(rust_code))
@@ -52,7 +52,7 @@ builder = Transformer()
 custom_ast = builder.visit(tree)
 setParents(custom_ast)
 print("Pretty AST:")
-print(pretty_print_ast(custom_ast))
-# checker = TypeChecker()
-# checker.visit(custom_ast)
-# print("Type Error Count : ", checker.error_count)
+# print(pretty_print_ast(custom_ast))
+checker = TypeChecker()
+checker.visit(custom_ast)
+print("Type Error Count : ", checker.error_count)
