@@ -30,6 +30,7 @@ class Simulator(ProgramVisitor):
     # x --> v1 --> cal(v1) --> integer
     # Coq_nval(b,r) b == |0> | |1>, r == e^(2 pi i * 1 / n), r = 0 Coq_nval(b, 0)
     # x -> v1 ----> run simulator -----> v2 ---> calInt(v2,128) == (x + 2^10) % 2^128
+    # Sorry for the late reply Razie. I haven't been able to fully test the simulator yet, but maybe
     def __init__(self, memory: dict, stack: dict):
         # need st --> state we are dealing with
         self.heap = memory
@@ -66,19 +67,19 @@ class Simulator(ProgramVisitor):
         self.funMap.update({node.identifier : node})
         return None
 
-    def visitCallStmt(self, node: CallStmt):
-        newNode = self.funMap.get(node.callee)
-
-        newStack = self.stack.deepCopy()
-        for i in len(newNode.params):
-            arVar = newNode.params[i]
-            value = node.args[i].accept(self)
-            newStack.update({arVar : value})
-        oldStack = self.stack
-        self.stack = newStack
-        result = newNode.body.accept(self)
-        self.stack = oldStack
-        return result
+    # def visitCallStmt(self, node: CallStmt):
+    #     newNode = self.funMap.get(node.callee)
+    #
+    #     newStack = self.stack.deepCopy()
+    #     for i in len(newNode.params):
+    #         arVar = newNode.params[i]
+    #         value = node.args[i].accept(self)
+    #         newStack.update({arVar : value})
+    #     oldStack = self.stack
+    #     self.stack = newStack
+    #     result = newNode.body.accept(self)
+    #     self.stack = oldStack
+    #     return result
 
     def visitIfStmt(self, node: IfStmt):
         # newNode = self.funMap.get(node.var_defs)
