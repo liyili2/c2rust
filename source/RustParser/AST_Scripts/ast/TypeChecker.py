@@ -17,7 +17,6 @@ class TypeChecker:
         self.reports = []
 
     def error(self, node, message, error_weight=1):
-        # error_weight=1
         error_msg = f"Type error: {message}"
         if hasattr(node, 'line'):
             error_msg = f"[Line {node.line}] {error_msg}"
@@ -108,7 +107,6 @@ class TypeChecker:
         self.current_function_return = saved_return
         self.env.exit_scope()
 
-        # print("visit_function_def2", self.error_count)
         return None
 
     def body_has_terminating_return(self, stmts):
@@ -303,7 +301,6 @@ class TypeChecker:
         self.error(node, f"unsafe pointer dereferencing {node.expr}", 2)
 
     def visit_SafeNonNullWrapper(self, node):
-        print("visit_SafeNonNullWrapper")
         return node
     
     def visit_BreakStmt(self, node):
@@ -387,7 +384,6 @@ class TypeChecker:
         if isinstance(node.target, IdentifierExpr):
             try:
                 target_info = self.env.lookup(node.target.name)
-                # print(";;", target_info)
             except Exception:
                 # self.error(node, "usage of undefined variable in compound assignment")
                 return
@@ -513,7 +509,6 @@ class TypeChecker:
         pass
 
     def visit_IfStmt(self, node):
-        # print("visit_IfStmt", node.condition.__class__)
         self.visit(node.condition)
         self.visit(node.then_branch)
         if node.else_branch is not None:
@@ -521,42 +516,9 @@ class TypeChecker:
         return
 
     def check_iterable_type(self, node):
-        type_correctness = True
-        # if isinstance(node, FieldAccessExpr):
-        #     print(f"iterative type is a FieldAccessExpr: {node.receiver.__class__}, {node.name.__class__}")
-        # if isinstance(node, FieldAccessExpr) and isinstance(node.receiver, RangeExpression):
-        #     return type_correctness
-
-        # if isinstance(node, ArrayType) or isinstance(node, RangeExpression):
-        #     return type_correctness
-
-        # if isinstance(node, FunctionCallExpr):
-        #     print(f"iterative type is a function call: {node.func}")
-        #     if isinstance(node.func, IdentifierExpr):
-        #         print(f"000: {node.func.name}")
-
-        # self.error(node, f"wrong iterative type: {node}")
         return True
 
     def visit_ForStmt(self, node):
-        # iterable_type = self.visit(node.iterable)
-        # print("visit_ForStmt", iterable_type, iterable_type.__class__)
-
-        # if not self.check_iterable_type(node.iterable):
-        #     return
-
-        # range_type = None
-        # if isinstance(node.iterable, ArrayType):
-        #     range_type = node.iterable.__class__
-        # elif isinstance(node.iterable, FieldAccessExpr):
-        #     range_type = node.iterable.receiver.initial.__class__
-        # else:
-        #     range_type = node.iterable.initial.__class__
-
-        # self.env.declare(node.var, {
-        #     "type": range_type,
-        #     "owned": True, "borrowed": False})
-
         for stmt in node.body.getChildren():
             self.visit(stmt)
         return True
@@ -704,7 +666,6 @@ class TypeChecker:
         return RefType(info["type"])
     
     def visit_FunctionCallExpression(self, node):
-        print("visit_FunctionCallExpression")
         pass
 
     def visit_ArrayLiteral(self, node):
@@ -719,36 +680,8 @@ class TypeChecker:
                 # self.error(node, "wrong element type in the array literal", 1)
 
         return ArrayType(first_type)
-    
-    def visit_CallStmt(self, node):
-        pass
 
     def visit_callExpressionPostFix(self, node, func_expr):
-        # if not hasattr(node, 'args'):
-        #     self.increase_error_count()
-        #     return
-
-        # args = self.visit(node.args) if hasattr(node, 'args') else []
-        # if isinstance(func_expr, IdentifierExpr):
-        #     func_name = func_expr.name
-        # else:
-        #     self.increase_error_count()
-        #     return
-
-        # func_info = self.env.lookup_function(func_name)
-        # if not func_info or func_info["kind"] != "function":
-        #     self.increase_error_count()
-        #     return
-
-        # param_types = func_info["param_types"]
-        # if len(args) != len(param_types):
-        #     self.increase_error_count()
-        #     return
-
-        # for arg, expected_type in zip(args, param_types):
-        #     if type(arg) != type(expected_type):
-        #         self.increase_error_count()
-
         for arg in node.args:
             if isinstance(arg, IdentifierExpr):
                 try:
@@ -771,8 +704,6 @@ class TypeChecker:
 
     def visit_FieldAccessExpr(self, node):
         base_type = self.visit(node.receiver)
-        print("visit_FieldAccessExpr" , node.receiver, node.name)
-
         if isinstance(node.receiver, DereferenceExpr):
             self.error(node, "unprotected dereference in a field access expression")
             base_type = self.visit(node.receiver.expr)
@@ -840,7 +771,6 @@ class TypeChecker:
         return StringType()
 
     def visit_PrimaryExpression(self, node):
-        print("visit_PrimaryExpression")
         pass
 
     def visit_typeWrapper(self, node):

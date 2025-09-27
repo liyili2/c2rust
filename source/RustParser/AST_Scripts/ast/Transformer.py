@@ -9,6 +9,7 @@ from RustParser.AST_Scripts.ast.Type import *
 from RustParser.AST_Scripts.ast.VarDef import *
 from RustParser.AST_Scripts.ast.Func import *
 from RustParser.AST_Scripts.ast.Block import *
+from RustParser.AST_Scripts.ast.utils import *
 
 class Transformer(RustVisitor):
     def __init__(self):
@@ -77,77 +78,6 @@ class Transformer(RustVisitor):
 
         return node
 
-    def _expr_from_text(self, text):
-        # print("_expr_from_text")
-        text = text.strip()
-        if text.isdigit():
-            return LiteralExpr(expr=int(text))
-        elif text.startswith("'") and text.endswith("'"):
-            return CharLiteralExpr(text[1:-1])
-        try:
-            return LiteralExpr(expr=float(text))
-        except ValueError:
-            pass
-        return IdentifierExpr(name=text)
-
-    def _basic_type_from_str(self, s: str):
-        s = s.lstrip()
-        if s in {"i32", "u32", "f64", "bool", "char", "usize", "isize", "FILE"}:
-            return s
-        if s.startswith("*mut "):
-            pointee_type = self._basic_type_from_str(s[5:].strip())
-            return PointerType(mutability="mut", pointee_type=pointee_type)
-        if s.startswith("*const "):
-            pointee_type = self._basic_type_from_str(s[7:].strip())
-            return PointerType(mutability="const", pointee_type=pointee_type)
-        if s.startswith("*mut") or s.startswith("*const"):
-            if " " in s:
-                pointer_type, pointee = s.split(" ", 1)
-                if pointer_type == "*mut":
-                    return PointerType(mutability="mut", pointee_type=self._basic_type_from_str(pointee.strip()))
-                elif pointer_type == "*const":
-                    return PointerType(mutability="const", pointee_type=self._basic_type_from_str(pointee.strip()))
-            else:
-                if "*mut" in s:
-                    return PointerType(mutability="mut", pointee_type=self._basic_type_from_str(s[4:].strip()))
-                elif "*const" in s:
-                    return PointerType(mutability="const", pointee_type=self._basic_type_from_str(s[6:].strip()))
-        if "::" in s:
-            if ';' in s:
-                inner_type_str, _ = s.strip('[]').split(';', 1)
-                return inner_type_str.strip().split('::')[-1]
-            else:
-                return s.strip().split('::')[-1]
-
-        return s
-
-    def _handleChainedMethodCall(self, ctx):
-        text = ctx.getText()
-        parts = text.split('.')
-        receiver = self._expr_from_text(parts[0])
-        current = receiver
-        for part in parts[1:]:
-            method_name = part
-            args = []
-            for i in range(ctx.getChildCount()):
-                    args = [self.visit(child) for child in ctx.getChild(i).expression()]
-                    break
-
-            current = FunctionCall(caller=current, callee=method_name, args=args)
-        return current
-   
-    def get_literal_type(self, value):
-        if isinstance(value, IntLiteral):
-            return IntType()
-        elif isinstance(value, StrLiteral):
-            return StringType()
-        elif isinstance(value, BoolLiteral):
-            return BoolType()
-        elif isinstance(value, ArrayLiteral):
-            return ArrayType()
-        else:
-            raise Exception(f"❌ Unknown literal type for value: {repr(value)}")
-
     def visitTopLevelItem(self, ctx):
         for child in ctx.getChildren():
             result = self.visit(child)
@@ -172,24 +102,6 @@ class Transformer(RustVisitor):
         name = ctx.Identifier().getText()
         type = self.visit(ctx.typeExpr())
         return TypeAliasDecl(name=name, type=type, visibility=visibility)
-
-    def visitUnionDef(self, ctx):
-        visibility = ctx.visibility().getText() if ctx.visibility() else None
-        name = ctx.Identifier().getText()
-        typ = None
-        if ctx.expression():
-            typ = self.visit(ctx.expression())
-
-        fields = []
-        for field_ctx in ctx.unionField():
-            if field_ctx.getText() in ['{', '}', ',']:
-                continue
-            field_name = field_ctx.Identifier().getText()
-            field_visibility = field_ctx.visibility().getText() if field_ctx.visibility() else None
-            field_type = self.visit(field_ctx.typeExpr())
-            fields.append((field_name, field_type, field_visibility))
-
-        return TopLevelVarDef(name=name, type=typ ,fields=fields, visibility=visibility)
 
     def visitFunctionDef(self, ctx):
         name = ctx.Identifier().getText()
@@ -367,18 +279,6 @@ class Transformer(RustVisitor):
             initial_value=value,
             isExtern=True)
 
-    def visitMutableDef(self, ctx):
-        name = ctx.Identifier().getText()
-        type_node = ctx.typeExpr()
-        declared_type = self.visit(type_node) if type_node else None
-        return VarDef(name=name, type=declared_type, isMutable=True)
-
-    def visitImmutableDef(self, ctx):
-        name = ctx.Identifier().getText()
-        type_node = ctx.typeExpr()
-        declared_type = self.visit(type_node) if type_node else None
-        return VarDef(name=name, type=declared_type, isMutable=False)
-
     def visitIfStmt(self, ctx):
         # Initial "if" condition and block
         condition = self.visit(ctx.expression(0))
@@ -412,7 +312,6 @@ class Transformer(RustVisitor):
         return ForStmt(var=var_name, iterable=iterable_expr, body=body)
 
     def visitBlock(self, ctx):
-        # print("visitBlock")
         stmts = []
         isUnsafe = False
         if ctx.unsafeModifier():
@@ -420,9 +319,7 @@ class Transformer(RustVisitor):
         for stmt_ctx in ctx.statement():
             result = self.visit(stmt_ctx)
             stmts.append(result)
-        if isUnsafe:
-            return Block(stmts=stmts, isUnsafe=isUnsafe)
-        return Block(stmts=stmts, isUnsafe=False)
+        return Block(stmts=stmts, isUnsafe=isUnsafe)
 
     def visitExprStmt(self, ctx):
         expr = self.visit(ctx.primaryExpression())
@@ -435,14 +332,12 @@ class Transformer(RustVisitor):
             args_ctx = postfix.functionCallArgs().expression()
             args = [self.visit(arg) for arg in args_ctx]
         else:
-            print("⚠️ callExpressionPostFix not recognized format")
             args = []
         return FunctionCall(callee=function_expr, args=args)
 
     def visitStatement(self, ctx):
-        # print("stmt is ", ctx.__class__, ctx.getText())
-        # if ctx.block():
-        #     return self.visit(ctx.block())
+        if ctx.block():
+            return self.visit(ctx.block())
         if ctx.letStmt():
             return self.visit(ctx.letStmt())
         elif ctx.ifStmt():
@@ -535,21 +430,19 @@ class Transformer(RustVisitor):
     binary_operators = {'==', '!=', '<', '>', '<=', '>=', '+', '-', '*', '/', '%', '&&', '||'}
 
     def visitExpression(self, ctx):
-        # print("expression is ", ctx.getText(), ctx.__class__)
         if ctx.primaryExpression():
             return self.visit(ctx.primaryExpression())
-
+        
         elif ctx.MUT():
             expr = self.visit(ctx.expression(0))
             return Expression(expr=expr)
-
+        
         elif ctx.unaryOpes():
             op = ctx.unaryOpes().getText()
             expr = self.visit(ctx.expression(0))
             return UnaryExpr(op, expr)
-
+        
         elif ctx.fieldAccessPostFix():
-            # print("fieldAccessPostFix")
             base = self.visit(ctx.expression(0))
             postfix = self.visitPrimaryExpression(ctx.fieldAccessPostFix().primaryExpression())
             return FieldAccessExpr(base, postfix)
@@ -558,7 +451,6 @@ class Transformer(RustVisitor):
             op = ctx.binaryOps().getText()
             left = self.visit(ctx.expression(0))
             right = self.visit(ctx.expression(1))
-            # print("binary op is ", ctx.binaryOps().getText(), left, right)
             return BinaryExpr(op=op, left=left, right=right)
 
         elif ctx.rangeSymbol():
@@ -571,7 +463,6 @@ class Transformer(RustVisitor):
             left = self.visit(ctx.expression(0))
             op = ctx.compoundOps().getText()
             right = self.visit(ctx.expression(1))
-            # print("compound op is ", op)
             return BinaryExpr(op, left, right)
 
         elif ctx.basicTypeCastExpr():
@@ -582,7 +473,6 @@ class Transformer(RustVisitor):
         elif ctx.castExpressionPostFix():
             expr = self.visit(ctx.expression(0))
             cast = self.visit(ctx.castExpressionPostFix())
-            # print("cast result: ", expr, " and ", cast)
             return CastExpr(expr=expr, type=cast)
 
         # Add caller and callee
@@ -680,7 +570,6 @@ class Transformer(RustVisitor):
         return TypePathExpression(type_path=type_str.split("::") , last_type=type_str.split("::")[-1])
 
     def visitPrimaryExpression(self, ctx):
-        # print("visitPrimaryExpression")
         if isinstance(ctx, list):
             if len(ctx) != 1:
                 raise Exception(f"Expected exactly one primaryExpression, got: {len(ctx)} in {ctx}")
@@ -692,16 +581,6 @@ class Transformer(RustVisitor):
         else:
             raise Exception(f"Unknown primary expression: {ctx.getText()}")
 
-    def visitQualifiedFunctionCall(self, ctx):
-        # type_path = self.visit(ctx.typePath())
-        function_name = ctx.Identifier().getText()
-        generic_args = self.visit(ctx.genericArgs()) if ctx.genericArgs() else None
-        if ctx.argumentList():
-            args = self.visit(ctx.argumentList())
-        else:
-            args = []
-        return FunctionCall(callee=function_name, args=args)
-
     def visitGenericArgs(self, ctx):
         print("generic arg call")
         return [self.visit(ty) for ty in ctx.type()]
@@ -709,9 +588,6 @@ class Transformer(RustVisitor):
     def visitDereferenceExpression(self, ctx):
         target_expr = self.visit(ctx.expression())
         return DereferenceExpr(target_expr)
-
-    def visitCharLiteralExpr(self, ctx):
-        return ctx.expr
 
     def visitBorrowExpression(self, ctx):
         mutable = ctx.getChild(1).getText() == "mut"
@@ -743,9 +619,6 @@ class Transformer(RustVisitor):
 
         elif ctx.pointerType():
             return self.visit(ctx.pointerType())
-
-        # elif "::" in type_str:
-        #     return TypePathExpression(type_path=type_str.split("::") , last_type=type_str.split("::")[-1])
         elif str.__eq__(type_str,"i32"):
             return IntType()
         elif str.__eq__(type_str,"String"):
@@ -756,9 +629,7 @@ class Transformer(RustVisitor):
     def visitBasicType(self, ctx):
         type_str = ctx.getText()
         if ctx.safeNonNullWrapper():
-            print(self.visit(ctx.safeNonNullWrapper()).__class__ )
             return self.visit(ctx.safeNonNullWrapper())
-
         elif ctx.typePath():
             type_str = ctx.typePath().getText()
             return TypePathExpression(type_path=type_str.split("::") , last_type=type_str.split("::")[-1])
@@ -784,7 +655,6 @@ class Transformer(RustVisitor):
         return PathType(segments=segments)
 
     def visitLiteral(self, ctx):
-        # print("visitLiteral")
         if ctx.arrayLiteral():
             return self.visit(ctx.arrayLiteral())
         elif ctx.booleanLiteral():
@@ -792,7 +662,6 @@ class Transformer(RustVisitor):
         elif ctx.HexNumber():
             return int(ctx.HexNumber().getText(), 16)
         elif ctx.Number():
-            # print("ctx.Number", ctx.Number().getText())
             return IntLiteral(ctx.Number().getText())
         elif ctx.SignedNumber():
             return IntLiteral(int(ctx.SignedNumber().getText()))
@@ -806,14 +675,11 @@ class Transformer(RustVisitor):
         elif ctx.CHAR_LITERAL():
             return CharLiteral(ctx.CHAR_LITERAL().getText()[1:-1])
         elif ctx.byteLiteral():
-            return self.visit(ctx.byteLiteral())
+            return LiteralExpr(expr=ctx.getText())
         elif ctx.NONE():
             return None
         else:
             raise ValueError("Unknown literal type")
-
-    def visitByteLiteral(self, ctx):
-        return LiteralExpr(expr=ctx.getText())
 
     def visitParenExpr(self, ctx):
         inner_expr = ctx.expression()
@@ -821,7 +687,6 @@ class Transformer(RustVisitor):
         return result
 
     def visitArrayLiteral(self, ctx):
-        # print("in array literal visitor")
         name = ""
         if ctx.Identifier():
             name = ctx.Identifier().getText()
@@ -836,22 +701,6 @@ class Transformer(RustVisitor):
         element_exprs = [self.visit(expr) for expr in ctx.expression()]
         return ArrayLiteral(name=name, elements=element_exprs)
 
-        # else:  # Case: [value; size] constructor
-        #     value = self.visit(ctx.expression(0))
-        #     size = self.visit(ctx.expression(1))
-        #     return ArrayConstructor(value=value, size=size)
-
-    def visitInitializer(self, ctx):
-        if ctx.expression():
-            # print("1")
-            return self.visit(ctx.expression())
-        elif ctx.block():
-            # print("2")
-            return self.visit(ctx.block())
-        else:
-            print("Unhandled initializer kind")
-            return None
-
     def visitWhileStmt(self, ctx):
         condition = self.visit(ctx.expression())
         body = [self.visit(stmt) for stmt in ctx.block().statement()]
@@ -864,7 +713,6 @@ class Transformer(RustVisitor):
 
     def visitMatchArm(self, ctx):
         patterns = [self.visit(pat_ctx) for pat_ctx in ctx.matchPattern()]
-        # print("patterns are ", patterns, len(patterns), ctx.block())
         body = self.visit(ctx.block())
         return MatchArm(patterns=patterns, body=body)
 
@@ -889,30 +737,6 @@ class Transformer(RustVisitor):
         return CompoundAssignment(
             target=target, op=op, value=value)
 
-    # def visitUnionDef(self, ctx):
-    #     visibility = ctx.visibility().getText() if ctx.visibility() else None
-    #     name = ctx.Identifier().getText()
-    #     if ctx.typeExpr():
-    #         typ = self.visit(ctx.type())
-    #         value = self.visit(ctx.expression())
-    #         return TopLevelVarDef(visibility=visibility, name=name, type=typ, value=value)
-    #     else:
-    #         fields = [self.visit(field) for field in ctx.unionField()]
-    #         return TopLevelVarDef(visibility=visibility, name=name, fields=fields, type=None)
-
-    def visitConstDef(self, ctx):
-        return self._visit_simple_definition(ctx, TopLevelVarDef)
-
-    def visitUnsafeDef(self, ctx):
-        return self._visit_simple_definition(ctx, TopLevelVarDef)
-
-    def _visit_simple_definition(self, ctx, node_type):
-        visibility = ctx.visibility().getText() if ctx.visibility() else None
-        name = ctx.Identifier().getText()
-        typ = self.visit(ctx.typeExpr())
-        value = self.visit(ctx.expression())
-        return node_type(visibility=visibility, name=name, type=typ, fields=value)
-
     def visitUseDecl(self, ctx):
         paths = [self.visit(tp) for tp in ctx.typePath()]
         identifiers = ctx.Identifier()
@@ -924,7 +748,6 @@ class Transformer(RustVisitor):
         return UseDecl(paths, aliases)
 
 def setParents(node, parent=None, top_level_prog=None):
-    # print("setParents ", node.__class__)
     if not isinstance(node, ASTNode):
         return
 

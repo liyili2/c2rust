@@ -84,23 +84,6 @@ class CastExpr(Expression):
     def accept(self, visitor):
         return visitor.visit_CastExpr(self)
 
-class TypeWrapper(Expression):
-    def __init__(self, expr):
-        super().__init__(type)
-        self.expr = expr
-
-    def accept(self, visitor):
-        return super().accept(visitor)
-
-class BoxWrapperExpr(Expression):
-    def __init__(self, expr, path):
-        super().__init__(type)
-        self.expr = expr
-        self.path = path
-
-    def accept(self, visitor):
-        return super().accept(visitor)
-
 class BorrowExpr(Expression):
     def __init__(self, expr, isMutable=False):
         super().__init__()
@@ -187,14 +170,6 @@ class DereferenceExpr(Expression):
     def accept(self, visitor):
         return visitor.visit_DereferenceExpr(self)
 
-class CharLiteralExpr(Expression):
-    def __init__(self, value):
-        super().__init__()
-        self.value = value
-
-    def accept(self, visitor):
-        return visitor.visit_CharLiteralExpr(self)
-
 class FieldAccessExpr(Expression):
     def __init__(self, receiver, field_name):
         super().__init__()
@@ -260,3 +235,11 @@ class SafeWrapper(Expression):
 
     def accept(self, visitor):
         return visitor.visit_SafeWrapper(self)
+    
+class TypeWrapper(Expression):
+    def __init__(self, expr):
+        super().__init__(type)
+        self.expr = expr
+
+    def accept(self, visitor):
+        return super().accept(visitor)
