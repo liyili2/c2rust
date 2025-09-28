@@ -9,7 +9,6 @@ from RustParser.AST_Scripts.antlr.RustParser import RustParser
 from RustParser.AST_Scripts.ast.Transformer import Transformer, setParents
 from RustParser.AST_Scripts.ast.TypeChecker import TypeChecker
 
-
 def pretty_print_ast(node, indent=0, visited=None):
     if visited is None:
         visited = set()

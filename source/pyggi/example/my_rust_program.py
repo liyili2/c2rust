@@ -5,6 +5,7 @@ from pyggi.tree.rust_engine import RustEngine
 from pyggi.base.patch import Patch
 from pyggi.tree.tree import TreeProgram
 from RustParser.AST_Scripts.ast.TypeChecker import TypeChecker
+from RustCode.AST_Scripts.simulator import Simulator
 
 class MyRustProgram(TreeProgram):
     def __init__(self, path, config):
@@ -45,29 +46,38 @@ class MyRustProgram(TreeProgram):
         # print("🔍 Mutation diff:")
         # print(diff)
 
-        # Evaluate directly
-        try:
-            checker = TypeChecker()
-            checker.visit(mutated_ast)
-            print("eval type ", checker.error_count, len(mutated_ast.items))
-            # fitness = 1 / (checker.error_count + 1)
-            fitness = checker.error_count
-            status = "SUCCESS"
-
-        except Exception as e:
-            fitness = None
-            status = "CRASH"
-            print("✖︎", e)
-
+        res = Result()
         if mutated_ast:
             if len(mutated_ast.items) == 0:
                 fitness = None
                 status = "CRASH"
                 print("✖︎ Invalid AST Generated")
 
-        res = Result()
-        res.status = status
-        res.fitness = fitness
+        else:
+            # Evaluate directly
+            try:
+                checker = TypeChecker()
+                checker.visit(mutated_ast)
+                print("eval ", checker.error_count, len(mutated_ast.items))
+                fitness = checker.error_count
+                status = "SUCCESS"
+
+                res.status = status
+                res.fitness = fitness
+
+            except Exception as e:
+                fitness = None
+                status = "CRASH"
+                print("✖︎", e)
+
+            # run functional tests and assertions with the ast
+            try:
+                rcode, stdout, stderr, elapsed = self.exec_cmd(variant.config["test_command"], timeout=100)
+                variant.compute_fitness(res, rcode, stdout, stderr, elapsed)
+
+            except Exception as e:
+                pass
+
         # res['BestFitness'] = best_fitness
         # res['diff'] = self.program.diff(best_patch)
         return res

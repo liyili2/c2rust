@@ -90,7 +90,7 @@ def main():
         program = MyLineProgram(args.project_path, config=cfg)
         ops     = [LineReplacement, LineInsertion, LineDeletion]
     else:
-        cfg = {"target_files": ["bst.rs"]}
+        cfg = {"target_files": ["bst.rs"], "test_command": "./run.sh"}
         program = MyRustProgram(args.project_path, config=cfg)
         ops     = [StmtReplacement, StmtInsertion, StmtDeletion]
 
