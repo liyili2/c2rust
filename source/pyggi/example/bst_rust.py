@@ -36,13 +36,11 @@ def get_engine(cls, file_name):
         raise Exception('{} file is not supporteddddd'.format(extension))
 
 class MyProgram(AbstractProgram):
-    def compute_fitness(self, result, return_code, stdout, stderr, elapsed_time):
-        try:
-            passed = "test result: ok" in stdout
-            result.fitness = elapsed_time
-            result.status = 'SUCCESS' if passed else 'PARSE_ERROR3'
-        except:
-            result.status = 'PARSE_ERROR4'
+    def compute_fitness(self, result, exit_code):
+        if exit_code != 0:
+            result.status = "Functional Incorrectness"
+        else:
+            result.status = "SUCCESS"
 
     @classmethod
     def get_engine(cls, file_name):
@@ -90,7 +88,7 @@ def main():
         program = MyLineProgram(args.project_path, config=cfg)
         ops     = [LineReplacement, LineInsertion, LineDeletion]
     else:
-        cfg = {"target_files": ["bst.rs"], "test_command": "./run.sh"}
+        cfg = {"target_files": ["bst.rs"], "test_command": "bst_test.py"}
         program = MyRustProgram(args.project_path, config=cfg)
         ops     = [StmtReplacement, StmtInsertion, StmtDeletion]
 

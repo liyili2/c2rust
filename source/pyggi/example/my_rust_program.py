@@ -6,6 +6,17 @@ from pyggi.base.patch import Patch
 from pyggi.tree.tree import TreeProgram
 from RustParser.AST_Scripts.ast.TypeChecker import TypeChecker
 from RustCode.AST_Scripts.simulator import Simulator
+import builtins
+import pytest
+
+class ResultCapture:
+    def __init__(self):
+        self.failed = 0
+        self.passed = 0
+
+    def pytest_sessionfinish(self, session):
+        self.failed = session.testsfailed
+        self.passed = session.testscollected - session.testsfailed
 
 class MyRustProgram(TreeProgram):
     def __init__(self, path, config):
@@ -72,8 +83,11 @@ class MyRustProgram(TreeProgram):
 
             # run functional tests and assertions with the ast
             try:
-                rcode, stdout, stderr, elapsed = self.exec_cmd(variant.config["test_command"], timeout=100)
-                variant.compute_fitness(res, rcode, stdout, stderr, elapsed)
+                functional_test_report = ResultCapture()
+                builtins.ast = mutated_ast
+                exit_code  = pytest.main(["-s", variant.config["test_command"]], plugins=[functional_test_report])
+                # TODO: implement the new compute_fitness
+                variant.compute_fitness(res, exit_code)
 
             except Exception as e:
                 pass
