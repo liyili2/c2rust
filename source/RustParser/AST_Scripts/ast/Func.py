@@ -1,9 +1,13 @@
 from RustParser.AST_Scripts.ast.ASTNode import ASTNode
 from RustParser.AST_Scripts.ast.common import DeclarationInfo
+from RustParser.AST_Scripts.ast.common import DeclarationInfo
 
 class Param(ASTNode):
     def __init__(self, name, typ, isMutable):
+    def __init__(self, name, typ, isMutable):
         super().__init__()
+        self.declarationInfo = DeclarationInfo(name=name, type=typ)
+        self.isMutable = isMutable
         self.declarationInfo = DeclarationInfo(name=name, type=typ)
         self.isMutable = isMutable
         self.parent = None

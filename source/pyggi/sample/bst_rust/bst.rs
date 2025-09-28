@@ -73,23 +73,23 @@ impl Node {
 }
 
 fn main() {
-    // let mut root = Node::new(5, String::from("five"));
+    let mut root = Node::new(5, String::from("five"));
 
-    // println!("{:?}", root.search(5));
-    // root.insert(3, String::from("three"));
-    // println!("{:?}", root.search(3));
-    // root.insert(7, String::from("seven"));
-    // println!("{:?}", root.search(7));
-    // root.insert(4, String::from("four"));
-    // println!("{:?}", root.search(4));
-    // root.insert(2, String::from("two"));
-    // println!("{:?}", root.search(2));
-    // root.insert(6, String::from("six"));
-    // println!("{:?}", root.search(6));
-    // root.insert(8, String::from("eight"));
-    // println!("{:?}", root.search(8));
+    println!("{:?}", root.search(5));
+    root.insert(3, String::from("three"));
+    println!("{:?}", root.search(3));
+    root.insert(7, String::from("seven"));
+    println!("{:?}", root.search(7));
+    root.insert(4, String::from("four"));
+    println!("{:?}", root.search(4));
+    root.insert(2, String::from("two"));
+    println!("{:?}", root.search(2));
+    root.insert(6, String::from("six"));
+    println!("{:?}", root.search(6));
+    root.insert(8, String::from("eight"));
+    println!("{:?}", root.search(8));
 
-    // unsafe {
-    //     println!("Total nodes (via static mutable global): {}", NODE_COUNT);
-    // }
+    unsafe {
+        println!("Total nodes (via static mutable global): {}", NODE_COUNT);
+    }
 }

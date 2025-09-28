@@ -63,6 +63,8 @@ class MyRustProgram(TreeProgram):
                 fitness = None
                 status = "CRASH"
                 print("✖︎ Invalid AST Generated")
+                status = "CRASH"
+                print("✖︎ Invalid AST Generated")
 
         else:
             # Evaluate directly

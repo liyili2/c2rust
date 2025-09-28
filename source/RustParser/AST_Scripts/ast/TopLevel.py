@@ -1,5 +1,6 @@
 from RustParser.AST_Scripts.ast.ASTNode import ASTNode
 from RustParser.AST_Scripts.ast.common import DeclarationInfo
+from RustParser.AST_Scripts.ast.common import DeclarationInfo
 
 class TopLevel(ASTNode):
     def __init__(self):
@@ -70,10 +71,12 @@ class ExternBlock(TopLevel):
 
 class ExternItem(ASTNode):
     pass
+    pass
 
 class ExternTypeDecl(ExternItem):
     def __init__(self, name: str, visibility: str = None):
         super().__init__()
+        self.declarationInfo = DeclarationInfo(name=name, visibility=visibility)
         self.declarationInfo = DeclarationInfo(name=name, visibility=visibility)
 
     def __repr__(self):
@@ -84,10 +87,14 @@ class ExternTypeDecl(ExternItem):
 
 class StaticVarDecl(TopLevel):
     def __init__(self, name, var_type, isMutable, initial_value, visibility=None, isExtern=False):
+    def __init__(self, name, var_type, isMutable, initial_value, visibility=None, isExtern=False):
         super().__init__()
         self.declarationInfo = DeclarationInfo(name=name, type=var_type, visibility=visibility)
         self.isMutable = isMutable
+        self.declarationInfo = DeclarationInfo(name=name, type=var_type, visibility=visibility)
+        self.isMutable = isMutable
         self.initial_value = initial_value  # Expr: value assigned at declaration
+        self.isExtern = isExtern
         self.isExtern = isExtern
 
     def __repr__(self):
@@ -113,9 +120,11 @@ class ExternFunctionDecl(TopLevel):
             f"ExternFunctionDecl(name={self.name!r}, params={self.params}, "
             f"return_type={self.return_type}, variadic={self.variadic}, "
             f"visibility={self.visibility})")
+            f"visibility={self.visibility})")
 
 class TypeAliasDecl(TopLevel):
     def __init__(self, name, type, visibility=None):
+        self.declarationInfo = DeclarationInfo(name=name, type=type, visibility=visibility)
         self.declarationInfo = DeclarationInfo(name=name, type=type, visibility=visibility)
 
 class TopLevelVarDef(TopLevel):
@@ -130,6 +139,7 @@ class TopLevelVarDef(TopLevel):
 
 class VarDefField(ASTNode):
     def __init__(self, name, type_, visibility=None):
+        self.declarationInfo = DeclarationInfo(name=name, type=type_, visibility=visibility)
         self.declarationInfo = DeclarationInfo(name=name, type=type_, visibility=visibility)
 
     def accept(self, visitor):

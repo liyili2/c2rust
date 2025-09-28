@@ -17,6 +17,7 @@ class TypeChecker:
         self.reports = []
 
     def error(self, node, message, error_weight=1):
+        # error_weight=1
         error_msg = f"Type error: {message}"
         if hasattr(node, 'line'):
             error_msg = f"[Line {node.line}] {error_msg}"
@@ -547,15 +548,33 @@ class TypeChecker:
                     except Exception:
                         # self.error(arg.name, f"undefined arg in {node.func}")
                         continue
+            for arg in node.args:
+                if isinstance(arg, IdentifierExpr):
+                    try:
+                        info = self.env.lookup(arg.name)
+                    except Exception:
+                        # self.error(arg.name, f"undefined arg in {node.func}")
+                        continue
 
+                    if not info["owned"] or info["borrowed"]:
+                        self.error(arg.name, f"no owners found for the argument {arg.name} in {node.callee}")
                     if not info["owned"] or info["borrowed"]:
                         self.error(arg.name, f"no owners found for the argument {arg.name} in {node.callee}")
 
                     info["borrowed"] = True
+                    info["borrowed"] = True
 
             arg_types = [self.visit(arg) for arg in node.args]
             expected_types = func_info["param_types"]
+            arg_types = [self.visit(arg) for arg in node.args]
+            expected_types = func_info["param_types"]
 
+            if len(arg_types) != len(expected_types):
+                self.error(node.callee, f"wrong number of arguments")
+            else:
+                for actual, expected in zip(arg_types, expected_types):
+                    if type(actual) != type(expected):
+                        self.error(node.callee, f"wrong number of arguments")
             if len(arg_types) != len(expected_types):
                 self.error(node.callee, f"wrong number of arguments")
             else:
