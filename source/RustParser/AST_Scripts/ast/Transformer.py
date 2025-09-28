@@ -122,7 +122,6 @@ class Transformer(RustVisitor):
         type_ctx = ctx.typeExpr()
         typ = self.visit(type_ctx) if type_ctx else None
         return Param(name=identifier, typ=typ, isMutable=is_mut)
-        return Param(name=identifier, typ=typ, isMutable=is_mut)
 
     def visitParamList(self, ctx):
         param_list = FunctionParamList([])
@@ -147,7 +146,6 @@ class Transformer(RustVisitor):
     def visitStructLiteral(self, ctx):
         type_name = ctx.Identifier().getText()
         fields = [self.visit(field_ctx) for field_ctx in ctx.structLiteralField()]
-        return StructDef(type_name, fields)
         return StructDef(type_name, fields)
 
     def visitStructLiteralField(self, ctx):
@@ -208,7 +206,6 @@ class Transformer(RustVisitor):
             name = ctx.Identifier().getText()
             var_type = self.visit(ctx.typeExpr())
             return StaticVarDecl(name=name, var_type=var_type, initial_value= None, isMutable=mutable, visibility=visibility, isExtern=True)
-            return StaticVarDecl(name=name, var_type=var_type, initial_value= None, isMutable=mutable, visibility=visibility, isExtern=True)
 
         elif ctx.LPAREN() and ctx.RPAREN() and ctx.externParams():
             visibility = ctx.visibility().getText() if ctx.visibility() else None
@@ -217,12 +214,10 @@ class Transformer(RustVisitor):
 
             for param_ctx in ctx.externParams().externParam():
                 if param_ctx.typeExpr():
-                if param_ctx.typeExpr():
                     type_node = self.visit(param_ctx.typeExpr())
                     params.append(type_node)
 
             return_type = self.visit(ctx.typeExpr()) if ctx.typeExpr() else None
-            return ExternFunctionDecl(name=name, params=params, return_type=return_type, visibility=visibility)
             return ExternFunctionDecl(name=name, params=params, return_type=return_type, visibility=visibility)
 
         raise Exception("Unsupported externItem structure")
@@ -273,15 +268,12 @@ class Transformer(RustVisitor):
 
         return VarDef(name=name, isMutable=mutable, by_ref=by_ref, var_type=var_type)
 
-        return VarDef(name=name, isMutable=mutable, by_ref=by_ref, var_type=var_type)
-
     def visitStaticItem(self, ctx):
         visibility = ctx.visibility().getText() if ctx.visibility() else None
         mutable = ctx.getChild(1).getText() == "mut"
         name = ctx.Identifier().getText()
         var_type = self.visit(ctx.typeExpr())
         value = self.visit(ctx.expr()) if ctx.expr() else None
-        return StaticVarDecl(
         return StaticVarDecl(
             name=name,
             var_type=var_type,
@@ -336,9 +328,7 @@ class Transformer(RustVisitor):
     def visitExprStmt(self, ctx):
         expr = self.visit(ctx.primaryExpression())
         return Statement(body=expr)
-        return Statement(body=expr)
 
-    def visitFunctionCall(self, ctx):
     def visitFunctionCall(self, ctx):
         function_expr = self.visit(ctx.expression())
         postfix = ctx.callExpressionPostFix()
@@ -347,7 +337,6 @@ class Transformer(RustVisitor):
             args = [self.visit(arg) for arg in args_ctx]
         else:
             args = []
-        return FunctionCall(callee=function_expr, args=args)
         return FunctionCall(callee=function_expr, args=args)
 
     def visitStatement(self, ctx):
@@ -407,7 +396,6 @@ class Transformer(RustVisitor):
         else:
             left = self.visit(ctx.expression(0))
             right = self.visit(ctx.expression(1))
-        return ConditionalAssignmentStmt(cond=cond, body=AssignStmt(target=left, value=right))
         return ConditionalAssignmentStmt(cond=cond, body=AssignStmt(target=left, value=right))
 
     def visitLoopStmt(self, ctx):
@@ -508,7 +496,6 @@ class Transformer(RustVisitor):
             func = self.visit(ctx.expression(0))
             args = self.visit(ctx.callExpressionPostFix())
             return FunctionCall(callee=func, args=args, caller=id)
-            return FunctionCall(callee=func, args=args, caller=id)
 
         elif ctx.parenExpression():
             return self.visit(ctx.parenExpression().expression())
@@ -529,7 +516,6 @@ class Transformer(RustVisitor):
             typePath = self.visit(ctx.typePathExpression())
             identifier = self.visit(ctx.expression(0))
             return  TypePathExpression(type_path=typePath, last_type=identifier)
-            return  TypePathExpression(type_path=typePath, last_type=identifier)
 
         elif ctx.patternPrefix():
             value_expr = self.visit(ctx.expression(0))
@@ -547,17 +533,12 @@ class Transformer(RustVisitor):
             return self.visit(ctx.qualifiedExpression())
 
         elif ctx.typeExpr():
-        elif ctx.typeExpr():
             expr = self.visit(ctx.expression(0))
-            typeAccess = self.visit(ctx.typeExpr())
-            return Expression(expr=expr, type=typeAccess)
             typeAccess = self.visit(ctx.typeExpr())
             return Expression(expr=expr, type=typeAccess)
 
         elif ctx.unsafeModifier():
-        elif ctx.unsafeModifier():
             expr = self.visit(ctx.unsafeExpression().expression())
-            return Expression(expr=expr, isUnsafe=True)
             return Expression(expr=expr, isUnsafe=True)
 
         elif ctx.safeWrapper():
@@ -628,8 +609,6 @@ class Transformer(RustVisitor):
         mutable = ctx.getChild(1).getText() == "mut"
         expr_index = 2 if mutable else 1
         expr = self.visit(ctx.getChild(expr_index))
-        mutable = expr.isMutable
-        return BorrowExpr(expr=expr, isMutable=mutable)
         mutable = expr.isMutable
         return BorrowExpr(expr=expr, isMutable=mutable)
 
@@ -734,7 +713,6 @@ class Transformer(RustVisitor):
                 return ArrayLiteral(
                     name=IdentifierExpr(name=name),
                     elements=index_exprs)
-                    elements=index_exprs)
         
         element_exprs = [self.visit(expr) for expr in ctx.expression()]
         return ArrayLiteral(name=name, elements=element_exprs)
@@ -743,12 +721,10 @@ class Transformer(RustVisitor):
         condition = self.visit(ctx.expression())
         body = [self.visit(stmt) for stmt in ctx.block().statement()]
         return WhileStmt(condition=condition, body=body)
-        return WhileStmt(condition=condition, body=body)
 
     def visitMatchStmt(self, ctx):
         expr = self.visit(ctx.expression())
         arms = [self.visit(arm_ctx) for arm_ctx in ctx.matchArm()]
-        return MatchStmt(expr=expr, arms=arms)
         return MatchStmt(expr=expr, arms=arms)
 
     def visitMatchArm(self, ctx):
