@@ -6,6 +6,7 @@ from RustParser.AST_Scripts.ast.TypeChecker import TypeChecker
 from RustParser.AST_Scripts.ast.ProgramVisitor import ProgramVisitor
 from RustParser.AST_Scripts.ast.Expression import *
 from RustParser.AST_Scripts.ast.Program import *
+from RustParser.AST_Scripts.ast.TopLevel import *
 
 NoneType = type(None)
 
@@ -41,7 +42,12 @@ class Simulator(ProgramVisitor):
 
     def visit_Program(self, ctx: Program):
         for i in ctx.items:
-            i.accept(self)
+            if not isinstance(i, list):
+                i.accept(self)
+
+    def visit_InterfaceDef(self, node: InterfaceDef):
+        for fn in node.functions:
+            fn.accept(self)
 
     def visit_LetStmt(self, node: LetStmt):
         newStack = copy.deepcopy(self.stack)
@@ -65,12 +71,16 @@ class Simulator(ProgramVisitor):
 
     def visit_FunctionDef(self, node: FunctionDef):
         self.funMap.update({node.identifier : node})
-        node.body.accept(self)
-        return None
+        return_value = node.body.accept(self)
+        if return_value is not None: 
+            return return_value
 
     def visit_Block(self, node: Block):
         for stmt in node.stmts:
-            stmt.accept(self)
+            if isinstance(stmt, ReturnStmt):
+                return stmt.accept(self)
+            else:
+                stmt.accept(self)
 
     # def visitCallStmt(self, node: CallStmt):
     #     newNode = self.funMap.get(node.callee)
@@ -99,12 +109,11 @@ class Simulator(ProgramVisitor):
         return result
 
     def visitBreakStmt(self, node: BreakStmt):
-
         if node is not None: # .vexp()
             return node.accept(self) # .vexp()
         return None # maybe this is better to return?
 
-    def visitReturnStmt(self, node: ReturnStmt):
+    def visit_ReturnStmt(self, node: ReturnStmt):
         if node.accept(self) is None:
             return
         else:
@@ -152,6 +161,9 @@ class Simulator(ProgramVisitor):
     # def visitIdexp(self, ctx: XMLExpParser.IdexpContext):
     #     return
 
+    def visit_FieldAccessExpr(self, node: FieldAccessExpr):
+        pass
+
     def visit_StrLiteral(self, ctx: StrLiteral):
         return ctx.value
 
@@ -161,16 +173,16 @@ class Simulator(ProgramVisitor):
     def visit_BoolLiteral(self, ctx: BoolLiteral):
         return ctx.value
 
-    def visit_StructDef(self, ctx: StructDef):
+    def visit_Struct(self, ctx):
+        if isinstance(ctx, TopLevel):
+            pass
+        elif isinstance(ctx, Statement):
+            # Maybe store struct in the stack as a dict or array?
+            struct_fields = ctx.fields
+            struct_name = ctx.type_name
+            self.stack.update({struct_name: struct_fields})
+            return ctx.accept()
 
-        # Maybe store struct in the stack as a dict or array?
-        struct_fields = ctx.fields
-        struct_name = ctx.type_name
-
-        self.stack.update({struct_name: struct_fields})
-
-        return ctx.accept()
-    
     def visit_CompoundAssignment(self, node:CompoundAssignment):
         operation = node.op[0]
         assign_Stmt = AssignStmt(target=node.target, value=BinaryExpr(left=node.target, op=operation, right=node.value))
