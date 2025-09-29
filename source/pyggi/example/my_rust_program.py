@@ -5,7 +5,6 @@ from pyggi.tree.rust_engine import RustEngine
 from pyggi.base.patch import Patch
 from pyggi.tree.tree import TreeProgram
 from RustParser.AST_Scripts.ast.TypeChecker import TypeChecker
-from RustCode.AST_Scripts.simulator import Simulator
 import builtins
 import pytest
 
@@ -58,6 +57,8 @@ class MyRustProgram(TreeProgram):
         # print(diff)
 
         res = Result()
+        res.status = None
+        res.fitness = None
         if mutated_ast:
             if len(mutated_ast.items) == 0:
                 fitness = None
@@ -66,33 +67,33 @@ class MyRustProgram(TreeProgram):
                 status = "CRASH"
                 print("✖︎ Invalid AST Generated")
 
-        else:
-            # Evaluate directly
-            try:
-                checker = TypeChecker()
-                checker.visit(mutated_ast)
-                print("eval ", checker.error_count, len(mutated_ast.items))
-                fitness = checker.error_count
-                status = "SUCCESS"
+            else:
+                # Evaluate directly
+                try:
+                    checker = TypeChecker()
+                    checker.visit(mutated_ast)
+                    print("eval ", checker.error_count, len(mutated_ast.items))
+                    fitness = checker.error_count
+                    status = "SUCCESS"
 
-                res.status = status
-                res.fitness = fitness
+                    res.status = status
+                    res.fitness = fitness
 
-            except Exception as e:
-                fitness = None
-                status = "CRASH"
-                print("✖︎", e)
+                except Exception as e:
+                    fitness = None
+                    status = "CRASH"
+                    print("✖︎", e)
 
-            # run functional tests and assertions with the ast
-            try:
-                functional_test_report = ResultCapture()
-                builtins.ast = mutated_ast
-                exit_code  = pytest.main(["-s", variant.config["test_command"]], plugins=[functional_test_report])
-                # TODO: implement the new compute_fitness
-                variant.compute_fitness(res, exit_code)
+                # run functional tests and assertions with the ast
+                try:
+                    functional_test_report = ResultCapture()
+                    builtins.ast = mutated_ast
+                    exit_code  = pytest.main(["-s", self.config["test_command"]], plugins=[functional_test_report])
+                    res.fitness += functional_test_report.failed
+                    self.compute_fitness(res, exit_code)
 
-            except Exception as e:
-                pass
+                except Exception as e:
+                    pass
 
         # res['BestFitness'] = best_fitness
         # res['diff'] = self.program.diff(best_patch)

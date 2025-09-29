@@ -5,6 +5,25 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python: Debug test1",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/source/pyggi/example/test1_rust.py",   // adjust path if needed
+            "cwd": "${workspaceFolder}/source",
+            "env": {
+            "PYTHONPATH": "${workspaceFolder}/source"
+            },
+            "args": [
+                "--project_path", "../source/pyggi/sample/test1_rust",
+                "--mode", "tree",
+                "--epoch", "1",
+                "--iter", "2"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "subProcess": true
+            },
+        {
             "name": "Python: Debug simulator",
             "type": "debugpy",
             "request": "launch",
