@@ -1,18 +1,11 @@
-from dataclasses import dataclass, field
-from typing import List, Optional
 from RustParser.AST_Scripts.ast.ASTNode import ASTNode
 from RustParser.AST_Scripts.ast.Type import BoolType, IntType, StringType, FloatType
-from RustParser.AST_Scripts.ast.common import DeclarationInfo
 from RustParser.AST_Scripts.ast.common import DeclarationInfo
 
 class Expression(ASTNode):
     def __init__(self, expr=None, type=None, isMutable=False, isUnsafe=False):
-    def __init__(self, expr=None, type=None, isMutable=False, isUnsafe=False):
         super().__init__()
         self.type = type
-        self.isMutable = isMutable
-        self.expr = expr
-        self.isUnsafe=isUnsafe
         self.isMutable = isMutable
         self.expr = expr
         self.isUnsafe=isUnsafe
@@ -21,13 +14,11 @@ class Expression(ASTNode):
         return visitor.visit(self)
 
 class QualifiedExpression(Expression):
-class QualifiedExpression(Expression):
     def __init__(self, expr):
         super().__init__()
         self.expr = expr
 
     def accept(self, visitor):
-        return visitor.visit_QualifiedExpression(self)
         return visitor.visit_QualifiedExpression(self)
 
 class IdentifierExpr(Expression):
@@ -47,10 +38,8 @@ class BinaryExpr(Expression):
 
     def accept(self, visitor):
         return visitor.visit_BinaryExpr(self)
-        return visitor.visit_BinaryExpr(self)
 
 class LiteralExpr(Expression):
-    def __init__(self, expr):
     def __init__(self, expr):
         super().__init__()
         self.expr = expr
@@ -62,18 +51,13 @@ class LiteralExpr(Expression):
 
     def get_type(self):
         if isinstance(self.expr, int):
-        if isinstance(self.expr, int):
             return IntType()
-        elif isinstance(self.expr, float):
         elif isinstance(self.expr, float):
             return FloatType()
         elif isinstance(self.expr, str):
-        elif isinstance(self.expr, str):
             return StringType()
         elif isinstance(self.expr, bool):
-        elif isinstance(self.expr, bool):
             return BoolLiteral()
-        elif isinstance(self.expr, bytes):
         elif isinstance(self.expr, bytes):
             return bytes()
         else:
@@ -81,27 +65,18 @@ class LiteralExpr(Expression):
 
 class FunctionCall(Expression):
     def __init__(self, callee, args, caller=None):
-class FunctionCall(Expression):
-    def __init__(self, callee, args, caller=None):
         super().__init__()
-        self.caller = caller
-        self.callee = callee
         self.caller = caller
         self.callee = callee
         self.args = args
 
     def accept(self, visitor):
         return visitor.visit_FunctionCall(self)
-        return visitor.visit_FunctionCall(self)
 
 class CastExpr(Expression):
     def __init__(self, type, expr=None, typePath=None):
         super().__init__(type)
-class CastExpr(Expression):
-    def __init__(self, type, expr=None, typePath=None):
-        super().__init__(type)
         self.expr = expr
-        self.type = type
         self.type = type
         self.typePath = typePath
 
@@ -109,7 +84,6 @@ class CastExpr(Expression):
         return visitor.visit_CastExpr(self)
 
 class BorrowExpr(Expression):
-    def __init__(self, expr, isMutable=False):
     def __init__(self, expr, isMutable=False):
         super().__init__()
         self.expr = expr
@@ -180,7 +154,6 @@ class ArrayDeclaration(Expression):
 
 class ArrayLiteral(Expression):
     def __init__(self, elements,name=None, count=None):
-    def __init__(self, elements,name=None, count=None):
         super().__init__()
         self.count = count
         self.count = count
@@ -218,10 +191,8 @@ class FieldAccessExpr(Expression):
 
     def accept(self, visitor):
         return visitor.visit_FieldAccessExpr(self)
-        return visitor.visit_FieldAccessExpr(self)
 
 class ParenExpr(Expression):
-    def __init__(self, expr):
     def __init__(self, expr):
         super().__init__()
         self.expr = expr
@@ -233,12 +204,9 @@ class ParenExpr(Expression):
     def __repr__(self):
         return f"ParenExpr({self.expr})"
 
-        return f"ParenExpr({self.expr})"
-
 class StructLiteralField(Expression):
     def __init__(self, name, value, field_type=None):
         super().__init__()
-        self.declarationInfo = DeclarationInfo(name=name, type=field_type)
         self.declarationInfo = DeclarationInfo(name=name, type=field_type)
         self.value = value
 
@@ -247,9 +215,7 @@ class StructLiteralField(Expression):
 
 class PatternExpr(Expression):
     def __init__(self, expr, pattern):
-    def __init__(self, expr, pattern):
         super().__init__()
-        self.expr = expr
         self.expr = expr
         self.pattern = pattern
 

@@ -1,26 +1,14 @@
-from collections import deque
-# from types import NoneType
-
-# from Program import *
-# from Transformer import *
 from ast import *
-from Transformer import Transformer
-from Statement import *
-from TypeChecker import TypeChecker
-
-from collections import ChainMap
-from collections import deque
-
-from source.RustParser.AST_Scripts.ast.ProgramVisitor import ProgramVisitor
-from source.RustParser.AST_Scripts.ast.Expression import *
-
-# from types import NoneType
+from RustParser.AST_Scripts.ast.Transformer import Transformer
+from RustParser.AST_Scripts.ast.Statement import *
+from RustParser.AST_Scripts.ast.TypeChecker import TypeChecker
+from RustParser.AST_Scripts.ast.ProgramVisitor import ProgramVisitor
+from RustParser.AST_Scripts.ast.Expression import *
 
 NoneType = type(None)
 
 # I need to add Box maybe?
 # I also may need to add arrays
-
 
 class Simulator(ProgramVisitor):
     # x, y, z, env : ChainMap{ x: n, y : m, z : v} , n m v are nat numbers 100, 100, 100, eg {x : 128}

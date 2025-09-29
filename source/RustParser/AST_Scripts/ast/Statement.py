@@ -68,10 +68,7 @@ class AssignStmt(Statement):
 
     def accept(self, visitor):
         return visitor.visit_Assignment(self)
-        return visitor.visit_Assignment(self)
 
-class ConditionalAssignmentStmt(Statement):
-    def __init__(self, cond, body):
 class ConditionalAssignmentStmt(Statement):
     def __init__(self, cond, body):
         super().__init__()
@@ -82,10 +79,8 @@ class ConditionalAssignmentStmt(Statement):
 
     def accept(self, visitor):
         return super().accept(visitor)
-        return super().accept(visitor)
 
 class WhileStmt(Statement):
-    def __init__(self, condition, body):
     def __init__(self, condition, body):
         super().__init__()
         self.condition = condition
@@ -95,7 +90,6 @@ class WhileStmt(Statement):
         return visitor.visit_WhileStmt(self)
 
 class MatchStmt(Statement):
-    def __init__(self, expr, arms):
     def __init__(self, expr, arms):
         super().__init__()
         self.expr = expr
@@ -122,7 +116,6 @@ class MatchPattern(Statement):
         return visitor.visit_MatchPattern()
 
 class CompoundAssignment(Statement):
-    def __init__(self, target, op, value):
     def __init__(self, target, op, value):
         super().__init__()
         self.target = target
@@ -169,7 +162,6 @@ class ContinueStmt(Statement):
         return visitor.visit_ContinueStmt(self)
 
 class StructDef(Statement):
-class StructDef(Statement):
     def __init__(self, type_name: str, fields: list):
         super().__init__()
         self.type_name = type_name
@@ -177,39 +169,27 @@ class StructDef(Statement):
 
     def accept(self, visitor):
         return visitor.visit_Struct(self)
-        return visitor.visit_Struct(self)
 
     def __repr__(self):
         return f"StructDef(type_name={self.type_name}, fields={self.fields})"
-        return f"StructDef(type_name={self.type_name}, fields={self.fields})"
 
-class FunctionCall(Statement):
-    def __init__(self, callee, args, caller=None):
 class FunctionCall(Statement):
     def __init__(self, callee, args, caller=None):
         super().__init__()
-        self.callee = callee
-        self.args = args
         self.caller = caller
         self.callee = callee
         self.args = args
-        self.caller = caller
 
     def accept(self, visitor):
         return visitor.visit_FunctionCall(self)
-        return visitor.visit_FunctionCall(self)
 
-class Block(Statement):
-    def __init__(self, stmts, isUnsafe=False):
 class Block(Statement):
     def __init__(self, stmts, isUnsafe=False):
         super().__init__()
         self.stmts = stmts
         self.isUnsafe = isUnsafe
-        self.isUnsafe = isUnsafe
 
     def accept(self, visitor):
-        return visitor.visit_Block(self)
         return visitor.visit_Block(self)
     
     def getChildren(self):

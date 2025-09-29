@@ -6,12 +6,9 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '.
 from antlr4 import CommonTokenStream, InputStream
 from RustParser.AST_Scripts.antlr.RustLexer import RustLexer
 from RustParser.AST_Scripts.antlr.RustParser import RustParser
-from RustParser.AST_Scripts.ast.Transformer import Transformer, setParents
+from RustParser.AST_Scripts.ast.Transformer import Transformer
 from RustParser.AST_Scripts.ast.Simulator import Simulator
 from RustParser.AST_Scripts.ast.TypeChecker import TypeChecker
-from RustParser.AST_Scripts.ast.Program import Program
-from RustParser.AST_Scripts.ast.TopLevel import TopLevel
-from RustParser.AST_Scripts.ast.ASTNode import ASTNode
 
 def pretty_print_ast(node, indent=0, visited=None):
     if visited is None:
@@ -44,19 +41,22 @@ def pretty_print_ast(node, indent=0, visited=None):
 
     return '\n'.join(lines)
 
-file_path = os.path.join(os.path.dirname(__file__), "bst.rs")
+file_path = os.path.join(os.path.dirname(__file__), "sim_test1.rs")
 with open(file_path, "r", encoding="utf-8") as f:
     rust_code = f.read()
 lexer = RustLexer(InputStream(rust_code))
 tokens = CommonTokenStream(lexer)
 parser = RustParser(tokens)
 tree = parser.program()
-# print(pretty_print_ast(tree))
-builder = Simulator()
-custom_ast = builder.visit(tree)
-setParents(custom_ast)
+transformer = Transformer()
+ast = transformer.visit(tree)
 checker = TypeChecker()
-checker.visit(custom_ast)
+checker.visit(ast)
+memory = dict()
+stack = dict()
+builder = Simulator(memory=memory, stack=stack)
+sim_result = builder.visit(ast)
+
 print("Type Error Count : ", checker.error_count)
 # print("Pretty AST:")
 # print(pretty_print_ast(custom_ast))

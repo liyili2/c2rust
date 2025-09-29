@@ -1,4 +1,3 @@
-
 from RustParser.AST_Scripts.ast.ASTNode import *
 from RustParser.AST_Scripts.ast.Expression import *
 from RustParser.AST_Scripts.ast.Statement import *
@@ -225,10 +224,9 @@ class Transformer(RustVisitor):
     def visitLetStmt(self, ctx):
         var_defs = ctx.varDef()
         expressions = ctx.expression()
-        init_block = ctx.initBlock()
 
         # case 1: let varDef = expression;
-        if len(var_defs) == 1 and len(expressions) == 1 and init_block is None:
+        if len(var_defs) == 1 and len(expressions) == 1:
             var_def = self.visit(var_defs[0])
             expr = self.visit(expressions[0])
             return LetStmt(var_def, expr)
@@ -277,7 +275,6 @@ class Transformer(RustVisitor):
         return StaticVarDecl(
             name=name,
             var_type=var_type,
-            isMutable=mutable,
             isMutable=mutable,
             visibility=visibility,
             initial_value=value,
@@ -433,7 +430,6 @@ class Transformer(RustVisitor):
         return StaticVarDecl(
             name=name,
             var_type=var_type,
-            isMutable=mutable,
             isMutable=mutable,
             visibility=visibility,
             initial_value=initializer)

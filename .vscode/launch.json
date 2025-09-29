@@ -5,6 +5,16 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python: Debug simulator",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/source/RustParser/AST_Scripts/tests/SimulatorTest.py",   // adjust path if needed
+            "cwd": "${workspaceFolder}/source",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/source"
+            }
+        },
+        {
             "name": "Python: Debug transformer",
             "type": "debugpy",
             "request": "launch",
