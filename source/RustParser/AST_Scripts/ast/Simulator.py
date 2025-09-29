@@ -130,17 +130,11 @@ class Simulator(ProgramVisitor):
         return None
 
     def visit_ForStmt(self, ctx: ForStmt):
-        # This is the traditional for loop
-        x = ctx.var
-        v = self.visit(ctx.accept())
-        tmp = self.stack.get(x)
-        i = 0
-        while i < v:
-            self.stack.update({x: v})
+        iterations = ctx.iterable.accept(self)
+        self.stack.update({ctx.var: 0})
+        while self.stack.get(ctx.var) <= iterations:
             ctx.body.accept(self)
-            i = i + 1
-
-        self.stack.update({x: tmp})
+            self.stack.update({ctx.var: self.stack.get(ctx.var) + 1})
 
     def visit_WhileStmt(self, node: WhileStmt):
         condition = node.condition.accept(self)
@@ -148,6 +142,12 @@ class Simulator(ProgramVisitor):
             node.body.accept(self)
             condition = node.condition.accept(self)
         return
+
+    def visit_RangeExpression(self, node: RangeExpression):
+        last = float(node.last.accept(self))
+        first = float(node.initial.accept(self))
+        range_len = last - first + 1
+        return range_len
 
     # def visitIdexp(self, ctx: XMLExpParser.IdexpContext):
     #     return
@@ -170,6 +170,11 @@ class Simulator(ProgramVisitor):
         self.stack.update({struct_name: struct_fields})
 
         return ctx.accept()
+    
+    def visit_CompoundAssignment(self, node:CompoundAssignment):
+        operation = node.op[0]
+        assign_Stmt = AssignStmt(target=node.target, value=BinaryExpr(left=node.target, op=operation, right=node.value))
+        assign_Stmt.accept(self)
 
     def visit_BinaryExpr(self, node: BinaryExpr):
         oper = str(node.op)

@@ -241,7 +241,7 @@ class RangeExpression(Expression):
         self.last = last
 
     def accept(self, visitor):
-        visitor.visit_RangeExpression(self)
+        return visitor.visit_RangeExpression(self)
 
 class SafeWrapper(Expression):
     def __init__(self, expr):
