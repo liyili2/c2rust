@@ -1,9 +1,11 @@
+import copy
 from ast import *
 from RustParser.AST_Scripts.ast.Transformer import Transformer
 from RustParser.AST_Scripts.ast.Statement import *
 from RustParser.AST_Scripts.ast.TypeChecker import TypeChecker
 from RustParser.AST_Scripts.ast.ProgramVisitor import ProgramVisitor
 from RustParser.AST_Scripts.ast.Expression import *
+from RustParser.AST_Scripts.ast.Program import *
 
 NoneType = type(None)
 
@@ -33,27 +35,42 @@ class Simulator(ProgramVisitor):
 
     def get_val(self):
         return self.heap
+    
+    def visit(self, ctx):
+        return ctx.accept(self)
 
-    def visitLetStmt(self, node: LetStmt):
-        newNode = self.funMap.get(node.var_defs)
+    def visit_Program(self, ctx: Program):
+        for i in ctx.items:
+            i.accept(self)
 
-        newStack = self.stack.deepCopy()
+    def visit_LetStmt(self, node: LetStmt):
+        newStack = copy.deepcopy(self.stack)
 
-        for i in len(newNode.params):
-            arVar = newNode.params[i]
-            value = node.args[i].accept(self)
+        for i in range(0, len(node.var_defs)):
+            arVar = node.var_defs[i].declarationInfo.name
+            value = node.values[i].accept(self)
             newStack.update({arVar : value})
 
-        oldStack = self.stack
         self.stack = newStack
-        result = newNode.body.accept(self)
-        self.stack = oldStack
-
-        return result
-
-    def visitFunctionDef(self, node: FunctionDef):
-        self.funMap.update({node.identifier : node})
         return None
+
+    def visit_Assignment(self, node: AssignStmt):
+        newStack = copy.deepcopy(self.stack)
+        target = node.target.name
+        value = node.value.accept(self)
+        newStack.update({target : value})
+        self.stack = newStack
+
+        return None
+
+    def visit_FunctionDef(self, node: FunctionDef):
+        self.funMap.update({node.identifier : node})
+        node.body.accept(self)
+        return None
+
+    def visit_Block(self, node: Block):
+        for stmt in node.stmts:
+            stmt.accept(self)
 
     # def visitCallStmt(self, node: CallStmt):
     #     newNode = self.funMap.get(node.callee)
@@ -151,11 +168,11 @@ class Simulator(ProgramVisitor):
 
         return ctx.accept()
 
-    def visitBinaryExpr(self, node: BinaryExpr):
+    def visit_BinaryExpr(self, node: BinaryExpr):
         oper = str(node.op)
         # This will be very complicated.
-        a = node.left.accept(self)
-        b = node.right.accept(self)
+        a = float(node.left.accept(self))
+        b = float(node.right.accept(self))
         # range is more complicated due to there being an = operator. I can forget about this case for now.
         # Now, I need to write out the cases for each operator.
 
@@ -212,8 +229,11 @@ class Simulator(ProgramVisitor):
     #     else:
     #         return self.visitTerminal(ctx)
 
+    # def visit_IdentifierExpr(self, ctx: IdentifierExpr):
+    #     return ctx.accept(self)
+
     def visit_IdentifierExpr(self, ctx: IdentifierExpr):
-        return ctx.accept()
+        return self.stack.get(ctx.name)
 
     # Visit a parse tree produced by XMLExpParser#vexp.
     # def visitVexp(self, ctx: XMLExpParser.VexpContext):
