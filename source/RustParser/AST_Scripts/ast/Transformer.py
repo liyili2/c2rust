@@ -716,7 +716,8 @@ class Transformer(RustVisitor):
     def visitWhileStmt(self, ctx):
         condition = self.visit(ctx.expression())
         body = [self.visit(stmt) for stmt in ctx.block().statement()]
-        return WhileStmt(condition=condition, body=body)
+        body_block = Block(stmts=body, isUnsafe=False)
+        return WhileStmt(condition=condition, body=body_block)
 
     def visitMatchStmt(self, ctx):
         expr = self.visit(ctx.expression())

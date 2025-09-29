@@ -171,9 +171,7 @@ class TypeChecker:
     def visit_WhileStmt(self, node):
         cond_type = self.visit(node.condition)
         # self.visit(node.condition)
-
-        for stmt in node.body:
-            self.visit(stmt)
+        self.visit(node.body)
 
     def visit_CastExpr(self, node: CastExpr):
         if isinstance(node.expr, DereferenceExpr):
@@ -236,10 +234,6 @@ class TypeChecker:
 
     def visit_StructLiteralField(self, node):
         pass
-
-    def visit_UnsafeBlock(self, node):
-        for stmt in node.getChildren():
-            self.visit(stmt)
 
     def visit_LetStmt(self, node):
         expr_types = []

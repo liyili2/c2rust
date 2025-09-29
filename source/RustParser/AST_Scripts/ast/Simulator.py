@@ -35,7 +35,7 @@ class Simulator(ProgramVisitor):
 
     def get_val(self):
         return self.heap
-    
+
     def visit(self, ctx):
         return ctx.accept(self)
 
@@ -86,10 +86,10 @@ class Simulator(ProgramVisitor):
     #     self.stack = oldStack
     #     return result
 
-    def visitIfStmt(self, node: IfStmt):
+    def visit_IfStmt(self, node: IfStmt):
         # newNode = self.funMap.get(node.var_defs)
-
-        if_result = node.condition
+        if_result = node.condition.accept(self)
+        # if_result = node.condition
 
         if if_result:
             result = node.then_branch.accept(self)
@@ -110,7 +110,7 @@ class Simulator(ProgramVisitor):
         else:
             return node.value
 
-    def visitLoopStmt(self, ctx: LoopStmt):
+    def visit_LoopStmt(self, ctx: LoopStmt):
         # This is the loop keyword. For this type of loop, break statement can return a value
         # A loop statement contains a block statement, and if a break appears in the immediate block statement,
         # this loop will end?
@@ -118,7 +118,7 @@ class Simulator(ProgramVisitor):
         self.stack_bools.append(True)
 
         # now, the loop goes into the block
-        block_result = ctx.blockstmt().accept(self)
+        block_result = ctx.body.accept(self)
 
         top = self.stack_bools.pop()
         if not top:
@@ -129,7 +129,7 @@ class Simulator(ProgramVisitor):
 
         return None
 
-    def visitForStmt(self, ctx: ForStmt):
+    def visit_ForStmt(self, ctx: ForStmt):
         # This is the traditional for loop
         x = ctx.var
         v = self.visit(ctx.accept())
@@ -137,13 +137,16 @@ class Simulator(ProgramVisitor):
         i = 0
         while i < v:
             self.stack.update({x: v})
-            ctx.block().accept(self)
+            ctx.body.accept(self)
             i = i + 1
 
         self.stack.update({x: tmp})
 
-    def visitWhileStmt(self, node: WhileStmt):
-
+    def visit_WhileStmt(self, node: WhileStmt):
+        condition = node.condition.accept(self)
+        while condition:
+            node.body.accept(self)
+            condition = node.condition.accept(self)
         return
 
     # def visitIdexp(self, ctx: XMLExpParser.IdexpContext):
@@ -209,7 +212,6 @@ class Simulator(ProgramVisitor):
         return None
 
     # def visitBoxWrapperExpr(self, node: BoxWrapperExpr):
-
     #     return
 
     # def visitVexp(self, ctx: XMLExpParser.VexpContext):
