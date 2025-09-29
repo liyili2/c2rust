@@ -236,7 +236,7 @@ Program:
                   body:
                     None
                   condition:
-                    FieldAccessExpr:
+                    BinaryExpr:
                       type:
                         None
                       isMutable:
@@ -245,43 +245,7 @@ Program:
                         None
                       isUnsafe:
                         False
-                      receiver:
-                        BinaryExpr:
-                          type:
-                            None
-                          isMutable:
-                            False
-                          expr:
-                            None
-                          isUnsafe:
-                            False
-                          left:
-                            IdentifierExpr:
-                              type:
-                                None
-                              isMutable:
-                                False
-                              expr:
-                                None
-                              isUnsafe:
-                                False
-                              name:
-                                'key'
-                          op:
-                            '<'
-                          right:
-                            IdentifierExpr:
-                              type:
-                                None
-                              isMutable:
-                                False
-                              expr:
-                                None
-                              isUnsafe:
-                                False
-                              name:
-                                'self'
-                      name:
+                      left:
                         IdentifierExpr:
                           type:
                             None
@@ -293,6 +257,20 @@ Program:
                             False
                           name:
                             'key'
+                      op:
+                        '<'
+                      right:
+                        IdentifierExpr:
+                          type:
+                            None
+                          isMutable:
+                            False
+                          expr:
+                            None
+                          isUnsafe:
+                            False
+                          name:
+                            'self'
                   then_branch:
                     Block:
                       stmts:
@@ -308,38 +286,12 @@ Program:
                               expr:
                                 SafeWrapper:
                                   expr:
-                                    FieldAccessExpr:
+                                    PatternExpr:
                                       type:
                                         None
                                       isMutable:
                                         False
                                       expr:
-                                        None
-                                      isUnsafe:
-                                        False
-                                      receiver:
-                                        PatternExpr:
-                                          type:
-                                            None
-                                          isMutable:
-                                            False
-                                          expr:
-                                            IdentifierExpr:
-                                              type:
-                                                None
-                                              isMutable:
-                                                False
-                                              expr:
-                                                None
-                                              isUnsafe:
-                                                False
-                                              name:
-                                                'self'
-                                          isUnsafe:
-                                            False
-                                          pattern:
-                                            None
-                                      name:
                                         IdentifierExpr:
                                           type:
                                             None
@@ -350,7 +302,11 @@ Program:
                                           isUnsafe:
                                             False
                                           name:
-                                            'left'
+                                            'self'
+                                      isUnsafe:
+                                        False
+                                      pattern:
+                                        None
                               isUnsafe:
                                 False
                               pattern:
@@ -418,7 +374,7 @@ Program:
                                   body:
                                     None
                                   target:
-                                    FieldAccessExpr:
+                                    IdentifierExpr:
                                       type:
                                         None
                                       isMutable:
@@ -427,30 +383,8 @@ Program:
                                         None
                                       isUnsafe:
                                         False
-                                      receiver:
-                                        IdentifierExpr:
-                                          type:
-                                            None
-                                          isMutable:
-                                            False
-                                          expr:
-                                            None
-                                          isUnsafe:
-                                            False
-                                          name:
-                                            'self'
                                       name:
-                                        IdentifierExpr:
-                                          type:
-                                            None
-                                          isMutable:
-                                            False
-                                          expr:
-                                            None
-                                          isUnsafe:
-                                            False
-                                          name:
-                                            'left'
+                                        'self'
                                   value:
                                     SafeWrapper:
                                       expr:
@@ -530,7 +464,7 @@ Program:
                       body:
                         None
                       condition:
-                        FieldAccessExpr:
+                        BinaryExpr:
                           type:
                             None
                           isMutable:
@@ -539,43 +473,7 @@ Program:
                             None
                           isUnsafe:
                             False
-                          receiver:
-                            BinaryExpr:
-                              type:
-                                None
-                              isMutable:
-                                False
-                              expr:
-                                None
-                              isUnsafe:
-                                False
-                              left:
-                                IdentifierExpr:
-                                  type:
-                                    None
-                                  isMutable:
-                                    False
-                                  expr:
-                                    None
-                                  isUnsafe:
-                                    False
-                                  name:
-                                    'key'
-                              op:
-                                '>'
-                              right:
-                                IdentifierExpr:
-                                  type:
-                                    None
-                                  isMutable:
-                                    False
-                                  expr:
-                                    None
-                                  isUnsafe:
-                                    False
-                                  name:
-                                    'self'
-                          name:
+                          left:
                             IdentifierExpr:
                               type:
                                 None
@@ -587,6 +485,20 @@ Program:
                                 False
                               name:
                                 'key'
+                          op:
+                            '>'
+                          right:
+                            IdentifierExpr:
+                              type:
+                                None
+                              isMutable:
+                                False
+                              expr:
+                                None
+                              isUnsafe:
+                                False
+                              name:
+                                'self'
                       then_branch:
                         Block:
                           stmts:
@@ -602,38 +514,12 @@ Program:
                                   expr:
                                     SafeWrapper:
                                       expr:
-                                        FieldAccessExpr:
+                                        PatternExpr:
                                           type:
                                             None
                                           isMutable:
                                             False
                                           expr:
-                                            None
-                                          isUnsafe:
-                                            False
-                                          receiver:
-                                            PatternExpr:
-                                              type:
-                                                None
-                                              isMutable:
-                                                False
-                                              expr:
-                                                IdentifierExpr:
-                                                  type:
-                                                    None
-                                                  isMutable:
-                                                    False
-                                                  expr:
-                                                    None
-                                                  isUnsafe:
-                                                    False
-                                                  name:
-                                                    'self'
-                                              isUnsafe:
-                                                False
-                                              pattern:
-                                                None
-                                          name:
                                             IdentifierExpr:
                                               type:
                                                 None
@@ -644,7 +530,11 @@ Program:
                                               isUnsafe:
                                                 False
                                               name:
-                                                'right'
+                                                'self'
+                                          isUnsafe:
+                                            False
+                                          pattern:
+                                            None
                                   isUnsafe:
                                     False
                                   pattern:
@@ -712,7 +602,7 @@ Program:
                                       body:
                                         None
                                       target:
-                                        FieldAccessExpr:
+                                        IdentifierExpr:
                                           type:
                                             None
                                           isMutable:
@@ -721,30 +611,8 @@ Program:
                                             None
                                           isUnsafe:
                                             False
-                                          receiver:
-                                            IdentifierExpr:
-                                              type:
-                                                None
-                                              isMutable:
-                                                False
-                                              expr:
-                                                None
-                                              isUnsafe:
-                                                False
-                                              name:
-                                                'self'
                                           name:
-                                            IdentifierExpr:
-                                              type:
-                                                None
-                                              isMutable:
-                                                False
-                                              expr:
-                                                None
-                                              isUnsafe:
-                                                False
-                                              name:
-                                                'right'
+                                            'self'
                                       value:
                                         SafeWrapper:
                                           expr:
@@ -826,7 +694,7 @@ Program:
                               body:
                                 None
                               target:
-                                FieldAccessExpr:
+                                IdentifierExpr:
                                   type:
                                     None
                                   isMutable:
@@ -835,30 +703,8 @@ Program:
                                     None
                                   isUnsafe:
                                     False
-                                  receiver:
-                                    IdentifierExpr:
-                                      type:
-                                        None
-                                      isMutable:
-                                        False
-                                      expr:
-                                        None
-                                      isUnsafe:
-                                        False
-                                      name:
-                                        'self'
                                   name:
-                                    IdentifierExpr:
-                                      type:
-                                        None
-                                      isMutable:
-                                        False
-                                      expr:
-                                        None
-                                      isUnsafe:
-                                        False
-                                      name:
-                                        'value'
+                                    'self'
                               value:
                                 IdentifierExpr:
                                   type:
@@ -928,7 +774,7 @@ Program:
                   body:
                     None
                   condition:
-                    FieldAccessExpr:
+                    BinaryExpr:
                       type:
                         None
                       isMutable:
@@ -937,43 +783,7 @@ Program:
                         None
                       isUnsafe:
                         False
-                      receiver:
-                        BinaryExpr:
-                          type:
-                            None
-                          isMutable:
-                            False
-                          expr:
-                            None
-                          isUnsafe:
-                            False
-                          left:
-                            IdentifierExpr:
-                              type:
-                                None
-                              isMutable:
-                                False
-                              expr:
-                                None
-                              isUnsafe:
-                                False
-                              name:
-                                'key'
-                          op:
-                            '<'
-                          right:
-                            IdentifierExpr:
-                              type:
-                                None
-                              isMutable:
-                                False
-                              expr:
-                                None
-                              isUnsafe:
-                                False
-                              name:
-                                'self'
-                      name:
+                      left:
                         IdentifierExpr:
                           type:
                             None
@@ -985,6 +795,20 @@ Program:
                             False
                           name:
                             'key'
+                      op:
+                        '<'
+                      right:
+                        IdentifierExpr:
+                          type:
+                            None
+                          isMutable:
+                            False
+                          expr:
+                            None
+                          isUnsafe:
+                            False
+                          name:
+                            'self'
                   then_branch:
                     Block:
                       stmts:
@@ -1000,38 +824,12 @@ Program:
                               expr:
                                 SafeWrapper:
                                   expr:
-                                    FieldAccessExpr:
+                                    PatternExpr:
                                       type:
                                         None
                                       isMutable:
                                         False
                                       expr:
-                                        None
-                                      isUnsafe:
-                                        False
-                                      receiver:
-                                        PatternExpr:
-                                          type:
-                                            None
-                                          isMutable:
-                                            False
-                                          expr:
-                                            IdentifierExpr:
-                                              type:
-                                                None
-                                              isMutable:
-                                                False
-                                              expr:
-                                                None
-                                              isUnsafe:
-                                                False
-                                              name:
-                                                'self'
-                                          isUnsafe:
-                                            False
-                                          pattern:
-                                            None
-                                      name:
                                         IdentifierExpr:
                                           type:
                                             None
@@ -1042,7 +840,11 @@ Program:
                                           isUnsafe:
                                             False
                                           name:
-                                            'left'
+                                            'self'
+                                      isUnsafe:
+                                        False
+                                      pattern:
+                                        None
                               isUnsafe:
                                 False
                               pattern:
@@ -1102,7 +904,7 @@ Program:
                       body:
                         None
                       condition:
-                        FieldAccessExpr:
+                        BinaryExpr:
                           type:
                             None
                           isMutable:
@@ -1111,43 +913,7 @@ Program:
                             None
                           isUnsafe:
                             False
-                          receiver:
-                            BinaryExpr:
-                              type:
-                                None
-                              isMutable:
-                                False
-                              expr:
-                                None
-                              isUnsafe:
-                                False
-                              left:
-                                IdentifierExpr:
-                                  type:
-                                    None
-                                  isMutable:
-                                    False
-                                  expr:
-                                    None
-                                  isUnsafe:
-                                    False
-                                  name:
-                                    'key'
-                              op:
-                                '>'
-                              right:
-                                IdentifierExpr:
-                                  type:
-                                    None
-                                  isMutable:
-                                    False
-                                  expr:
-                                    None
-                                  isUnsafe:
-                                    False
-                                  name:
-                                    'self'
-                          name:
+                          left:
                             IdentifierExpr:
                               type:
                                 None
@@ -1159,6 +925,20 @@ Program:
                                 False
                               name:
                                 'key'
+                          op:
+                            '>'
+                          right:
+                            IdentifierExpr:
+                              type:
+                                None
+                              isMutable:
+                                False
+                              expr:
+                                None
+                              isUnsafe:
+                                False
+                              name:
+                                'self'
                       then_branch:
                         Block:
                           stmts:
@@ -1174,38 +954,12 @@ Program:
                                   expr:
                                     SafeWrapper:
                                       expr:
-                                        FieldAccessExpr:
+                                        PatternExpr:
                                           type:
                                             None
                                           isMutable:
                                             False
                                           expr:
-                                            None
-                                          isUnsafe:
-                                            False
-                                          receiver:
-                                            PatternExpr:
-                                              type:
-                                                None
-                                              isMutable:
-                                                False
-                                              expr:
-                                                IdentifierExpr:
-                                                  type:
-                                                    None
-                                                  isMutable:
-                                                    False
-                                                  expr:
-                                                    None
-                                                  isUnsafe:
-                                                    False
-                                                  name:
-                                                    'self'
-                                              isUnsafe:
-                                                False
-                                              pattern:
-                                                None
-                                          name:
                                             IdentifierExpr:
                                               type:
                                                 None
@@ -1216,7 +970,11 @@ Program:
                                               isUnsafe:
                                                 False
                                               name:
-                                                'right'
+                                                'self'
+                                          isUnsafe:
+                                            False
+                                          pattern:
+                                            None
                                   isUnsafe:
                                     False
                                   pattern:
@@ -1286,7 +1044,7 @@ Program:
                                       isMutable:
                                         False
                                       expr:
-                                        FieldAccessExpr:
+                                        IdentifierExpr:
                                           type:
                                             None
                                           isMutable:
@@ -1295,30 +1053,8 @@ Program:
                                             None
                                           isUnsafe:
                                             False
-                                          receiver:
-                                            IdentifierExpr:
-                                              type:
-                                                None
-                                              isMutable:
-                                                False
-                                              expr:
-                                                None
-                                              isUnsafe:
-                                                False
-                                              name:
-                                                'self'
                                           name:
-                                            IdentifierExpr:
-                                              type:
-                                                None
-                                              isMutable:
-                                                False
-                                              expr:
-                                                None
-                                              isUnsafe:
-                                                False
-                                              name:
-                                                'value'
+                                            'self'
                                       isUnsafe:
                                         False
                           isUnsafe:

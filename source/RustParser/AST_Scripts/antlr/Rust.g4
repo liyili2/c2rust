@@ -120,6 +120,7 @@ safeWrapper: 'Some' '(' expression ')' | 'Box' DOUBLE_COLON Identifier '(' expre
 expression
     : MUT expression
     | safeWrapper
+    | primaryExpression fieldAccessPostFix
     | primaryExpression
     | expression binaryOps expression
     | structLiteral
@@ -141,7 +142,6 @@ expression
     | qualifiedExpression
     | patternPrefix expression
     | arrayDeclaration
-    | expression fieldAccessPostFix
     ;
 
 basicTypeCastExpr: typeExpr typePath;
@@ -188,7 +188,7 @@ Number: [0-9]+;
 SignedNumber: ('-' | '+') Number;
 BYTE_STRING_LITERAL: 'b"' (~["\\\r\n] | '\\' .)* '"';
 HexNumber: '0x' [0-9a-fA-F]+;
-CHAR_LITERAL: '\'' (~['\\\r\n] | '\\' .) '\'';
+CHAR_LITERAL: '\'' (~['\\\r\n] | '\\') '\'';
 DOUBLE_COLON: '::';
 EXCL: '!';
 GT: '>'; // make sure this comes FIRST

@@ -728,7 +728,7 @@ class TypeChecker:
                 self.error(node, f"access to an undefined struct {node.receiver}")
                 return
 
-        if not isinstance(base_type, StructType):
+        if not isinstance(base_type, StructType) or not isinstance(base_type, StructDef):
             self.error(node, "access to a wrong type of variable (not a struct)")
             return
 
