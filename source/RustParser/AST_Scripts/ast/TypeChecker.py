@@ -7,6 +7,7 @@ from RustParser.AST_Scripts.ast.Expression import *
 from RustParser.AST_Scripts.ast.Expression import FunctionCall as FunctionCallExpr
 from RustParser.AST_Scripts.ast.Statement import *
 from RustParser.AST_Scripts.ast.TopLevel import *
+from RustParser.AST_Scripts.ast.utils import *
 
 class TypeChecker:
     def __init__(self):
@@ -156,6 +157,7 @@ class TypeChecker:
             # self.error(self, "unknown primitive type")
 
     def visit(self, node):
+        self.root = node
         # if node is None:
         #     self.error(node, "none node found")
         if isinstance(node, list):
@@ -717,10 +719,11 @@ class TypeChecker:
 
     def visit_FieldAccessExpr(self, node):
         base_type = self.visit(node.receiver)
+        field_type = self.visit(node.name)
+        field = node.name.name
         if isinstance(node.receiver, DereferenceExpr):
             self.error(node, "unprotected dereference in a field access expression")
             base_type = self.visit(node.receiver.expr)
-            print("base_type", base_type)
             try:
                 base_info = self.env.lookup(base_type)
                 base_type = base_info["type"]
@@ -728,25 +731,36 @@ class TypeChecker:
                 self.error(node, f"access to an undefined struct {node.receiver}")
                 return
 
-        if not isinstance(base_type, StructType) or not isinstance(base_type, StructDef):
-            self.error(node, "access to a wrong type of variable (not a struct)")
-            return
+        parent_list = get_all_parents(node, self.root)
+        check_done = False
+        for p in parent_list:
+            if isinstance(p, InterfaceDef):
+                info = self.env.lookup(p.name)
+                if isinstance(info["type"], StructType):
+                    for f in info["type"].fields:
+                        if str.__eq__(field, f):
+                            check_done = True
 
-        if isinstance(base_type, StructType) and base_type.isUnion:
-            self.error(node, f"union struct {base_type.name} field {node.name.name} access ")
+        if not check_done:
+            if not isinstance(base_type, StructType) or not isinstance(base_type, StructDef):
+                self.error(node, "access to a wrong type of variable (not a struct)")
+                return
 
-        for field in base_info["type"].fields:
-            if isinstance(field, str):
-                if str.__eq__(field, node.name.name):
-                    field_type = field.__class__
-                    break
-            else:
-                if str.__eq__(field.declarationInfo.name, node.name.name):
-                    field_type = field.declarationInfo.type
-                    break
-        if field_type is None:
-            self.error(node, "no such a field to access")
-            return None
+            if isinstance(base_type, StructType) and base_type.isUnion:
+                self.error(node, f"union struct {base_type.name} field {node.name.name} access ")
+
+            for field in base_info["type"].fields:
+                if isinstance(field, str):
+                    if str.__eq__(field, node.name.name):
+                        field_type = field.__class__
+                        break
+                else:
+                    if str.__eq__(field.declarationInfo.name, node.name.name):
+                        field_type = field.declarationInfo.type
+                        break
+            if field_type is None:
+                self.error(node, "no such a field to access")
+                return None
 
         return field_type
 

@@ -119,8 +119,8 @@ safeWrapper: 'Some' '(' expression ')' | 'Box' DOUBLE_COLON Identifier '(' expre
 
 expression
     : MUT expression
-    | safeWrapper
     | primaryExpression fieldAccessPostFix
+    | safeWrapper
     | primaryExpression
     | expression binaryOps expression
     | structLiteral
@@ -167,7 +167,7 @@ expressionBlock: '{' statement* expression '}';
 borrowExpression: '&' expression;
 primaryExpression: literal | Identifier;
 
-fieldAccessPostFix: '[' primaryExpression ']' | ('.' primaryExpression)+;
+fieldAccessPostFix: ('.' primaryExpression)+ | '[' primaryExpression ']';
 callExpressionPostFix: ('.' expression)? '!'? functionCallArgs;
 functionCallArgs: '()' | '(' expression (',' expression)* ')' ;
 

@@ -437,9 +437,14 @@ class Transformer(RustVisitor):
     binary_operators = {'==', '!=', '<', '>', '<=', '>=', '+', '-', '*', '/', '%', '&&', '||'}
 
     def visitExpression(self, ctx):
-        if ctx.primaryExpression():
+        if ctx.primaryExpression() and len(ctx.children) == 1:
             return self.visit(ctx.primaryExpression())
         
+        elif ctx.fieldAccessPostFix():
+            base = self.visit(ctx.getChild(0))
+            postfix = self.visitPrimaryExpression(ctx.fieldAccessPostFix().primaryExpression())
+            return FieldAccessExpr(base, postfix)
+
         elif ctx.MUT():
             expr = self.visit(ctx.expression(0))
             return Expression(expr=expr)
@@ -448,11 +453,6 @@ class Transformer(RustVisitor):
             op = ctx.unaryOpes().getText()
             expr = self.visit(ctx.expression(0))
             return UnaryExpr(op, expr)
-        
-        elif ctx.fieldAccessPostFix():
-            base = self.visit(ctx.expression(0))
-            postfix = self.visitPrimaryExpression(ctx.fieldAccessPostFix().primaryExpression())
-            return FieldAccessExpr(base, postfix)
 
         elif ctx.binaryOps():
             op = ctx.binaryOps().getText()

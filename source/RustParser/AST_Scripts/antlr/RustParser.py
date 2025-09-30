@@ -95,8 +95,8 @@ def serializedATN():
         71,3,71,971,8,71,1,71,1,71,1,72,1,72,1,73,1,73,1,73,1,73,1,73,1,
         73,1,73,1,73,3,73,985,8,73,1,74,1,74,1,74,1,75,1,75,5,75,992,8,75,
         10,75,12,75,995,9,75,1,75,1,75,1,75,1,76,1,76,1,76,1,77,1,77,3,77,
-        1005,8,77,1,78,1,78,1,78,1,78,1,78,1,78,4,78,1013,8,78,11,78,12,
-        78,1014,3,78,1017,8,78,1,79,1,79,3,79,1021,8,79,1,79,3,79,1024,8,
+        1005,8,77,1,78,1,78,4,78,1009,8,78,11,78,12,78,1010,1,78,1,78,1,
+        78,1,78,3,78,1017,8,78,1,79,1,79,3,79,1021,8,79,1,79,3,79,1024,8,
         79,1,79,1,79,1,80,1,80,1,80,1,80,1,80,5,80,1033,8,80,10,80,12,80,
         1036,9,80,1,80,1,80,3,80,1040,8,80,1,81,1,81,1,81,1,81,1,81,1,81,
         1,81,1,81,1,81,1,81,1,81,3,81,1053,8,81,1,82,1,82,1,82,1,82,1,82,
@@ -334,15 +334,15 @@ def serializedATN():
         824,1,0,0,0,816,817,5,52,0,0,817,818,5,85,0,0,818,819,5,79,0,0,819,
         820,5,92,0,0,820,821,3,114,57,0,821,822,5,93,0,0,822,824,1,0,0,0,
         823,811,1,0,0,0,823,816,1,0,0,0,824,113,1,0,0,0,825,826,6,57,-1,
-        0,826,827,5,73,0,0,827,856,3,114,57,24,828,856,3,112,56,0,829,830,
-        3,154,77,0,830,831,3,156,78,0,831,856,1,0,0,0,832,856,3,154,77,0,
+        0,826,827,5,73,0,0,827,856,3,114,57,24,828,829,3,154,77,0,829,830,
+        3,156,78,0,830,856,1,0,0,0,831,856,3,112,56,0,832,856,3,154,77,0,
         833,856,3,48,24,0,834,835,3,126,63,0,835,836,3,114,57,17,836,856,
         1,0,0,0,837,856,3,146,73,0,838,856,3,142,71,0,839,856,3,122,61,0,
         840,841,3,144,72,0,841,842,3,114,57,13,842,856,1,0,0,0,843,856,3,
         152,76,0,844,845,3,28,14,0,845,846,3,146,73,0,846,856,1,0,0,0,847,
         856,3,116,58,0,848,856,3,148,74,0,849,856,3,150,75,0,850,856,3,120,
         60,0,851,852,3,128,64,0,852,853,3,114,57,2,853,856,1,0,0,0,854,856,
-        3,124,62,0,855,825,1,0,0,0,855,828,1,0,0,0,855,829,1,0,0,0,855,832,
+        3,124,62,0,855,825,1,0,0,0,855,828,1,0,0,0,855,831,1,0,0,0,855,832,
         1,0,0,0,855,833,1,0,0,0,855,834,1,0,0,0,855,837,1,0,0,0,855,838,
         1,0,0,0,855,839,1,0,0,0,855,840,1,0,0,0,855,843,1,0,0,0,855,844,
         1,0,0,0,855,847,1,0,0,0,855,848,1,0,0,0,855,849,1,0,0,0,855,850,
@@ -390,10 +390,10 @@ def serializedATN():
         994,996,1,0,0,0,995,993,1,0,0,0,996,997,3,114,57,0,997,998,5,3,0,
         0,998,151,1,0,0,0,999,1000,5,18,0,0,1000,1001,3,114,57,0,1001,153,
         1,0,0,0,1002,1005,3,162,81,0,1003,1005,5,79,0,0,1004,1002,1,0,0,
-        0,1004,1003,1,0,0,0,1005,155,1,0,0,0,1006,1007,5,89,0,0,1007,1008,
-        3,154,77,0,1008,1009,5,90,0,0,1009,1017,1,0,0,0,1010,1011,5,31,0,
-        0,1011,1013,3,154,77,0,1012,1010,1,0,0,0,1013,1014,1,0,0,0,1014,
-        1012,1,0,0,0,1014,1015,1,0,0,0,1015,1017,1,0,0,0,1016,1006,1,0,0,
+        0,1004,1003,1,0,0,0,1005,155,1,0,0,0,1006,1007,5,31,0,0,1007,1009,
+        3,154,77,0,1008,1006,1,0,0,0,1009,1010,1,0,0,0,1010,1008,1,0,0,0,
+        1010,1011,1,0,0,0,1011,1017,1,0,0,0,1012,1013,5,89,0,0,1013,1014,
+        3,154,77,0,1014,1015,5,90,0,0,1015,1017,1,0,0,0,1016,1008,1,0,0,
         0,1016,1012,1,0,0,0,1017,157,1,0,0,0,1018,1019,5,31,0,0,1019,1021,
         3,114,57,0,1020,1018,1,0,0,0,1020,1021,1,0,0,0,1021,1023,1,0,0,0,
         1022,1024,5,86,0,0,1023,1022,1,0,0,0,1023,1024,1,0,0,0,1024,1025,
@@ -438,7 +438,7 @@ def serializedATN():
         520,529,534,548,555,560,567,570,579,585,589,614,617,621,640,656,
         660,668,672,677,680,683,688,703,712,719,721,727,736,739,743,749,
         763,790,795,802,806,823,855,875,877,901,913,916,922,925,931,934,
-        938,946,966,970,984,993,1004,1014,1016,1020,1023,1034,1039,1052,
+        938,946,966,970,984,993,1004,1010,1016,1020,1023,1034,1039,1052,
         1065,1070,1073,1081,1087,1090,1099,1102,1106,1112
     ]
 
@@ -5624,16 +5624,16 @@ class RustParser ( Parser ):
                 return self.getTypedRuleContext(RustParser.ExpressionContext,i)
 
 
-        def safeWrapper(self):
-            return self.getTypedRuleContext(RustParser.SafeWrapperContext,0)
-
-
         def primaryExpression(self):
             return self.getTypedRuleContext(RustParser.PrimaryExpressionContext,0)
 
 
         def fieldAccessPostFix(self):
             return self.getTypedRuleContext(RustParser.FieldAccessPostFixContext,0)
+
+
+        def safeWrapper(self):
+            return self.getTypedRuleContext(RustParser.SafeWrapperContext,0)
 
 
         def structLiteral(self):
@@ -5756,14 +5756,14 @@ class RustParser ( Parser ):
 
             elif la_ == 2:
                 self.state = 828
-                self.safeWrapper()
+                self.primaryExpression()
+                self.state = 829
+                self.fieldAccessPostFix()
                 pass
 
             elif la_ == 3:
-                self.state = 829
-                self.primaryExpression()
-                self.state = 830
-                self.fieldAccessPostFix()
+                self.state = 831
+                self.safeWrapper()
                 pass
 
             elif la_ == 4:
@@ -7225,15 +7225,15 @@ class RustParser ( Parser ):
             super().__init__(parent, invokingState)
             self.parser = parser
 
-        def LBRACK(self):
-            return self.getToken(RustParser.LBRACK, 0)
-
         def primaryExpression(self, i:int=None):
             if i is None:
                 return self.getTypedRuleContexts(RustParser.PrimaryExpressionContext)
             else:
                 return self.getTypedRuleContext(RustParser.PrimaryExpressionContext,i)
 
+
+        def LBRACK(self):
+            return self.getToken(RustParser.LBRACK, 0)
 
         def RBRACK(self):
             return self.getToken(RustParser.RBRACK, 0)
@@ -7266,33 +7266,33 @@ class RustParser ( Parser ):
             self.state = 1016
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [89]:
+            if token in [31]:
                 self.enterOuterAlt(localctx, 1)
-                self.state = 1006
-                self.match(RustParser.LBRACK)
-                self.state = 1007
-                self.primaryExpression()
-                self.state = 1008
-                self.match(RustParser.RBRACK)
-                pass
-            elif token in [31]:
-                self.enterOuterAlt(localctx, 2)
-                self.state = 1012 
+                self.state = 1008 
                 self._errHandler.sync(self)
                 _alt = 1
                 while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                     if _alt == 1:
-                        self.state = 1010
+                        self.state = 1006
                         self.match(RustParser.T__30)
-                        self.state = 1011
+                        self.state = 1007
                         self.primaryExpression()
 
                     else:
                         raise NoViableAltException(self)
-                    self.state = 1014 
+                    self.state = 1010 
                     self._errHandler.sync(self)
                     _alt = self._interp.adaptivePredict(self._input,115,self._ctx)
 
+                pass
+            elif token in [89]:
+                self.enterOuterAlt(localctx, 2)
+                self.state = 1012
+                self.match(RustParser.LBRACK)
+                self.state = 1013
+                self.primaryExpression()
+                self.state = 1014
+                self.match(RustParser.RBRACK)
                 pass
             else:
                 raise NoViableAltException(self)

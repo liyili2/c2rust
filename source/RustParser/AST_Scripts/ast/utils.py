@@ -9,6 +9,17 @@ from RustParser.AST_Scripts.ast.VarDef import *
 from RustParser.AST_Scripts.ast.Func import *
 from RustParser.AST_Scripts.ast.Block import *
 
+def get_all_parents(ast_root, target_node, parent=None):
+        if parent is None:
+            parent = getattr(target_node, 'parent', None)
+            if parent is None:
+                raise ValueError("Target node has no parent reference")
+
+        if isinstance(parent, Program):
+            return [parent]
+
+        return [parent] + get_all_parents(ast_root, parent, parent.parent)
+
 def _expr_from_text(self, text):
         text = text.strip()
         if text.isdigit():
