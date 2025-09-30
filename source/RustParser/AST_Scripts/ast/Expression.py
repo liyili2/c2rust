@@ -11,7 +11,8 @@ class Expression(ASTNode):
         self.isUnsafe=isUnsafe
 
     def accept(self, visitor):
-        return visitor.visit(self)
+        method_name = f'visit_{self.__class__.__name__}'
+        return getattr(visitor, method_name, visitor.generic_visit)(self)
 
 class QualifiedExpression(Expression):
     def __init__(self, expr):
@@ -192,7 +193,7 @@ class FieldAccessExpr(Expression):
     def accept(self, visitor):
         return visitor.visit_FieldAccessExpr(self)
 
-class ParenExpr(Expression):
+class ParenExpr(Expression): 
     def __init__(self, expr):
         super().__init__()
         self.expr = expr

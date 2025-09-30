@@ -16,6 +16,7 @@ class TypeChecker:
         self.error_count = 0
         self.errors = []
         self.reports = []
+        self.root = None
 
     def error(self, node, message, error_weight=1):
         # error_weight=1
@@ -43,9 +44,13 @@ class TypeChecker:
             self.error(node, "raw pointer usage in a struct field")
 
     def visit_TopLevelVarDef(self, node):
-        isUnion = str.__eq__(node.def_kind, "union")
-        self.env.declare(name=node.declarationInfo.name, 
-                         typ=StructType(name=node.declarationInfo.name, fields=node.fields, isUnion=isUnion))
+        if node.def_kind:
+            isUnion = str.__eq__(node.def_kind, "union")
+            self.env.declare(name=node.declarationInfo.name, 
+                            typ=StructType(name=node.declarationInfo.name, fields=node.fields, isUnion=isUnion))
+
+    def visit_Expression(self, node):
+        return self.visit(node.expr)
 
     def visit_InterfaceDef(self, node):
         for item in node.functions:
@@ -157,7 +162,8 @@ class TypeChecker:
             # self.error(self, "unknown primitive type")
 
     def visit(self, node):
-        self.root = node
+        if self.root is None:
+            self.root = node
         # if node is None:
         #     self.error(node, "none node found")
         if isinstance(node, list):
@@ -731,7 +737,7 @@ class TypeChecker:
                 self.error(node, f"access to an undefined struct {node.receiver}")
                 return
 
-        parent_list = get_all_parents(node, self.root)
+        parent_list = get_all_parents(target_node=node, ast_root=self.root, parent=None)
         check_done = False
         for p in parent_list:
             if isinstance(p, InterfaceDef):

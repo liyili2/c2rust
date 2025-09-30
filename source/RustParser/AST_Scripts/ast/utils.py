@@ -10,13 +10,12 @@ from RustParser.AST_Scripts.ast.Func import *
 from RustParser.AST_Scripts.ast.Block import *
 
 def get_all_parents(ast_root, target_node, parent=None):
-        if parent is None:
+        if isinstance(parent, Program):
+            return [parent]
+        if parent is None and not isinstance(target_node, Program):
             parent = getattr(target_node, 'parent', None)
             if parent is None:
                 raise ValueError("Target node has no parent reference")
-
-        if isinstance(parent, Program):
-            return [parent]
 
         return [parent] + get_all_parents(ast_root, parent, parent.parent)
 
