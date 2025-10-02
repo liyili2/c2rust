@@ -162,9 +162,9 @@ class ContinueStmt(Statement):
         return visitor.visit_ContinueStmt(self)
 
 class StructDef(Statement):
-    def __init__(self, type_name: str, fields: list):
+    def __init__(self, name: str, fields: list):
         super().__init__()
-        self.type_name = type_name
+        self.name = name
         self.fields = fields
 
     def accept(self, visitor):

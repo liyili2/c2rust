@@ -82,19 +82,19 @@ class Simulator(ProgramVisitor):
             else:
                 stmt.accept(self)
 
-    # def visitCallStmt(self, node: CallStmt):
-    #     newNode = self.funMap.get(node.callee)
-    #
-    #     newStack = self.stack.deepCopy()
-    #     for i in len(newNode.params):
-    #         arVar = newNode.params[i]
-    #         value = node.args[i].accept(self)
-    #         newStack.update({arVar : value})
-    #     oldStack = self.stack
-    #     self.stack = newStack
-    #     result = newNode.body.accept(self)
-    #     self.stack = oldStack
-    #     return result
+    def visit_FunctionCall(self, node: FunctionCall):
+        newNode = self.funMap.get(node.callee)
+
+        newStack = self.stack.deepCopy()
+        for i in len(newNode.params):
+            arVar = newNode.params[i]
+            value = node.args[i].accept(self)
+            newStack.update({arVar : value})
+        oldStack = self.stack
+        self.stack = newStack
+        result = newNode.body.accept(self)
+        self.stack = oldStack
+        return result
 
     def visit_IfStmt(self, node: IfStmt):
         # newNode = self.funMap.get(node.var_defs)
@@ -162,7 +162,10 @@ class Simulator(ProgramVisitor):
     #     return
 
     def visit_FieldAccessExpr(self, node: FieldAccessExpr):
-        pass
+        struct_value = self.stack.get(node.receiver.name)
+        for field in struct_value.fields:
+            if str.__eq__(node.name.name, field.declarationInfo.name):
+                return field.value
 
     def visit_StrLiteral(self, ctx: StrLiteral):
         return ctx.value
@@ -173,15 +176,10 @@ class Simulator(ProgramVisitor):
     def visit_BoolLiteral(self, ctx: BoolLiteral):
         return ctx.value
 
-    def visit_Struct(self, ctx):
-        if isinstance(ctx, TopLevel):
-            pass
-        elif isinstance(ctx, Statement):
-            # Maybe store struct in the stack as a dict or array?
-            struct_fields = ctx.fields
-            struct_name = ctx.type_name
-            self.stack.update({struct_name: struct_fields})
-            return ctx.accept()
+    def visit_Struct(self, node: StructDef):
+        # Maybe store struct in the stack as a dict or array?
+        # self.stack.update(node)
+        return node
 
     def visit_CompoundAssignment(self, node:CompoundAssignment):
         operation = node.op[0]
@@ -251,8 +249,8 @@ class Simulator(ProgramVisitor):
     # def visit_IdentifierExpr(self, ctx: IdentifierExpr):
     #     return ctx.accept(self)
 
-    def visit_IdentifierExpr(self, ctx: IdentifierExpr):
-        return self.stack.get(ctx.name)
+    def visit_IdentifierExpr(self, node: IdentifierExpr):
+        return self.stack.get(node.name)
 
     # Visit a parse tree produced by XMLExpParser#vexp.
     # def visitVexp(self, ctx: XMLExpParser.VexpContext):

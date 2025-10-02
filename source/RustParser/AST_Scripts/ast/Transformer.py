@@ -145,7 +145,7 @@ class Transformer(RustVisitor):
     def visitStructLiteral(self, ctx):
         type_name = ctx.Identifier().getText()
         fields = [self.visit(field_ctx) for field_ctx in ctx.structLiteralField()]
-        return StructDef(type_name, fields)
+        return StructDef(name=type_name, fields=fields)
 
     def visitStructLiteralField(self, ctx):
         field_name = ctx.Identifier().getText()

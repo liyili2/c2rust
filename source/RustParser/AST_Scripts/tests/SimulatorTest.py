@@ -9,6 +9,9 @@ from RustParser.AST_Scripts.antlr.RustParser import RustParser
 from RustParser.AST_Scripts.ast.Transformer import Transformer
 from RustParser.AST_Scripts.ast.Simulator import Simulator
 from RustParser.AST_Scripts.ast.TypeChecker import TypeChecker
+from RustParser.AST_Scripts.ast.TopLevel import *
+from RustParser.AST_Scripts.ast.ASTNode import *
+from RustParser.AST_Scripts.ast.Program import *
 
 def pretty_print_ast(node, indent=0, visited=None):
     if visited is None:
@@ -41,7 +44,27 @@ def pretty_print_ast(node, indent=0, visited=None):
 
     return '\n'.join(lines)
 
-file_path = os.path.join(os.path.dirname(__file__), "bst.rs")
+def setParents(node, parent=None, top_level_prog=None):
+    if not isinstance(node, ASTNode):
+        return
+    if isinstance(node, Program):
+        top_level_prog = node
+    if isinstance(node, FunctionDef) and isinstance(parent, InterfaceDef):
+        node.parent = parent
+    elif isinstance(node, TopLevel) and top_level_prog:
+        node.parent = top_level_prog
+    elif parent is not None:
+        node.parent = parent
+    for attr, value in vars(node).items():
+        if attr == "parent":
+            continue
+        if isinstance(value, list):
+            for item in value:
+                setParents(item, node, top_level_prog)
+        elif isinstance(value, ASTNode):
+            setParents(value, node, top_level_prog)
+
+file_path = os.path.join(os.path.dirname(__file__), "test11.rs")
 with open(file_path, "r", encoding="utf-8") as f:
     rust_code = f.read()
 lexer = RustLexer(InputStream(rust_code))
@@ -50,6 +73,7 @@ parser = RustParser(tokens)
 tree = parser.program()
 transformer = Transformer()
 ast = transformer.visit(tree)
+setParents(ast)
 checker = TypeChecker()
 checker.visit(ast)
 memory = dict()
