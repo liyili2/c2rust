@@ -83,6 +83,7 @@ class Simulator(ProgramVisitor):
 
     def visit_FunctionCall(self, node: FunctionCall):
         newNode = self.funMap.get(node.callee)
+        self.stack.update({"self": node.caller})
 
         newStack = self.stack.deepCopy()
         for i in len(newNode.params):
