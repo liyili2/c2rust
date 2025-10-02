@@ -686,6 +686,9 @@ class TypeChecker:
         info["borrowed"] = True
         return RefType(info["type"])
     
+    def visit_PatternExpr(self, node):
+        pass
+    
     def visit_FunctionCallExpression(self, node):
         pass
 

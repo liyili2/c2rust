@@ -221,7 +221,7 @@ class PatternExpr(Expression):
         self.pattern = pattern
 
     def accept(self, visitor):
-        return self
+        return visitor.visit_PatternExpr(self)
 
 class TypePathExpression(Expression):
     def __init__(self, type_path, last_type):

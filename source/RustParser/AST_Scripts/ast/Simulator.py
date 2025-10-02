@@ -97,9 +97,7 @@ class Simulator(ProgramVisitor):
         return result
 
     def visit_IfStmt(self, node: IfStmt):
-        # newNode = self.funMap.get(node.var_defs)
         if_result = node.condition.accept(self)
-        # if_result = node.condition
 
         if if_result:
             result = node.then_branch.accept(self)
@@ -166,6 +164,15 @@ class Simulator(ProgramVisitor):
         for field in struct_value.fields:
             if str.__eq__(node.name.name, field.declarationInfo.name):
                 return field.value
+
+    def visit_PatternExpr(self, node: PatternExpr):
+        pattern = node.pattern.accept(self)
+        if pattern is None:
+            return None
+        return node.pattern.accept(self)
+
+    def visit_SafeWrapper(self, node: SafeWrapper):
+        return node.expr.accept(self)
 
     def visit_StrLiteral(self, ctx: StrLiteral):
         return ctx.value
@@ -250,7 +257,8 @@ class Simulator(ProgramVisitor):
     #     return ctx.accept(self)
 
     def visit_IdentifierExpr(self, node: IdentifierExpr):
-        return self.stack.get(node.name)
+        identifier_val = self.stack.get(node.name)
+        return identifier_val
 
     # Visit a parse tree produced by XMLExpParser#vexp.
     # def visitVexp(self, ctx: XMLExpParser.VexpContext):
