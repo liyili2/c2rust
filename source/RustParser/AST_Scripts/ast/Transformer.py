@@ -327,14 +327,19 @@ class Transformer(RustVisitor):
         return Statement(body=expr)
 
     def visitFunctionCall(self, ctx):
-        function_expr = self.visit(ctx.expression())
+        if isinstance(ctx.expression(), list):
+            func_name = self.visit(ctx.expression(len(ctx.expression())-1))
+            caller = self.visit(ctx.expression(0))
+        else:
+            func_name = self.visit(ctx.expression())
+            caller = None
         postfix = ctx.callExpressionPostFix()
         if postfix.functionCallArgs():
             args_ctx = postfix.functionCallArgs().expression()
             args = [self.visit(arg) for arg in args_ctx]
         else:
             args = []
-        return FunctionCall(callee=function_expr, args=args)
+        return FunctionCall(caller=caller, callee=func_name, args=args)
 
     def visitStatement(self, ctx):
         if ctx.block():

@@ -66,7 +66,6 @@ class Simulator(ProgramVisitor):
         value = node.value.accept(self)
         newStack.update({target : value})
         self.stack = newStack
-
         return None
 
     def visit_FunctionDef(self, node: FunctionDef):
