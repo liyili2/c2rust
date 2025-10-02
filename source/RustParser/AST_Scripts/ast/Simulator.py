@@ -160,7 +160,7 @@ class Simulator(ProgramVisitor):
     #     return
 
     def visit_FieldAccessExpr(self, node: FieldAccessExpr):
-        struct_value = self.stack.get(node.receiver.name)
+        struct_value = node.receiver.accept(self)
         for field in struct_value.fields:
             if str.__eq__(node.name.name, field.declarationInfo.name):
                 return field.value

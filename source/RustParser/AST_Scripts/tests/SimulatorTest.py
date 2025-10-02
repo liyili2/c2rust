@@ -64,7 +64,7 @@ def setParents(node, parent=None, top_level_prog=None):
         elif isinstance(value, ASTNode):
             setParents(value, node, top_level_prog)
 
-file_path = os.path.join(os.path.dirname(__file__), "test12.rs")
+file_path = os.path.join(os.path.dirname(__file__), "test11.rs")
 with open(file_path, "r", encoding="utf-8") as f:
     rust_code = f.read()
 lexer = RustLexer(InputStream(rust_code))
