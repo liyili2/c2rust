@@ -89,7 +89,6 @@ class BorrowExpr(Expression):
         super().__init__()
         self.expr = expr
         self.isMutable = isMutable
-        self.isMutable = isMutable
 
     def accept(self, visitor):
         return visitor.visit_BorrowExpr(self)
@@ -196,7 +195,6 @@ class FieldAccessExpr(Expression):
 class ParenExpr(Expression): 
     def __init__(self, expr):
         super().__init__()
-        self.expr = expr
         self.expr = expr
 
     def accept(self, visitor):
