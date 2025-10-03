@@ -71,7 +71,7 @@ class ProgramVisitor:
             case LiteralExpr():
                 return self.visitLiteralExpr(ctx)
             case FunctionCall():
-                return self.visitFunctionCallExpr(ctx)
+                return self.visitFunctionCall(ctx)
             # case UnsafeExpression():
             #     return self.visitUnsafeExpression(ctx)
             # case BasicTypeCastExpr():
@@ -184,7 +184,7 @@ class ProgramVisitor:
         pass
         #node.value.accept(self)
 
-    def visitFunctionCallStmt(self, node: FunctionCall):
+    def visitFunctionCall(self, node: FunctionCall):
         for i in node.args:
             i.accept(self)
 

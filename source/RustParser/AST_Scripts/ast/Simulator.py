@@ -13,6 +13,7 @@ from collections import deque
 
 from source.RustParser.AST_Scripts.ast.ProgramVisitor import ProgramVisitor
 from source.RustParser.AST_Scripts.ast.Expression import *
+from TopLevel import *
 
 # from types import NoneType
 
@@ -63,23 +64,23 @@ class Simulator(ProgramVisitor):
 
         return result
 
-    def visitFunctionDef(self, node: FunctionDef):
-        self.funMap.update({node.identifier : node})
-        return None
+    def visitFunctionCall(self, node: FunctionCall):
+        newNode = self.funMap.get(node.callee)
 
-    # def visitCallStmt(self, node: CallStmt):
-    #     newNode = self.funMap.get(node.callee)
-    #
-    #     newStack = self.stack.deepCopy()
-    #     for i in len(newNode.params):
-    #         arVar = newNode.params[i]
-    #         value = node.args[i].accept(self)
-    #         newStack.update({arVar : value})
-    #     oldStack = self.stack
-    #     self.stack = newStack
-    #     result = newNode.body.accept(self)
-    #     self.stack = oldStack
-    #     return result
+        newStack = self.stack.deepCopy()
+        for i in len(newNode.args):
+            arVar = newNode.params[i]
+            value = node.args[i].accept(self)
+            newStack.update({arVar : value})
+        oldStack = self.stack
+        self.stack = newStack
+        result = newNode.body.accept(self)
+        self.stack = oldStack
+        return result
+
+    def visitFunctionDef(self, node: FunctionDef):
+        self.funMap.update({node.identifier: node})
+        return None
 
     def visitIfStmt(self, node: IfStmt):
         # newNode = self.funMap.get(node.var_defs)
@@ -144,20 +145,21 @@ class Simulator(ProgramVisitor):
     # def visitIdexp(self, ctx: XMLExpParser.IdexpContext):
     #     return
 
-    def visit_StrLiteral(self, ctx: StrLiteral):
+    def visitStrLiteral(self, ctx: StrLiteral):
         return ctx.value
 
-    def visit_IntLiteral(self, ctx: IntLiteral):
+    def visitIntLiteral(self, ctx: IntLiteral):
         return ctx.value
 
-    def visit_BoolLiteral(self, ctx: BoolLiteral):
+    def visitBoolLiteral(self, ctx: BoolLiteral):
         return ctx.value
 
-    def visit_StructLiteral(self, ctx: StructLiteral):
+    def visitStructDef(self, ctx: StructDef):
 
         # Maybe store struct in the stack as a dict or array?
         struct_fields = ctx.fields
         struct_name = ctx.type_name
+        struct_body = ctx.body
 
         self.stack.update({struct_name: struct_fields})
 
@@ -224,7 +226,7 @@ class Simulator(ProgramVisitor):
     #     else:
     #         return self.visitTerminal(ctx)
 
-    def visit_IdentifierExpr(self, ctx: IdentifierExpr):
+    def visitIdentifierExpr(self, ctx: IdentifierExpr):
         return ctx.accept()
 
     # Visit a parse tree produced by XMLExpParser#vexp.
