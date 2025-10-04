@@ -1,27 +1,17 @@
-from collections import deque
-# from types import NoneType
-
-# from Program import *
-# from Transformer import *
+import copy
 from ast import *
-from Transformer import Transformer
-from Statement import *
-from TypeChecker import TypeChecker
-
-from collections import ChainMap
-from collections import deque
-
-from source.RustParser.AST_Scripts.ast.ProgramVisitor import ProgramVisitor
-from source.RustParser.AST_Scripts.ast.Expression import *
-from TopLevel import *
-
-# from types import NoneType
+from RustParser.AST_Scripts.ast.Transformer import Transformer
+from RustParser.AST_Scripts.ast.Statement import *
+from RustParser.AST_Scripts.ast.TypeChecker import TypeChecker
+from RustParser.AST_Scripts.ast.ProgramVisitor import ProgramVisitor
+from RustParser.AST_Scripts.ast.Expression import *
+from RustParser.AST_Scripts.ast.Program import *
+from RustParser.AST_Scripts.ast.TopLevel import *
 
 NoneType = type(None)
 
 # I need to add Box maybe?
 # I also may need to add arrays
-
 
 class Simulator(ProgramVisitor):
     # x, y, z, env : ChainMap{ x: n, y : m, z : v} , n m v are nat numbers 100, 100, 100, eg {x : 128}
@@ -47,66 +37,97 @@ class Simulator(ProgramVisitor):
     def get_val(self):
         return self.heap
 
-    def visitLetStmt(self, node: LetStmt):
-        newNode = self.funMap.get(node.var_defs)
+    def visit(self, ctx):
+        return ctx.accept(self)
 
-        newStack = self.stack.deepCopy()
+    def visit_Program(self, ctx: Program):
+        for i in ctx.items:
+            if not isinstance(i, list):
+                i.accept(self)
 
-        for i in len(newNode.params):
-            arVar = newNode.params[i]
-            value = node.args[i].accept(self)
+    def visit_InterfaceDef(self, node: InterfaceDef):
+        for fn in node.functions:
+            fn.accept(self)
+
+    def visit_LetStmt(self, node: LetStmt):
+        newStack = copy.deepcopy(self.stack)
+
+        for i in range(0, len(node.var_defs)):
+            arVar = node.var_defs[i].declarationInfo.name
+            value = node.values[i].accept(self)
             newStack.update({arVar : value})
 
-        oldStack = self.stack
         self.stack = newStack
-        result = newNode.body.accept(self)
-        self.stack = oldStack
-
-        return result
-
-    def visitFunctionCall(self, node: FunctionCall):
-        newNode = self.funMap.get(node.callee)
-
-        newStack = self.stack.deepCopy()
-        for i in len(newNode.args):
-            arVar = newNode.params[i]
-            value = node.args[i].accept(self)
-            newStack.update({arVar : value})
-        oldStack = self.stack
-        self.stack = newStack
-        result = newNode.body.accept(self)
-        self.stack = oldStack
-        return result
-
-    def visitFunctionDef(self, node: FunctionDef):
-        self.funMap.update({node.identifier: node})
         return None
 
-    def visitIfStmt(self, node: IfStmt):
-        # newNode = self.funMap.get(node.var_defs)
+    def visit_Assignment(self, node: AssignStmt):
+        newStack = copy.deepcopy(self.stack)
+        target = node.target.name
+        value = node.value.accept(self)
+        newStack.update({target : value})
+        self.stack = newStack
+        return None
 
-        if_result = node.condition
+    def visit_FunctionDef(self, node: FunctionDef):
+        self.funMap.update({node.identifier : node})
+        if str.__eq__(node.identifier, "main"):
+            node.body.accept(self)
+        # return_value = node.body.accept(self)
+        # if return_value is not None: 
+        #     return return_value
+
+    def visit_Block(self, node: Block):
+        for stmt in node.stmts:
+            if isinstance(stmt, ReturnStmt):
+                return stmt.accept(self)
+            else:
+                stmt.accept(self)
+
+    def visit_FunctionCall(self, node: FunctionCall):
+        newNode = self.funMap.get(node.callee.name)
+        if newNode is None:
+            newNode = self.funMap.get(node.identifier)
+        # self.stack.update({"self": node.caller})
+
+        newStack = copy.deepcopy(self.stack)
+        for i in range(0, len(newNode.params.params)):
+            arVar = newNode.params.params[i].declarationInfo.name
+            value = node.args[i].accept(self)
+            newStack.update({arVar : value})
+        oldStack = self.stack
+        self.stack = newStack
+        result = newNode.body.accept(self)
+        if isinstance(result, IdentifierExpr):
+            result = self.stack.get(result.name)
+        else:
+            result = result.accept(self)
+
+        self.stack = oldStack
+        return result
+
+    def visit_IfStmt(self, node: IfStmt):
+        if_result = node.condition.accept(self)
 
         if if_result:
             result = node.then_branch.accept(self)
+            return result.accept(self)
         else:
-            result = node.else_branch.accept(self)
-
-        return result
+            if node.else_branch is not None:
+                result = node.else_branch.accept(self)
+                return result.accept(self)
 
     def visitBreakStmt(self, node: BreakStmt):
-
         if node is not None: # .vexp()
             return node.accept(self) # .vexp()
         return None # maybe this is better to return?
 
-    def visitReturnStmt(self, node: ReturnStmt):
-        if node.accept(self) is None:
+    def visit_ReturnStmt(self, node: ReturnStmt):
+        if node is None:
             return
         else:
             return node.value
 
-    def visitLoopStmt(self, ctx: LoopStmt):
+    def visit_LoopStmt(self, ctx: LoopStmt):
         # This is the loop keyword. For this type of loop, break statement can return a value
         # A loop statement contains a block statement, and if a break appears in the immediate block statement,
         # this loop will end?
@@ -114,7 +135,7 @@ class Simulator(ProgramVisitor):
         self.stack_bools.append(True)
 
         # now, the loop goes into the block
-        block_result = ctx.blockstmt().accept(self)
+        block_result = ctx.body.accept(self)
 
         top = self.stack_bools.pop()
         if not top:
@@ -125,27 +146,48 @@ class Simulator(ProgramVisitor):
 
         return None
 
-    def visitForStmt(self, ctx: ForStmt):
-        # This is the traditional for loop
-        x = ctx.var
-        v = self.visit(ctx.accept())
-        tmp = self.stack.get(x)
-        i = 0
-        while i < v:
-            self.stack.update({x: v})
-            ctx.block().accept(self)
-            i = i + 1
+    def visit_ForStmt(self, ctx: ForStmt):
+        iterations = ctx.iterable.accept(self)
+        self.stack.update({ctx.var: 0})
+        while self.stack.get(ctx.var) <= iterations:
+            ctx.body.accept(self)
+            self.stack.update({ctx.var: self.stack.get(ctx.var) + 1})
 
-        self.stack.update({x: tmp})
-
-    def visitWhileStmt(self, node: WhileStmt):
-
+    def visit_WhileStmt(self, node: WhileStmt):
+        condition = node.condition.accept(self)
+        while condition:
+            node.body.accept(self)
+            condition = node.condition.accept(self)
         return
+
+    def visit_RangeExpression(self, node: RangeExpression):
+        last = float(node.last.accept(self))
+        first = float(node.initial.accept(self))
+        range_len = last - first + 1
+        return range_len
 
     # def visitIdexp(self, ctx: XMLExpParser.IdexpContext):
     #     return
 
-    def visitStrLiteral(self, ctx: StrLiteral):
+    def visit_FieldAccessExpr(self, node: FieldAccessExpr):
+        struct_value = node.receiver.accept(self)            
+        for field in struct_value.fields:
+            if str.__eq__(node.name.name, field.declarationInfo.name):
+                return field.value
+
+    def visit_PatternExpr(self, node: PatternExpr):
+        pattern = node.pattern.accept(self)
+        if pattern is None:
+            return None
+        return node.pattern.accept(self)
+    
+    def visit_BorrowExpr(self, node: BorrowExpr):
+        return node.expr.accept(self)
+
+    def visit_SafeWrapper(self, node: SafeWrapper):
+        return node.expr.accept(self)
+
+    def visit_StrLiteral(self, ctx: StrLiteral):
         return ctx.value
 
     def visitIntLiteral(self, ctx: IntLiteral):
@@ -154,22 +196,36 @@ class Simulator(ProgramVisitor):
     def visitBoolLiteral(self, ctx: BoolLiteral):
         return ctx.value
 
-    def visitStructDef(self, ctx: StructDef):
-
+    def visit_Struct(self, node: StructDef):
         # Maybe store struct in the stack as a dict or array?
-        struct_fields = ctx.fields
-        struct_name = ctx.type_name
-        struct_body = ctx.body
+        # self.stack.update(node)
+        return node
 
-        self.stack.update({struct_name: struct_fields})
+    def visit_CompoundAssignment(self, node:CompoundAssignment):
+        operation = node.op[0]
+        assign_Stmt = AssignStmt(target=node.target, value=BinaryExpr(left=node.target, op=operation, right=node.value))
+        assign_Stmt.accept(self)
 
-        return ctx.accept()
-
-    def visitBinaryExpr(self, node: BinaryExpr):
+    def visit_BinaryExpr(self, node: BinaryExpr):
         oper = str(node.op)
         # This will be very complicated.
         a = node.left.accept(self)
-        b = node.right.accept(self)
+        
+        if isinstance(a, str):
+            a = float(a)
+        elif a is not None:
+            a = a.accept(self)
+
+        if node.right is not None:
+            b = node.right.accept(self)
+            if isinstance(b, str):
+                b = float(b)
+            else:
+                b = b.accept(self)
+                if isinstance(b, str):
+                    b = float(b)
+        else:
+            b = None
         # range is more complicated due to there being an = operator. I can forget about this case for now.
         # Now, I need to write out the cases for each operator.
 
@@ -205,9 +261,8 @@ class Simulator(ProgramVisitor):
 
         return None
 
-    def visitBoxWrapperExpr(self, node: BoxWrapperExpr):
-
-        return
+    # def visitBoxWrapperExpr(self, node: BoxWrapperExpr):
+    #     return
 
     # def visitVexp(self, ctx: XMLExpParser.VexpContext):
     #     if ctx.idexp() is not None:
@@ -226,8 +281,15 @@ class Simulator(ProgramVisitor):
     #     else:
     #         return self.visitTerminal(ctx)
 
-    def visitIdentifierExpr(self, ctx: IdentifierExpr):
-        return ctx.accept()
+    # def visit_IdentifierExpr(self, ctx: IdentifierExpr):
+    #     return ctx.accept(self)
+
+    def visit_DereferenceExpr(self, node: DereferenceExpr):
+        return node.expr.accept(self)
+
+    def visit_IdentifierExpr(self, node: IdentifierExpr):
+        identifier_val = self.stack.get(node.name)
+        return identifier_val
 
     # Visit a parse tree produced by XMLExpParser#vexp.
     # def visitVexp(self, ctx: XMLExpParser.VexpContext):

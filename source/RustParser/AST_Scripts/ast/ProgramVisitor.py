@@ -1,16 +1,17 @@
 
-from source.RustParser.AST_Scripts.ast.ASTNode import ASTNode, StructField
-from source.RustParser.AST_Scripts.ast.Expression import ArrayDeclaration, ArrayLiteral, BinaryExpr, BoolLiteral, BorrowExpr, BoxWrapperExpr, CastExpr, CharLiteral, CharLiteralExpr, DereferenceExpr, FieldAccessExpr, FunctionCall, IdentifierExpr, IntLiteral, LiteralExpr, ParenExpr, PatternExpr, QualifiedExpression, RangeExpression, SafeWrapper, StrLiteral, StructLiteralField, TypeWrapper, TypePathExpression, UnaryExpr
-from source.RustParser.AST_Scripts.ast.Statement import AssignStmt, BreakStmt, FunctionCall, CompoundAssignment, ConditionalAssignmentStmt, ContinueStmt, StructDef, ForStmt, IfStmt, LetStmt, LoopStmt, MatchArm, MatchPattern, MatchStmt, ReturnStmt, TypeWrapper, WhileStmt
-#from RustParser.AST_Scripts.antlr.RustVisitor import RustVisitor
-from source.RustParser.AST_Scripts.ast.TopLevel import StaticVarDecl, ExternBlock, ExternFunctionDecl, ExternItem, ExternTypeDecl, FunctionDef, InterfaceDef, StructDef, Attribute, TopLevel, TopLevelVarDef, TypeAliasDecl, UseDecl, VarDefField
-from source.RustParser.AST_Scripts.ast.Program import Program
-from RustParser.AST_Scripts.ast.Type import SafeNonNullWrapper, ArrayType, BoolType, IntType, PathType, PointerType, StringType, Type
-#from RustParser.AST_Scripts.antlr import RustLexer, RustParser
-from source.RustParser.AST_Scripts.ast.VarDef import VarDef
-#from RustParser.AST_Scripts.antlr import RustParser
-from RustParser.AST_Scripts.ast.Block import Block, InitBlock
-from source.RustParser.AST_Scripts.ast.Func import FunctionParamList, Param
+from RustParser.AST_Scripts.ast.ASTNode import *
+from RustParser.AST_Scripts.ast.Expression import *
+from RustParser.AST_Scripts.ast.Statement import *
+from RustParser.AST_Scripts.ast.ASTNode import *
+from RustParser.AST_Scripts.ast.Expression import *
+from RustParser.AST_Scripts.ast.Statement import *
+from RustParser.AST_Scripts.ast.TopLevel import *
+from RustParser.AST_Scripts.ast.Program import *
+from RustParser.AST_Scripts.ast.Type import *
+from RustParser.AST_Scripts.ast.VarDef import *
+from RustParser.AST_Scripts.ast.Func import *
+from RustParser.AST_Scripts.ast.Block import *
+from RustParser.AST_Scripts.ast.utils import *
 
 class ProgramVisitor:
 
@@ -58,8 +59,8 @@ class ProgramVisitor:
             #     return self.visitUnsafeBlock(ctx)
             case Block():
                 return self.visitBlock(ctx)
-            case InitBlock():
-                return self.visitInitBlock(ctx)
+            # case InitBlock():
+            #     return self.visitInitBlock(ctx)
             # case MutableExpr():
             #     return self.visitMutableExpr(ctx)
             case QualifiedExpression():
@@ -71,7 +72,7 @@ class ProgramVisitor:
             case LiteralExpr():
                 return self.visitLiteralExpr(ctx)
             case FunctionCall():
-                return self.visitFunctionCall(ctx)
+                return self.visitFunctionCallExpr(ctx)
             # case UnsafeExpression():
             #     return self.visitUnsafeExpression(ctx)
             # case BasicTypeCastExpr():
@@ -80,8 +81,8 @@ class ProgramVisitor:
             #     return self.visitTypeAccessExpr(ctx)
             # case TypeWrapperExpr():
             #     return self.visitTypeWrapperExpr(ctx)
-            case BoxWrapperExpr():
-                return self.visitBoxWrapperExpr(ctx)
+            # case BoxWrapperExpr():
+            #     return self.visitBoxWrapperExpr(ctx)
             case BorrowExpr():
                 return self.visitBorrowExpr(ctx)
             # case VariableRef():
@@ -184,7 +185,7 @@ class ProgramVisitor:
         pass
         #node.value.accept(self)
 
-    def visitFunctionCall(self, node: FunctionCall):
+    def visitFunctionCallStmt(self, node: FunctionCall):
         for i in node.args:
             i.accept(self)
 
@@ -192,8 +193,8 @@ class ProgramVisitor:
         for i in node.stmts:
             i.accept(self)
 
-    def visitInitBlock(self, node: InitBlock):
-        node.returnExpr.accept(self)
+    # def visitInitBlock(self, node: InitBlock):
+    #     node.returnExpr.accept(self)
 
     def visitQualifiedExpression(self, node: QualifiedExpression):
         node.inner_expr.accept(self)
@@ -211,9 +212,9 @@ class ProgramVisitor:
     def visitTypeWrapper(self, node: TypeWrapper):
         node.expr.accept(self)
 
-    def visitBoxWrapperExpr(self, node: BoxWrapperExpr):
-        node.expr.accept(self)
-        node.path.accept(self)
+    # def visitBoxWrapperExpr(self, node: BoxWrapperExpr):
+    #     node.expr.accept(self)
+    #     node.path.accept(self)
 
     def visitBorrowExpr(self, node: BorrowExpr):
         node.expr.accept(self)
@@ -245,5 +246,4 @@ class ProgramVisitor:
     def visitSafeWrapper(self, node: SafeWrapper):
         node.expr.accept(self)
         #node.last.accept(self)
-
 

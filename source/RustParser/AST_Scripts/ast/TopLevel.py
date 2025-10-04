@@ -1,5 +1,6 @@
 from RustParser.AST_Scripts.ast.ASTNode import ASTNode
 from RustParser.AST_Scripts.ast.common import DeclarationInfo
+from RustParser.AST_Scripts.ast.common import DeclarationInfo
 
 class TopLevel(ASTNode):
     def __init__(self):
@@ -7,20 +8,23 @@ class TopLevel(ASTNode):
 
     def accept(self, visitor):
         method_name = f'visit_{self.__class__.__name__}'
-        return getattr(visitor, method_name, visitor.generic_visit)(self)
+        visit = getattr(visitor, method_name, None)
+        if visit == None:
+            return
+        return visit(self)
 
 class FunctionDef(TopLevel):
-    def __init__(self, identifier, params, return_type, body, unsafe=False):
+    def __init__(self, identifier, params, return_type, body, isUnsafe=False):
         super().__init__()
         self.identifier = identifier
         self.params = params
         self.return_type = return_type
         self.body = body
-        self.unsafe = unsafe
+        self.isUnsafe = isUnsafe
 
     def accept(self, visitor):
         #method_Identifier = f'visit_{self.__class__.__name__}'
-        return visitor.visit(self)
+        return visitor.visit_FunctionDef(self)
     
     def getChildren(self):
         return self.body
@@ -39,10 +43,10 @@ class StructDef(TopLevel):
 
     def accept(self, visitor):
         return visitor.visit_Struct(self)
-    
+
     def getChildren(self):
         return self.fields
-    
+
     def setChildren(self, fields):
         self.fields = fields
 
@@ -70,6 +74,7 @@ class ExternBlock(TopLevel):
 
 class ExternItem(ASTNode):
     pass
+    pass
 
 class ExternTypeDecl(ExternItem):
     def __init__(self, name: str, visibility: str = None):
@@ -92,10 +97,10 @@ class StaticVarDecl(TopLevel):
 
     def __repr__(self):
         return (
-            f"StaticVarDecl(name={self.name}, "
-            f"type={self.var_type}, "
+            f"StaticVarDecl(name={self.declarationInfo.name}, "
+            f"type={self.declarationInfo.type}, "
             f"isMutable={self.isMutable}, "
-            f"visibility={self.visibility}, "
+            f"visibility={self.declarationInfo.visibility}, "
             f"initial_value={self.initial_value})")
     
     def accept(self, visitor):
@@ -119,10 +124,11 @@ class TypeAliasDecl(TopLevel):
         self.declarationInfo = DeclarationInfo(name=name, type=type, visibility=visibility)
 
 class TopLevelVarDef(TopLevel):
-    def __init__(self, name, fields, type, def_kind, visibility=None):
+    def __init__(self, name, fields, type, def_kind, isUnsafe=False, visibility=None):
         self.declarationInfo = DeclarationInfo(name=name, type=type, visibility=visibility)
         self.fields = fields
         self.def_kind = def_kind # union, const, etc.
+        self.isUnsafe = isUnsafe
 
     def getChildren(self):
         return self.fields

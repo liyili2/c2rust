@@ -77,18 +77,18 @@ def pretty_print_ast(node, indent=0):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--project_path", type=str, default="../sample/bst_rust")
+    parser.add_argument("--project_path", type=str, default="../sample/test1_rust")
     parser.add_argument("--mode", choices=["line", "tree"], default="tree")
     parser.add_argument("--epoch", type=int, default=30)
     parser.add_argument("--iter",  type=int, default=100)
     args = parser.parse_args()
 
     if args.mode == "line":
-        cfg = {"target_files": ["bst.rs"], "test_command": "./run.sh"}
+        cfg = {"target_files": ["test1.rs"], "test_command": "./run.sh"}
         program = MyLineProgram(args.project_path, config=cfg)
         ops     = [LineReplacement, LineInsertion, LineDeletion]
     else:
-        cfg = {"target_files": ["bst.rs"], "test_command": "bst_test.py"}
+        cfg = {"target_files": ["test1.rs"], "test_command": "pyggi/sample/test1_rust/test1_test.py"}
         program = MyRustProgram(args.project_path, config=cfg)
         ops     = [StmtReplacement, StmtInsertion, StmtDeletion]
 
@@ -97,9 +97,10 @@ def main():
     results = search.run(warmup_reps=5, epoch=args.epoch, max_iter=args.iter, timeout=15)
     print("====================== RESULT ======================")
     for ep, r in enumerate(results, 1):
-        print(f"Epoch {ep}:  best fitness {r['BestFitness']}")
-        # if r["diff"]:
-        #     print(r["diff"])
+        if r.get('BestFitness'):
+            print(f"Epoch {ep}:  best fitness {r['BestFitness']}")
+            # if r["diff"]:
+            #     print(r["diff"])
 
     program.remove_tmp_variant()
 

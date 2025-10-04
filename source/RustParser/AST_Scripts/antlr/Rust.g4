@@ -115,10 +115,12 @@ exprStmt: primaryExpression ';';
 returnStmt: 'return' (expression)? ';' | Identifier;
 loopStmt: 'loop' block;
 
-safeWrapper: 'Some' '(' expression ')' | 'Box' DOUBLE_COLON Identifier '(' expression ')' ;
+safeWrapper: 'Some' '(' expression ')' | 'Some' '(' 'ref'? 'mut'? expression ')' | 'Box' DOUBLE_COLON Identifier '(' expression ')' ;
 
 expression
     : MUT expression
+    | expression callExpressionPostFix
+    | expression fieldAccessPostFix
     | safeWrapper
     | primaryExpression
     | expression binaryOps expression
@@ -131,7 +133,6 @@ expression
     | unaryOpes expression
     | borrowExpression
     | unsafeModifier parenExpression
-    | expression callExpressionPostFix
     | expression typeExpr
     | basicTypeCastExpr
     | expression rangeSymbol expression
@@ -141,7 +142,6 @@ expression
     | qualifiedExpression
     | patternPrefix expression
     | arrayDeclaration
-    | expression fieldAccessPostFix
     ;
 
 basicTypeCastExpr: typeExpr typePath;
@@ -151,7 +151,7 @@ structDefInit: Identifier '=' '{' expression '}' ';' ;
 arrayDeclaration: Identifier '!'? '[' Number ';' expression ']' ;
 typePathExpression: (Identifier DOUBLE_COLON)+ ;
 patternPrefix: 'let'? pattern '=' ;
-pattern: 'ref'? 'mut'? Identifier | Identifier '(' 'ref'? 'mut'? Identifier ')' ;
+pattern: safeWrapper | 'ref'? 'mut'? Identifier;
 castExpressionPostFix: 'as' typeExpr ('as' typeExpr)*;
 compoundOps: '+=' | '-=' | '*=' | '/=' | '%=' | '&=' | '|=' | '^=';
 rangeSymbol: '..';
@@ -167,7 +167,7 @@ expressionBlock: '{' statement* expression '}';
 borrowExpression: '&' expression;
 primaryExpression: literal | Identifier;
 
-fieldAccessPostFix: '[' primaryExpression ']' | ('.' primaryExpression)+;
+fieldAccessPostFix: ('.' primaryExpression)+ | '[' primaryExpression ']';
 callExpressionPostFix: ('.' expression)? '!'? functionCallArgs;
 functionCallArgs: '()' | '(' expression (',' expression)* ')' ;
 
@@ -188,7 +188,7 @@ Number: [0-9]+;
 SignedNumber: ('-' | '+') Number;
 BYTE_STRING_LITERAL: 'b"' (~["\\\r\n] | '\\' .)* '"';
 HexNumber: '0x' [0-9a-fA-F]+;
-CHAR_LITERAL: '\'' (~['\\\r\n] | '\\' .) '\'';
+CHAR_LITERAL: '\'' (~['\\\r\n] | '\\') '\'';
 DOUBLE_COLON: '::';
 EXCL: '!';
 GT: '>'; // make sure this comes FIRST

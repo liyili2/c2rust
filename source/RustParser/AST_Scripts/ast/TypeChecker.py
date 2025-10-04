@@ -7,6 +7,7 @@ from RustParser.AST_Scripts.ast.Expression import *
 from RustParser.AST_Scripts.ast.Expression import FunctionCall as FunctionCallExpr
 from RustParser.AST_Scripts.ast.Statement import *
 from RustParser.AST_Scripts.ast.TopLevel import *
+from RustParser.AST_Scripts.ast.utils import *
 
 class TypeChecker:
     def __init__(self):
@@ -15,6 +16,7 @@ class TypeChecker:
         self.error_count = 0
         self.errors = []
         self.reports = []
+        self.root = None
 
     def error(self, node, message, error_weight=1):
         # error_weight=1
@@ -41,8 +43,14 @@ class TypeChecker:
         if isinstance(node.declarationInfo.type, PointerType):
             self.error(node, "raw pointer usage in a struct field")
 
-    def visit_TopLevelVarDef(Self, node):
-        pass
+    def visit_TopLevelVarDef(self, node):
+        if node.def_kind:
+            isUnion = str.__eq__(node.def_kind, "union")
+            self.env.declare(name=node.declarationInfo.name, 
+                            typ=StructType(name=node.declarationInfo.name, fields=node.fields, isUnion=isUnion))
+
+    def visit_Expression(self, node):
+        return self.visit(node.expr)
 
     def visit_InterfaceDef(self, node):
         for item in node.functions:
@@ -51,12 +59,11 @@ class TypeChecker:
     def visit_Attribute(self, node):
         pass
 
-    def visit_safeWrapper(self, node):
+    def visit_SafeWrapper(self, node):
         pass
 
     def visit_FunctionDef(self, node: FunctionDef):
-        # print("visit_function_def", self.error_count)
-        if node.unsafe:
+        if node.isUnsafe:
             self.error(node, "unsafe function definition")
 
         fn_name = node.identifier
@@ -107,7 +114,6 @@ class TypeChecker:
         self.current_function_return = saved_return
         self.env.exit_scope()
 
-        # print("visit_function_def2", self.error_count)
         return None
 
     def body_has_terminating_return(self, stmts):
@@ -156,6 +162,8 @@ class TypeChecker:
             # self.error(self, "unknown primitive type")
 
     def visit(self, node):
+        if self.root is None:
+            self.root = node
         # if node is None:
         #     self.error(node, "none node found")
         if isinstance(node, list):
@@ -171,9 +179,7 @@ class TypeChecker:
     def visit_WhileStmt(self, node):
         cond_type = self.visit(node.condition)
         # self.visit(node.condition)
-
-        for stmt in node.body:
-            self.visit(stmt)
+        self.visit(node.body)
 
     def visit_CastExpr(self, node: CastExpr):
         if isinstance(node.expr, DereferenceExpr):
@@ -237,10 +243,6 @@ class TypeChecker:
     def visit_StructLiteralField(self, node):
         pass
 
-    def visit_UnsafeBlock(self, node):
-        for stmt in node.getChildren():
-            self.visit(stmt)
-
     def visit_LetStmt(self, node):
         expr_types = []
         for expr in node.values:
@@ -300,10 +302,16 @@ class TypeChecker:
 
     def visit_DereferenceExpr(self, node):
         self.error(node, f"unsafe pointer dereferencing {node.expr}", 2)
+        return self.visit(node.expr)
 
     def visit_SafeNonNullWrapper(self, node):
-        print("visit_SafeNonNullWrapper")
         return node
+    
+    def visit_BreakStmt(self, node):
+        pass
+
+    def visit_ContinueStmt(self, node):
+        pass
 
     def visit_BinaryExpr(self, node):
         left = self.visit(node.left)
@@ -380,7 +388,6 @@ class TypeChecker:
         if isinstance(node.target, IdentifierExpr):
             try:
                 target_info = self.env.lookup(node.target.name)
-                # print(";;", target_info)
             except Exception:
                 # self.error(node, "usage of undefined variable in compound assignment")
                 return
@@ -506,7 +513,6 @@ class TypeChecker:
         pass
 
     def visit_IfStmt(self, node):
-        # print("visit_IfStmt", node.condition.__class__)
         self.visit(node.condition)
         self.visit(node.then_branch)
         if node.else_branch is not None:
@@ -514,42 +520,9 @@ class TypeChecker:
         return
 
     def check_iterable_type(self, node):
-        type_correctness = True
-        # if isinstance(node, FieldAccessExpr):
-        #     print(f"iterative type is a FieldAccessExpr: {node.receiver.__class__}, {node.name.__class__}")
-        # if isinstance(node, FieldAccessExpr) and isinstance(node.receiver, RangeExpression):
-        #     return type_correctness
-
-        # if isinstance(node, ArrayType) or isinstance(node, RangeExpression):
-        #     return type_correctness
-
-        # if isinstance(node, FunctionCallExpr):
-        #     print(f"iterative type is a function call: {node.func}")
-        #     if isinstance(node.func, IdentifierExpr):
-        #         print(f"000: {node.func.name}")
-
-        # self.error(node, f"wrong iterative type: {node}")
         return True
 
     def visit_ForStmt(self, node):
-        # iterable_type = self.visit(node.iterable)
-        # print("visit_ForStmt", iterable_type, iterable_type.__class__)
-
-        # if not self.check_iterable_type(node.iterable):
-        #     return
-
-        # range_type = None
-        # if isinstance(node.iterable, ArrayType):
-        #     range_type = node.iterable.__class__
-        # elif isinstance(node.iterable, FieldAccessExpr):
-        #     range_type = node.iterable.receiver.initial.__class__
-        # else:
-        #     range_type = node.iterable.initial.__class__
-
-        # self.env.declare(node.var, {
-        #     "type": range_type,
-        #     "owned": True, "borrowed": False})
-
         for stmt in node.body.getChildren():
             self.visit(stmt)
         return True
@@ -578,15 +551,33 @@ class TypeChecker:
                     except Exception:
                         # self.error(arg.name, f"undefined arg in {node.func}")
                         continue
+            for arg in node.args:
+                if isinstance(arg, IdentifierExpr):
+                    try:
+                        info = self.env.lookup(arg.name)
+                    except Exception:
+                        # self.error(arg.name, f"undefined arg in {node.func}")
+                        continue
 
+                    if not info["owned"] or info["borrowed"]:
+                        self.error(arg.name, f"no owners found for the argument {arg.name} in {node.callee}")
                     if not info["owned"] or info["borrowed"]:
                         self.error(arg.name, f"no owners found for the argument {arg.name} in {node.callee}")
 
                     info["borrowed"] = True
+                    info["borrowed"] = True
 
             arg_types = [self.visit(arg) for arg in node.args]
             expected_types = func_info["param_types"]
+            arg_types = [self.visit(arg) for arg in node.args]
+            expected_types = func_info["param_types"]
 
+            if len(arg_types) != len(expected_types):
+                self.error(node.callee, f"wrong number of arguments")
+            else:
+                for actual, expected in zip(arg_types, expected_types):
+                    if type(actual) != type(expected):
+                        self.error(node.callee, f"wrong number of arguments")
             if len(arg_types) != len(expected_types):
                 self.error(node.callee, f"wrong number of arguments")
             else:
@@ -696,8 +687,10 @@ class TypeChecker:
         info["borrowed"] = True
         return RefType(info["type"])
     
+    def visit_PatternExpr(self, node):
+        pass
+    
     def visit_FunctionCallExpression(self, node):
-        print("visit_FunctionCallExpression")
         pass
 
     def visit_ArrayLiteral(self, node):
@@ -712,36 +705,8 @@ class TypeChecker:
                 # self.error(node, "wrong element type in the array literal", 1)
 
         return ArrayType(first_type)
-    
-    def visit_CallStmt(self, node):
-        pass
 
     def visit_callExpressionPostFix(self, node, func_expr):
-        # if not hasattr(node, 'args'):
-        #     self.increase_error_count()
-        #     return
-
-        # args = self.visit(node.args) if hasattr(node, 'args') else []
-        # if isinstance(func_expr, IdentifierExpr):
-        #     func_name = func_expr.name
-        # else:
-        #     self.increase_error_count()
-        #     return
-
-        # func_info = self.env.lookup_function(func_name)
-        # if not func_info or func_info["kind"] != "function":
-        #     self.increase_error_count()
-        #     return
-
-        # param_types = func_info["param_types"]
-        # if len(args) != len(param_types):
-        #     self.increase_error_count()
-        #     return
-
-        # for arg, expected_type in zip(args, param_types):
-        #     if type(arg) != type(expected_type):
-        #         self.increase_error_count()
-
         for arg in node.args:
             if isinstance(arg, IdentifierExpr):
                 try:
@@ -764,35 +729,48 @@ class TypeChecker:
 
     def visit_FieldAccessExpr(self, node):
         base_type = self.visit(node.receiver)
-
+        field_type = self.visit(node.name)
+        field = node.name.name
         if isinstance(node.receiver, DereferenceExpr):
             self.error(node, "unprotected dereference in a field access expression")
-
-        if not isinstance(base_type, StructType):
-            # self.error(node, "access to a wrong type of variable (not a struct)")
-            return None
-
-        struct_name = base_type.name
-        struct_info = self.env.lookup_struct(struct_name)
-
-        if struct_info is None:
-            # self.error(node, "access to an undefined struct")
-            return None
-
-        field_type = struct_info.get(node.field)
-        if field_type is None:
-            self.error(node, "no such a field to access")
-            return None
-
-        if isinstance(node.base, IdentifierExpr):
+            base_type = self.visit(node.receiver.expr)
             try:
-                var_info = self.env.lookup(node.base.name)
+                base_info = self.env.lookup(base_type)
+                base_type = base_info["type"]
             except Exception:
-                self.error(node, "no such a identifier to access")
-                return None
+                self.error(node, f"access to an undefined struct {node.receiver}")
+                return
 
-            if not var_info["owned"] or var_info["borrowed"]:
-                self.error(node, "the identifier is not owned or borrowed")
+        parent_list = get_all_parents(target_node=node, ast_root=self.root, parent=None)
+        check_done = False
+        for p in parent_list:
+            if isinstance(p, InterfaceDef):
+                info = self.env.lookup(p.name)
+                if isinstance(info["type"], StructType):
+                    for f in info["type"].fields:
+                        if str.__eq__(field, f):
+                            check_done = True
+
+        if not check_done:
+            if not( isinstance(base_type, StructType) or isinstance(base_type, StructDef)):
+                self.error(node, "access to a wrong type of variable (not a struct)")
+                return
+
+            if isinstance(base_type, StructType) and base_type.isUnion:
+                self.error(node, f"union struct {base_type.name} field {node.name.name} access ")
+
+            for field in base_info["type"].fields:
+                if isinstance(field, str):
+                    if str.__eq__(field, node.name.name):
+                        field_type = field.__class__
+                        break
+                else:
+                    if str.__eq__(field.declarationInfo.name, node.name.name):
+                        field_type = field.declarationInfo.type
+                        break
+            if field_type is None:
+                self.error(node, "no such a field to access")
+                return None
 
         return field_type
 
@@ -830,7 +808,6 @@ class TypeChecker:
         return StringType()
 
     def visit_PrimaryExpression(self, node):
-        print("visit_PrimaryExpression")
         pass
 
     def visit_typeWrapper(self, node):

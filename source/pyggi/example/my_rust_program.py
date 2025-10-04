@@ -1,14 +1,21 @@
 from copy import deepcopy
-from shutil import copy
 import os
 from types import SimpleNamespace as Result
-from pyggi.tree.rust_engine import RustEngine, pretty_print_ast
+from pyggi.tree.rust_engine import RustEngine
 from pyggi.base.patch import Patch
 from pyggi.tree.tree import TreeProgram
-from RustParser.AST_Scripts.antlr.RustParser import RustParser
-from RustParser.AST_Scripts.antlr.RustLexer   import RustLexer
-from RustParser.AST_Scripts.ast.Transformer import Transformer
 from RustParser.AST_Scripts.ast.TypeChecker import TypeChecker
+import builtins
+import pytest
+
+class ResultCapture:
+    def __init__(self):
+        self.failed = 0
+        self.passed = 0
+
+    def pytest_sessionfinish(self, session):
+        self.failed = session.testsfailed
+        self.passed = session.testscollected - session.testsfailed
 
 class MyRustProgram(TreeProgram):
     def __init__(self, path, config):
@@ -49,29 +56,45 @@ class MyRustProgram(TreeProgram):
         # print("🔍 Mutation diff:")
         # print(diff)
 
-        # Evaluate directly
-        try:
-            checker = TypeChecker()
-            checker.visit(mutated_ast)
-            print("eval type ", checker.error_count, len(mutated_ast.items))
-            # fitness = 1 / (checker.error_count + 1)
-            fitness = checker.error_count
-            status = "SUCCESS"
-
-        except Exception as e:
-            fitness = None
-            status = "CRASH"
-            print("✖︎", e)
-
+        res = Result()
+        res.status = None
+        res.fitness = None
         if mutated_ast:
             if len(mutated_ast.items) == 0:
                 fitness = None
                 status = "CRASH"
                 print("✖︎ Invalid AST Generated")
+                status = "CRASH"
+                print("✖︎ Invalid AST Generated")
 
-        res = Result()
-        res.status = status
-        res.fitness = fitness
+            else:
+                # Evaluate directly
+                try:
+                    checker = TypeChecker()
+                    checker.visit(mutated_ast)
+                    print("eval ", checker.error_count, len(mutated_ast.items))
+                    fitness = checker.error_count
+                    status = "SUCCESS"
+
+                    res.status = status
+                    res.fitness = fitness
+
+                except Exception as e:
+                    fitness = None
+                    status = "CRASH"
+                    print("✖︎", e)
+
+                # run functional tests and assertions with the ast
+                try:
+                    functional_test_report = ResultCapture()
+                    builtins.ast = mutated_ast
+                    exit_code  = pytest.main(["-s", self.config["test_command"]], plugins=[functional_test_report])
+                    res.fitness += functional_test_report.failed
+                    self.compute_fitness(res, exit_code)
+
+                except Exception as e:
+                    pass
+
         # res['BestFitness'] = best_fitness
         # res['diff'] = self.program.diff(best_patch)
         return res

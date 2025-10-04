@@ -74,7 +74,7 @@ class AbstractProgram(ABC):
         self.logger = Logger(self.name + '_' + self.timestamp)
 
         # Create the temporary directory
-        self.create_tmp_variant()
+        # self.create_tmp_variant()
         self.setup()
 
         # Configuration
@@ -210,7 +210,8 @@ class AbstractProgram(ABC):
             ignore=shutil.ignore_patterns('tmp_variants', '__pycache__'))
 
     def remove_tmp_variant(self):
-        shutil.rmtree(self.tmp_path)
+        pass
+        # shutil.rmtree(self.tmp_path)
 
     def write_to_tmp_dir(self, new_contents):
         """
@@ -265,7 +266,7 @@ class AbstractProgram(ABC):
         """
         print("apply")
         new_contents = self.get_modified_contents(patch)
-        self.write_to_tmp_dir(new_contents)
+        # self.write_to_tmp_dir(new_contents)
         return new_contents
 
     def exec_cmd(self, cmd, timeout=15):
@@ -303,19 +304,16 @@ class AbstractProgram(ABC):
         finally:
             os.chdir(cwd)
 
-    def compute_fitness(self, result, return_code, stdout, stderr, elapsed_time):
-        print("stdout is ", stdout)
-        if "test result: ok" in stdout:
-            result.fitness = elapsed_time
+    def compute_fitness(self, result, exit_code, return_code=None, stdout=None, stderr=None, elapsed_time=None):
+        if exit_code != 0:
+            result.status = "Functional Incorrectness"
         else:
-            result.status = 'PARSE_ERROR2'
+            result.status = "SUCCESS"
 
     def evaluate_patch(self, patch, timeout=15):
         # apply + run
         self.apply(patch)
         return_code, stdout, stderr, elapsed_time = self.exec_cmd(self.test_command, timeout)
-        # print("Standard Output:\n", stdout)
-        # print("Standard Error:\n", stderr)
         if return_code is None: # timeout
             return RunResult('TIMEOUT')
         else:

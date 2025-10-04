@@ -1,5 +1,6 @@
 from RustParser.AST_Scripts.ast.ASTNode import ASTNode
 from RustParser.AST_Scripts.ast.common import DeclarationInfo
+from RustParser.AST_Scripts.ast.common import DeclarationInfo
 
 class Param(ASTNode):
     def __init__(self, name, typ, isMutable):
@@ -9,7 +10,7 @@ class Param(ASTNode):
         self.parent = None
 
     def __repr__(self):
-        return f"ParamNode(name={self.name}, type={self.typ}, mutable={self.mutaisMutableble})"
+        return f"ParamNode(name={self.declarationInfo.name}, type={self.declarationInfo.type}, mutable={self.isMutable})"
 
     def accept(self, visitor):
         return visitor.visit_ParamNode(self)
