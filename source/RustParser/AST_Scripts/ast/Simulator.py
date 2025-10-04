@@ -91,12 +91,17 @@ class Simulator(ProgramVisitor):
 
         newStack = copy.deepcopy(self.stack)
         for i in range(0, len(newNode.params.params)):
-            arVar = newNode.params.params[i]
+            arVar = newNode.params.params[i].declarationInfo.name
             value = node.args[i].accept(self)
             newStack.update({arVar : value})
         oldStack = self.stack
         self.stack = newStack
         result = newNode.body.accept(self)
+        if isinstance(result, IdentifierExpr):
+            result = self.stack.get(result.name)
+        else:
+            result = result.accept(self)
+
         self.stack = oldStack
         return result
 
@@ -105,10 +110,11 @@ class Simulator(ProgramVisitor):
 
         if if_result:
             result = node.then_branch.accept(self)
+            return result
         else:
-            result = node.else_branch.accept(self)
-
-        return result
+            if node.else_branch is not None:
+                result = node.else_branch.accept(self)
+                return result
 
     def visitBreakStmt(self, node: BreakStmt):
         if node is not None: # .vexp()
@@ -164,7 +170,7 @@ class Simulator(ProgramVisitor):
     #     return
 
     def visit_FieldAccessExpr(self, node: FieldAccessExpr):
-        struct_value = node.receiver.accept(self)
+        struct_value = node.receiver.accept(self)            
         for field in struct_value.fields:
             if str.__eq__(node.name.name, field.declarationInfo.name):
                 return field.value
@@ -174,6 +180,9 @@ class Simulator(ProgramVisitor):
         if pattern is None:
             return None
         return node.pattern.accept(self)
+    
+    def visit_BorrowExpr(self, node: BorrowExpr):
+        return node.expr.accept(self)
 
     def visit_SafeWrapper(self, node: SafeWrapper):
         return node.expr.accept(self)
@@ -213,6 +222,8 @@ class Simulator(ProgramVisitor):
                 b = float(b)
             else:
                 b = b.accept(self)
+                if isinstance(b, str):
+                    b = float(b)
         else:
             b = None
         # range is more complicated due to there being an = operator. I can forget about this case for now.
