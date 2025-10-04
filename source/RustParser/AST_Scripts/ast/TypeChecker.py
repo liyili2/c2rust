@@ -302,6 +302,7 @@ class TypeChecker:
 
     def visit_DereferenceExpr(self, node):
         self.error(node, f"unsafe pointer dereferencing {node.expr}", 2)
+        return self.visit(node.expr)
 
     def visit_SafeNonNullWrapper(self, node):
         return node
@@ -751,7 +752,7 @@ class TypeChecker:
                             check_done = True
 
         if not check_done:
-            if not isinstance(base_type, StructType) or not isinstance(base_type, StructDef):
+            if not( isinstance(base_type, StructType) or isinstance(base_type, StructDef)):
                 self.error(node, "access to a wrong type of variable (not a struct)")
                 return
 

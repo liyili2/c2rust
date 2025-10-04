@@ -140,3 +140,9 @@ class SafeNonNullWrapper(Type):
 
     def accept(self, visitor):
         return visitor.visit_SafeNonNullWrapper(self)
+
+class NoneType(Type):
+    def __init__(self):
+        super().__init__()
+    def accept(self, visitor):
+        return None

@@ -119,7 +119,8 @@ safeWrapper: 'Some' '(' expression ')' | 'Some' '(' 'ref'? 'mut'? expression ')'
 
 expression
     : MUT expression
-    | primaryExpression fieldAccessPostFix
+    | expression callExpressionPostFix
+    | expression fieldAccessPostFix
     | safeWrapper
     | primaryExpression
     | expression binaryOps expression
@@ -132,7 +133,6 @@ expression
     | unaryOpes expression
     | borrowExpression
     | unsafeModifier parenExpression
-    | expression callExpressionPostFix
     | expression typeExpr
     | basicTypeCastExpr
     | expression rangeSymbol expression

@@ -8,7 +8,10 @@ class TopLevel(ASTNode):
 
     def accept(self, visitor):
         method_name = f'visit_{self.__class__.__name__}'
-        return getattr(visitor, method_name, visitor.generic_visit)(self)
+        visit = getattr(visitor, method_name, None)
+        if visit == None:
+            return
+        return visit(self)
 
 class FunctionDef(TopLevel):
     def __init__(self, identifier, params, return_type, body, isUnsafe=False):

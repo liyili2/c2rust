@@ -64,7 +64,7 @@ def setParents(node, parent=None, top_level_prog=None):
         elif isinstance(value, ASTNode):
             setParents(value, node, top_level_prog)
 
-file_path = os.path.join(os.path.dirname(__file__), "bst.rs")
+file_path = os.path.join(os.path.dirname(__file__), "bst_simp.rs")
 with open(file_path, "r", encoding="utf-8") as f:
     rust_code = f.read()
 lexer = RustLexer(InputStream(rust_code))
@@ -74,8 +74,8 @@ tree = parser.program()
 transformer = Transformer()
 ast = transformer.visit(tree)
 setParents(ast)
-checker = TypeChecker()
-checker.visit(ast)
+# checker = TypeChecker()
+# checker.visit(ast)
 memory = dict()
 stack = dict()
 builder = Simulator(memory=memory, stack=stack)

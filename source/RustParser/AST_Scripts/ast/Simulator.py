@@ -70,9 +70,11 @@ class Simulator(ProgramVisitor):
 
     def visit_FunctionDef(self, node: FunctionDef):
         self.funMap.update({node.identifier : node})
-        return_value = node.body.accept(self)
-        if return_value is not None: 
-            return return_value
+        if str.__eq__(node.identifier, "main"):
+            node.body.accept(self)
+        # return_value = node.body.accept(self)
+        # if return_value is not None: 
+        #     return return_value
 
     def visit_Block(self, node: Block):
         for stmt in node.stmts:
@@ -82,12 +84,14 @@ class Simulator(ProgramVisitor):
                 stmt.accept(self)
 
     def visit_FunctionCall(self, node: FunctionCall):
-        newNode = self.funMap.get(node.callee)
-        self.stack.update({"self": node.caller})
+        newNode = self.funMap.get(node.callee.name)
+        if newNode is None:
+            newNode = self.funMap.get(node.identifier)
+        # self.stack.update({"self": node.caller})
 
-        newStack = self.stack.deepCopy()
-        for i in len(newNode.params):
-            arVar = newNode.params[i]
+        newStack = copy.deepcopy(self.stack)
+        for i in range(0, len(newNode.params.params)):
+            arVar = newNode.params.params[i]
             value = node.args[i].accept(self)
             newStack.update({arVar : value})
         oldStack = self.stack
@@ -112,7 +116,7 @@ class Simulator(ProgramVisitor):
         return None # maybe this is better to return?
 
     def visit_ReturnStmt(self, node: ReturnStmt):
-        if node.accept(self) is None:
+        if node is None:
             return
         else:
             return node.value
@@ -196,8 +200,21 @@ class Simulator(ProgramVisitor):
     def visit_BinaryExpr(self, node: BinaryExpr):
         oper = str(node.op)
         # This will be very complicated.
-        a = float(node.left.accept(self))
-        b = float(node.right.accept(self))
+        a = node.left.accept(self)
+        
+        if isinstance(a, str):
+            a = float(a)
+        elif a is not None:
+            a = a.accept(self)
+
+        if node.right is not None:
+            b = node.right.accept(self)
+            if isinstance(b, str):
+                b = float(b)
+            else:
+                b = b.accept(self)
+        else:
+            b = None
         # range is more complicated due to there being an = operator. I can forget about this case for now.
         # Now, I need to write out the cases for each operator.
 
@@ -255,6 +272,9 @@ class Simulator(ProgramVisitor):
 
     # def visit_IdentifierExpr(self, ctx: IdentifierExpr):
     #     return ctx.accept(self)
+
+    def visit_DereferenceExpr(self, node: DereferenceExpr):
+        return node.expr.accept(self)
 
     def visit_IdentifierExpr(self, node: IdentifierExpr):
         identifier_val = self.stack.get(node.name)
