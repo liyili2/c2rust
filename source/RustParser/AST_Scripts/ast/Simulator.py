@@ -110,11 +110,11 @@ class Simulator(ProgramVisitor):
 
         if if_result:
             result = node.then_branch.accept(self)
-            return result
+            return result.accept(self)
         else:
             if node.else_branch is not None:
                 result = node.else_branch.accept(self)
-                return result
+                return result.accept(self)
 
     def visitBreakStmt(self, node: BreakStmt):
         if node is not None: # .vexp()

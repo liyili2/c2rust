@@ -41,17 +41,21 @@ unsafe fn insert(root: *mut Node, key: i32, value: &str) {
 }
 
 unsafe fn search(root: *mut Node, key: i32) -> *const String {
-    if root == None {
-        return;
+    // if root == None {
+    //     return;
+    // }
+
+    if key == (*root).key {
+        return root.value;
     }
+
     if key < (*root).key {
         return search((*root).left, key);
     }
+
     if key > (*root).key {
         return search((*root).right, key);
-    } 
-
-    return &(*root).value;
+    }
 }
 
 fn main() {
