@@ -1,12 +1,12 @@
 import copy
 from ast import *
-from source.RustParser.AST_Scripts.ast.Transformer import Transformer
-from source.RustParser.AST_Scripts.ast.Statement import *
-from source.RustParser.AST_Scripts.ast.TypeChecker import TypeChecker
-from source.RustParser.AST_Scripts.ast.ProgramVisitor import ProgramVisitor
-from source.RustParser.AST_Scripts.ast.Expression import *
-from source.RustParser.AST_Scripts.ast.Program import *
-from source.RustParser.AST_Scripts.ast.TopLevel import *
+from RustParser.AST_Scripts.ast.Transformer import Transformer
+from RustParser.AST_Scripts.ast.Statement import *
+from RustParser.AST_Scripts.ast.TypeChecker import TypeChecker
+from RustParser.AST_Scripts.ast.ProgramVisitor import ProgramVisitor
+from RustParser.AST_Scripts.ast.Expression import *
+from RustParser.AST_Scripts.ast.Program import *
+from RustParser.AST_Scripts.ast.TopLevel import *
 
 NoneType = type(None)
 
@@ -175,22 +175,28 @@ class Simulator(ProgramVisitor):
         for i in range(0, len(match_arms)):
             arm_res = match_arms[i].accept(self)
 
-            if match_expr == arm_res:
-                return match_arms[i].body.accept(self)
-            elif arm_res == '_':
-                return match_arms[i].body.accept(self)
+            for pattern_res in arm_res:
+                pattern_val = str(pattern_res.accept(self))
+                # print(pattern_val)
+                # print(match_expr)
+                if match_expr == pattern_val:
+                    print("entered")
+                    return match_arms[i].body.accept(self)
+                elif pattern_val == '_':
+                    return match_arms[i].body.accept(self)
 
         return
 
     def visit_MatchArm(self, node: MatchArm):
 
         match_pattern = node.patterns
+        # print(match_pattern)
 
-        return match_pattern.accept(self)
+        return match_pattern
 
     def visit_MatchPattern(self, node: MatchPattern):
 
-        return node.value.accept(self)
+        return node.value #.accept(self)
 
     def visit_RangeExpression(self, node: RangeExpression):
         last = float(node.last.accept(self))
@@ -222,10 +228,10 @@ class Simulator(ProgramVisitor):
     def visit_StrLiteral(self, ctx: StrLiteral):
         return ctx.value
 
-    def visitIntLiteral(self, ctx: IntLiteral):
+    def visit_IntLiteral(self, ctx: IntLiteral):
         return ctx.value
 
-    def visitBoolLiteral(self, ctx: BoolLiteral):
+    def visit_BoolLiteral(self, ctx: BoolLiteral):
         return ctx.value
 
     def visit_Struct(self, node: StructDef):
