@@ -675,11 +675,11 @@ class Transformer(RustVisitor):
         if ctx.arrayLiteral():
             return self.visit(ctx.arrayLiteral())
         elif ctx.booleanLiteral():
-            return BoolLiteral(self.visit(ctx.booleanLiteral()))
+            return BoolLiteral(value=self.visit(ctx.booleanLiteral()))
         elif ctx.HexNumber():
             return int(ctx.HexNumber().getText(), 16)
         elif ctx.Number():
-            return IntLiteral(ctx.Number().getText())
+            return IntLiteral(value=int(ctx.Number().getText()))
         elif ctx.SignedNumber():
             return IntLiteral(int(ctx.SignedNumber().getText()))
         elif ctx.BYTE_STRING_LITERAL():
@@ -736,11 +736,11 @@ class Transformer(RustVisitor):
 
     def visitMatchPattern(self, ctx):
         if ctx.Number():
-            return MatchPattern(int(ctx.Number().getText()))
+            return MatchPattern(IntLiteral(value=int(ctx.Number().getText())))
         elif ctx.UNDERSCORE():
             return MatchPattern('_')
         elif ctx.Identifier():
-            return MatchPattern(ctx.Identifier().getText())
+            return MatchPattern(IdentifierExpr(name=ctx.Identifier().getText()))
         elif ctx.byteLiteral():
             return self.visit(ctx.byteLiteral())
         else:

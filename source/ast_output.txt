@@ -18,7 +18,7 @@ Program:
                   declarationInfo:
                     DeclarationInfo:
                       name:
-                        'a'
+                        'p'
                       type:
                         None
                       visibility:
@@ -38,12 +38,41 @@ Program:
                   isUnsafe:
                     False
                   value:
-                    '10'
-            MatchStmt:
+                    10
+            LetStmt:
               body:
                 None
-              expr:
-                IdentifierExpr:
+              var_defs:
+                VarDef:
+                  declarationInfo:
+                    DeclarationInfo:
+                      name:
+                        'q'
+                      type:
+                        None
+                      visibility:
+                        None
+                  isMutable:
+                    False
+                  by_ref:
+                    False
+              values:
+                IntLiteral:
+                  type:
+                    IntType:
+                  isMutable:
+                    False
+                  expr:
+                    None
+                  isUnsafe:
+                    False
+                  value:
+                    20
+            IfStmt:
+              body:
+                None
+              condition:
+                BinaryExpr:
                   type:
                     None
                   isMutable:
@@ -52,84 +81,66 @@ Program:
                     None
                   isUnsafe:
                     False
-                  name:
-                    'a'
-              arms:
-                MatchArm:
-                  body:
-                    Block:
-                      stmts:
-
+                  left:
+                    IntLiteral:
+                      type:
+                        IntType:
+                      isMutable:
+                        False
+                      expr:
+                        None
                       isUnsafe:
                         False
-                  patterns:
-                    MatchPattern:
-                      body:
-                        None
-                      value:
-                        11
-                MatchArm:
-                  body:
-                    Block:
-                      stmts:
-
-                      isUnsafe:
-                        False
-                  patterns:
-                    MatchPattern:
-                      body:
-                        None
-                      value:
-                        1
-                MatchArm:
-                  body:
-                    Block:
-                      stmts:
-
-                      isUnsafe:
-                        False
-                  patterns:
-                    MatchPattern:
-                      body:
-                        None
                       value:
                         10
-                MatchArm:
-                  body:
-                    Block:
-                      stmts:
-
+                  op:
+                    '=='
+                  right:
+                    IdentifierExpr:
+                      type:
+                        None
+                      isMutable:
+                        False
+                      expr:
+                        None
                       isUnsafe:
                         False
-                  patterns:
-                    MatchPattern:
+                      name:
+                        'q'
+              then_branch:
+                Block:
+                  stmts:
+                    AssignStmt:
                       body:
                         None
+                      target:
+                        IdentifierExpr:
+                          type:
+                            None
+                          isMutable:
+                            False
+                          expr:
+                            None
+                          isUnsafe:
+                            False
+                          name:
+                            'p'
                       value:
-                        12
-                    MatchPattern:
-                      body:
-                        None
-                      value:
-                        10
-                    MatchPattern:
-                      body:
-                        None
-                      value:
-                        9
-                MatchArm:
-                  body:
-                    Block:
-                      stmts:
-
-                      isUnsafe:
-                        False
-                  patterns:
-                    MatchPattern:
-                      body:
-                        None
-                      value:
-                        '_'
+                        IntLiteral:
+                          type:
+                            IntType:
+                          isMutable:
+                            False
+                          expr:
+                            None
+                          isUnsafe:
+                            False
+                          value:
+                            12
+                  isUnsafe:
+                    False
+              else_branch:
+                None
           isUnsafe:
             False
       isUnsafe:

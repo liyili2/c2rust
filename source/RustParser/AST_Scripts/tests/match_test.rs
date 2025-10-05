@@ -1,24 +1,18 @@
 fn main() {
-    let mut a = 10;
-
-    match a {
-            11 => {
-
-            }
-            1 => {
-
-            }
-            10 => {
-                a = 1000;
-            }
-            12 | 10 | 9 => {
-
-            }
-            // Not handled in the original program.
-            // Since '.' is a meta character in the
-            // postfix syntax, it can result in UB.
-            // So we reject it here.
-            _ => {
-
-            }
+    let p = 10;
+    let q = 20;
+    if 10 == q {
+        p = 12;     
+    }
+    // match p {
+    //     1 => {
+    //     }
+    //     2 => {
+    //     }
+    //     10 => {
+    //         p = 1000;
+    //     }
+    //     _ => {
+    //     }
+    // }
 }
