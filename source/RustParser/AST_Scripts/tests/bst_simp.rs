@@ -43,7 +43,7 @@ unsafe fn insert(root: *mut Node, key: i32, value: &str) {
 unsafe fn search(root: *mut Node, key: i32) -> *const String {
     let return_val = "None";
     if root == None {
-        return;
+        return return_val;
     }
 
     if key == (*root).key {
@@ -65,7 +65,7 @@ fn main() {
     unsafe {
         let root = new_node(5, "five");
         let five_found = search(root, 5);
-        // search(root, 3);
+        let three_found = search(root, 3);
         // insert(root, 3, "three");
         // search(root, 3);
         // insert(root, 7, "seven");
