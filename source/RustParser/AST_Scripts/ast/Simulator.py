@@ -1,12 +1,12 @@
 import copy
 from ast import *
-from RustParser.AST_Scripts.ast.Transformer import Transformer
-from RustParser.AST_Scripts.ast.Statement import *
-from RustParser.AST_Scripts.ast.TypeChecker import TypeChecker
-from RustParser.AST_Scripts.ast.ProgramVisitor import ProgramVisitor
-from RustParser.AST_Scripts.ast.Expression import *
-from RustParser.AST_Scripts.ast.Program import *
-from RustParser.AST_Scripts.ast.TopLevel import *
+from source.RustParser.AST_Scripts.ast.Transformer import Transformer
+from source.RustParser.AST_Scripts.ast.Statement import *
+from source.RustParser.AST_Scripts.ast.TypeChecker import TypeChecker
+from source.RustParser.AST_Scripts.ast.ProgramVisitor import ProgramVisitor
+from source.RustParser.AST_Scripts.ast.Expression import *
+from source.RustParser.AST_Scripts.ast.Program import *
+from source.RustParser.AST_Scripts.ast.TopLevel import *
 
 NoneType = type(None)
 
@@ -159,6 +159,30 @@ class Simulator(ProgramVisitor):
             node.body.accept(self)
             condition = node.condition.accept(self)
         return
+
+    def visit_MatchStmt(self, node: MatchStmt):
+        match_arms = node.arms
+        match_expr = node.expr.accept(self)
+
+        for i in range(0, len(match_arms)):
+            arm_res = match_arms[i].accept(self)
+
+            if match_expr == arm_res:
+                return match_arms[i].body.accept(self)
+            elif arm_res == '_':
+                return match_arms[i].body.accept(self)
+
+        return
+
+    def visit_MatchArm(self, node: MatchArm):
+
+        match_pattern = node.patterns
+
+        return match_pattern.accept(self)
+
+    def visit_MatchPattern(self, node: MatchPattern):
+
+        return node.value.accept(self)
 
     def visit_RangeExpression(self, node: RangeExpression):
         last = float(node.last.accept(self))

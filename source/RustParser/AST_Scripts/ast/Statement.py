@@ -105,7 +105,7 @@ class MatchArm(Statement):
         self.body = body
 
     def accept(self, visitor):
-        return visitor.visit_(self)
+        return visitor.visit_MatchArm(self)
 
 class MatchPattern(Statement):
     def __init__(self, value):
