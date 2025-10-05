@@ -171,7 +171,7 @@ class ReplacementOperator:
         for stmt in block.getChildren():
             if isinstance(stmt, LetStmt):
                 if len(stmt.var_defs) == 1:
-                    if isinstance(stmt.var_defs[0].type, PointerType) and stmt.var_defs[0].mutable:
+                    if isinstance(stmt.var_defs[0].declarationInfo.type, PointerType) and stmt.var_defs[0].mutable:
                         new_stmt = LetStmt(values=stmt.values[0],
                             var_defs=[
                                 VarDef(var_type=SafeNonNullWrapper(typeExpr=stmt.var_defs[0].type), 

@@ -13,6 +13,10 @@ NoneType = type(None)
 # I need to add Box maybe?
 # I also may need to add arrays
 
+class ReturnSignal(Exception):
+    def __init__(self, value):
+        self.value = value
+
 class Simulator(ProgramVisitor):
     # x, y, z, env : ChainMap{ x: n, y : m, z : v} , n m v are nat numbers 100, 100, 100, eg {x : 128}
     # st state map, {x : v1, y : v2 , z : v3}, eg {x : v1}: v1,
@@ -77,11 +81,11 @@ class Simulator(ProgramVisitor):
         #     return return_value
 
     def visit_Block(self, node: Block):
-        for stmt in node.stmts:
-            if isinstance(stmt, ReturnStmt):
-                return stmt.accept(self)
-            else:
+        try:
+            for stmt in node.stmts:
                 stmt.accept(self)
+        except ReturnSignal as ret:
+            raise ret
 
     def visit_FunctionCall(self, node: FunctionCall):
         newNode = self.funMap.get(node.callee.name)
@@ -96,25 +100,26 @@ class Simulator(ProgramVisitor):
             newStack.update({arVar : value})
         oldStack = self.stack
         self.stack = newStack
-        result = newNode.body.accept(self)
-        if isinstance(result, IdentifierExpr):
-            result = self.stack.get(result.name)
-        else:
-            result = result.accept(self)
+        try:
+            newNode.body.accept(self)
+        except ReturnSignal as ret:
+            self.stack = oldStack
+            if isinstance(ret.value, IdentifierExpr):
+                ret.value = self.stack.get(ret.value.name)
+            return ret.value
+        # result = newNode.body.accept(self)
 
         self.stack = oldStack
-        return result
+        return None
 
     def visit_IfStmt(self, node: IfStmt):
         if_result = node.condition.accept(self)
 
         if if_result:
-            result = node.then_branch.accept(self)
-            return result.accept(self)
+            return node.then_branch.accept(self)
         else:
             if node.else_branch is not None:
-                result = node.else_branch.accept(self)
-                return result.accept(self)
+                return node.else_branch.accept(self)
 
     def visitBreakStmt(self, node: BreakStmt):
         if node is not None: # .vexp()
@@ -123,9 +128,12 @@ class Simulator(ProgramVisitor):
 
     def visit_ReturnStmt(self, node: ReturnStmt):
         if node is None:
-            return
+            val = None
+        elif isinstance(node.value, IdentifierExpr):
+            val = self.stack.get(node.value.name)
         else:
-            return node.value
+            val = node.value.accept(self)
+        raise ReturnSignal(val)
 
     def visit_LoopStmt(self, ctx: LoopStmt):
         # This is the loop keyword. For this type of loop, break statement can return a value
@@ -204,7 +212,7 @@ class Simulator(ProgramVisitor):
         if pattern is None:
             return None
         return node.pattern.accept(self)
-    
+
     def visit_BorrowExpr(self, node: BorrowExpr):
         return node.expr.accept(self)
 
@@ -223,6 +231,10 @@ class Simulator(ProgramVisitor):
     def visit_Struct(self, node: StructDef):
         # Maybe store struct in the stack as a dict or array?
         # self.stack.update(node)
+        for field in node.fields:
+            if isinstance(field, StructLiteralField):
+                if isinstance(field.value, IdentifierExpr):
+                    field.value = self.stack.get(field.value.name)
         return node
 
     def visit_CompoundAssignment(self, node:CompoundAssignment):
@@ -234,7 +246,7 @@ class Simulator(ProgramVisitor):
         oper = str(node.op)
         # This will be very complicated.
         a = node.left.accept(self)
-        
+
         if isinstance(a, str):
             a = float(a)
         elif a is not None:

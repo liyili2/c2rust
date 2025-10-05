@@ -1,95 +1,82 @@
+use std::ptr;
+
 #[derive(Debug)]
 struct Node {
     key: i32,
     value: String,
-    left: Option<Box<Node>>,
-    right: Option<Box<Node>>,
-    parent_ptr: *mut Node, // raw pointer to parent node
+    left: *mut Node,
+    right: *mut Node,
 }
 
-// static mutable counter of nodes (example of global unsafe variable)
-static mut NODE_COUNT: i32 = 0;
+unsafe fn new_node(key: i32, value: &str) -> *mut Node {
+    let n = Node {
+        key: key,
+        value: value,
+        left: None,
+        right: None,
+    };
+    return n;
+}
 
-impl Node {
-    fn new(key: i32, value: String) -> Self {
-        unsafe { NODE_COUNT += 1; } // increment global counter
-        Node {
-            key,
-            value,
-            left: None,
-            right: None,
-            parent_ptr: std::ptr::null_mut(), // initially null
-        }
+unsafe fn insert(root: *mut Node, key: i32, value: &str) {
+    if root == None {
+        return;
     }
-
-    fn insert(&mut self, key: i32, value: String) {
-        if key < self.key {
-            if let Some(ref mut left) = self.left {
-                // update parent_ptr for child
-                unsafe { left.parent_ptr = self; }
-                left.insert(key, value);
-            } else {
-                let mut new_node = Box::new(Node::new(key, value));
-                unsafe { new_node.parent_ptr = self; } // set raw pointer to parent
-                self.left = Some(new_node);
-            }
-        } else if key > self.key {
-            if let Some(ref mut right) = self.right {
-                unsafe { right.parent_ptr = self; }
-                right.insert(key, value);
-            } else {
-                let mut new_node = Box::new(Node::new(key, value));
-                unsafe { new_node.parent_ptr = self; }
-                self.right = Some(new_node);
-            }
+    if key < (*root).key {
+        if (*root).left == None {
+            (*root).left = new_node(key, value);
         } else {
-            self.value = value;
+            insert((*root).left, key, value);
         }
+    } 
+    else if key > (*root).key {
+        if (*root).right == None {
+            (*root).right = new_node(key, value);
+        } else {
+            insert((*root).right, key, value);
+        }
+    } else {
+        (*root).value = value;
+    }
+}
+
+unsafe fn search(root: *mut Node, key: i32) -> *const String {
+    let return_val = "None";
+    if root == None {
+        return return_val;
     }
 
-    fn search(&mut self, key: i32) -> Option<&String> {
-        if key < self.key {
-            if let Some(ref mut left) = self.left {
-                left.search(key)
-            } else {
-                None
-            }
-        } else if key > self.key {
-            if let Some(ref mut right) = self.right {
-                right.search(key)
-            } else {
-                None
-            }
-        } else {
-            // unsafe raw pointer dereference example
-            unsafe {
-                if !self.parent_ptr.is_null() {
-                    println!("Parent key (via raw pointer): {}", (*self.parent_ptr).key);
-                }
-            }
-            Some(&self.value)
-        }
+    if key == (*root).key {
+        return_val = root.value;
     }
+
+    if key < (*root).key {
+        return_val = search((*root).left, key);
+    }
+
+    if key > (*root).key {
+        return_val = search((*root).right, key);
+    }
+
+    return return_val;
 }
 
 fn main() {
-    let mut root = Node::new(5, String::from("five"));
-
-    println!("{:?}", root.search(5));
-    root.insert(3, String::from("three"));
-    println!("{:?}", root.search(3));
-    root.insert(7, String::from("seven"));
-    println!("{:?}", root.search(7));
-    root.insert(4, String::from("four"));
-    println!("{:?}", root.search(4));
-    root.insert(2, String::from("two"));
-    println!("{:?}", root.search(2));
-    root.insert(6, String::from("six"));
-    println!("{:?}", root.search(6));
-    root.insert(8, String::from("eight"));
-    println!("{:?}", root.search(8));
-
     unsafe {
-        println!("Total nodes (via static mutable global): {}", NODE_COUNT);
+        let root = new_node(5, "five");
+        let five_found = search(root, 5);
+        let three_found = search(root, 3);
+        // insert(root, 3, "three");
+        // three_found = search(root, 3);
+        // insert(root, 7, "seven");
+        // search(root, 7);
+        // insert(root, 4, "four");
+        // search(root, 4);
+        // insert(root, 2, "two");
+        // search(root, 2);
+        // insert(root, 6, "six");
+        // search(root, 6);
+        // insert(root, 8, "eight");
+        // search(root, 8);
     }
 }
