@@ -176,11 +176,11 @@ class Simulator(ProgramVisitor):
             arm_res = match_arms[i].accept(self)
 
             for pattern_res in arm_res:
-                pattern_val = str(pattern_res.accept(self))
+                pattern_val = pattern_res.accept(self)
                 # print(pattern_val)
-                # print(match_expr)
+                # print(match_expr.__class__)
                 if match_expr == pattern_val:
-                    print("entered")
+                    # print("entered")
                     return match_arms[i].body.accept(self)
                 elif pattern_val == '_':
                     return match_arms[i].body.accept(self)
@@ -196,7 +196,7 @@ class Simulator(ProgramVisitor):
 
     def visit_MatchPattern(self, node: MatchPattern):
 
-        return node.value #.accept(self)
+        return node.value.accept(self)
 
     def visit_RangeExpression(self, node: RangeExpression):
         last = float(node.last.accept(self))
@@ -256,14 +256,14 @@ class Simulator(ProgramVisitor):
         if isinstance(a, str):
             a = float(a)
         elif a is not None:
-            a = a.accept(self)
+            a = a #.accept(self)
 
         if node.right is not None:
             b = node.right.accept(self)
             if isinstance(b, str):
                 b = float(b)
             else:
-                b = b.accept(self)
+                b = b #.accept(self)
                 if isinstance(b, str):
                     b = float(b)
         else:

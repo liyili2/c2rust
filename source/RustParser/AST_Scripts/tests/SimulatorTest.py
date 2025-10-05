@@ -81,7 +81,7 @@ stack = dict()
 simulator = Simulator(memory=memory, stack=stack)
 simulator.visit(ast)
 print(simulator.stack.get("a"))
-assert (simulator.stack.get("a") == str(1000))
+assert (simulator.stack.get("a") == 1000)
 
 # print("Type Error Count : ", checker.error_count)
 print("Pretty AST:")
