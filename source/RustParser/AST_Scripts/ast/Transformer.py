@@ -736,11 +736,11 @@ class Transformer(RustVisitor):
 
     def visitMatchPattern(self, ctx):
         if ctx.Number():
-            return MatchPattern(int(ctx.Number().getText()))
+            return MatchPattern(IntLiteral(value=int(ctx.Number().getText())))
         elif ctx.UNDERSCORE():
             return MatchPattern('_')
         elif ctx.Identifier():
-            return MatchPattern(ctx.Identifier().getText())
+            return MatchPattern(IdentifierExpr(name=ctx.Identifier().getText()))
         elif ctx.byteLiteral():
             return self.visit(ctx.byteLiteral())
         else:
