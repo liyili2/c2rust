@@ -36,7 +36,7 @@ unsafe fn insert(root: *mut Node, key: i32, value: &str) {
             insert((*root).right, key, value);
         }
     } else {
-        o(*rot).value = value.to_string();
+        (*root).value = value;
     }
 }
 
@@ -66,8 +66,8 @@ fn main() {
         let root = new_node(5, "five");
         let five_found = search(root, 5);
         let three_found = search(root, 3);
-        // insert(root, 3, "three");
-        // search(root, 3);
+        insert(root, 3, "three");
+        three_found = search(root, 3);
         // insert(root, 7, "seven");
         // search(root, 7);
         // insert(root, 4, "four");
