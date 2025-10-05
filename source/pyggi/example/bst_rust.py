@@ -88,7 +88,7 @@ def main():
         program = MyLineProgram(args.project_path, config=cfg)
         ops     = [LineReplacement, LineInsertion, LineDeletion]
     else:
-        cfg = {"target_files": ["bst.rs"], "test_command": "bst_test.py"}
+        cfg = {"target_files": ["bst.rs"], "test_command": "pyggi/sample/bst_rust/bst_test.py"}
         program = MyRustProgram(args.project_path, config=cfg)
         ops     = [StmtReplacement, StmtInsertion, StmtDeletion]
 
