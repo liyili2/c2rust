@@ -23,3 +23,6 @@ python3 ParserTest.py
 Run Pyggi(go to example dir):
 chmod +x ./run.sh
 python3 bst_rust.py --project_path ../sample/bst_rust --mode tree --epoch 1 --iter 1
+
+Run simulatorTest:
+python3 -m RustParser.AST_Scripts.tests.SimulatorTest

@@ -89,6 +89,12 @@ class ReplacementOperator:
     def replace_raw_dereferences_in_unsafe_wrapper(self, ast_root, target_node):
         print("OP: replace_raw_dereferences_in_unsafe_wrapper")
         def transform(stmt):
+            # if isinstance(stmt, IfStmt):
+            #     if isinstance(stmt.condition, BinaryExpr):
+            #         if isinstance(stmt.condition.left, DereferenceExpr) or isinstance(stmt.condition.right, DereferenceExpr):
+            #             # ??
+            # if isinstance(stmt, AssignStmt):
+            #     # ??
             if isinstance(stmt, LetStmt) and len(stmt.var_defs) == 1:
                 val = stmt.values[0]
                 if isinstance(val, DereferenceExpr):
@@ -228,8 +234,8 @@ class ReplacementOperator:
                 if self.utils.function_def_eq(parent_1, top):
                     for param in parent_1.params.params:
                         if isinstance(param.declarationInfo.type, PointerType) and param.isMutable:
-                            new_param = Param(name=param.declarationInfo.name, type=SafeNonNullWrapper(
-                                typeExpr=param.declarationInfo.type), mutable=param.isMutable)
+                            new_param = Param(name=param.declarationInfo.name, type=RefType(inner=SafeNonNullWrapper(
+                                typeExpr=param.declarationInfo.type)) , mutable=param.isMutable)
                             new_params.append(new_param)
                         else:
                             new_params.append(param)

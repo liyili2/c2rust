@@ -301,7 +301,7 @@ class TypeChecker:
         return self.visit(node.pointee_type)
 
     def visit_DereferenceExpr(self, node):
-        self.error(node, f"unsafe pointer dereferencing {node.expr}", 2)
+        self.error(node, f"unsafe pointer dereferencing {node.expr.name}", 2)
         return self.visit(node.expr)
 
     def visit_SafeNonNullWrapper(self, node):
