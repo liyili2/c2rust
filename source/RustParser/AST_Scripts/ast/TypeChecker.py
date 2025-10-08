@@ -731,6 +731,16 @@ class TypeChecker:
         base_type = self.visit(node.receiver)
         field_type = self.visit(node.name)
         field = node.name.name
+
+        if isinstance(node.receiver, FunctionCall):
+            base_type = self.visit(node.receiver.callee)
+            try:
+                base_info = self.env.lookup(base_type)
+                base_type = base_info["type"]
+            except Exception:
+                self.error(node, f"access to an undefined struct {node.receiver}")
+                return
+
         if isinstance(node.receiver, DereferenceExpr):
             self.error(node, "unprotected dereference in a field access expression")
             base_type = self.visit(node.receiver.expr)

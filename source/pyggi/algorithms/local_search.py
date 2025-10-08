@@ -186,6 +186,8 @@ class LocalSearch(Algorithm):
 
                 if run.fitness is not None and self.stopping_criterion(cur_iter, run.fitness):
                     cur_result['Success'] = True
+                    # with open("mutated_ast"+ cur_iter +".txt", "w", encoding="utf-8") as f:
+                    #   f.write(pretty_print_ast(run.program))
                     break
 
                 # print("diff: ", patch.diff())

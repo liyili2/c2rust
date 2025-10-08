@@ -55,8 +55,8 @@
         "args": [
             "--project_path", "../source/pyggi/sample/bst_rust",
             "--mode", "tree",
-            "--epoch", "4",
-            "--iter", "12"
+            "--epoch", "2",
+            "--iter", "4"
         ],
         "console": "integratedTerminal",
         "justMyCode": true,

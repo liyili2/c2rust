@@ -9,6 +9,11 @@ from RustParser.AST_Scripts.ast.Type import *
 from RustParser.AST_Scripts.ast.VarDef import *
 
 class MutationUtils:
+    def replace_dereference_with_ref_unwrap_call(stmt):
+        new_expr = FunctionCallExpr(caller=FunctionCallExpr(caller=stmt.condition.left.expr, 
+            callee=IdentifierExpr(name="as_ref")), callee=IdentifierExpr(name="unwrap"))
+        return new_expr
+
     def get_all_parents(self, ast_root, target_node, parent=None):
         if parent is None:
             parent = getattr(target_node, 'parent', None)
@@ -116,6 +121,12 @@ class MutationUtils:
             return (
                 self.expr_eq(stmt1.condition, stmt2.condition) and
                 self.statements_eq(stmt1.body, stmt2.body))
+        
+        if isinstance(stmt1, Block):
+            for i in range(0, len(stmt1.stmts)):
+                if not self.statements_eq(stmt1.stmts[i], stmt2.stmts[i]):
+                    return False
+            return True
 
         return False
 
@@ -136,12 +147,14 @@ class MutationUtils:
                     expr1.op == expr2.op)
         if isinstance(expr1, FunctionCall):
             return (
-                self.expr_eq(expr1.receiver, expr2.receiver) and
-                expr1.method_name == expr2.method_name and
+                self.expr_eq(expr1.caller, expr2.caller) and
+                expr1.callee == expr2.callee and
                 len(expr1.args) == len(expr2.args) and
                 all(self.expr_eq(a1, a2) for a1, a2 in zip(expr1.args, expr2.args)))
         if isinstance(expr1, FieldAccessExpr):
             return (self.expr_eq(expr1.receiver, expr2.receiver) and self.expr_eq(expr1.name, expr2.name))
+        if isinstance(expr1, DereferenceExpr):
+            return (self.expr_eq(expr1.expr, expr2.expr))
         return False 
 
     def function_def_eq(self, func1, func2):

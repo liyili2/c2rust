@@ -61,22 +61,22 @@ unsafe fn search(root: *mut Node, key: i32) -> *const String {
     return return_val;
 }
 
-fn main() {
-    unsafe {
-        let root = new_node(5, "five");
-        let five_found = search(root, 5);
-        let three_found = search(root, 3);
-        // insert(root, 3, "three");
-        // three_found = search(root, 3);
-        // insert(root, 7, "seven");
-        // search(root, 7);
-        // insert(root, 4, "four");
-        // search(root, 4);
-        // insert(root, 2, "two");
-        // search(root, 2);
-        // insert(root, 6, "six");
-        // search(root, 6);
-        // insert(root, 8, "eight");
-        // search(root, 8);
-    }
-}
+// fn main() {
+//     unsafe {
+//         let root = new_node(5, "five");
+//         let five_found = search(root, 5);
+//         let three_found = search(root, 3);
+//         // insert(root, 3, "three");
+//         // three_found = search(root, 3);
+//         // insert(root, 7, "seven");
+//         // search(root, 7);
+//         // insert(root, 4, "four");
+//         // search(root, 4);
+//         // insert(root, 2, "two");
+//         // search(root, 2);
+//         // insert(root, 6, "six");
+//         // search(root, 6);
+//         // insert(root, 8, "eight");
+//         // search(root, 8);
+//     }
+// }
