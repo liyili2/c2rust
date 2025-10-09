@@ -136,6 +136,7 @@ class LocalSearch(Algorithm):
             if result.status == 'SUCCESS':
                 warmup.append(result.fitness)
         original_fitness = float(sum(warmup)) / len(warmup) if warmup else None
+        original_fitness = None
 
         if verbose:
             self.program.logger.info(

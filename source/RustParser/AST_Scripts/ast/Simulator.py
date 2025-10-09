@@ -150,11 +150,8 @@ class Simulator(ProgramVisitor):
         return None # maybe this is better to return?
 
     def visit_ReturnStmt(self, node: ReturnStmt):
-        if node is None:
-            val = None
-        elif isinstance(node.value, IdentifierExpr):
-            val = self.stack.get(node.value.name)
-        else:
+        val = None
+        if hasattr(node, "accept") and callable(node.accept):
             val = node.value.accept(self)
         raise ReturnSignal(val)
 

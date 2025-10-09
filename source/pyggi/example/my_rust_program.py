@@ -64,8 +64,7 @@ class MyRustProgram(TreeProgram):
                 fitness = None
                 status = "CRASH"
                 print("✖︎ Invalid AST Generated")
-                status = "CRASH"
-                print("✖︎ Invalid AST Generated")
+
 
             else:
                 # Evaluate directly
@@ -84,15 +83,15 @@ class MyRustProgram(TreeProgram):
                     print("✖︎", e)
 
                 # run functional tests and assertions with the ast
-                # try:
-                #     functional_test_report = ResultCapture()
-                #     builtins.ast = mutated_ast
-                #     exit_code  = pytest.main(["-s", self.config["test_command"]], plugins=[functional_test_report])
-                #     res.fitness += functional_test_report.failed
-                #     self.compute_fitness(res, exit_code)
+                try:
+                    functional_test_report = ResultCapture()
+                    builtins.ast = mutated_ast
+                    exit_code  = pytest.main(["-s", self.config["test_command"]], plugins=[functional_test_report])
+                    res.fitness += functional_test_report.failed
+                    self.compute_fitness(res, exit_code)
 
-                # except Exception as e:
-                #     pass
+                except Exception as e:
+                    pass
 
         # res['BestFitness'] = best_fitness
         # res['diff'] = self.program.diff(best_patch)
