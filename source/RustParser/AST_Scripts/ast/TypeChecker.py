@@ -572,18 +572,22 @@ class TypeChecker:
             arg_types = [self.visit(arg) for arg in node.args]
             expected_types = func_info["param_types"]
 
-            if len(arg_types) != len(expected_types):
-                self.error(node.callee, f"wrong number of arguments")
-            else:
-                for actual, expected in zip(arg_types, expected_types):
-                    if type(actual) != type(expected):
-                        self.error(node.callee, f"wrong number of arguments")
-            if len(arg_types) != len(expected_types):
-                self.error(node.callee, f"wrong number of arguments")
-            else:
-                for actual, expected in zip(arg_types, expected_types):
-                    if type(actual) != type(expected):
-                        self.error(node.callee, f"wrong number of arguments")
+            # if isinstance(arg_types, FunctionParamList):
+            #     if (arg_types.param_len) != len(expected_types):
+            #         self.error(node.callee, f"wrong number of arguments")
+            # elif isinstance(arg_types, list):
+            #     if len(arg_types) != len(expected_types):
+            #         self.error(node.callee, f"wrong number of arguments")
+            # else:
+            #     for actual, expected in zip(arg_types, expected_types):
+            #         if type(actual) != type(expected):
+            #             self.error(node.callee, f"wrong number of arguments")
+            # if len(arg_types) != len(expected_types):
+            #     self.error(node.callee, f"wrong number of arguments")
+            # else:
+            #     for actual, expected in zip(arg_types, expected_types):
+            #         if type(actual) != type(expected):
+            #             self.error(node.callee, f"wrong number of arguments")
 
             for arg in node.args:
                 if isinstance(arg, IdentifierExpr):

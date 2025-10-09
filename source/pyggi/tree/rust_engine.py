@@ -137,19 +137,19 @@ class RustEngine(AbstractTreeEngine):
     @classmethod
     def do_delete(cls, program, op, trees, modification_points):
         file_name, target_node = op.target
-        if isinstance(target_node, tuple):
-            _, target_node = target_node
-        deletionOperator = DeletionOperator(trees[file_name], target_node)
-        trees[file_name] = deletionOperator.get_new_ast()
-        program.trees[file_name] = trees[file_name] 
-        return trees
-        # file_name, target_node = op.target
         # if isinstance(target_node, tuple):
         #     _, target_node = target_node
-        # replacementOperator = ReplacementOperator(trees[file_name], target_node)
-        # trees[file_name] = replacementOperator.get_new_ast()
+        # deletionOperator = DeletionOperator(trees[file_name], target_node)
+        # trees[file_name] = deletionOperator.get_new_ast()
         # program.trees[file_name] = trees[file_name] 
         # return trees
+        file_name, target_node = op.target
+        if isinstance(target_node, tuple):
+            _, target_node = target_node
+        replacementOperator = ReplacementOperator(trees[file_name], target_node)
+        trees[file_name] = replacementOperator.get_new_ast()
+        program.trees[file_name] = trees[file_name] 
+        return trees
 
     @classmethod
     def _get_root_node(cls, node):

@@ -117,7 +117,7 @@ class Simulator(ProgramVisitor):
             newNode = self.funMap.get(node.identifier)
         # self.stack.update({"self": node.caller})
         newStack = copy.deepcopy(self.stack)
-        for i in range(0, len(newNode.params.params)):
+        for i in range(0, newNode.params.param_len):
             arVar = newNode.params.params[i].declarationInfo.name
             value = node.args[i].accept(self)
             newStack.update({arVar : value})
@@ -150,8 +150,9 @@ class Simulator(ProgramVisitor):
         return None # maybe this is better to return?
 
     def visit_ReturnStmt(self, node: ReturnStmt):
-        val = None
-        if hasattr(node, "accept") and callable(node.accept):
+        if node is None:
+            val = None
+        elif hasattr(node, "accept") and callable(node.accept):
             val = node.value.accept(self)
         raise ReturnSignal(val)
 

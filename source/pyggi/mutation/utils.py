@@ -164,7 +164,6 @@ class MutationUtils:
     def remake_ast_after_removal(self, target_node, other_tops, top, top_children, top_children_stmts):
         for stmt in top_children_stmts:
             if self.statements_eq(stmt, target_node):
-                print("equal, applying deletion")
                 top_children_stmts.remove(stmt)
                 newBlock = Block(top_children_stmts, top_children.isUnsafe)
                 top.setBody(newBlock)
@@ -173,7 +172,6 @@ class MutationUtils:
                 continue
 
     def blocks_eq(self, block1, block2):
-        print("ssss", block1.__class__, block2.__class__)
         if not isinstance(block1, type(block2)):
             return False
         eq = True

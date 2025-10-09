@@ -68,7 +68,7 @@ class MyRustProgram(TreeProgram):
 
             else:
                 # Evaluate directly
-                try:
+                # try:
                     checker = TypeChecker()
                     checker.visit(mutated_ast)
                     print("eval ", checker.error_count, len(mutated_ast.items))
@@ -77,21 +77,21 @@ class MyRustProgram(TreeProgram):
                     res.status = status
                     res.fitness = fitness
 
-                except Exception as e:
-                    fitness = None
-                    status = "CRASH"
-                    print("✖︎", e)
+                # except Exception as e:
+                #     fitness = None
+                #     status = "CRASH"
+                #     print("✖︎", e)
 
                 # run functional tests and assertions with the ast
-                try:
-                    functional_test_report = ResultCapture()
-                    builtins.ast = mutated_ast
-                    exit_code  = pytest.main(["-s", self.config["test_command"]], plugins=[functional_test_report])
-                    res.fitness += functional_test_report.failed
-                    self.compute_fitness(res, exit_code)
+                # try:
+                #     functional_test_report = ResultCapture()
+                #     builtins.ast = mutated_ast
+                #     exit_code  = pytest.main(["-s", self.config["test_command"]], plugins=[functional_test_report])
+                #     res.fitness += functional_test_report.failed
+                #     self.compute_fitness(res, exit_code)
 
-                except Exception as e:
-                    pass
+                # except Exception as e:
+                #     pass
 
         # res['BestFitness'] = best_fitness
         # res['diff'] = self.program.diff(best_patch)
