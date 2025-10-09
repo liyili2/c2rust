@@ -14,7 +14,7 @@ class Param(ASTNode):
 
     def accept(self, visitor):
         return visitor.visit_ParamNode(self)
-    
+
     def set_parent(self, parent):
         self.parent = parent
 
@@ -24,6 +24,8 @@ class FunctionParamList(ASTNode):
         self.params = params
         self.param_len = len(self.params)
 
+    def __len__(self):
+        return len(self.params)
     def __iter__(self):
         return iter(self.params)
     def __repr__(self):

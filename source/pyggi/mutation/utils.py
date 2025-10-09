@@ -158,8 +158,20 @@ class MutationUtils:
         return False 
 
     def function_def_eq(self, func1, func2):
-        # print("function_def_eq", func1.identifier, func2.identifier, (func1.params.param_len), (func2.params.param_len), len(func1.body.getChildren()))
-        return (func1.identifier == func2.identifier and (func1.params.param_len) == (func2.params.param_len) and len(func1.body.getChildren()) == len(func1.body.getChildren()))
+        def get_params(f):
+            if hasattr(f.params, "params"):
+                return f.params.params
+            elif isinstance(f.params, list):
+                return f.params
+            else:
+                return []
+        params1 = get_params(func1)
+        params2 = get_params(func2)
+        body1 = func1.body.getChildren() if hasattr(func1.body, "getChildren") else []
+        body2 = func2.body.getChildren() if hasattr(func2.body, "getChildren") else []
+        return (
+            getattr(func1, "identifier", None) == getattr(func2, "identifier", None)
+            and len(params1) == len(params2) and len(body1) == len(body2))
 
     def remake_ast_after_removal(self, target_node, other_tops, top, top_children, top_children_stmts):
         for stmt in top_children_stmts:

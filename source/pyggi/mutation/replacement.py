@@ -21,11 +21,11 @@ class ReplacementOperator:
             self.make_global_static_pointers_unmutable,
             # self.move_ast_node,
             # self.shrink_unsafe_block_stmts,
-            self.flip_mutabilities,
-            self.safe_wrap_struct_field,
+            # self.flip_mutabilities,
+            # self.safe_wrap_struct_field,
             self.replace_raw_dereferences_in_unsafe_wrapper,
         ]
-        self.new_ast = self.apply_random_mutations(ast, node, 6)
+        self.new_ast = self.apply_random_mutations(ast, node, 4)
 
     def apply_random_mutations(self, ast, node, num_ops):
         selected_ops = random.sample(self.operators, k=num_ops)
@@ -270,6 +270,7 @@ class ReplacementOperator:
     # check param list parent
     def safe_wrap_raw_pointer_argumetns(self, ast_root, target_node):
         print("OP: safe_wrap_raw_pointer_argumetns")
+
         parents = self.utils.get_all_parents(ast_root, target_node)
         if not isinstance(ast_root, Program):
             return None
@@ -281,17 +282,36 @@ class ReplacementOperator:
         new_params = []
 
         parent_1 = parents[-2]
+
         for top in ast_root.getChildren():
             if isinstance(parent_1, type(top)) and isinstance(parent_1, FunctionDef):
                 if self.utils.function_def_eq(parent_1, top):
-                    for param in parent_1.params.params:
+                    # ✅ Handle both FunctionParamList and plain list
+                    if isinstance(parent_1.params, FunctionParamList):
+                        param_list = parent_1.params.params
+                    else:
+                        param_list = parent_1.params
+
+                    new_params = []
+                    for param in param_list:
                         if isinstance(param.declarationInfo.type, PointerType) and param.isMutable:
-                            new_param = Param(name=param.declarationInfo.name, type=RefType(inner=SafeNonNullWrapper(
-                                typeExpr=param.declarationInfo.type)) , mutable=param.isMutable)
+                            # Wrap mutable pointer params into SafeNonNullWrapper
+                            new_param = Param(
+                                name=param.declarationInfo.name,
+                                type=RefType(inner=SafeNonNullWrapper(
+                                    typeExpr=param.declarationInfo.type)),
+                                mutable=param.isMutable
+                            )
                             new_params.append(new_param)
                         else:
                             new_params.append(param)
-                    parent_1.setParamList(new_params)
+
+                    # ✅ Set back params in the same structural form
+                    if isinstance(parent_1.params, FunctionParamList):
+                        parent_1.setParamList(FunctionParamList(params=new_params))
+                    else:
+                        parent_1.setParamList(new_params)
+
                     remaining_tops.append(parent_1)
             else:
                 remaining_tops.append(top)

@@ -33,7 +33,7 @@ def get_engine(cls, file_name):
     if extension in ['.rs']:
         return RustEngine
     else:
-        raise Exception('{} file is not supporteddddd'.format(extension))
+        raise Exception('{} file is not supported'.format(extension))
 
 class MyProgram(AbstractProgram):
     def compute_fitness(self, result, exit_code):

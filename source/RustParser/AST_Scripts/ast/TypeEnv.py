@@ -8,7 +8,7 @@ class TypeEnv:
         for f in self.builtin_function_names:
             self.function_env[f] = {
             "kind": "function",
-            "param_types": FunctionParamList(params=[]),
+            "param_types": [],
             "return_type": None
         }
 
