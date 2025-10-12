@@ -136,6 +136,7 @@ class LocalSearch(Algorithm):
             if result.status == 'SUCCESS':
                 warmup.append(result.fitness)
         original_fitness = float(sum(warmup)) / len(warmup) if warmup else None
+        original_fitness = None
 
         if verbose:
             self.program.logger.info(
@@ -186,6 +187,8 @@ class LocalSearch(Algorithm):
 
                 if run.fitness is not None and self.stopping_criterion(cur_iter, run.fitness):
                     cur_result['Success'] = True
+                    # with open("mutated_ast"+ cur_iter +".txt", "w", encoding="utf-8") as f:
+                    #   f.write(pretty_print_ast(run.program))
                     break
 
                 # print("diff: ", patch.diff())

@@ -23,22 +23,22 @@ unsafe fn insert(root: *mut Node, key: i32, value: &str) -> *mut Node {
         return;
     }
 
-    if key < (*root).key {
-        if (*root).left == None {
+    if key < root.as_Ref().unwrap().key {
+        if root.as_Ref().unwrap().left == None {
             let n2 = new_node(key, value);
-            (*root).left = n2;
+            root.as_Ref().unwrap().left = n2;
         } else {
-            root = insert((*root).left, key, value);
+            root = insert(root.as_Ref().unwrap().left, key, value);
         }
     }
-    else if key > (*root).key {
-        if (*root).right == None {
-            (*root).right = new_node(key, value);
+    else if key > root.as_Ref().unwrap().key {
+        if root.as_Ref().unwrap().right == None {
+            root.as_Ref().unwrap().right = new_node(key, value);
         } else {
-            root = insert((*root).right, key, value);
+            root = insert(root.as_Ref().unwrap().right, key, value);
         }
     } else {
-        (*root).value = value;
+        root.as_Ref().unwrap().value = value;
     }
 
     return root;
@@ -50,16 +50,16 @@ unsafe fn search(root: *mut Node, key: i32) -> *const String {
         return return_val;
     }
 
-    if key == (*root).key {
+    if key == root.as_Ref().unwrap().key {
         return_val = root.value;
     }
 
-    if key < (*root).key {
-        return_val = search((*root).left, key);
+    if key < root.as_Ref().unwrap().key {
+        return_val = search(root.as_Ref().unwrap().left, key);
     }
 
-    if key > (*root).key {
-        return_val = search((*root).right, key);
+    if key > root.as_Ref().unwrap().key {
+        return_val = search(root.as_Ref().unwrap().right, key);
     }
 
     return return_val;

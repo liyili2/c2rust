@@ -281,24 +281,19 @@ class Transformer(RustVisitor):
             isExtern=True)
 
     def visitIfStmt(self, ctx):
-        # Initial "if" condition and block
         condition = self.visit(ctx.expression(0))
         then_branch = self.visit(ctx.block(0))
+        n_expr = len(ctx.expression())
+        n_blocks = len(ctx.block())
         else_branch = None
 
-        # Build the chain of "else if" clauses in reverse order
-        n_elseif = len(ctx.expression()) - 1  # excludes the first `if` expression
+        if n_blocks > n_expr:
+            else_branch = self.visit(ctx.block(n_blocks - 1))
 
-        # If there is a final `else` block
-        if len(ctx.block()) > n_elseif + 1:
-            else_branch = self.visit(ctx.block()[-1])  # final else block
-
-        # Build "else if" chain from last to first
-        for i in reversed(range(n_elseif)):
-            elseif_condition = self.visit(ctx.expression(i + 1))
-            elseif_then = self.visit(ctx.block(i + 1))
+        for i in reversed(range(1, n_expr)):
+            elseif_condition = self.visit(ctx.expression(i))
+            elseif_then = self.visit(ctx.block(i))
             else_branch = IfStmt(condition=elseif_condition, then_branch=elseif_then, else_branch=else_branch)
-
         return IfStmt(condition=condition, then_branch=then_branch, else_branch=else_branch)
 
     def visitAssignStmt(self, ctx):

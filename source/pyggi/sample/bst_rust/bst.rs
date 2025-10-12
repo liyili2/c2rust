@@ -18,26 +18,30 @@ unsafe fn new_node(key: i32, value: &str) -> *mut Node {
     return n;
 }
 
-unsafe fn insert(root: *mut Node, key: i32, value: &str) {
+unsafe fn insert(root: *mut Node, key: i32, value: &str) -> *mut Node {
     if root == None {
         return;
     }
+
     if key < (*root).key {
         if (*root).left == None {
-            (*root).left = new_node(key, value);
+            let n2 = new_node(key, value);
+            (*root).left = n2;
         } else {
-            insert((*root).left, key, value);
+            root = insert((*root).left, key, value);
         }
-    } 
+    }
     else if key > (*root).key {
         if (*root).right == None {
             (*root).right = new_node(key, value);
         } else {
-            insert((*root).right, key, value);
+            root = insert((*root).right, key, value);
         }
     } else {
         (*root).value = value;
     }
+
+    return root;
 }
 
 unsafe fn search(root: *mut Node, key: i32) -> *const String {
@@ -63,11 +67,10 @@ unsafe fn search(root: *mut Node, key: i32) -> *const String {
 
 fn main() {
     unsafe {
-        let root = new_node(5, "five");
-        let five_found = search(root, 5);
+        let root = new_node(3, "three");
         let three_found = search(root, 3);
-        // insert(root, 3, "three");
-        // three_found = search(root, 3);
+        root = insert(root, 5, "five");
+        let five_found = search(root, 5);
         // insert(root, 7, "seven");
         // search(root, 7);
         // insert(root, 4, "four");

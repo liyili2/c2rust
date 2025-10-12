@@ -1,7 +1,16 @@
+from RustParser.AST_Scripts.ast.Func import *
+
 class TypeEnv:
     def __init__(self):
+        self.builtin_function_names = ["as_ref", "unwrap"]
         self.scopes = [{}]
         self.function_env = {} 
+        for f in self.builtin_function_names:
+            self.function_env[f] = {
+            "kind": "function",
+            "param_types": [],
+            "return_type": None
+        }
 
     def enter_scope(self):
         self.scopes.append({})

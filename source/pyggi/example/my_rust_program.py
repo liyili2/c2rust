@@ -64,8 +64,7 @@ class MyRustProgram(TreeProgram):
                 fitness = None
                 status = "CRASH"
                 print("✖︎ Invalid AST Generated")
-                status = "CRASH"
-                print("✖︎ Invalid AST Generated")
+
 
             else:
                 # Evaluate directly
@@ -75,7 +74,6 @@ class MyRustProgram(TreeProgram):
                     print("eval ", checker.error_count, len(mutated_ast.items))
                     fitness = checker.error_count
                     status = "SUCCESS"
-
                     res.status = status
                     res.fitness = fitness
 

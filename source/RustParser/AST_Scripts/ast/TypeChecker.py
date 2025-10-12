@@ -301,7 +301,7 @@ class TypeChecker:
         return self.visit(node.pointee_type)
 
     def visit_DereferenceExpr(self, node):
-        self.error(node, f"unsafe pointer dereferencing {node.expr}", 2)
+        self.error(node, f"unsafe pointer dereferencing {node.expr.name}", 2)
         return self.visit(node.expr)
 
     def visit_SafeNonNullWrapper(self, node):
@@ -578,12 +578,6 @@ class TypeChecker:
                 for actual, expected in zip(arg_types, expected_types):
                     if type(actual) != type(expected):
                         self.error(node.callee, f"wrong number of arguments")
-            if len(arg_types) != len(expected_types):
-                self.error(node.callee, f"wrong number of arguments")
-            else:
-                for actual, expected in zip(arg_types, expected_types):
-                    if type(actual) != type(expected):
-                        self.error(node.callee, f"wrong number of arguments")
 
             for arg in node.args:
                 if isinstance(arg, IdentifierExpr):
@@ -731,6 +725,16 @@ class TypeChecker:
         base_type = self.visit(node.receiver)
         field_type = self.visit(node.name)
         field = node.name.name
+
+        if isinstance(node.receiver, FunctionCall):
+            base_type = self.visit(node.receiver.callee)
+            try:
+                base_info = self.env.lookup(base_type)
+                base_type = base_info["type"]
+            except Exception:
+                self.error(node, f"access to an undefined struct {node.receiver}")
+                return
+
         if isinstance(node.receiver, DereferenceExpr):
             self.error(node, "unprotected dereference in a field access expression")
             base_type = self.visit(node.receiver.expr)

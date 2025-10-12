@@ -63,12 +63,35 @@ class Simulator(ProgramVisitor):
 
         self.stack = newStack
         return None
+    
+    def find_stack_key(self, target):
+        if isinstance(target, IdentifierExpr):
+            return target.name
+        if isinstance(target, FieldAccessExpr):
+            return self.find_stack_key(target.receiver)
+        if isinstance(target, DereferenceExpr):
+            return self.find_stack_key(target=target.expr)
+        if isinstance(target, BorrowExpr):
+            return self.find_stack_key(target=target.expr)
 
     def visit_Assignment(self, node: AssignStmt):
         newStack = copy.deepcopy(self.stack)
-        target = node.target.name
         value = node.value.accept(self)
-        newStack.update({target : value})
+
+        if isinstance(node.target, FieldAccessExpr):
+            target = self.find_stack_key(node.target)
+            target_original_val = newStack.get(target)
+            if isinstance(target_original_val, StructDef):
+                for field in target_original_val.fields:
+                    if str.__eq__(field.declarationInfo.name, node.target.name.name):
+                        field.value = value
+            # else:
+            #     setattr(target_original_val, node.target.name.name, value)
+            newStack.update({target : target_original_val})
+        else:
+            target = self.find_stack_key(node.target)
+            newStack.update({target : value})
+
         self.stack = newStack
         return None
 
@@ -88,13 +111,13 @@ class Simulator(ProgramVisitor):
             raise ret
 
     def visit_FunctionCall(self, node: FunctionCall):
-        newNode = self.funMap.get(node.callee.name)
+        origFunc = self.funMap.get(node.callee.name)
+        newNode = copy.deepcopy(origFunc)
         if newNode is None:
             newNode = self.funMap.get(node.identifier)
         # self.stack.update({"self": node.caller})
-
         newStack = copy.deepcopy(self.stack)
-        for i in range(0, len(newNode.params.params)):
+        for i in range(0, newNode.params.param_len):
             arVar = newNode.params.params[i].declarationInfo.name
             value = node.args[i].accept(self)
             newStack.update({arVar : value})
@@ -106,8 +129,8 @@ class Simulator(ProgramVisitor):
             self.stack = oldStack
             if isinstance(ret.value, IdentifierExpr):
                 ret.value = self.stack.get(ret.value.name)
+                self.stack.update({ret.value.name: ret.value})
             return ret.value
-        # result = newNode.body.accept(self)
 
         self.stack = oldStack
         return None
@@ -129,9 +152,7 @@ class Simulator(ProgramVisitor):
     def visit_ReturnStmt(self, node: ReturnStmt):
         if node is None:
             val = None
-        elif isinstance(node.value, IdentifierExpr):
-            val = self.stack.get(node.value.name)
-        else:
+        elif hasattr(node, "accept") and callable(node.accept):
             val = node.value.accept(self)
         raise ReturnSignal(val)
 
@@ -208,10 +229,15 @@ class Simulator(ProgramVisitor):
     #     return
 
     def visit_FieldAccessExpr(self, node: FieldAccessExpr):
-        struct_value = node.receiver.accept(self)            
+        struct_value = node.receiver.accept(self)
         for field in struct_value.fields:
-            if str.__eq__(node.name.name, field.declarationInfo.name):
+            if node.name.name == field.declarationInfo.name:
+                if hasattr(field.value, "accept") and callable(field.value.accept):
+                    return field.value.accept(self)
                 return field.value
+
+    def visit_int(self, node):
+        return node
 
     def visit_PatternExpr(self, node: PatternExpr):
         pattern = node.pattern.accept(self)
@@ -239,8 +265,8 @@ class Simulator(ProgramVisitor):
         # self.stack.update(node)
         for field in node.fields:
             if isinstance(field, StructLiteralField):
-                if isinstance(field.value, IdentifierExpr):
-                    field.value = self.stack.get(field.value.name)
+                if hasattr(field.value, "accept") and callable(field.value.accept):
+                    field.value = field.value.accept(self)
         return node
 
     def visit_CompoundAssignment(self, node:CompoundAssignment):
@@ -253,19 +279,8 @@ class Simulator(ProgramVisitor):
         # This will be very complicated.
         a = node.left.accept(self)
 
-        if isinstance(a, str):
-            a = float(a)
-        elif a is not None:
-            a = a #.accept(self)
-
         if node.right is not None:
             b = node.right.accept(self)
-            if isinstance(b, str):
-                b = float(b)
-            else:
-                b = b #.accept(self)
-                if isinstance(b, str):
-                    b = float(b)
         else:
             b = None
         # range is more complicated due to there being an = operator. I can forget about this case for now.
