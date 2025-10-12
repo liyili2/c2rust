@@ -327,6 +327,12 @@ class Simulator(ProgramVisitor):
         identifier_val = self.stack.get(node.name)
         return identifier_val
 
+    # library functions
+
+    def visit_IntoString(self, node: IntoString):
+        
+        return
+
     # Visit a parse tree produced by XMLExpParser#vexp.
     # def visitVexp(self, ctx: XMLExpParser.VexpContext):
     #     return ctx.numexp().accept(self)
