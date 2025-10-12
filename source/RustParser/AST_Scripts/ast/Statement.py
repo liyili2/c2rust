@@ -105,7 +105,7 @@ class MatchArm(Statement):
         self.body = body
 
     def accept(self, visitor):
-        return visitor.visit_(self)
+        return visitor.visit_MatchArm(self)
 
 class MatchPattern(Statement):
     def __init__(self, value):
@@ -113,7 +113,7 @@ class MatchPattern(Statement):
         self.value = value
 
     def accept(self, visitor):
-        return visitor.visit_MatchPattern()
+        return visitor.visit_MatchPattern(self)
 
 class CompoundAssignment(Statement):
     def __init__(self, target, op, value):

@@ -189,6 +189,36 @@ class Simulator(ProgramVisitor):
             condition = node.condition.accept(self)
         return
 
+    def visit_MatchStmt(self, node: MatchStmt):
+        match_arms = node.arms
+        match_expr = node.expr.accept(self)
+
+        for i in range(0, len(match_arms)):
+            arm_res = match_arms[i].accept(self)
+
+            for pattern_res in arm_res:
+                pattern_val = pattern_res.accept(self)
+                # print(pattern_val)
+                # print(match_expr.__class__)
+                if match_expr == pattern_val:
+                    # print("entered")
+                    return match_arms[i].body.accept(self)
+                elif pattern_val == '_':
+                    return match_arms[i].body.accept(self)
+
+        return
+
+    def visit_MatchArm(self, node: MatchArm):
+
+        match_pattern = node.patterns
+        # print(match_pattern)
+
+        return match_pattern
+
+    def visit_MatchPattern(self, node: MatchPattern):
+
+        return node.value.accept(self)
+
     def visit_RangeExpression(self, node: RangeExpression):
         last = float(node.last.accept(self))
         first = float(node.initial.accept(self))
@@ -317,6 +347,12 @@ class Simulator(ProgramVisitor):
     def visit_IdentifierExpr(self, node: IdentifierExpr):
         identifier_val = self.stack.get(node.name)
         return identifier_val
+
+    # library functions
+
+    def visit_IntoString(self, node: IntoString):
+        
+        return
 
     # Visit a parse tree produced by XMLExpParser#vexp.
     # def visitVexp(self, ctx: XMLExpParser.VexpContext):
