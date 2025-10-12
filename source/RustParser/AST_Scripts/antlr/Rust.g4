@@ -73,20 +73,19 @@ typePath: Identifier DOUBLE_COLON | DOUBLE_COLON? Identifier (DOUBLE_COLON Ident
 arrayType: '[' basicType ';' Number ']' ;
 
 block: unsafeModifier? '{' statement* returnStmt? '}';
-unsafeBlcok: unsafeModifier '{' statement* returnStmt? '}';
 statement
-    : unsafeBlcok
+    : block
     | letStmt
     | conditionalAssignmentStmt
     | structLiteral
     | structDef
     | staticVarDecl
-    | typeWrapper
+    | safeWrapper
     | assignStmt
     | compoundAssignment
     | forStmt
     | ifStmt 
-    | callStmt
+    | functionCall
     | exprStmt
     | whileStmt
     | returnStmt
@@ -96,8 +95,8 @@ statement
     | matchStmt
     ;
 
-conditionalAssignmentStmt: 'let'? (typeWrapper | expression) '=' expression 'else' block ';';
-callStmt: expression ('.' expression) callExpressionPostFix ';' | expression callExpressionPostFix ';' ;
+conditionalAssignmentStmt: 'let'? (safeWrapper | expression) '=' expression 'else' block ';';
+functionCall: expression ('.' expression) callExpressionPostFix ';' | expression callExpressionPostFix ';' ;
 letStmt: 'let' varDef '=' expression ';' | 'let' varDef initBlock | 'let' '(' (varDef ','?)* ')' '=' '(' (expression ','?)* ')' ';';
 varDef: 'ref'? 'mut'? Identifier (':' typeExpr)?;
 compoundOp: '+=' | '-=' | '*=' | '/=' | '%=' | '&=' | '|=' | '^=' ;
@@ -116,14 +115,12 @@ exprStmt: primaryExpression ';';
 returnStmt: 'return' (expression)? ';' | Identifier;
 loopStmt: 'loop' block;
 
-boxWrappwer: 'Box' typeExpr? '(' expression ')';
-typeWrapper: 'Some' '(' expression ')' ;
-boxWrapperPrefix: 'Box' typeExpr? ;
-typeWrapperPrefix: 'Some' ;
-safeWrapper: 'Some' '(' expression ')' | 'Box' DOUBLE_COLON Identifier '(' expression ')' ;
+safeWrapper: 'Some' '(' expression ')' | 'Some' '(' 'ref'? 'mut'? expression ')' | 'Box' DOUBLE_COLON Identifier '(' expression ')' ;
 
 expression
-    : mutableExpression expression
+    : MUT expression
+    | expression callExpressionPostFix
+    | expression fieldAccessPostFix
     | safeWrapper
     | primaryExpression
     | expression binaryOps expression
@@ -135,48 +132,43 @@ expression
     | structDefInit
     | unaryOpes expression
     | borrowExpression
-    | unsafeExpression
-    | expression callExpressionPostFix
-    | expression typeAccessPostfix
+    | unsafeModifier parenExpression
+    | expression typeExpr
     | basicTypeCastExpr
     | expression rangeSymbol expression
-    | expression booleanOps expression
-    | expression conditionalOps expression
     | dereferenceExpression
     | expression compoundOps expression
     | expressionBlock
     | qualifiedExpression
     | patternPrefix expression
     | arrayDeclaration
-    | expression fieldAccessPostFix
     ;
 
 basicTypeCastExpr: typeExpr typePath;
 unsafeExpression: 'unsafe' '{' expression '}' ;
 qualifiedExpression: '<' expression '>';
-typeAccessPostfix: typeExpr;
 structDefInit: Identifier '=' '{' expression '}' ';' ;
 arrayDeclaration: Identifier '!'? '[' Number ';' expression ']' ;
 typePathExpression: (Identifier DOUBLE_COLON)+ ;
 patternPrefix: 'let'? pattern '=' ;
-pattern: 'ref'? 'mut'? Identifier | Identifier '(' 'ref'? 'mut'? Identifier ')' ;
+pattern: safeWrapper | 'ref'? 'mut'? Identifier;
 castExpressionPostFix: 'as' typeExpr ('as' typeExpr)*;
 compoundOps: '+=' | '-=' | '*=' | '/=' | '%=' | '&=' | '|=' | '^=';
 rangeSymbol: '..';
-conditionalOps: '==' | '!=' | '>' | '<' | '||' | '&&';
-booleanOps: '>>' | '&' | '>=' | '<=';
-binaryOps: '*' | '/' | '%' | '+' | '-';
+
+binaryOps: '*' | '/' | '%' | '+' | '-' | '==' | '!=' | '>' | '<' | '||' | '&&' | '>>' | '&' | '>=' | '<=';
+binaryExpression: expression binaryOps expression ;
 structFieldDec: Identifier '{' structLiteralField (',' structLiteralField)* ','? '}' ;
-mutableExpression: 'mut';
+MUT: 'mut';
 unaryOpes: '!' | '+' | '-';
-parenExpression: '(' expression ')';
+parenExpression: '(' expression ')' | '{' expression '}';
 dereferenceExpression: '*' expression;
 expressionBlock: '{' statement* expression '}';
 borrowExpression: '&' expression;
 primaryExpression: literal | Identifier;
 
-fieldAccessPostFix: '[' primaryExpression ']' | ('.' primaryExpression)+;
-callExpressionPostFix: ('.' expression)? '!'? functionCallArgs;
+fieldAccessPostFix: ('.' primaryExpression)+ | '[' primaryExpression ']';
+callExpressionPostFix: '!'? functionCallArgs;
 functionCallArgs: '()' | '(' expression (',' expression)* ')' ;
 
 TRUE: 'true';
@@ -196,7 +188,7 @@ Number: [0-9]+;
 SignedNumber: ('-' | '+') Number;
 BYTE_STRING_LITERAL: 'b"' (~["\\\r\n] | '\\' .)* '"';
 HexNumber: '0x' [0-9a-fA-F]+;
-CHAR_LITERAL: '\'' (~['\\\r\n] | '\\' .) '\'';
+CHAR_LITERAL: '\'' (~['\\\r\n] | '\\') '\'';
 DOUBLE_COLON: '::';
 EXCL: '!';
 GT: '>'; // make sure this comes FIRST

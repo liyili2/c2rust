@@ -33,16 +33,14 @@ def get_engine(cls, file_name):
     if extension in ['.rs']:
         return RustEngine
     else:
-        raise Exception('{} file is not supporteddddd'.format(extension))
+        raise Exception('{} file is not supported'.format(extension))
 
 class MyProgram(AbstractProgram):
-    def compute_fitness(self, result, return_code, stdout, stderr, elapsed_time):
-        try:
-            passed = "test result: ok" in stdout
-            result.fitness = elapsed_time
-            result.status = 'SUCCESS' if passed else 'PARSE_ERROR3'
-        except:
-            result.status = 'PARSE_ERROR4'
+    def compute_fitness(self, result, exit_code):
+        if exit_code != 0:
+            result.status = "Functional Incorrectness"
+        else:
+            result.status = "SUCCESS"
 
     @classmethod
     def get_engine(cls, file_name):
@@ -77,7 +75,7 @@ def pretty_print_ast(node, indent=0):
     else:
         return f"{spacer}{repr(node)}"
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--project_path", type=str, default="../sample/bst_rust")
     parser.add_argument("--mode", choices=["line", "tree"], default="tree")
@@ -90,13 +88,9 @@ if __name__ == "__main__":
         program = MyLineProgram(args.project_path, config=cfg)
         ops     = [LineReplacement, LineInsertion, LineDeletion]
     else:
-        cfg = {"target_files": ["bst.rs"]}
+        cfg = {"target_files": ["bst.rs"], "test_command": "pyggi/sample/bst_rust/bst_test.py"}
         program = MyRustProgram(args.project_path, config=cfg)
         ops     = [StmtReplacement, StmtInsertion, StmtDeletion]
-
-        # test_op = StmtDeletion.create(program, method="random")
-        # print("🚀 deletion picked:", test_op.target)
-        # print("👉 AST node type:", type(test_op.target[1]).__name__)
 
     search = MyLocalSearch(program)
     search.operators = ops
@@ -108,3 +102,6 @@ if __name__ == "__main__":
         #     print(r["diff"])
 
     program.remove_tmp_variant()
+
+if __name__ == "__main__":
+    main()

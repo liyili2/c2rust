@@ -1,12 +1,24 @@
 from RustParser.AST_Scripts.ast.ASTNode import ASTNode
 
 class Statement(ASTNode):
-    pass
+    def __init__(self, body=None):
+        super().__init__()
+        self.body = body
+
+    def accept(self, visitor):
+        method_name = f'visit_{self.__class__.__name__}'
+        return getattr(visitor, method_name, visitor.generic_visit)(self)
+    def __init__(self, body=None):
+        super().__init__()
+        self.body = body
+
+    def accept(self, visitor):
+        method_name = f'visit_{self.__class__.__name__}'
+        return getattr(visitor, method_name, visitor.generic_visit)(self)
 
 class LetStmt(Statement):
     def __init__(self, var_defs, values):
         super().__init__()
-        # print("llllll", values, var_defs)
         self.var_defs = var_defs if isinstance(var_defs, list) else [var_defs]
         self.values = values if isinstance(values, list) else [values]
 
@@ -15,16 +27,16 @@ class LetStmt(Statement):
 
     def __repr__(self):
         if self.is_destructuring():
-            vars_str = ", ".join(v.name for v in self.var_defs)
+            vars_str = ", ".join(v.declarationInfo.name for v in self.var_defs)
             vals_str = ", ".join(str(v) for v in self.values)
             return f"LetStmt(({vars_str}) = ({vals_str}))"
         else:
             var = self.var_defs[0]
             val = self.values[0]
-            return f"LetStmt({var.name} = {val})"
+            return f"LetStmt({var.declarationInfo.name} = {val})"
 
     def accept(self, visitor):
-        return visitor.visitLetStmt(self)
+        return visitor.visit_LetStmt(self)
 
 class ForStmt(Statement):
     def __init__(self, var, iterable, body):
@@ -34,7 +46,7 @@ class ForStmt(Statement):
         self.body = body
 
     def accept(self, visitor):
-        return visitor.visitForStmt(self)
+        return visitor.visit_ForStmt(self)
 
 class IfStmt(Statement):
     def __init__(self, condition, then_branch, else_branch=None):
@@ -43,7 +55,7 @@ class IfStmt(Statement):
         self.then_branch = then_branch
         self.else_branch = else_branch
     def accept(self, visitor):
-        return visitor.visitIfStmt(self)
+        return visitor.visit_IfStmt(self)
 
 class AssignStmt(Statement):
     def __init__(self, target, value):
@@ -55,44 +67,36 @@ class AssignStmt(Statement):
         return f"{self.target} = {self.value}"
 
     def accept(self, visitor):
-        return visitor.visitAssignment(self)
+        return visitor.visit_Assignment(self)
 
-class ExternStaticVarDecl(Statement):
-    def __init__(self, name, var_type, mutable, initial_value, visibility=None):
+class ConditionalAssignmentStmt(Statement):
+    def __init__(self, cond, body):
         super().__init__()
-        self.name = name
-        self.var_type = var_type
-        self.mutable = mutable
-        self.initial_value = initial_value
-        self.visibility = visibility
-
-    def __repr__(self):
-        return f"ExternStaticVarDecl(name={self.name}, type={self.var_type}, mutable={self.mutable}, visibility={self.visibility}, init={self.initial_value})"
+        self.body = body # assignment stmt
+        self.condition = cond
+        self.body = body # assignment stmt
+        self.condition = cond
 
     def accept(self, visitor):
-        pass
+        return super().accept(visitor)
 
 class WhileStmt(Statement):
-    def __init__(self, condition, body, line=None, column=None):
+    def __init__(self, condition, body):
         super().__init__()
         self.condition = condition
         self.body = body
-        # self.line = line
-        # self.column = column
 
     def accept(self, visitor):
-        return visitor.visitWhileStmt(self)
+        return visitor.visit_WhileStmt(self)
 
 class MatchStmt(Statement):
-    def __init__(self, expr, arms, line, column):
+    def __init__(self, expr, arms):
         super().__init__()
         self.expr = expr
         self.arms = arms
-        # self.line = line
-        # self.column = column
 
     def accept(self, visitor):
-        return visitor.visitMatchStmt(self)
+        return visitor.visit_MatchStmt(self)
 
 class MatchArm(Statement):
     def __init__(self, patterns, body):
@@ -101,7 +105,7 @@ class MatchArm(Statement):
         self.body = body
 
     def accept(self, visitor):
-        return visitor.visit(self)
+        return visitor.visit_(self)
 
 class MatchPattern(Statement):
     def __init__(self, value):
@@ -109,29 +113,17 @@ class MatchPattern(Statement):
         self.value = value
 
     def accept(self, visitor):
-        return visitor.visitMatchPattern()
+        return visitor.visit_MatchPattern()
 
 class CompoundAssignment(Statement):
-    def __init__(self, target, op, value, line, column):
+    def __init__(self, target, op, value):
         super().__init__()
         self.target = target
         self.op = op
         self.value = value
-        # self.line = line
-        # self.column = column
 
     def accept(self, visitor):
-        return visitor.visitCompoundAssignment(self)
-
-class ExpressionStmt(Statement):
-    def __init__(self, expr, line=None, column=None):
-        super().__init__()
-        self.expr = expr
-        # self.line = line
-        # self.column = column
-
-    def accept(self, visitor):
-        return visitor.visitExpressionStmt(self)
+        return visitor.visit_CompoundAssignment(self)
 
 class ReturnStmt(Statement):
     def __init__(self, value=None):
@@ -139,7 +131,7 @@ class ReturnStmt(Statement):
         self.value = value
 
     def accept(self, visitor):
-        return visitor.visitReturnStmt(self)
+        return visitor.visit_ReturnStmt(self)
     
     def __repr__(self):
         return f"ReturnStmt(value={self.value})"
@@ -150,52 +142,55 @@ class LoopStmt(Statement):
         self.body = body
 
     def accept(self, visitor):
-        return visitor.visitLoopStmt(self)
+        return visitor.visit_LoopStmt(self)
 
     def __repr__(self):
         return f"LoopStmt(body={repr(self.body)})"
-    
+
+
 class BreakStmt(Statement):
     def __init__(self):
         super().__init__()
 
     def accept(self, visitor):
-        return visitor.visit(self)
+        return visitor.visit_BreakStmt(self)
 
 class ContinueStmt(Statement):
     def __init__(self):
         super().__init__()
     def accept(self, visitor):
-        return visitor.visit(self)
+        return visitor.visit_ContinueStmt(self)
 
-class StructLiteral(Statement):
-    def __init__(self, type_name: str, fields: list):
+class StructDef(Statement):
+    def __init__(self, name: str, fields: list):
         super().__init__()
-        self.type_name = type_name
+        self.name = name
         self.fields = fields
 
     def accept(self, visitor):
-        return visitor.visit_StructLiteral(self)
+        return visitor.visit_Struct(self)
 
     def __repr__(self):
-        return f"StructLiteral(type_name={self.type_name}, fields={self.fields})"
+        return f"StructDef(type_name={self.type_name}, fields={self.fields})"
 
-class CallStmt(Statement):
-    def __init__(self, callee, args):
+class FunctionCall(Statement):
+    def __init__(self, callee, args, caller=None):
         super().__init__()
-        self.callee = callee  # Could be an IdentifierExpr or a MethodCallExpr
-        self.args = args      # List of expressions
+        self.caller = caller
+        self.callee = callee
+        self.args = args
 
     def accept(self, visitor):
-        return visitor.visitCallStmt(self)
+        return visitor.visit_FunctionCall(self)
 
-class UnsafeBlock(Statement):
-    def __init__(self, stmts):
+class Block(Statement):
+    def __init__(self, stmts, isUnsafe=False):
         super().__init__()
         self.stmts = stmts
+        self.isUnsafe = isUnsafe
 
     def accept(self, visitor):
-        return visitor.visitUnsafeBlock(self)
+        return visitor.visit_Block(self)
     
     def getChildren(self):
         return self.stmts
@@ -207,12 +202,3 @@ class TypeWrapper(Statement):
 
     def accept(self, visitor):
         return visitor.visit_typeWrapper(self)
-
-class ConditionalAssignmentStmt(Statement):
-    def __init__(self, cond, assignment):
-        super().__init__()
-        self.assignment = assignment
-        self.condition = cond
-
-    def accept(self, visitor):
-        return super().accept(visitor)

@@ -332,15 +332,6 @@ class RustListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by RustParser#unsafeBlcok.
-    def enterUnsafeBlcok(self, ctx:RustParser.UnsafeBlcokContext):
-        pass
-
-    # Exit a parse tree produced by RustParser#unsafeBlcok.
-    def exitUnsafeBlcok(self, ctx:RustParser.UnsafeBlcokContext):
-        pass
-
-
     # Enter a parse tree produced by RustParser#statement.
     def enterStatement(self, ctx:RustParser.StatementContext):
         pass
@@ -359,12 +350,12 @@ class RustListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by RustParser#callStmt.
-    def enterCallStmt(self, ctx:RustParser.CallStmtContext):
+    # Enter a parse tree produced by RustParser#functionCall.
+    def enterFunctionCall(self, ctx:RustParser.FunctionCallContext):
         pass
 
-    # Exit a parse tree produced by RustParser#callStmt.
-    def exitCallStmt(self, ctx:RustParser.CallStmtContext):
+    # Exit a parse tree produced by RustParser#functionCall.
+    def exitFunctionCall(self, ctx:RustParser.FunctionCallContext):
         pass
 
 
@@ -521,42 +512,6 @@ class RustListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by RustParser#boxWrappwer.
-    def enterBoxWrappwer(self, ctx:RustParser.BoxWrappwerContext):
-        pass
-
-    # Exit a parse tree produced by RustParser#boxWrappwer.
-    def exitBoxWrappwer(self, ctx:RustParser.BoxWrappwerContext):
-        pass
-
-
-    # Enter a parse tree produced by RustParser#typeWrapper.
-    def enterTypeWrapper(self, ctx:RustParser.TypeWrapperContext):
-        pass
-
-    # Exit a parse tree produced by RustParser#typeWrapper.
-    def exitTypeWrapper(self, ctx:RustParser.TypeWrapperContext):
-        pass
-
-
-    # Enter a parse tree produced by RustParser#boxWrapperPrefix.
-    def enterBoxWrapperPrefix(self, ctx:RustParser.BoxWrapperPrefixContext):
-        pass
-
-    # Exit a parse tree produced by RustParser#boxWrapperPrefix.
-    def exitBoxWrapperPrefix(self, ctx:RustParser.BoxWrapperPrefixContext):
-        pass
-
-
-    # Enter a parse tree produced by RustParser#typeWrapperPrefix.
-    def enterTypeWrapperPrefix(self, ctx:RustParser.TypeWrapperPrefixContext):
-        pass
-
-    # Exit a parse tree produced by RustParser#typeWrapperPrefix.
-    def exitTypeWrapperPrefix(self, ctx:RustParser.TypeWrapperPrefixContext):
-        pass
-
-
     # Enter a parse tree produced by RustParser#safeWrapper.
     def enterSafeWrapper(self, ctx:RustParser.SafeWrapperContext):
         pass
@@ -599,15 +554,6 @@ class RustListener(ParseTreeListener):
 
     # Exit a parse tree produced by RustParser#qualifiedExpression.
     def exitQualifiedExpression(self, ctx:RustParser.QualifiedExpressionContext):
-        pass
-
-
-    # Enter a parse tree produced by RustParser#typeAccessPostfix.
-    def enterTypeAccessPostfix(self, ctx:RustParser.TypeAccessPostfixContext):
-        pass
-
-    # Exit a parse tree produced by RustParser#typeAccessPostfix.
-    def exitTypeAccessPostfix(self, ctx:RustParser.TypeAccessPostfixContext):
         pass
 
 
@@ -683,24 +629,6 @@ class RustListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by RustParser#conditionalOps.
-    def enterConditionalOps(self, ctx:RustParser.ConditionalOpsContext):
-        pass
-
-    # Exit a parse tree produced by RustParser#conditionalOps.
-    def exitConditionalOps(self, ctx:RustParser.ConditionalOpsContext):
-        pass
-
-
-    # Enter a parse tree produced by RustParser#booleanOps.
-    def enterBooleanOps(self, ctx:RustParser.BooleanOpsContext):
-        pass
-
-    # Exit a parse tree produced by RustParser#booleanOps.
-    def exitBooleanOps(self, ctx:RustParser.BooleanOpsContext):
-        pass
-
-
     # Enter a parse tree produced by RustParser#binaryOps.
     def enterBinaryOps(self, ctx:RustParser.BinaryOpsContext):
         pass
@@ -710,21 +638,21 @@ class RustListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by RustParser#binaryExpression.
+    def enterBinaryExpression(self, ctx:RustParser.BinaryExpressionContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#binaryExpression.
+    def exitBinaryExpression(self, ctx:RustParser.BinaryExpressionContext):
+        pass
+
+
     # Enter a parse tree produced by RustParser#structFieldDec.
     def enterStructFieldDec(self, ctx:RustParser.StructFieldDecContext):
         pass
 
     # Exit a parse tree produced by RustParser#structFieldDec.
     def exitStructFieldDec(self, ctx:RustParser.StructFieldDecContext):
-        pass
-
-
-    # Enter a parse tree produced by RustParser#mutableExpression.
-    def enterMutableExpression(self, ctx:RustParser.MutableExpressionContext):
-        pass
-
-    # Exit a parse tree produced by RustParser#mutableExpression.
-    def exitMutableExpression(self, ctx:RustParser.MutableExpressionContext):
         pass
 
 

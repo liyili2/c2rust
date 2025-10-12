@@ -6,12 +6,12 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '.
 from antlr4 import CommonTokenStream, InputStream
 from RustParser.AST_Scripts.antlr.RustLexer import RustLexer
 from RustParser.AST_Scripts.antlr.RustParser import RustParser
-from RustParser.AST_Scripts.ast.Transformer import Transformer, setParents
+from RustParser.AST_Scripts.ast.Transformer import Transformer
 from RustParser.AST_Scripts.ast.Simulator import Simulator
 from RustParser.AST_Scripts.ast.TypeChecker import TypeChecker
-from RustParser.AST_Scripts.ast.Program import Program
-from RustParser.AST_Scripts.ast.TopLevel import TopLevel
-from RustParser.AST_Scripts.ast.ASTNode import ASTNode
+from RustParser.AST_Scripts.ast.TopLevel import *
+from RustParser.AST_Scripts.ast.ASTNode import *
+from RustParser.AST_Scripts.ast.Program import *
 
 def pretty_print_ast(node, indent=0, visited=None):
     if visited is None:
@@ -44,19 +44,43 @@ def pretty_print_ast(node, indent=0, visited=None):
 
     return '\n'.join(lines)
 
-file_path = os.path.join(os.path.dirname(__file__), "bst.rs")
+def setParents(node, parent=None, top_level_prog=None):
+    if not isinstance(node, ASTNode):
+        return
+    if isinstance(node, Program):
+        top_level_prog = node
+    if isinstance(node, FunctionDef) and isinstance(parent, InterfaceDef):
+        node.parent = parent
+    elif isinstance(node, TopLevel) and top_level_prog:
+        node.parent = top_level_prog
+    elif parent is not None:
+        node.parent = parent
+    for attr, value in vars(node).items():
+        if attr == "parent":
+            continue
+        if isinstance(value, list):
+            for item in value:
+                setParents(item, node, top_level_prog)
+        elif isinstance(value, ASTNode):
+            setParents(value, node, top_level_prog)
+
+file_path = os.path.join(os.path.dirname(__file__), "bst_simp.rs")
 with open(file_path, "r", encoding="utf-8") as f:
     rust_code = f.read()
 lexer = RustLexer(InputStream(rust_code))
 tokens = CommonTokenStream(lexer)
 parser = RustParser(tokens)
 tree = parser.program()
-# print(pretty_print_ast(tree))
-builder = Simulator()
-custom_ast = builder.visit(tree)
-setParents(custom_ast)
-checker = TypeChecker()
-checker.visit(custom_ast)
-print("Type Error Count : ", checker.error_count)
-# print("Pretty AST:")
+transformer = Transformer()
+ast = transformer.visit(tree)
+setParents(ast)
+# checker = TypeChecker()
+# checker.visit(ast)
+memory = dict()
+stack = dict()
+simulator = Simulator(memory=memory, stack=stack)
+simulator.visit(ast)
+
+# print("Type Error Count : ", checker.error_count)
+print("Pretty AST:")
 # print(pretty_print_ast(custom_ast))

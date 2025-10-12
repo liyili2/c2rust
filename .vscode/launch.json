@@ -5,6 +5,65 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python: Debug test1",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/source/pyggi/example/test1_rust.py",   // adjust path if needed
+            "cwd": "${workspaceFolder}/source",
+            "env": {
+            "PYTHONPATH": "${workspaceFolder}/source"
+            },
+            "args": [
+                "--project_path", "../source/pyggi/sample/test1_rust",
+                "--mode", "tree",
+                "--epoch", "1",
+                "--iter", "2"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "subProcess": true
+            },
+        {
+            "name": "Python: Debug simulator",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/source/RustParser/AST_Scripts/tests/SimulatorTest.py",   // adjust path if needed
+            "cwd": "${workspaceFolder}/source",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/source"
+            }
+        },
+        {
+            "name": "Python: Debug transformer",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/source/RustParser/AST_Scripts/tests/TransformerTest.py",   // adjust path if needed
+            "cwd": "${workspaceFolder}/source",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/source"
+            }
+        },
+       {
+        "name": "Python: Debug bst_rust",
+        "type": "debugpy",
+        "request": "launch",
+        "program": "${workspaceFolder}/source/pyggi/example/bst_rust.py",   // adjust path if needed
+        "cwd": "${workspaceFolder}/source",
+        "env": {
+            "PYTHONPATH": "${workspaceFolder}/source"
+        },
+        "args": [
+            "--project_path", "../source/pyggi/sample/bst_rust",
+            "--mode", "tree",
+            "--epoch", "3",
+            "--iter", "7"
+        ],
+        "console": "integratedTerminal",
+        "justMyCode": true,
+        "subProcess": true
+        },
+        
+        {
             "type": "lldb",
             "request": "launch",
             "name": "Cargo launch",
@@ -16,10 +75,5 @@
             },
             "args": []
         }
-
-
-        
-
-
     ]
 }

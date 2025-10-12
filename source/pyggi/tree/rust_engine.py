@@ -1,24 +1,20 @@
-from RustParser.AST_Scripts.ast.Func import FunctionParamList, Param
-from copy import deepcopy
 import os
-from RustParser.AST_Scripts.ast.AstPrinter import AstPrinter
-from RustParser.AST_Scripts.ast.Block import Block
-from RustParser.AST_Scripts.antlr.RustLexer import RustLexer
 from antlr4 import CommonTokenStream, InputStream
+from RustParser.AST_Scripts.antlr.RustLexer import RustLexer
 from RustParser.AST_Scripts.antlr.RustParser import RustParser
 from RustParser.AST_Scripts.ast.Transformer import Transformer, setParents
-from RustParser.AST_Scripts.ast.Program import Program
-from RustParser.AST_Scripts.ast.Expression import BinaryExpr, BoolLiteral, CastExpr, Expression, FieldAccessExpr, IdentifierExpr, IntLiteral, MethodCallExpr, StrLiteral, TypePathExpression, UnsafeExpression
-from RustParser.AST_Scripts.ast.Statement import AssignStmt, CallStmt, ForStmt, IfStmt, LetStmt, Statement, UnsafeBlock, WhileStmt
-from RustParser.AST_Scripts.ast.TopLevel import Attribute, ExternBlock, ExternFunctionDecl, FunctionDef, InterfaceDef, StaticVarDecl, StructDef, TopLevel, TopLevelVarDef, TypeAliasDecl
-from RustParser.AST_Scripts.ast.TypeChecker import TypeChecker
-from RustParser.AST_Scripts.ast.Type import PointerType, RefType, SafeNonNullWrapper
-from RustParser.AST_Scripts.ast.VarDef import VarDef
+from RustParser.AST_Scripts.ast.Expression import *
+from RustParser.AST_Scripts.ast.Statement import *
+from RustParser.AST_Scripts.ast.Func import *
+from RustParser.AST_Scripts.ast.Block import *
+from RustParser.AST_Scripts.ast.TopLevel import *
+from RustParser.AST_Scripts.ast.TypeChecker import *
+from RustParser.AST_Scripts.ast.Type import *
+from RustParser.AST_Scripts.ast.VarDef import *
 from pyggi.mutation.replacement import ReplacementOperator
 from pyggi.mutation.deletion import DeletionOperator
 from pyggi.tree.abstract_engine import AbstractTreeEngine
 from typing import List, Tuple
-import random
 
 def pretty_print_ast(node, indent=0, visited=None):
     if visited is None:
@@ -103,7 +99,7 @@ class RustEngine(AbstractTreeEngine):
         if isinstance(node, FunctionParamList):
             results.append(node)
 
-        if isinstance(node, Statement) or isinstance(node, UnsafeBlock):
+        if isinstance(node, Statement) or (isinstance(node, Block) and node.isUnsafe):
             # print("cllected_node_", node.__class__)
             results.append(node)
 
@@ -141,10 +137,17 @@ class RustEngine(AbstractTreeEngine):
     @classmethod
     def do_delete(cls, program, op, trees, modification_points):
         file_name, target_node = op.target
+        # if isinstance(target_node, tuple):
+        #     _, target_node = target_node
+        # deletionOperator = DeletionOperator(trees[file_name], target_node)
+        # trees[file_name] = deletionOperator.get_new_ast()
+        # program.trees[file_name] = trees[file_name] 
+        # return trees
+        file_name, target_node = op.target
         if isinstance(target_node, tuple):
             _, target_node = target_node
-        deletionOperator = DeletionOperator(trees[file_name], target_node)
-        trees[file_name] = deletionOperator.get_new_ast()
+        replacementOperator = ReplacementOperator(trees[file_name], target_node)
+        trees[file_name] = replacementOperator.get_new_ast()
         program.trees[file_name] = trees[file_name] 
         return trees
 
@@ -289,7 +292,7 @@ def collect_expressions(node, path="./", index_map=None) -> List[Tuple[str, obje
     for field_name, field_value in vars(node).items():
         full_path = f"{path}{node_type}[{current_index}]/{field_name}"
         if isinstance(node, Expression):
-            if isinstance(node, UnsafeExpression):
+            if node.isUnsafe:
                 results.append((full_path, field_value))
 
         if isinstance(node, Statement):

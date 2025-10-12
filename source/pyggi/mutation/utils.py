@@ -1,11 +1,19 @@
 from RustParser.AST_Scripts.ast.Program import Program
-from RustParser.AST_Scripts.ast.TopLevel import FunctionDef, StaticVarDecl, TypeAliasDecl, UseDecl
-from RustParser.AST_Scripts.ast.Block import Block
-from RustParser.AST_Scripts.ast.Statement import LetStmt, ForStmt, IfStmt, CallStmt, AssignStmt, WhileStmt
-from RustParser.AST_Scripts.ast.Expression import FieldAccessExpr, IdentifierExpr, MethodCallExpr, BinaryExpr
-from RustParser.AST_Scripts.ast.Expression import BoolLiteral, IntLiteral, StrLiteral
+from RustParser.AST_Scripts.ast.Expression import *
+from RustParser.AST_Scripts.ast.Statement import *
+from RustParser.AST_Scripts.ast.Func import *
+from RustParser.AST_Scripts.ast.Block import *
+from RustParser.AST_Scripts.ast.TopLevel import *
+from RustParser.AST_Scripts.ast.TypeChecker import *
+from RustParser.AST_Scripts.ast.Type import *
+from RustParser.AST_Scripts.ast.VarDef import *
 
 class MutationUtils:
+    def replace_dereference_with_ref_unwrap_call(stmt):
+        new_expr = FunctionCallExpr(caller=FunctionCallExpr(caller=stmt.condition.left.expr, 
+            callee=IdentifierExpr(name="as_ref")), callee=IdentifierExpr(name="unwrap"))
+        return new_expr
+
     def get_all_parents(self, ast_root, target_node, parent=None):
         if parent is None:
             parent = getattr(target_node, 'parent', None)
@@ -51,7 +59,7 @@ class MutationUtils:
 
                 remaining_tops.append(top)
 
-            elif isinstance(top_children, list):
+            elif isinstance(top_children, InterfaceDef):
                 matched_children = []
                 for item in top_children:
                     if isinstance(parent_2, type(item)) and isinstance(item.body, Block):
@@ -72,8 +80,8 @@ class MutationUtils:
 
         if isinstance(stmt1, LetStmt):
             for i in range(len(stmt1.var_defs)):
-                if not (str.__eq__(stmt1.var_defs[i].name, stmt2.var_defs[i].name) and isinstance(stmt1.var_defs[i].type, type(stmt2.var_defs[i].type))):
-                    print(stmt1.var_defs[i].name, stmt2.var_defs[i].name, stmt1.var_defs[i].type, stmt2.var_defs[i].type)
+                if not (str.__eq__(stmt1.var_defs[i].declarationInfo.name, stmt2.var_defs[i].declarationInfo.name) and isinstance(stmt1.var_defs[i].declarationInfo.type, type(stmt2.var_defs[i].declarationInfo.type))):
+                    print(stmt1.var_defs[i].declarationInfo.name, stmt2.var_defs[i].declarationInfo.name, stmt1.var_defs[i].declarationInfo.type, stmt2.var_defs[i].declarationInfo.type)
                     return False
             return True
 
@@ -92,7 +100,7 @@ class MutationUtils:
                 self.expr_eq(stmt1.iterable, stmt2.iterable) and
                 self.statements_eq(stmt1.body, stmt2.body))
 
-        if isinstance(stmt1, CallStmt):
+        if isinstance(stmt1, FunctionCall):
             if not self.expr_eq(stmt1.callee, stmt2.callee):
                 return False
             if len(stmt1.args) != len(stmt2.args):
@@ -113,6 +121,12 @@ class MutationUtils:
             return (
                 self.expr_eq(stmt1.condition, stmt2.condition) and
                 self.statements_eq(stmt1.body, stmt2.body))
+        
+        if isinstance(stmt1, Block):
+            for i in range(0, len(stmt1.stmts)):
+                if not self.statements_eq(stmt1.stmts[i], stmt2.stmts[i]):
+                    return False
+            return True
 
         return False
 
@@ -131,24 +145,37 @@ class MutationUtils:
             return (self.expr_eq(expr1.left, expr2.left) and
                     self.expr_eq(expr1.right, expr2.right) and
                     expr1.op == expr2.op)
-        if isinstance(expr1, MethodCallExpr):
+        if isinstance(expr1, FunctionCall):
             return (
-                self.expr_eq(expr1.receiver, expr2.receiver) and
-                expr1.method_name == expr2.method_name and
+                self.expr_eq(expr1.caller, expr2.caller) and
+                expr1.callee == expr2.callee and
                 len(expr1.args) == len(expr2.args) and
                 all(self.expr_eq(a1, a2) for a1, a2 in zip(expr1.args, expr2.args)))
         if isinstance(expr1, FieldAccessExpr):
             return (self.expr_eq(expr1.receiver, expr2.receiver) and self.expr_eq(expr1.name, expr2.name))
+        if isinstance(expr1, DereferenceExpr):
+            return (self.expr_eq(expr1.expr, expr2.expr))
         return False 
 
     def function_def_eq(self, func1, func2):
-        # print("function_def_eq", func1.identifier, func2.identifier, (func1.params.param_len), (func2.params.param_len), len(func1.body.getChildren()))
-        return (func1.identifier == func2.identifier and (func1.params.param_len) == (func2.params.param_len) and len(func1.body.getChildren()) == len(func1.body.getChildren()))
+        def get_params(f):
+            if hasattr(f.params, "params"):
+                return f.params.params
+            elif isinstance(f.params, list):
+                return f.params
+            else:
+                return []
+        params1 = get_params(func1)
+        params2 = get_params(func2)
+        body1 = func1.body.getChildren() if hasattr(func1.body, "getChildren") else []
+        body2 = func2.body.getChildren() if hasattr(func2.body, "getChildren") else []
+        return (
+            getattr(func1, "identifier", None) == getattr(func2, "identifier", None)
+            and len(params1) == len(params2) and len(body1) == len(body2))
 
     def remake_ast_after_removal(self, target_node, other_tops, top, top_children, top_children_stmts):
         for stmt in top_children_stmts:
             if self.statements_eq(stmt, target_node):
-                print("equal, applying deletion")
                 top_children_stmts.remove(stmt)
                 newBlock = Block(top_children_stmts, top_children.isUnsafe)
                 top.setBody(newBlock)
@@ -157,7 +184,6 @@ class MutationUtils:
                 continue
 
     def blocks_eq(self, block1, block2):
-        print("ssss", block1.__class__, block2.__class__)
         if not isinstance(block1, type(block2)):
             return False
         eq = True
