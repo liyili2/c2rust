@@ -31,6 +31,16 @@ class Simulator(ProgramVisitor):
         self.heap = memory
         self.stack = stack
         self.funMap = dict()
+        self.libMap = dict()
+        self.libMap.update({"unwrap": self.lib_func_unwrap})
+        self.lib_funcs = ["is_empty", "len", "iter", "push", "pop", "null_mut", "into_raw",
+                          "into_string", "cast", "is_null", "unwrap","as_ref", "append"]
+
+    def lib_func_unwrap(self, caller):
+        val = caller.accept(self) if caller else None
+        if val is None:
+            raise ReturnSignal(value=Exception(arg="called unwrap() on a None value"))
+        return val
 
     def get_state(self):
         return self.memory
@@ -63,7 +73,7 @@ class Simulator(ProgramVisitor):
 
         self.stack = newStack
         return None
-    
+
     def find_stack_key(self, target):
         if isinstance(target, IdentifierExpr):
             return target.name
@@ -111,10 +121,15 @@ class Simulator(ProgramVisitor):
             raise ret
 
     def visit_FunctionCall(self, node: FunctionCall):
+        caller_name = node.callee.name
+        if node.callee.name.name in self.lib_funcs:
+            func = self.libMap.get(node.callee.name.name)
+            if func is not None:
+                return func(node.callee.receiver)
         origFunc = self.funMap.get(node.callee.name)
         newNode = copy.deepcopy(origFunc)
         if newNode is None:
-            newNode = self.funMap.get(node.identifier)
+            newNode = self.funMap.get(node.callee.name)
         # self.stack.update({"self": node.caller})
         newStack = copy.deepcopy(self.stack)
         for i in range(0, newNode.params.param_len):
