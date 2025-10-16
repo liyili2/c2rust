@@ -7,6 +7,8 @@ fn main() {
     // e.null_mut();
     // print("ofjr");
     // println("razban");
-    let a : String = "razijooni";
-    let b = a.unwrap();
+    // let a : String = "razijooni";
+    // let b = a.unwrap();
+    let f : *mut String = &"razbanoo";
+    let g = f.as_ref();
 }

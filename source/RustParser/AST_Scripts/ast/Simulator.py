@@ -37,10 +37,16 @@ class Simulator(ProgramVisitor):
         self.fill_lib_map()
 
     def fill_lib_map(self):
-        self.libMap.update({"unwrap": self.lib_func_unwrap}) #checked
-        self.libMap.update({"len": self.lib_func_len}) #checked
-        self.libMap.update({"into_raw": self.lib_func_into_raw}) #checked
-        self.libMap.update({"null_mut": self.lib_func_null_mut}) #checked
+        for name in self.lib_funcs:
+            func = getattr(self, f"lib_func_{name}", None)
+            if func is not None:
+                self.libMap[name] = func
+
+    def lib_func_as_ref(self, caller):
+        val = caller.accept(self) if caller else None
+        if val is None:
+            raise ReturnSignal(value=Exception(arg="called null_mut() on a None value"))
+        return val
 
     def lib_func_null_mut(self, caller):
         val = caller.accept(self) if caller else None
