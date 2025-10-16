@@ -131,11 +131,21 @@ class Simulator(ProgramVisitor):
             raise ret
 
     def visit_FunctionCall(self, node: FunctionCall):
-        caller_name = node.callee.name
+        if node.caller is None:
+            if node.callee.name in self.lib_funcs:
+                func = self.libMap.get(node.callee.name)
+                if func is not None:
+                    return func(node.callee)
+            if str.__contains__(node.callee.name, "print"):
+                return None
+
         if node.callee.name.name in self.lib_funcs:
             func = self.libMap.get(node.callee.name.name)
             if func is not None:
                 return func(node.callee.receiver)
+            if str.__contains__(node.callee.name.name, "print"):
+                return None
+
         origFunc = self.funMap.get(node.callee.name)
         newNode = copy.deepcopy(origFunc)
         if newNode is None:
