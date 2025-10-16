@@ -283,6 +283,7 @@ class TypeChecker:
                 expr_type = var_def_type
 
             if (
+                node.values[0] is not None and
                 not isinstance(expr_type, var_def_type.__class__) and
                 not isinstance(var_def_type, SafeNonNullWrapper) and
                 not node.values[0].isUnsafe == True

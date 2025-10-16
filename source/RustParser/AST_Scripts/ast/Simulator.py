@@ -37,14 +37,21 @@ class Simulator(ProgramVisitor):
         self.fill_lib_map()
 
     def fill_lib_map(self):
-        self.libMap.update({"unwrap": self.lib_func_unwrap})
-        self.libMap.update({"len": self.lib_func_len})
-        self.libMap.update({"into_raw": self.lib_func_into_raw})
+        self.libMap.update({"unwrap": self.lib_func_unwrap}) #checked
+        self.libMap.update({"len": self.lib_func_len}) #checked
+        self.libMap.update({"into_raw": self.lib_func_into_raw}) #checked
+        self.libMap.update({"null_mut": self.lib_func_null_mut}) #checked
+
+    def lib_func_null_mut(self, caller):
+        val = caller.accept(self) if caller else None
+        if val is None:
+            raise ReturnSignal(value=Exception(arg="called null_mut() on a None value"))
+        return val
 
     def lib_func_into_raw(self, caller):
         val = caller.accept(self) if caller else None
         if val is None:
-            raise ReturnSignal(value=Exception(arg="called unwrap() on a None value"))
+            raise ReturnSignal(value=Exception(arg="called into_raw() on a None value"))
         return val
 
     def lib_func_unwrap(self, caller):
@@ -85,7 +92,9 @@ class Simulator(ProgramVisitor):
 
         for i in range(0, len(node.var_defs)):
             arVar = node.var_defs[i].declarationInfo.name
-            value = node.values[i].accept(self)
+            value = node.values[i]
+            if value is not None:
+                value = node.values[i].accept(self)
             newStack.update({arVar : value})
 
         self.stack = newStack
@@ -139,17 +148,17 @@ class Simulator(ProgramVisitor):
 
     def visit_FunctionCall(self, node: FunctionCall):
         if node.caller is None:
-            if node.callee.name in self.lib_funcs:
-                func = self.libMap.get(node.callee.name)
-                if func is not None:
-                    return func(node.callee)
             if str.__contains__(node.callee.name, "print"):
                 return None
+            
+        if isinstance(node.caller, type(len)):
+            node.caller = node.callee.receiver
+            node.callee = node.callee.name
 
-        if node.callee.name.name in self.lib_funcs:
-            func = self.libMap.get(node.callee.name.name)
+        if node.callee.name in self.lib_funcs:
+            func = self.libMap.get(node.callee.name)
             if func is not None:
-                return func(node.callee.receiver)
+                return func(node.caller)
 
         origFunc = self.funMap.get(node.callee.name)
         newNode = copy.deepcopy(origFunc)

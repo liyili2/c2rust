@@ -18,9 +18,13 @@ Program:
                   declarationInfo:
                     DeclarationInfo:
                       name:
-                        'a'
+                        'c'
                       type:
-                        'String'
+                        PointerType:
+                          isMutable:
+                            True
+                          pointee_type:
+                            'int'
                       visibility:
                         None
                   isMutable:
@@ -28,9 +32,9 @@ Program:
                   by_ref:
                     False
               values:
-                StrLiteral:
+                IntLiteral:
                   type:
-                    StringType:
+                    IntType:
                   isMutable:
                     False
                   expr:
@@ -38,7 +42,7 @@ Program:
                   isUnsafe:
                     False
                   value:
-                    'razijooni'
+                    2
             LetStmt:
               body:
                 None
@@ -47,7 +51,7 @@ Program:
                   declarationInfo:
                     DeclarationInfo:
                       name:
-                        'b'
+                        'd'
                       type:
                         None
                       visibility:
@@ -83,7 +87,7 @@ Program:
                           isUnsafe:
                             False
                           name:
-                            'a'
+                            'c'
                       name:
                         IdentifierExpr:
                           type:
@@ -95,7 +99,7 @@ Program:
                           isUnsafe:
                             False
                           name:
-                            'unwrap'
+                            'into_raw'
                   args:
 
           isUnsafe:
