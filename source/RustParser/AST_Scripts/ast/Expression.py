@@ -156,7 +156,6 @@ class ArrayLiteral(Expression):
     def __init__(self, elements,name=None, count=None):
         super().__init__()
         self.count = count
-        self.count = count
         self.name = name
         self.elements = elements
 
@@ -165,6 +164,8 @@ class ArrayLiteral(Expression):
 
     def __repr__(self):
         return f"ArrayLiteral({self.elements})"
+    def len(self):
+        return len(self.elements)
 
 class UnaryExpr(Expression):
     def __init__(self, op, expr):

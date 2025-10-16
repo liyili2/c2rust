@@ -32,15 +32,25 @@ class Simulator(ProgramVisitor):
         self.stack = stack
         self.funMap = dict()
         self.libMap = dict()
-        self.libMap.update({"unwrap": self.lib_func_unwrap})
         self.lib_funcs = ["is_empty", "len", "iter", "push", "pop", "null_mut", "into_raw",
                           "into_string", "cast", "is_null", "unwrap","as_ref", "append"]
+        self.fill_lib_map()
+
+    def fill_lib_map(self):
+        self.libMap.update({"unwrap": self.lib_func_unwrap})
+        self.libMap.update({"len": self.lib_func_len})
 
     def lib_func_unwrap(self, caller):
         val = caller.accept(self) if caller else None
         if val is None:
             raise ReturnSignal(value=Exception(arg="called unwrap() on a None value"))
         return val
+
+    def lib_func_len(self, caller):
+        val = caller.accept(self) if caller else None
+        if val is None:
+            raise ReturnSignal(value=Exception(arg="called unwrap() on a None value"))
+        return val.len()
 
     def get_state(self):
         return self.memory
@@ -244,6 +254,9 @@ class Simulator(ProgramVisitor):
 
     def visit_BoolLiteral(self, ctx: BoolLiteral):
         return ctx.value
+
+    def visit_ArrayLiteral(self, node: ArrayLiteral):
+        return node
 
     def visit_Struct(self, node: StructDef):
         # Maybe store struct in the stack as a dict or array?
