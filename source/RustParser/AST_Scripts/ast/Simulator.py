@@ -143,8 +143,6 @@ class Simulator(ProgramVisitor):
             func = self.libMap.get(node.callee.name.name)
             if func is not None:
                 return func(node.callee.receiver)
-            if str.__contains__(node.callee.name.name, "print"):
-                return None
 
         origFunc = self.funMap.get(node.callee.name)
         newNode = copy.deepcopy(origFunc)
