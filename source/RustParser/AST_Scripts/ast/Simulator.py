@@ -39,6 +39,13 @@ class Simulator(ProgramVisitor):
     def fill_lib_map(self):
         self.libMap.update({"unwrap": self.lib_func_unwrap})
         self.libMap.update({"len": self.lib_func_len})
+        self.libMap.update({"into_raw": self.lib_func_into_raw})
+
+    def lib_func_into_raw(self, caller):
+        val = caller.accept(self) if caller else None
+        if val is None:
+            raise ReturnSignal(value=Exception(arg="called unwrap() on a None value"))
+        return val
 
     def lib_func_unwrap(self, caller):
         val = caller.accept(self) if caller else None
