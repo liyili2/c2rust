@@ -6,3 +6,7 @@ class DeclarationInfo:
     name: str
     type: Optional[str] = None
     visibility: Optional[str] = None
+
+class ReturnSignal(Exception):
+    def __init__(self, value):
+        self.value = value

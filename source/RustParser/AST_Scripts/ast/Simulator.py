@@ -7,15 +7,13 @@ from RustParser.AST_Scripts.ast.ProgramVisitor import ProgramVisitor
 from RustParser.AST_Scripts.ast.Expression import *
 from RustParser.AST_Scripts.ast.Program import *
 from RustParser.AST_Scripts.ast.TopLevel import *
+from RustParser.AST_Scripts.ast.common import *
+from RustParser.AST_Scripts.ast import LibFuncs
 
 NoneType = type(None)
 
 # I need to add Box maybe?
 # I also may need to add arrays
-
-class ReturnSignal(Exception):
-    def __init__(self, value):
-        self.value = value
 
 class Simulator(ProgramVisitor):
     # x, y, z, env : ChainMap{ x: n, y : m, z : v} , n m v are nat numbers 100, 100, 100, eg {x : 128}
@@ -33,44 +31,21 @@ class Simulator(ProgramVisitor):
         self.funMap = dict()
         self.libMap = dict()
         self.lib_funcs = ["is_empty", "len", "iter", "push", "pop", "null_mut", "into_raw",
-                          "into_string", "cast", "is_null", "unwrap","as_ref", "append"]
+                          "into_string", "cast", "is_null", "unwrap","as_ref", "append", "as_bytes"]
         self.fill_lib_map()
 
     def fill_lib_map(self):
         for name in self.lib_funcs:
-            func = getattr(self, f"lib_func_{name}", None)
-            if func is not None:
-                self.libMap[name] = func
+            # Convert snake_case → CamelCase for class name
+            parts = name.split('_')
+            class_name = "LibFunc" + ''.join(p.capitalize() for p in parts)
 
-    def lib_func_as_ref(self, caller):
-        val = caller.accept(self) if caller else None
-        if val is None:
-            raise ReturnSignal(value=Exception(arg="called null_mut() on a None value"))
-        return val
-
-    def lib_func_null_mut(self, caller):
-        val = caller.accept(self) if caller else None
-        if val is None:
-            raise ReturnSignal(value=Exception(arg="called null_mut() on a None value"))
-        return val
-
-    def lib_func_into_raw(self, caller):
-        val = caller.accept(self) if caller else None
-        if val is None:
-            raise ReturnSignal(value=Exception(arg="called into_raw() on a None value"))
-        return val
-
-    def lib_func_unwrap(self, caller):
-        val = caller.accept(self) if caller else None
-        if val is None:
-            raise ReturnSignal(value=Exception(arg="called unwrap() on a None value"))
-        return val
-
-    def lib_func_len(self, caller):
-        val = caller.accept(self) if caller else None
-        if val is None:
-            raise ReturnSignal(value=Exception(arg="called unwrap() on a None value"))
-        return val.len()
+            # Look for class inside libfuncs module
+            cls = getattr(LibFuncs, class_name, None)
+            if cls is not None:
+                self.libMap[name] = cls()
+            else:
+                print(f"[warn] Lib function class not found: {class_name}")
 
     def get_state(self):
         return self.memory
@@ -136,6 +111,9 @@ class Simulator(ProgramVisitor):
 
         self.stack = newStack
         return None
+    
+    def visit_StaticVarDecl(self, node: StaticVarDecl):
+        self.stack.update({node.declarationInfo.name : node.initial_value})
 
     def visit_FunctionDef(self, node: FunctionDef):
         self.funMap.update({node.identifier : node})
@@ -164,7 +142,7 @@ class Simulator(ProgramVisitor):
         if node.callee.name in self.lib_funcs:
             func = self.libMap.get(node.callee.name)
             if func is not None:
-                return func(node.caller)
+                return func(caller=node.caller, visitor=self, args=node.args)
 
         origFunc = self.funMap.get(node.callee.name)
         newNode = copy.deepcopy(origFunc)
@@ -172,7 +150,7 @@ class Simulator(ProgramVisitor):
             newNode = self.funMap.get(node.callee.name)
         # self.stack.update({"self": node.caller})
         newStack = copy.deepcopy(self.stack)
-        for i in range(0, newNode.params.param_len):
+        for i in range(0, len(newNode.params)):
             arVar = newNode.params.params[i].declarationInfo.name
             value = node.args[i].accept(self)
             newStack.update({arVar : value})
@@ -198,6 +176,27 @@ class Simulator(ProgramVisitor):
         else:
             if node.else_branch is not None:
                 return node.else_branch.accept(self)
+            
+    def visit_MatchStmt(self, node: MatchStmt):
+        match_arms = node.arms
+        match_expr = node.expr.accept(self)
+
+        for i in range(0, len(match_arms)):
+            arm_res = match_arms[i].accept(self)
+            for pattern_res in arm_res:
+                pattern_val = pattern_res.accept(self)
+                if match_expr == pattern_val:
+                    return match_arms[i].body.accept(self)
+                elif pattern_val == '_':
+                    return match_arms[i].body.accept(self)
+        return
+
+    def visit_MatchArm(self, node: MatchArm):
+        match_pattern = node.patterns
+        return match_pattern
+
+    def visit_MatchPattern(self, node: MatchPattern):
+        return node.value.accept(self)
 
     def visitBreakStmt(self, node: BreakStmt):
         if node is not None: # .vexp()
