@@ -540,6 +540,9 @@ class Transformer(RustVisitor):
 
         elif ctx.safeWrapper():
             return self.visit(ctx.safeWrapper())
+        
+        elif ctx.arrayAccess():
+            return self.visit(ctx.arrayAccess())
 
         raise Exception(f"Unrecognized expression structure: {ctx.getText()}")
 
@@ -738,7 +741,7 @@ class Transformer(RustVisitor):
         elif ctx.Identifier():
             return MatchPattern(IdentifierExpr(name=ctx.Identifier().getText()))
         elif ctx.byteLiteral():
-            return self.visit(ctx.byteLiteral())
+            return StrLiteral(value=ctx.getText())
         else:
             raise ValueError("Unknown matchPattern type")
 
@@ -760,6 +763,14 @@ class Transformer(RustVisitor):
             aliases.append(None)
 
         return UseDecl(paths, aliases)
+    
+    def visitArrayAccess(self, ctx):
+        index = self.visit(ctx.expression())
+        name_token = ctx.Identifier()  # This returns a list of terminal nodes
+        if isinstance(name_token, list):
+            name_token = name_token[0]
+        name = IdentifierExpr(name=name_token.getText()) # get the string name
+        return ArrayAccess(name=name, expr=index)
 
 def setParents(node, parent=None, top_level_prog=None):
     if not isinstance(node, ASTNode):

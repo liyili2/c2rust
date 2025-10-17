@@ -308,6 +308,9 @@ class TypeChecker:
     def visit_SafeNonNullWrapper(self, node):
         return node
     
+    def visit_ArrayAccess(self, node):
+        return node
+    
     def visit_BreakStmt(self, node):
         pass
 

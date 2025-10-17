@@ -2,65 +2,105 @@ Program:
   items:
     FunctionDef:
       identifier:
-        'main'
+        're2post'
       params:
-
+        FunctionParamList:
+          params:
+            Param:
+              declarationInfo:
+                DeclarationInfo:
+                  name:
+                    're'
+                  type:
+                    '&[u8]'
+                  visibility:
+                    None
+              isMutable:
+                False
+          param_len:
+            0
       return_type:
-        None
+        TypePathExpression:
+          type:
+            None
+          isMutable:
+            False
+          expr:
+            None
+          isUnsafe:
+            False
+          last_type:
+            'Option'
+          type_path:
+            'Option'
       body:
         Block:
           stmts:
-            LetStmt:
+            ForStmt:
               body:
-                None
-              var_defs:
-                VarDef:
-                  declarationInfo:
-                    DeclarationInfo:
-                      name:
-                        'c'
-                      type:
-                        PointerType:
-                          isMutable:
-                            True
-                          pointee_type:
-                            'int'
-                      visibility:
+                Block:
+                  stmts:
+                    LetStmt:
+                      body:
                         None
-                  isMutable:
-                    False
-                  by_ref:
-                    False
-              values:
-                IntLiteral:
-                  type:
-                    IntType:
-                  isMutable:
-                    False
-                  expr:
-                    None
+                      var_defs:
+                        VarDef:
+                          declarationInfo:
+                            DeclarationInfo:
+                              name:
+                                'pat'
+                              type:
+                                None
+                              visibility:
+                                None
+                          isMutable:
+                            False
+                          by_ref:
+                            False
+                      values:
+                        ArrayAccess:
+                          type:
+                            None
+                          isMutable:
+                            False
+                          expr:
+                            BorrowExpr:
+                              type:
+                                None
+                              isMutable:
+                                False
+                              expr:
+                                IdentifierExpr:
+                                  type:
+                                    None
+                                  isMutable:
+                                    False
+                                  expr:
+                                    None
+                                  isUnsafe:
+                                    False
+                                  name:
+                                    'byte'
+                              isUnsafe:
+                                False
+                          isUnsafe:
+                            False
+                    MatchStmt:
+                      body:
+                        None
+                      expr:
+                        StructDef:
+                          name:
+                            'pat'
+                          fields:
+
+                      arms:
+
                   isUnsafe:
                     False
-                  value:
-                    2
-            LetStmt:
-              body:
-                None
-              var_defs:
-                VarDef:
-                  declarationInfo:
-                    DeclarationInfo:
-                      name:
-                        'd'
-                      type:
-                        None
-                      visibility:
-                        None
-                  isMutable:
-                    False
-                  by_ref:
-                    False
-              values:
+              var:
+                'byte'
+              iterable:
                 FunctionCall:
                   body:
                     None
@@ -87,7 +127,7 @@ Program:
                           isUnsafe:
                             False
                           name:
-                            'c'
+                            're'
                       name:
                         IdentifierExpr:
                           type:
@@ -99,9 +139,140 @@ Program:
                           isUnsafe:
                             False
                           name:
-                            'into_raw'
+                            'iter'
                   args:
 
+          isUnsafe:
+            False
+      isUnsafe:
+        False
+    FunctionDef:
+      identifier:
+        'main'
+      params:
+
+      return_type:
+        None
+      body:
+        Block:
+          stmts:
+            LetStmt:
+              body:
+                None
+              var_defs:
+                VarDef:
+                  declarationInfo:
+                    DeclarationInfo:
+                      name:
+                        'pattern'
+                      type:
+                        None
+                      visibility:
+                        None
+                  isMutable:
+                    False
+                  by_ref:
+                    False
+              values:
+                StrLiteral:
+                  type:
+                    StringType:
+                  isMutable:
+                    False
+                  expr:
+                    None
+                  isUnsafe:
+                    False
+                  value:
+                    'a(b|c)*d'
+            LetStmt:
+              body:
+                None
+              var_defs:
+                VarDef:
+                  declarationInfo:
+                    DeclarationInfo:
+                      name:
+                        'input'
+                      type:
+                        None
+                      visibility:
+                        None
+                  isMutable:
+                    False
+                  by_ref:
+                    False
+              values:
+                FunctionCall:
+                  body:
+                    None
+                  caller:
+                    <Cycle: builtin_function_or_method>
+                  callee:
+                    FieldAccessExpr:
+                      type:
+                        None
+                      isMutable:
+                        False
+                      expr:
+                        None
+                      isUnsafe:
+                        False
+                      receiver:
+                        IdentifierExpr:
+                          type:
+                            None
+                          isMutable:
+                            False
+                          expr:
+                            None
+                          isUnsafe:
+                            False
+                          name:
+                            'pattern'
+                      name:
+                        IdentifierExpr:
+                          type:
+                            None
+                          isMutable:
+                            False
+                          expr:
+                            None
+                          isUnsafe:
+                            False
+                          name:
+                            'as_bytes'
+                  args:
+
+            FunctionCall:
+              body:
+                None
+              caller:
+                None
+              callee:
+                IdentifierExpr:
+                  type:
+                    None
+                  isMutable:
+                    False
+                  expr:
+                    None
+                  isUnsafe:
+                    False
+                  name:
+                    're2post'
+              args:
+                IdentifierExpr:
+                  type:
+                    None
+                  isMutable:
+                    False
+                  expr:
+                    None
+                  isUnsafe:
+                    False
+                  name:
+                    'input'
           isUnsafe:
             False
       isUnsafe:

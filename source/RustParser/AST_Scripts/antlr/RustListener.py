@@ -764,6 +764,15 @@ class RustListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by RustParser#arrayAccess.
+    def enterArrayAccess(self, ctx:RustParser.ArrayAccessContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#arrayAccess.
+    def exitArrayAccess(self, ctx:RustParser.ArrayAccessContext):
+        pass
+
+
     # Enter a parse tree produced by RustParser#arrayLiteral.
     def enterArrayLiteral(self, ctx:RustParser.ArrayLiteralContext):
         pass

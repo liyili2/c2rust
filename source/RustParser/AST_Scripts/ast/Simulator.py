@@ -274,6 +274,9 @@ class Simulator(ProgramVisitor):
 
     def visit_SafeWrapper(self, node: SafeWrapper):
         return node.expr.accept(self)
+    
+    def visit_LiteralExpr(self, node: LiteralExpr):
+        return node.expr.accept(self)
 
     def visit_StrLiteral(self, ctx: StrLiteral):
         return ctx.value
@@ -286,6 +289,13 @@ class Simulator(ProgramVisitor):
 
     def visit_ArrayLiteral(self, node: ArrayLiteral):
         return node
+
+    def visit_ArrayAccess(self, node: ArrayAccess):
+        index = node.expr.accept(self)
+        target = node.name.accept(self)
+        if isinstance(target, ArrayLiteral):
+            return target.elements[index]
+        return target[index]        
 
     def visit_Struct(self, node: StructDef):
         # Maybe store struct in the stack as a dict or array?

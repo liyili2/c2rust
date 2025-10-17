@@ -26,9 +26,13 @@ class LibFuncLen(LibFunction):
 
     def __call__(self, visitor, caller, args=None):
         caller = caller.accept(visitor) if caller else None
-        if hasattr(caller, "__len__"):
-            return len(caller)
-        raise Exception("len() called on non-iterable")
+        if isinstance(caller, ArrayLiteral):
+            return caller.len()
+        else:
+            try:
+                return len(caller)
+            except Exception:
+                raise Exception("len() called on non-iterable")
 
 class LibFuncIntoRaw(LibFunction):
     def __init__(self):
@@ -106,11 +110,13 @@ class LibFuncIter(LibFunction):
     def __call__(self, visitor, caller, args=None):
         caller = caller.accept(visitor) if caller else None
         if caller is None:
-            raise ReturnSignal(value=Exception(arg="called pop() on a None value"))
+            raise ReturnSignal(value=Exception(arg="called iter() on a None value"))
         if isinstance(caller, ArrayLiteral):
             if not caller.elements:
-                raise ReturnSignal(value=Exception(arg="called pop() on an empty ArrayLiteral"))
-            return iter(caller.elements)
+                raise ReturnSignal(value=Exception(arg="called iter() on an empty ArrayLiteral"))
+            return len(caller.elements)
+        if isinstance(caller, str):
+            return len(caller)
 
 class LibFuncAsBytes(LibFunction):
     def __init__(self):

@@ -44,7 +44,6 @@ class LiteralExpr(Expression):
     def __init__(self, expr):
         super().__init__()
         self.expr = expr
-        self.expr = expr
         self.type = self.get_type()
 
     def accept(self, visitor):
@@ -166,6 +165,14 @@ class ArrayLiteral(Expression):
         return f"ArrayLiteral({self.elements})"
     def len(self):
         return len(self.elements)
+    
+class ArrayAccess(Expression):
+    def __init__(self, name, expr, type=None, isMutable=False, isUnsafe=False):
+        super().__init__(expr, type, isMutable, isUnsafe)
+        self.name = name
+
+    def accept(self, visitor):
+        return visitor.visit_ArrayAccess(self)
 
 class UnaryExpr(Expression):
     def __init__(self, op, expr):
