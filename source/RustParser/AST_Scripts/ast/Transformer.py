@@ -61,6 +61,7 @@ class Transformer(RustVisitor):
         visibility = (self.visit(ctx.visibility()) if ctx.visibility() else None)
         def_kind = (ctx.defKind().getText() if ctx.defKind() else None)
         name = ctx.Identifier().getText()
+        value = self.visit(ctx.expression())
         if ctx.COLON():
             type_expr = self.visit(ctx.typeExpr())
             fields = None
@@ -75,7 +76,7 @@ class Transformer(RustVisitor):
                 fields.append(VarDefField(fld_name, fld_type, fld_visibility))
 
         node = TopLevelVarDef(
-            name=name, fields=fields, type=type_expr,
+            name=name, fields=fields, type=type_expr, initial_val=value,
             def_kind=def_kind, visibility=visibility)
 
         return node
@@ -322,11 +323,12 @@ class Transformer(RustVisitor):
         return Statement(body=expr)
 
     def visitFunctionCall(self, ctx):
-        if isinstance(ctx.expression(), list):
+        a = ctx.expression()
+        if isinstance(ctx.expression(), list) and len(ctx.expression()) > 1:
             func_name = self.visit(ctx.expression(len(ctx.expression())-1))
             caller = self.visit(ctx.expression(0))
         else:
-            func_name = self.visit(ctx.expression())
+            func_name = self.visit(ctx.expression(0))
             caller = None
         postfix = ctx.callExpressionPostFix()
         if postfix.functionCallArgs():
@@ -539,6 +541,9 @@ class Transformer(RustVisitor):
 
         elif ctx.safeWrapper():
             return self.visit(ctx.safeWrapper())
+        
+        elif ctx.arrayAccess():
+            return self.visit(ctx.arrayAccess())
 
         raise Exception(f"Unrecognized expression structure: {ctx.getText()}")
 
@@ -687,7 +692,7 @@ class Transformer(RustVisitor):
         elif ctx.CHAR_LITERAL():
             return CharLiteral(ctx.CHAR_LITERAL().getText()[1:-1])
         elif ctx.byteLiteral():
-            return LiteralExpr(expr=ctx.getText())
+            return ByteLiteralExpr(expr=ctx.getText()[2:-1])
         elif ctx.NONE():
             return None
         else:
@@ -737,7 +742,7 @@ class Transformer(RustVisitor):
         elif ctx.Identifier():
             return MatchPattern(IdentifierExpr(name=ctx.Identifier().getText()))
         elif ctx.byteLiteral():
-            return self.visit(ctx.byteLiteral())
+            return ByteLiteralExpr(expr=ctx.getText()[2:-1])
         else:
             raise ValueError("Unknown matchPattern type")
 
@@ -759,6 +764,14 @@ class Transformer(RustVisitor):
             aliases.append(None)
 
         return UseDecl(paths, aliases)
+    
+    def visitArrayAccess(self, ctx):
+        index = self.visit(ctx.expression())
+        name_token = ctx.Identifier()  # This returns a list of terminal nodes
+        if isinstance(name_token, list):
+            name_token = name_token[0]
+        name = IdentifierExpr(name=name_token.getText()) # get the string name
+        return ArrayAccess(name=name, expr=index)
 
 def setParents(node, parent=None, top_level_prog=None):
     if not isinstance(node, ASTNode):

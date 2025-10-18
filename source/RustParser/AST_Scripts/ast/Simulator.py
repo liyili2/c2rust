@@ -7,15 +7,13 @@ from RustParser.AST_Scripts.ast.ProgramVisitor import ProgramVisitor
 from RustParser.AST_Scripts.ast.Expression import *
 from RustParser.AST_Scripts.ast.Program import *
 from RustParser.AST_Scripts.ast.TopLevel import *
+from RustParser.AST_Scripts.ast.common import *
+from RustParser.AST_Scripts.ast import LibFuncs
 
 NoneType = type(None)
 
 # I need to add Box maybe?
 # I also may need to add arrays
-
-class ReturnSignal(Exception):
-    def __init__(self, value):
-        self.value = value
 
 class Simulator(ProgramVisitor):
     # x, y, z, env : ChainMap{ x: n, y : m, z : v} , n m v are nat numbers 100, 100, 100, eg {x : 128}
@@ -31,6 +29,23 @@ class Simulator(ProgramVisitor):
         self.heap = memory
         self.stack = stack
         self.funMap = dict()
+        self.libMap = dict()
+        self.lib_funcs = ["is_empty", "len", "iter", "push", "pop", "null_mut", "into_raw",
+                          "into_string", "cast", "is_null", "unwrap","as_ref", "append", "as_bytes"]
+        self.fill_lib_map()
+
+    def fill_lib_map(self):
+        for name in self.lib_funcs:
+            # Convert snake_case → CamelCase for class name
+            parts = name.split('_')
+            class_name = "LibFunc" + ''.join(p.capitalize() for p in parts)
+
+            # Look for class inside libfuncs module
+            cls = getattr(LibFuncs, class_name, None)
+            if cls is not None:
+                self.libMap[name] = cls()
+            else:
+                print(f"[warn] Lib function class not found: {class_name}")
 
     def get_state(self):
         return self.memory
@@ -58,12 +73,14 @@ class Simulator(ProgramVisitor):
 
         for i in range(0, len(node.var_defs)):
             arVar = node.var_defs[i].declarationInfo.name
-            value = node.values[i].accept(self)
+            value = node.values[i]
+            if value is not None:
+                value = node.values[i].accept(self)
             newStack.update({arVar : value})
 
         self.stack = newStack
         return None
-    
+
     def find_stack_key(self, target):
         if isinstance(target, IdentifierExpr):
             return target.name
@@ -94,6 +111,9 @@ class Simulator(ProgramVisitor):
 
         self.stack = newStack
         return None
+    
+    def visit_StaticVarDecl(self, node: StaticVarDecl):
+        self.stack.update({node.declarationInfo.name : node.initial_value})
 
     def visit_FunctionDef(self, node: FunctionDef):
         self.funMap.update({node.identifier : node})
@@ -111,13 +131,26 @@ class Simulator(ProgramVisitor):
             raise ret
 
     def visit_FunctionCall(self, node: FunctionCall):
+        if node.caller is None:
+            if str.__contains__(node.callee.name, "print"):
+                return None
+            
+        if isinstance(node.caller, type(len)):
+            node.caller = node.callee.receiver
+            node.callee = node.callee.name
+
+        if node.callee.name in self.lib_funcs:
+            func = self.libMap.get(node.callee.name)
+            if func is not None:
+                return func(caller=node.caller, visitor=self, args=node.args)
+
         origFunc = self.funMap.get(node.callee.name)
         newNode = copy.deepcopy(origFunc)
         if newNode is None:
-            newNode = self.funMap.get(node.identifier)
+            newNode = self.funMap.get(node.callee.name)
         # self.stack.update({"self": node.caller})
         newStack = copy.deepcopy(self.stack)
-        for i in range(0, newNode.params.param_len):
+        for i in range(0, len(newNode.params)):
             arVar = newNode.params.params[i].declarationInfo.name
             value = node.args[i].accept(self)
             newStack.update({arVar : value})
@@ -144,17 +177,44 @@ class Simulator(ProgramVisitor):
             if node.else_branch is not None:
                 return node.else_branch.accept(self)
 
+    def visit_MatchStmt(self, node: MatchStmt):
+        match_arms = node.arms
+        match_expr = node.expr.accept(self)
+
+        for i in range(0, len(match_arms)):
+            arm_res = match_arms[i].accept(self)
+            for pattern_res in arm_res:
+                pattern_val = pattern_res.accept(self)
+                if match_expr == pattern_val:
+                    return match_arms[i].body.accept(self)
+                elif pattern_val == '_':
+                    return match_arms[i].body.accept(self)
+        return
+
+    def visit_MatchArm(self, node: MatchArm):
+        match_pattern = node.patterns
+        return match_pattern
+
+    def visit_MatchPattern(self, node: MatchPattern):
+        return node.value.accept(self)
+
     def visitBreakStmt(self, node: BreakStmt):
         if node is not None: # .vexp()
             return node.accept(self) # .vexp()
         return None # maybe this is better to return?
 
     def visit_ReturnStmt(self, node: ReturnStmt):
-        if node is None:
-            val = None
-        elif hasattr(node, "accept") and callable(node.accept):
-            val = node.value.accept(self)
+        val = None
+        if hasattr(node, "accept") and callable(node.accept):
+            if node.value is not None:
+                val = node.value.accept(self)
         raise ReturnSignal(val)
+    
+    def visit_TopLevelVarDef(self, node: TopLevelVarDef):
+        value = None
+        if node.initial_val is not None:
+            value = node.initial_val.accept(self)
+        self.stack.update({ node.declarationInfo.name : value})
 
     def visit_LoopStmt(self, ctx: LoopStmt):
         # This is the loop keyword. For this type of loop, break statement can return a value
@@ -178,7 +238,7 @@ class Simulator(ProgramVisitor):
     def visit_ForStmt(self, ctx: ForStmt):
         iterations = ctx.iterable.accept(self)
         self.stack.update({ctx.var: 0})
-        while self.stack.get(ctx.var) <= iterations:
+        while self.stack.get(ctx.var) < iterations:
             ctx.body.accept(self)
             self.stack.update({ctx.var: self.stack.get(ctx.var) + 1})
 
@@ -238,6 +298,9 @@ class Simulator(ProgramVisitor):
 
     def visit_int(self, node):
         return node
+    
+    def visit_ByteLiteralExpr(self, node:ByteLiteralExpr):
+        return node.expr
 
     def visit_PatternExpr(self, node: PatternExpr):
         pattern = node.pattern.accept(self)
@@ -250,6 +313,9 @@ class Simulator(ProgramVisitor):
 
     def visit_SafeWrapper(self, node: SafeWrapper):
         return node.expr.accept(self)
+    
+    def visit_LiteralExpr(self, node: LiteralExpr):
+        return node.expr.accept(self)
 
     def visit_StrLiteral(self, ctx: StrLiteral):
         return ctx.value
@@ -259,6 +325,16 @@ class Simulator(ProgramVisitor):
 
     def visit_BoolLiteral(self, ctx: BoolLiteral):
         return ctx.value
+
+    def visit_ArrayLiteral(self, node: ArrayLiteral):
+        return node
+
+    def visit_ArrayAccess(self, node: ArrayAccess):
+        index = node.expr.accept(self)
+        target = node.name.accept(self)
+        if isinstance(target, ArrayLiteral):
+            return target.elements[index]
+        return target[index]        
 
     def visit_Struct(self, node: StructDef):
         # Maybe store struct in the stack as a dict or array?
