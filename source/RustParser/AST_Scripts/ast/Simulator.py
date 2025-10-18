@@ -176,7 +176,7 @@ class Simulator(ProgramVisitor):
         else:
             if node.else_branch is not None:
                 return node.else_branch.accept(self)
-            
+
     def visit_MatchStmt(self, node: MatchStmt):
         match_arms = node.arms
         match_expr = node.expr.accept(self)
@@ -232,7 +232,7 @@ class Simulator(ProgramVisitor):
     def visit_ForStmt(self, ctx: ForStmt):
         iterations = ctx.iterable.accept(self)
         self.stack.update({ctx.var: 0})
-        while self.stack.get(ctx.var) <= iterations:
+        while self.stack.get(ctx.var) < iterations:
             ctx.body.accept(self)
             self.stack.update({ctx.var: self.stack.get(ctx.var) + 1})
 
@@ -262,6 +262,9 @@ class Simulator(ProgramVisitor):
 
     def visit_int(self, node):
         return node
+    
+    def visit_ByteLiteralExpr(self, node:ByteLiteralExpr):
+        return node.expr
 
     def visit_PatternExpr(self, node: PatternExpr):
         pattern = node.pattern.accept(self)

@@ -691,7 +691,7 @@ class Transformer(RustVisitor):
         elif ctx.CHAR_LITERAL():
             return CharLiteral(ctx.CHAR_LITERAL().getText()[1:-1])
         elif ctx.byteLiteral():
-            return LiteralExpr(expr=ctx.getText())
+            return ByteLiteralExpr(expr=ctx.getText()[2:-1])
         elif ctx.NONE():
             return None
         else:
@@ -741,7 +741,7 @@ class Transformer(RustVisitor):
         elif ctx.Identifier():
             return MatchPattern(IdentifierExpr(name=ctx.Identifier().getText()))
         elif ctx.byteLiteral():
-            return StrLiteral(value=ctx.getText())
+            return ByteLiteralExpr(expr=ctx.getText()[2:-1])
         else:
             raise ValueError("Unknown matchPattern type")
 

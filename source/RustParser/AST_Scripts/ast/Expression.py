@@ -39,6 +39,13 @@ class BinaryExpr(Expression):
 
     def accept(self, visitor):
         return visitor.visit_BinaryExpr(self)
+    
+class ByteLiteralExpr(Expression):
+    def __init__(self, expr):
+        super().__init__()
+        self.expr = expr
+    def accept(self, visitor):
+        return visitor.visit_ByteLiteralExpr(self)
 
 class LiteralExpr(Expression):
     def __init__(self, expr):

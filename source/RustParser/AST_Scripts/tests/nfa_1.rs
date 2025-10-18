@@ -28,7 +28,7 @@ fn re2post(re: &[u8]) -> Option<Vec<u8> > {
     for &byte in re.iter() {
         let pat = re[&byte];
         match pat {
-        //     b'(' => {
+            b'(' => {
                 // if natom > 1 {
                 //     natom -= 1;
                 //     dst.push( b'.' );
@@ -39,7 +39,7 @@ fn re2post(re: &[u8]) -> Option<Vec<u8> > {
                 // paren.push(Paren { nalt, natom });
                 // nalt = 0;
                 // natom = 0;
-            // }
+            }
             // b'|' => {
             //     if natom == 0 {
             //         return None;
