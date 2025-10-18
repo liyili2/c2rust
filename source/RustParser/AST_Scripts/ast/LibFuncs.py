@@ -76,6 +76,16 @@ class LibFuncIsEmpty(LibFunction):
             if len(val) == 0:
                 return True
         return False
+    
+class LibFuncIsNull(LibFunction):
+    def __init__(self):
+        super().__init__("is_null")
+
+    def __call__(self, visitor, caller, args=None):
+        val = caller.accept(visitor) if caller else None
+        if val is None:
+            return True
+        return False
 
 class LibFuncPush(LibFunction):
     def __init__(self):

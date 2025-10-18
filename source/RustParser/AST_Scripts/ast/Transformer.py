@@ -61,6 +61,7 @@ class Transformer(RustVisitor):
         visibility = (self.visit(ctx.visibility()) if ctx.visibility() else None)
         def_kind = (ctx.defKind().getText() if ctx.defKind() else None)
         name = ctx.Identifier().getText()
+        value = self.visit(ctx.expression())
         if ctx.COLON():
             type_expr = self.visit(ctx.typeExpr())
             fields = None
@@ -75,7 +76,7 @@ class Transformer(RustVisitor):
                 fields.append(VarDefField(fld_name, fld_type, fld_visibility))
 
         node = TopLevelVarDef(
-            name=name, fields=fields, type=type_expr,
+            name=name, fields=fields, type=type_expr, initial_val=value,
             def_kind=def_kind, visibility=visibility)
 
         return node

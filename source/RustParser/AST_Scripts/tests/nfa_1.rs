@@ -26,7 +26,7 @@ fn re2post(re: &[u8]) -> Option<Vec<u8> > {
     let mut paren = vec![];
     let mut dst = vec![];
     for &byte in re.iter() {
-        let pat = re[&byte];
+        let pat = re[byte];
         match pat {
             b'(' => {
                 if natom > 1 {
@@ -40,74 +40,73 @@ fn re2post(re: &[u8]) -> Option<Vec<u8> > {
                 nalt = 0 ;
                 natom = 0;
             }
-            // b'|' => {
-            //     if natom == 0 {
-            //         return None;
-            //     }
-            //     natom -= 1;
-            //     while natom > 0 {
-            //         dst.push(b'.');
-            //         natom -= 1;
-            //     }
-            //     nalt += 1;
-            // }
-            // b')' => {
-            //     let p = paren.pop()?;
-            //     if natom == 0 {
-            //         return None;
-            //     }
-            //     natom -= 1;
-            //     while natom > 0 {
-            //         dst.push(b'.');
-            //         natom -= 1;
-            //     }
-            //     while nalt > 0 {
-            //         dst.push(b'|');
-            //         nalt -= 1;
-            //     }
-            //     nalt = p.nalt;
-            //     natom = p.natom;
-            //     natom += 1;
-            // }
-            // b'*' | b'+' | b'?' => {
-            //     if natom == 0 {
-            //         return None;
-            //     }
-            //     dst.push(byte);
-            // }
+            b'|' => {
+                if natom == 0 {
+                    return None;
+                }
+                natom -= 1;
+                while natom > 0 {
+                    dst.push(b'.');
+                    natom -= 1;
+                }
+                nalt += 1;
+            }
+            b')' => {
+                let p = paren.pop()?;
+                if natom == 0 {
+                    return None;
+                }
+                natom -= 1;
+                while natom > 0 {
+                    dst.push(b'.');
+                    natom -= 1;
+                }
+                while nalt > 0 {
+                    dst.push(b'|');
+                    nalt -= 1;
+                }
+                nalt = p.nalt;
+                natom = p.natom;
+                natom += 1;
+            }
+            b'*' | b'+' | b'?' => {
+                if natom == 0 {
+                    return None;
+                }
+                dst.push(byte);
+            }
             // Not handled in the original program.
             // Since '.' is a meta character in the
             // postfix syntax, it can result in UB.
             // So we reject it here.
-            // _ => {
-                // if natom > 1 {
-                //     natom -= 1;
-                //     dst.push(b'.');
-                // }
-                // dst.push(byte);
-                // natom += 1;
-            // }
+            _ => {
+                if natom > 1 {
+                    natom -= 1;
+                    dst.push(b'.');
+                }
+                dst.push(byte);
+                natom += 1;
+            }
         }
     }
-    // if !paren.is_empty() {
-    //     return None;
-    // }
-    // // The original program doesn't handle this case, which in turn
-    // // causes UB in post2nfa. It occurs when a pattern ends with a |.
-    // // Other cases like `a||b` and `(a|)` are rejected correctly above.
-    // if natom == 0 && nalt > 0 {
-    //     return None;
-    // }
-    // natom -= 1;
-    // while natom > 0 {
-    //     dst.push(b'.');
-    //     natom -= 1;
-    // }
-    // while nalt > 0 {
-    //     dst.push(b'|');
-    //     nalt -= 1;
-    // }
-    // Some(dst);
+    if !paren.is_empty() {
+        return None;
+    }
+    // The original program doesn't handle this case, which in turn
+    // causes UB in post2nfa. It occurs when a pattern ends with a |.
+    // Other cases like `a||b` and `(a|)` are rejected correctly above.
+    if natom == 0 && nalt > 0 {
+        return None;
+    }
+    natom -= 1;
+    while natom > 0 {
+        dst.push(b'.');
+        natom -= 1;
+    }
+    while nalt > 0 {
+        dst.push(b'|');
+        nalt -= 1;
+    }
 }
 
 fn main() {

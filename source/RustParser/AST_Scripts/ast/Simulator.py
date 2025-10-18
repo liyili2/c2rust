@@ -204,11 +204,17 @@ class Simulator(ProgramVisitor):
         return None # maybe this is better to return?
 
     def visit_ReturnStmt(self, node: ReturnStmt):
-        if node is None:
-            val = None
-        elif hasattr(node, "accept") and callable(node.accept):
-            val = node.value.accept(self)
+        val = None
+        if hasattr(node, "accept") and callable(node.accept):
+            if node.value is not None:
+                val = node.value.accept(self)
         raise ReturnSignal(val)
+    
+    def visit_TopLevelVarDef(self, node: TopLevelVarDef):
+        value = None
+        if node.initial_val is not None:
+            value = node.initial_val.accept(self)
+        self.stack.update({ node.declarationInfo.name : value})
 
     def visit_LoopStmt(self, ctx: LoopStmt):
         # This is the loop keyword. For this type of loop, break statement can return a value

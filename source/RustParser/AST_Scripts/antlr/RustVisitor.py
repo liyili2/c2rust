@@ -34,6 +34,11 @@ class RustVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by RustParser#staticVarDecl.
+    def visitStaticVarDecl(self, ctx:RustParser.StaticVarDeclContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by RustParser#defKind.
     def visitDefKind(self, ctx:RustParser.DefKindContext):
         return self.visitChildren(ctx)
@@ -246,11 +251,6 @@ class RustVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by RustParser#initializer.
     def visitInitializer(self, ctx:RustParser.InitializerContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by RustParser#staticVarDecl.
-    def visitStaticVarDecl(self, ctx:RustParser.StaticVarDeclContext):
         return self.visitChildren(ctx)
 
 
