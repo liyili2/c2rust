@@ -22,23 +22,23 @@ fn re2post(re: &[u8]) -> Option<Vec<u8> > {
     // if re.len() >= (8000 / 2) {
     //     return None;
     // }
-    // let (mut nalt, mut natom) = (0, 0);
-    // let mut paren = vec![];
-    // let mut dst = vec![];
+    let (mut nalt, mut natom) = (0, 0);
+    let mut paren = vec![];
+    let mut dst = vec![];
     for &byte in re.iter() {
         let pat = re[&byte];
         match pat {
             b'(' => {
-                // if natom > 1 {
-                //     natom -= 1;
-                //     dst.push( b'.' );
-                // }
-                // if paren.len() >= 100 {
-                //     return None;
-                // }
-                // paren.push(Paren { nalt, natom });
-                // nalt = 0;
-                // natom = 0;
+                if natom > 1 {
+                    natom -= 1;
+                    dst.push( b'.' );
+                }
+                if paren.len() >= 100 {
+                    return None;
+                }
+                paren.push(Paren { nalt, natom });
+                nalt = 0 ;
+                natom = 0;
             }
             // b'|' => {
             //     if natom == 0 {

@@ -88,7 +88,7 @@ class LibFuncPush(LibFunction):
         if len(args) > 1:
             raise ReturnSignal(value=Exception(arg="called push() with more than one argument"))
         if isinstance(caller, ArrayLiteral):
-            caller.elements.push(args[0])
+            caller.elements.append(args[0])
 
 class LibFuncPop(LibFunction):
     def __init__(self):
