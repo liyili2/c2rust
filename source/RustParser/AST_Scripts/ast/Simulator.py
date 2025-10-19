@@ -31,7 +31,8 @@ class Simulator(ProgramVisitor):
         self.funMap = dict()
         self.libMap = dict()
         self.lib_funcs = ["is_empty", "len", "iter", "push", "pop", "null_mut", "into_raw",
-                          "into_string", "cast", "is_null", "unwrap","as_ref", "append", "as_bytes"]
+                          "into_string", "cast", "is_null", "unwrap","as_ref", "append", "as_bytes", "addr_of_mut!",
+                          "fetch_add", "by_ref", "into_boxed_slice"]
         self.fill_lib_map()
 
     def fill_lib_map(self):
@@ -394,29 +395,6 @@ class Simulator(ProgramVisitor):
 
         return None
 
-    # def visitBoxWrapperExpr(self, node: BoxWrapperExpr):
-    #     return
-
-    # def visitVexp(self, ctx: XMLExpParser.VexpContext):
-    #     if ctx.idexp() is not None:
-    #         return self.visitIDExp(ctx)
-    #     return
-
-    # def visitBoolexp(self, ctx: XMLExpParser.BoolexpContext):
-    #     if ctx.TrueLiteral() is not None:
-    #         return True
-    #     else:
-    #         return False
-
-    # def visit(self, ctx: ParserRuleContext):
-    #     if ctx.getChildCount() > 0:
-    #         return self.visitChildren(ctx)
-    #     else:
-    #         return self.visitTerminal(ctx)
-
-    # def visit_IdentifierExpr(self, ctx: IdentifierExpr):
-    #     return ctx.accept(self)
-
     def visit_DereferenceExpr(self, node: DereferenceExpr):
         return node.expr.accept(self)
 
@@ -426,9 +404,9 @@ class Simulator(ProgramVisitor):
 
     # library functions
 
-    def visit_IntoString(self, node: IntoString):
-        
-        return
+    # def visit_IntoString(self, node: IntoString):
+    #
+    #     return
 
     # Visit a parse tree produced by XMLExpParser#vexp.
     # def visitVexp(self, ctx: XMLExpParser.VexpContext):

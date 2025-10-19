@@ -61,7 +61,7 @@ class LibFuncAsRef(LibFunction):
     def __call__(self, visitor, caller, args=None):
         val = caller.accept(visitor) if caller else None
         if val is None:
-            raise ReturnSignal(value=Exception(arg="called null_mut() on a None value"))
+            raise ReturnSignal(value=Exception(arg="called as_ref() on a None value"))
         return val
 
 class LibFuncIsEmpty(LibFunction):
@@ -135,5 +135,71 @@ class LibFuncAsBytes(LibFunction):
     def __call__(self, visitor, caller, args=None):
         caller = caller.accept(visitor) if caller else None
         if caller is None:
-            raise ReturnSignal(value=Exception(arg="called pop() on a None value"))
+            raise ReturnSignal(value=Exception(arg="called as_bytes() on a None value"))
+        if isinstance(caller, StrLiteral):
+            return caller.encode('utf-8')
         return caller
+
+
+class LibFuncIntoString(LibFunction):
+    def __init__(self):
+        super().__init__("into_string")
+
+    def __call__(self, visitor, caller, args=None):
+        caller = caller.accept(visitor) if caller else None
+        if caller is None:
+            raise ReturnSignal(value=Exception(arg="called into_string() on a None value"))
+
+        return str(caller)
+
+
+class LibFuncAddrOfMut(LibFunction):
+    def __init__(self):
+        super().__init__("addr_of_mut!")
+
+    def __call__(self, visitor, caller, args=None):
+        expr = caller.accept(visitor) if caller else None
+        if expr is None:
+            raise ReturnSignal(value=Exception(arg="called addr_of_mut!() on a None value"))
+
+        return expr
+
+
+class LibFuncFetchAdd(LibFunction):
+    def __init__(self):
+        super().__init__("fetch_add")
+
+    def __call__(self, visitor, caller, args=None):
+        val = caller.accept(visitor) if caller else None
+        if val is None:
+            raise ReturnSignal(value=Exception(arg="called fetch_add() on a None value"))
+
+        new_val = val + args[0]
+
+        caller.stack[caller.name] = new_val
+
+        return val
+
+
+class LibFuncByRef(LibFunction):
+    def __init__(self):
+        super().__init__("by_ref")
+
+    def __call__(self, visitor, caller, args=None):
+        iterator = caller.accept(visitor) if caller else None
+        if iterator is None:
+            raise ReturnSignal(value=Exception(arg="called by_ref() on a None value"))
+
+        return iterator
+
+
+class LibFuncIntoBoxedSlice(LibFunction):
+    def __init__(self):
+        super().__init__("into_boxed_slice")
+
+    def __call__(self, visitor, caller, args=None):
+        vector = caller.accept(visitor) if caller else None
+        if vector is None:
+            raise ReturnSignal(value=Exception(arg="called into_boxed_slice() on a None value"))
+
+        return vector
