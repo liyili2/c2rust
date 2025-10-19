@@ -51,8 +51,10 @@ class LibFuncNullMut(LibFunction):
     def __call__(self, visitor, caller, args=None):
         val = caller.accept(visitor) if caller else None
         if val is None:
-            raise ReturnSignal(value=Exception(arg="called null_mut() on a None value"))
-        return val
+            return None
+
+        # raise ReturnSignal(value=Exception(arg="called null_mut() on a None value"))
+        return None
 
 class LibFuncAsRef(LibFunction):
     def __init__(self):

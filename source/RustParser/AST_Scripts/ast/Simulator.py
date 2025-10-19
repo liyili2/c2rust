@@ -413,26 +413,6 @@ class Simulator(ProgramVisitor):
         else:
             raise Exception(f"Unsupported unary operator: {oper}")
 
-    # def visitBoxWrapperExpr(self, node: BoxWrapperExpr):
-    #     return
-
-    # def visitVexp(self, ctx: XMLExpParser.VexpContext):
-    #     if ctx.idexp() is not None:
-    #         return self.visitIDExp(ctx)
-    #     return
-
-    # def visitBoolexp(self, ctx: XMLExpParser.BoolexpContext):
-    #     if ctx.TrueLiteral() is not None:
-    #         return True
-    #     else:
-    #         return False
-
-    # def visit(self, ctx: ParserRuleContext):
-    #     if ctx.getChildCount() > 0:
-    #         return self.visitChildren(ctx)
-    #     else:
-    #         return self.visitTerminal(ctx)
-
     def visit_IdentifierExpr(self, node: IdentifierExpr):
         identifier_val = self.stack.get(node.name)
         return identifier_val
