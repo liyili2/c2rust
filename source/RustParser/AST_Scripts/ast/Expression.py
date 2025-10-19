@@ -11,8 +11,7 @@ class Expression(ASTNode):
         self.isUnsafe=isUnsafe
 
     def accept(self, visitor):
-        method_name = f'visit_{self.__class__.__name__}'
-        return getattr(visitor, method_name, visitor.generic_visit)(self)
+        self.expr.accept(visitor)
 
 class QualifiedExpression(Expression):
     def __init__(self, expr):
@@ -188,7 +187,7 @@ class UnaryExpr(Expression):
         self.expr = expr
 
     def accept(self, visitor):
-        return visitor.visit_UnaryExpr(self.expr)
+        return visitor.visit_UnaryExpr(self)
 
 class DereferenceExpr(Expression):
     def __init__(self, expr):

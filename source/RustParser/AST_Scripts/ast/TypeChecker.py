@@ -795,13 +795,15 @@ class TypeChecker:
 
     def visit_Statement(self, node):
         return self.visit(node.body)
-    
+
     def visit_ConditionalAssignmentStmt(self, node):
         return self.visit(node.body)
 
     def visit_TypePathExpression(self, node):
         if isinstance(node.last_type, IdentifierExpr):
             return node.last_type
+        if isinstance(node.last_type, FunctionCall):
+            return node.last_type.callee
         if str.__contains__(node.last_type, "int"):
             return IntType()
         if str.__contains__(node.last_type, "str"):

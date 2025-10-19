@@ -135,20 +135,27 @@ class Simulator(ProgramVisitor):
         if node.caller is None:
             if str.__contains__(node.callee.name, "print"):
                 return None
-            
-        if isinstance(node.caller, type(len)):
-            node.caller = node.callee.receiver
-            node.callee = node.callee.name
 
-        if node.callee.name in self.lib_funcs:
-            func = self.libMap.get(node.callee.name)
+        if isinstance(node.caller, type(len)):
+            if isinstance(node.callee, IdentifierExpr):
+                node.caller = None
+            else:
+                node.caller = node.callee.receiver
+            
+        if isinstance(node.callee, IdentifierExpr):
+            node.callee = node.callee.name
+        elif isinstance(node.callee, FieldAccessExpr):
+            node.callee = node.callee.name.name
+
+        if node.callee in self.lib_funcs:
+            func = self.libMap.get(node.callee)
             if func is not None:
                 return func(caller=node.caller, visitor=self, args=node.args)
 
-        origFunc = self.funMap.get(node.callee.name)
+        origFunc = self.funMap.get(node.callee)
         newNode = copy.deepcopy(origFunc)
         if newNode is None:
-            newNode = self.funMap.get(node.callee.name)
+            newNode = self.funMap.get(node.callee)
         # self.stack.update({"self": node.caller})
         newStack = copy.deepcopy(self.stack)
         for i in range(0, len(newNode.params)):
@@ -392,8 +399,45 @@ class Simulator(ProgramVisitor):
         elif oper == '!=':
             return a != b
             #return result
-
         return None
+    
+    def visit_UnaryExpr(self, node: UnaryExpr):
+        oper = str(node.op)
+        expr = node.expr.accept(self)
+        if oper == '-':
+            return -expr
+        if oper == '+':
+            return expr
+        if oper == '!':
+            return not expr
+        else:
+            raise Exception(f"Unsupported unary operator: {oper}")
+
+    # def visitBoxWrapperExpr(self, node: BoxWrapperExpr):
+    #     return
+
+    # def visitVexp(self, ctx: XMLExpParser.VexpContext):
+    #     if ctx.idexp() is not None:
+    #         return self.visitIDExp(ctx)
+    #     return
+
+    # def visitBoolexp(self, ctx: XMLExpParser.BoolexpContext):
+    #     if ctx.TrueLiteral() is not None:
+    #         return True
+    #     else:
+    #         return False
+
+    # def visit(self, ctx: ParserRuleContext):
+    #     if ctx.getChildCount() > 0:
+    #         return self.visitChildren(ctx)
+    #     else:
+    #         return self.visitTerminal(ctx)
+
+    # def visit_IdentifierExpr(self, ctx: IdentifierExpr):
+    #     return ctx.accept(self)
+
+    def visit_CastExpr(self, node: CastExpr):
+        return node.expr.accept(self)
 
     def visit_DereferenceExpr(self, node: DereferenceExpr):
         return node.expr.accept(self)
