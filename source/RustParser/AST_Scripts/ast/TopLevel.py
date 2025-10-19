@@ -124,11 +124,15 @@ class TypeAliasDecl(TopLevel):
         self.declarationInfo = DeclarationInfo(name=name, type=type, visibility=visibility)
 
 class TopLevelVarDef(TopLevel):
-    def __init__(self, name, fields, type, def_kind, isUnsafe=False, visibility=None):
+    def __init__(self, name, initial_val, fields, type, def_kind, isUnsafe=False, visibility=None):
         self.declarationInfo = DeclarationInfo(name=name, type=type, visibility=visibility)
         self.fields = fields
         self.def_kind = def_kind # union, const, etc.
         self.isUnsafe = isUnsafe
+        self.initial_val = initial_val
+
+    def accept(self, visitor):
+        return visitor.visit_TopLevelVarDef(self)
 
     def getChildren(self):
         return self.fields

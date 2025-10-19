@@ -102,7 +102,7 @@ class ReplacementOperator:
                             if isinstance(stmt.condition.right, DereferenceExpr):
                                 stmt.replace_dereference_with_ref_unwrap_call()
                             if isinstance(stmt.condition.left, FieldAccessExpr):
-                                stmt.condition.left=FunctionCallExpr(
+                                stmt.condition.left=FieldAccessExpr(receiver=FunctionCallExpr(
                                     caller=FunctionCallExpr(
                                         caller=stmt.condition.left,
                                         callee="as_ref",
@@ -110,10 +110,11 @@ class ReplacementOperator:
                                     ),
                                     callee="unwrap",
                                     args=[]
-                                )
+                                ),
+                                field_name= stmt.condition.left.name)
 
                             if isinstance(stmt.condition.right, FieldAccessExpr):
-                                stmt.condition.right=FunctionCallExpr(
+                                stmt.condition.right=FieldAccessExpr(receiver=FunctionCallExpr(
                                     caller=FunctionCallExpr(
                                         caller=stmt.condition.right,
                                         callee="as_ref",
@@ -121,7 +122,8 @@ class ReplacementOperator:
                                     ),
                                     callee="unwrap",
                                     args=[]
-                                )
+                                ),
+                                field_name= stmt.condition.right.name)
                     if isinstance(stmt, AssignStmt):
                         if isinstance(stmt.target, DereferenceExpr):
                             stmt.target = Expression(
@@ -286,7 +288,6 @@ class ReplacementOperator:
         for top in ast_root.getChildren():
             if isinstance(parent_1, type(top)) and isinstance(parent_1, FunctionDef):
                 if self.utils.function_def_eq(parent_1, top):
-                    # ✅ Handle both FunctionParamList and plain list
                     if isinstance(parent_1.params, FunctionParamList):
                         param_list = parent_1.params.params
                     else:
@@ -295,7 +296,6 @@ class ReplacementOperator:
                     new_params = []
                     for param in param_list:
                         if isinstance(param.declarationInfo.type, PointerType) and param.isMutable:
-                            # Wrap mutable pointer params into SafeNonNullWrapper
                             new_param = Param(
                                 name=param.declarationInfo.name,
                                 type=RefType(inner=SafeNonNullWrapper(
@@ -306,7 +306,6 @@ class ReplacementOperator:
                         else:
                             new_params.append(param)
 
-                    # ✅ Set back params in the same structural form
                     if isinstance(parent_1.params, FunctionParamList):
                         parent_1.setParamList(FunctionParamList(params=new_params))
                     else:
@@ -352,43 +351,3 @@ class ReplacementOperator:
                 remaining_tops.append(top)
 
         return Program(items=remaining_tops)
-
-    def a(self, ast_root):
-        for top in ast_root.getChildren():
-            if not (isinstance(top, FunctionDef) or isinstance(top, InterfaceDef)):
-                continue
-            top_children = top if isinstance(top, list) else top.getChildren()
-            block = top_children.body if isinstance(top_children, FunctionDef) else top_children
-
-            if isinstance(block, Block):
-                for stmt in block.getChildren():
-                    if isinstance(stmt, IfStmt):
-                        if isinstance(stmt.condition, BinaryExpr):
-                            if isinstance(stmt.condition.left, DereferenceExpr):
-                                stmt.replace_dereference_with_ref_unwrap_call()
-                            if isinstance(stmt.condition.right, DereferenceExpr):
-                                stmt.replace_dereference_with_ref_unwrap_call()
-                            if isinstance(stmt.condition.left ,FieldAccessExpr):
-                                stmt.condition.left = FieldAccessExpr(field_name=stmt.condition.left.name,
-                                                                    receiver=FunctionCallExpr(
-                                    caller=FunctionCallExpr(caller=stmt.condition.left.expr, 
-                                                            callee=IdentifierExpr(name="as_ref")),
-                                    callee=IdentifierExpr(name="unwrap")))
-                            if isinstance(stmt.condition.right ,FieldAccessExpr):
-                                stmt.condition.right = FieldAccessExpr(field_name=stmt.condition.right.name,
-                                    receiver=FunctionCallExpr(
-                                    caller=FunctionCallExpr(caller=stmt.condition.right.expr, args=[],
-                                                            callee=IdentifierExpr(name="as_ref")),
-                                    callee=IdentifierExpr(name="unwrap"), args=[]))
-
-                    if isinstance(stmt, LetStmt) and len(stmt.var_defs) == 1:
-                        val = stmt.values[0]
-                        if isinstance(val, DereferenceExpr):
-                            stmt = LetStmt(
-                                var_defs=VarDef(
-                                    name=stmt.var_defs[0].declarationInfo.name,
-                                    mutable=stmt.var_defs[0].mutable,
-                                    by_ref=stmt.var_defs[0].by_ref,
-                                    type=RefType("T")
-                                ), values=Expression(expr=BorrowExpr(expr=val), isUnsafe=True))
-            return ast_root

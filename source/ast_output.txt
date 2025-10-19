@@ -1,24 +1,68 @@
 Program:
   items:
-    UseDecl:
-      paths:
+    TopLevelVarDef:
+      declarationInfo:
+        DeclarationInfo:
+          name:
+            'MATCH'
+          type:
+            'i32'
+          visibility:
+            None
+      fields:
         None
-      aliases:
+      def_kind:
+        'const'
+      isUnsafe:
+        False
+      initial_val:
+        IntLiteral:
+          type:
+            IntType:
+          isMutable:
+            False
+          expr:
+            None
+          isUnsafe:
+            False
+          value:
+            256
+    TopLevelVarDef:
+      declarationInfo:
+        DeclarationInfo:
+          name:
+            'SPLIT'
+          type:
+            'i32'
+          visibility:
+            None
+      fields:
         None
-    Attribute:
-      name:
-        'derive'
-      args:
-        ('Debug', None)
+      def_kind:
+        'const'
+      isUnsafe:
+        False
+      initial_val:
+        IntLiteral:
+          type:
+            IntType:
+          isMutable:
+            False
+          expr:
+            None
+          isUnsafe:
+            False
+          value:
+            257
     StructDef:
       name:
-        'Node'
+        'State'
       fields:
         StructField:
           declarationInfo:
             DeclarationInfo:
               name:
-                'key'
+                'c'
               type:
                 'i32'
               visibility:
@@ -27,40 +71,244 @@ Program:
           declarationInfo:
             DeclarationInfo:
               name:
-                'value'
+                'out'
               type:
-                'String'
+                PointerType:
+                  isMutable:
+                    True
+                  pointee_type:
+                    'State'
               visibility:
                 None
         StructField:
           declarationInfo:
             DeclarationInfo:
               name:
-                'left'
+                'out1'
               type:
                 PointerType:
                   isMutable:
                     True
                   pointee_type:
-                    'Node'
+                    'State'
               visibility:
                 None
         StructField:
           declarationInfo:
             DeclarationInfo:
               name:
-                'right'
+                'lastlist'
+              type:
+                'i32'
+              visibility:
+                None
+    StaticVarDecl:
+      declarationInfo:
+        DeclarationInfo:
+          name:
+            'NSTATE'
+          type:
+            'AtomicI32'
+          visibility:
+            None
+      isMutable:
+        False
+      initial_value:
+        TypePathExpression:
+          type:
+            None
+          isMutable:
+            False
+          expr:
+            None
+          isUnsafe:
+            False
+          last_type:
+            FunctionCall:
+              body:
+                None
+              caller:
+                <built-in function id>
+              callee:
+                IdentifierExpr:
+                  type:
+                    None
+                  isMutable:
+                    False
+                  expr:
+                    None
+                  isUnsafe:
+                    False
+                  name:
+                    'new'
+              args:
+                IntLiteral:
+                  type:
+                    IntType:
+                  isMutable:
+                    False
+                  expr:
+                    None
+                  isUnsafe:
+                    False
+                  value:
+                    0
+          type_path:
+            TypePathExpression:
+              type:
+                None
+              isMutable:
+                False
+              expr:
+                None
+              isUnsafe:
+                False
+              last_type:
+                ''
+              type_path:
+                'AtomicI32'
+                ''
+      isExtern:
+        False
+    StaticVarDecl:
+      declarationInfo:
+        DeclarationInfo:
+          name:
+            'MATCH_STATE'
+          type:
+            'State'
+          visibility:
+            None
+      isMutable:
+        True
+      initial_value:
+        StructDef:
+          name:
+            'State'
+          fields:
+            StructLiteralField:
+              type:
+                None
+              isMutable:
+                False
+              expr:
+                None
+              isUnsafe:
+                False
+              declarationInfo:
+                DeclarationInfo:
+                  name:
+                    'c'
+                  type:
+                    None
+                  visibility:
+                    None
+              value:
+                IdentifierExpr:
+                  type:
+                    None
+                  isMutable:
+                    False
+                  expr:
+                    None
+                  isUnsafe:
+                    False
+                  name:
+                    'MATCH'
+            StructLiteralField:
+              type:
+                None
+              isMutable:
+                False
+              expr:
+                None
+              isUnsafe:
+                False
+              declarationInfo:
+                DeclarationInfo:
+                  name:
+                    'lastlist'
+                  type:
+                    None
+                  visibility:
+                    None
+              value:
+                IntLiteral:
+                  type:
+                    IntType:
+                  isMutable:
+                    False
+                  expr:
+                    None
+                  isUnsafe:
+                    False
+                  value:
+                    0
+      isExtern:
+        False
+    StructDef:
+      name:
+        'Frag'
+      fields:
+        StructField:
+          declarationInfo:
+            DeclarationInfo:
+              name:
+                'start'
               type:
                 PointerType:
                   isMutable:
                     True
                   pointee_type:
-                    'Node'
+                    'State'
+              visibility:
+                None
+        StructField:
+          declarationInfo:
+            DeclarationInfo:
+              name:
+                'out'
+              type:
+                PointerType:
+                  isMutable:
+                    True
+                  pointee_type:
+                    'PtrList'
+              visibility:
+                None
+    StructDef:
+      name:
+        'PtrList'
+      fields:
+        StructField:
+          declarationInfo:
+            DeclarationInfo:
+              name:
+                'next'
+              type:
+                PointerType:
+                  isMutable:
+                    True
+                  pointee_type:
+                    'PtrList'
+              visibility:
+                None
+        StructField:
+          declarationInfo:
+            DeclarationInfo:
+              name:
+                's'
+              type:
+                PointerType:
+                  isMutable:
+                    True
+                  pointee_type:
+                    'State'
               visibility:
                 None
     FunctionDef:
       identifier:
-        'new_node'
+        'PtrList_list1'
       params:
         FunctionParamList:
           params:
@@ -68,20 +316,17 @@ Program:
               declarationInfo:
                 DeclarationInfo:
                   name:
-                    'key'
+                    'outp'
                   type:
-                    'i32'
-                  visibility:
-                    None
-              isMutable:
-                False
-            Param:
-              declarationInfo:
-                DeclarationInfo:
-                  name:
-                    'value'
-                  type:
-                    '&str'
+                    PointerType:
+                      isMutable:
+                        True
+                      pointee_type:
+                        PointerType:
+                          isMutable:
+                            True
+                          pointee_type:
+                            'State'
                   visibility:
                     None
               isMutable:
@@ -93,7 +338,7 @@ Program:
           isMutable:
             True
           pointee_type:
-            'Node'
+            'PtrList'
       body:
         Block:
           stmts:
@@ -105,7 +350,7 @@ Program:
                   declarationInfo:
                     DeclarationInfo:
                       name:
-                        'n'
+                        'l'
                       type:
                         None
                       visibility:
@@ -115,11 +360,13 @@ Program:
                   by_ref:
                     False
               values:
-                StructDef:
-                  name:
-                    'Node'
-                  fields:
-                    StructLiteralField:
+                Expression:
+                  type:
+                    '::<PtrList>()'
+                  isMutable:
+                    False
+                  expr:
+                    FieldAccessExpr:
                       type:
                         None
                       isMutable:
@@ -128,15 +375,7 @@ Program:
                         None
                       isUnsafe:
                         False
-                      declarationInfo:
-                        DeclarationInfo:
-                          name:
-                            'key'
-                          type:
-                            None
-                          visibility:
-                            None
-                      value:
+                      receiver:
                         IdentifierExpr:
                           type:
                             None
@@ -147,25 +386,8 @@ Program:
                           isUnsafe:
                             False
                           name:
-                            'key'
-                    StructLiteralField:
-                      type:
-                        None
-                      isMutable:
-                        False
-                      expr:
-                        None
-                      isUnsafe:
-                        False
-                      declarationInfo:
-                        DeclarationInfo:
-                          name:
-                            'value'
-                          type:
-                            None
-                          visibility:
-                            None
-                      value:
+                            'outp'
+                      name:
                         IdentifierExpr:
                           type:
                             None
@@ -176,45 +398,9 @@ Program:
                           isUnsafe:
                             False
                           name:
-                            'value'
-                    StructLiteralField:
-                      type:
-                        None
-                      isMutable:
-                        False
-                      expr:
-                        None
-                      isUnsafe:
-                        False
-                      declarationInfo:
-                        DeclarationInfo:
-                          name:
-                            'left'
-                          type:
-                            None
-                          visibility:
-                            None
-                      value:
-                        None
-                    StructLiteralField:
-                      type:
-                        None
-                      isMutable:
-                        False
-                      expr:
-                        None
-                      isUnsafe:
-                        False
-                      declarationInfo:
-                        DeclarationInfo:
-                          name:
-                            'right'
-                          type:
-                            None
-                          visibility:
-                            None
-                      value:
-                        None
+                            'cast'
+                  isUnsafe:
+                    False
             ReturnStmt:
               body:
                 None
@@ -229,14 +415,14 @@ Program:
                   isUnsafe:
                     False
                   name:
-                    'n'
+                    'l'
           isUnsafe:
             False
       isUnsafe:
         True
     FunctionDef:
       identifier:
-        'insert'
+        'PtrList_patch'
       params:
         FunctionParamList:
           params:
@@ -244,35 +430,28 @@ Program:
               declarationInfo:
                 DeclarationInfo:
                   name:
-                    'root'
+                    'l'
                   type:
                     PointerType:
                       isMutable:
                         True
                       pointee_type:
-                        'Node'
+                        'PtrList'
                   visibility:
                     None
               isMutable:
-                False
+                True
             Param:
               declarationInfo:
                 DeclarationInfo:
                   name:
-                    'key'
+                    's'
                   type:
-                    'i32'
-                  visibility:
-                    None
-              isMutable:
-                False
-            Param:
-              declarationInfo:
-                DeclarationInfo:
-                  name:
-                    'value'
-                  type:
-                    '&str'
+                    PointerType:
+                      isMutable:
+                        True
+                      pointee_type:
+                        'State'
                   visibility:
                     None
               isMutable:
@@ -280,439 +459,32 @@ Program:
           param_len:
             0
       return_type:
-        PointerType:
-          isMutable:
-            True
-          pointee_type:
-            'Node'
+        None
       body:
         Block:
           stmts:
-            IfStmt:
+            WhileStmt:
               body:
-                None
-              condition:
-                BinaryExpr:
-                  type:
-                    None
-                  isMutable:
-                    False
-                  expr:
-                    None
-                  isUnsafe:
-                    False
-                  left:
-                    IdentifierExpr:
-                      type:
-                        None
-                      isMutable:
-                        False
-                      expr:
-                        None
-                      isUnsafe:
-                        False
-                      name:
-                        'root'
-                  op:
-                    '=='
-                  right:
-                    None
-              then_branch:
                 Block:
                   stmts:
-                    ReturnStmt:
+                    LetStmt:
                       body:
                         None
-                      value:
-                        None
-                  isUnsafe:
-                    False
-              else_branch:
-                None
-            IfStmt:
-              body:
-                None
-              condition:
-                BinaryExpr:
-                  type:
-                    None
-                  isMutable:
-                    False
-                  expr:
-                    None
-                  isUnsafe:
-                    False
-                  left:
-                    IdentifierExpr:
-                      type:
-                        None
-                      isMutable:
-                        False
-                      expr:
-                        None
-                      isUnsafe:
-                        False
-                      name:
-                        'key'
-                  op:
-                    '<'
-                  right:
-                    FieldAccessExpr:
-                      type:
-                        None
-                      isMutable:
-                        False
-                      expr:
-                        None
-                      isUnsafe:
-                        False
-                      receiver:
-                        DereferenceExpr:
-                          type:
-                            None
-                          isMutable:
-                            False
-                          expr:
-                            IdentifierExpr:
+                      var_defs:
+                        VarDef:
+                          declarationInfo:
+                            DeclarationInfo:
+                              name:
+                                'next'
                               type:
                                 None
-                              isMutable:
-                                False
-                              expr:
+                              visibility:
                                 None
-                              isUnsafe:
-                                False
-                              name:
-                                'root'
-                          isUnsafe:
-                            False
-                      name:
-                        IdentifierExpr:
-                          type:
-                            None
                           isMutable:
                             False
-                          expr:
-                            None
-                          isUnsafe:
+                          by_ref:
                             False
-                          name:
-                            'key'
-              then_branch:
-                Block:
-                  stmts:
-                    IfStmt:
-                      body:
-                        None
-                      condition:
-                        BinaryExpr:
-                          type:
-                            None
-                          isMutable:
-                            False
-                          expr:
-                            None
-                          isUnsafe:
-                            False
-                          left:
-                            FieldAccessExpr:
-                              type:
-                                None
-                              isMutable:
-                                False
-                              expr:
-                                None
-                              isUnsafe:
-                                False
-                              receiver:
-                                DereferenceExpr:
-                                  type:
-                                    None
-                                  isMutable:
-                                    False
-                                  expr:
-                                    IdentifierExpr:
-                                      type:
-                                        None
-                                      isMutable:
-                                        False
-                                      expr:
-                                        None
-                                      isUnsafe:
-                                        False
-                                      name:
-                                        'root'
-                                  isUnsafe:
-                                    False
-                              name:
-                                IdentifierExpr:
-                                  type:
-                                    None
-                                  isMutable:
-                                    False
-                                  expr:
-                                    None
-                                  isUnsafe:
-                                    False
-                                  name:
-                                    'left'
-                          op:
-                            '=='
-                          right:
-                            None
-                      then_branch:
-                        Block:
-                          stmts:
-                            LetStmt:
-                              body:
-                                None
-                              var_defs:
-                                VarDef:
-                                  declarationInfo:
-                                    DeclarationInfo:
-                                      name:
-                                        'n2'
-                                      type:
-                                        None
-                                      visibility:
-                                        None
-                                  isMutable:
-                                    False
-                                  by_ref:
-                                    False
-                              values:
-                                FunctionCall:
-                                  body:
-                                    None
-                                  caller:
-                                    <built-in function id>
-                                  callee:
-                                    IdentifierExpr:
-                                      type:
-                                        None
-                                      isMutable:
-                                        False
-                                      expr:
-                                        None
-                                      isUnsafe:
-                                        False
-                                      name:
-                                        'new_node'
-                                  args:
-                                    IdentifierExpr:
-                                      type:
-                                        None
-                                      isMutable:
-                                        False
-                                      expr:
-                                        None
-                                      isUnsafe:
-                                        False
-                                      name:
-                                        'key'
-                                    IdentifierExpr:
-                                      type:
-                                        None
-                                      isMutable:
-                                        False
-                                      expr:
-                                        None
-                                      isUnsafe:
-                                        False
-                                      name:
-                                        'value'
-                            AssignStmt:
-                              body:
-                                None
-                              target:
-                                FieldAccessExpr:
-                                  type:
-                                    None
-                                  isMutable:
-                                    False
-                                  expr:
-                                    None
-                                  isUnsafe:
-                                    False
-                                  receiver:
-                                    DereferenceExpr:
-                                      type:
-                                        None
-                                      isMutable:
-                                        False
-                                      expr:
-                                        IdentifierExpr:
-                                          type:
-                                            None
-                                          isMutable:
-                                            False
-                                          expr:
-                                            None
-                                          isUnsafe:
-                                            False
-                                          name:
-                                            'root'
-                                      isUnsafe:
-                                        False
-                                  name:
-                                    IdentifierExpr:
-                                      type:
-                                        None
-                                      isMutable:
-                                        False
-                                      expr:
-                                        None
-                                      isUnsafe:
-                                        False
-                                      name:
-                                        'left'
-                              value:
-                                IdentifierExpr:
-                                  type:
-                                    None
-                                  isMutable:
-                                    False
-                                  expr:
-                                    None
-                                  isUnsafe:
-                                    False
-                                  name:
-                                    'n2'
-                          isUnsafe:
-                            False
-                      else_branch:
-                        Block:
-                          stmts:
-                            AssignStmt:
-                              body:
-                                None
-                              target:
-                                IdentifierExpr:
-                                  type:
-                                    None
-                                  isMutable:
-                                    False
-                                  expr:
-                                    None
-                                  isUnsafe:
-                                    False
-                                  name:
-                                    'root'
-                              value:
-                                FunctionCall:
-                                  body:
-                                    None
-                                  caller:
-                                    <Cycle: builtin_function_or_method>
-                                  callee:
-                                    IdentifierExpr:
-                                      type:
-                                        None
-                                      isMutable:
-                                        False
-                                      expr:
-                                        None
-                                      isUnsafe:
-                                        False
-                                      name:
-                                        'insert'
-                                  args:
-                                    FieldAccessExpr:
-                                      type:
-                                        None
-                                      isMutable:
-                                        False
-                                      expr:
-                                        None
-                                      isUnsafe:
-                                        False
-                                      receiver:
-                                        DereferenceExpr:
-                                          type:
-                                            None
-                                          isMutable:
-                                            False
-                                          expr:
-                                            IdentifierExpr:
-                                              type:
-                                                None
-                                              isMutable:
-                                                False
-                                              expr:
-                                                None
-                                              isUnsafe:
-                                                False
-                                              name:
-                                                'root'
-                                          isUnsafe:
-                                            False
-                                      name:
-                                        IdentifierExpr:
-                                          type:
-                                            None
-                                          isMutable:
-                                            False
-                                          expr:
-                                            None
-                                          isUnsafe:
-                                            False
-                                          name:
-                                            'left'
-                                    IdentifierExpr:
-                                      type:
-                                        None
-                                      isMutable:
-                                        False
-                                      expr:
-                                        None
-                                      isUnsafe:
-                                        False
-                                      name:
-                                        'key'
-                                    IdentifierExpr:
-                                      type:
-                                        None
-                                      isMutable:
-                                        False
-                                      expr:
-                                        None
-                                      isUnsafe:
-                                        False
-                                      name:
-                                        'value'
-                          isUnsafe:
-                            False
-                  isUnsafe:
-                    False
-              else_branch:
-                IfStmt:
-                  body:
-                    None
-                  condition:
-                    BinaryExpr:
-                      type:
-                        None
-                      isMutable:
-                        False
-                      expr:
-                        None
-                      isUnsafe:
-                        False
-                      left:
-                        IdentifierExpr:
-                          type:
-                            None
-                          isMutable:
-                            False
-                          expr:
-                            None
-                          isUnsafe:
-                            False
-                          name:
-                            'key'
-                      op:
-                        '>'
-                      right:
+                      values:
                         FieldAccessExpr:
                           type:
                             None
@@ -739,7 +511,7 @@ Program:
                                   isUnsafe:
                                     False
                                   name:
-                                    'root'
+                                    'l'
                               isUnsafe:
                                 False
                           name:
@@ -753,301 +525,27 @@ Program:
                               isUnsafe:
                                 False
                               name:
-                                'key'
-                  then_branch:
-                    Block:
-                      stmts:
-                        IfStmt:
-                          body:
+                                'next'
+                    AssignStmt:
+                      body:
+                        None
+                      target:
+                        FieldAccessExpr:
+                          type:
                             None
-                          condition:
-                            BinaryExpr:
+                          isMutable:
+                            False
+                          expr:
+                            None
+                          isUnsafe:
+                            False
+                          receiver:
+                            DereferenceExpr:
                               type:
                                 None
                               isMutable:
                                 False
                               expr:
-                                None
-                              isUnsafe:
-                                False
-                              left:
-                                FieldAccessExpr:
-                                  type:
-                                    None
-                                  isMutable:
-                                    False
-                                  expr:
-                                    None
-                                  isUnsafe:
-                                    False
-                                  receiver:
-                                    DereferenceExpr:
-                                      type:
-                                        None
-                                      isMutable:
-                                        False
-                                      expr:
-                                        IdentifierExpr:
-                                          type:
-                                            None
-                                          isMutable:
-                                            False
-                                          expr:
-                                            None
-                                          isUnsafe:
-                                            False
-                                          name:
-                                            'root'
-                                      isUnsafe:
-                                        False
-                                  name:
-                                    IdentifierExpr:
-                                      type:
-                                        None
-                                      isMutable:
-                                        False
-                                      expr:
-                                        None
-                                      isUnsafe:
-                                        False
-                                      name:
-                                        'right'
-                              op:
-                                '=='
-                              right:
-                                None
-                          then_branch:
-                            Block:
-                              stmts:
-                                AssignStmt:
-                                  body:
-                                    None
-                                  target:
-                                    FieldAccessExpr:
-                                      type:
-                                        None
-                                      isMutable:
-                                        False
-                                      expr:
-                                        None
-                                      isUnsafe:
-                                        False
-                                      receiver:
-                                        DereferenceExpr:
-                                          type:
-                                            None
-                                          isMutable:
-                                            False
-                                          expr:
-                                            IdentifierExpr:
-                                              type:
-                                                None
-                                              isMutable:
-                                                False
-                                              expr:
-                                                None
-                                              isUnsafe:
-                                                False
-                                              name:
-                                                'root'
-                                          isUnsafe:
-                                            False
-                                      name:
-                                        IdentifierExpr:
-                                          type:
-                                            None
-                                          isMutable:
-                                            False
-                                          expr:
-                                            None
-                                          isUnsafe:
-                                            False
-                                          name:
-                                            'right'
-                                  value:
-                                    FunctionCall:
-                                      body:
-                                        None
-                                      caller:
-                                        <Cycle: builtin_function_or_method>
-                                      callee:
-                                        IdentifierExpr:
-                                          type:
-                                            None
-                                          isMutable:
-                                            False
-                                          expr:
-                                            None
-                                          isUnsafe:
-                                            False
-                                          name:
-                                            'new_node'
-                                      args:
-                                        IdentifierExpr:
-                                          type:
-                                            None
-                                          isMutable:
-                                            False
-                                          expr:
-                                            None
-                                          isUnsafe:
-                                            False
-                                          name:
-                                            'key'
-                                        IdentifierExpr:
-                                          type:
-                                            None
-                                          isMutable:
-                                            False
-                                          expr:
-                                            None
-                                          isUnsafe:
-                                            False
-                                          name:
-                                            'value'
-                              isUnsafe:
-                                False
-                          else_branch:
-                            Block:
-                              stmts:
-                                AssignStmt:
-                                  body:
-                                    None
-                                  target:
-                                    IdentifierExpr:
-                                      type:
-                                        None
-                                      isMutable:
-                                        False
-                                      expr:
-                                        None
-                                      isUnsafe:
-                                        False
-                                      name:
-                                        'root'
-                                  value:
-                                    FunctionCall:
-                                      body:
-                                        None
-                                      caller:
-                                        <Cycle: builtin_function_or_method>
-                                      callee:
-                                        IdentifierExpr:
-                                          type:
-                                            None
-                                          isMutable:
-                                            False
-                                          expr:
-                                            None
-                                          isUnsafe:
-                                            False
-                                          name:
-                                            'insert'
-                                      args:
-                                        FieldAccessExpr:
-                                          type:
-                                            None
-                                          isMutable:
-                                            False
-                                          expr:
-                                            None
-                                          isUnsafe:
-                                            False
-                                          receiver:
-                                            DereferenceExpr:
-                                              type:
-                                                None
-                                              isMutable:
-                                                False
-                                              expr:
-                                                IdentifierExpr:
-                                                  type:
-                                                    None
-                                                  isMutable:
-                                                    False
-                                                  expr:
-                                                    None
-                                                  isUnsafe:
-                                                    False
-                                                  name:
-                                                    'root'
-                                              isUnsafe:
-                                                False
-                                          name:
-                                            IdentifierExpr:
-                                              type:
-                                                None
-                                              isMutable:
-                                                False
-                                              expr:
-                                                None
-                                              isUnsafe:
-                                                False
-                                              name:
-                                                'right'
-                                        IdentifierExpr:
-                                          type:
-                                            None
-                                          isMutable:
-                                            False
-                                          expr:
-                                            None
-                                          isUnsafe:
-                                            False
-                                          name:
-                                            'key'
-                                        IdentifierExpr:
-                                          type:
-                                            None
-                                          isMutable:
-                                            False
-                                          expr:
-                                            None
-                                          isUnsafe:
-                                            False
-                                          name:
-                                            'value'
-                              isUnsafe:
-                                False
-                      isUnsafe:
-                        False
-                  else_branch:
-                    Block:
-                      stmts:
-                        AssignStmt:
-                          body:
-                            None
-                          target:
-                            FieldAccessExpr:
-                              type:
-                                None
-                              isMutable:
-                                False
-                              expr:
-                                None
-                              isUnsafe:
-                                False
-                              receiver:
-                                DereferenceExpr:
-                                  type:
-                                    None
-                                  isMutable:
-                                    False
-                                  expr:
-                                    IdentifierExpr:
-                                      type:
-                                        None
-                                      isMutable:
-                                        False
-                                      expr:
-                                        None
-                                      isUnsafe:
-                                        False
-                                      name:
-                                        'root'
-                                  isUnsafe:
-                                    False
-                              name:
                                 IdentifierExpr:
                                   type:
                                     None
@@ -1058,8 +556,10 @@ Program:
                                   isUnsafe:
                                     False
                                   name:
-                                    'value'
-                          value:
+                                    'l'
+                              isUnsafe:
+                                False
+                          name:
                             IdentifierExpr:
                               type:
                                 None
@@ -1070,135 +570,7 @@ Program:
                               isUnsafe:
                                 False
                               name:
-                                'value'
-                      isUnsafe:
-                        False
-            ReturnStmt:
-              body:
-                None
-              value:
-                IdentifierExpr:
-                  type:
-                    None
-                  isMutable:
-                    False
-                  expr:
-                    None
-                  isUnsafe:
-                    False
-                  name:
-                    'root'
-          isUnsafe:
-            False
-      isUnsafe:
-        True
-    FunctionDef:
-      identifier:
-        'search'
-      params:
-        FunctionParamList:
-          params:
-            Param:
-              declarationInfo:
-                DeclarationInfo:
-                  name:
-                    'root'
-                  type:
-                    PointerType:
-                      isMutable:
-                        True
-                      pointee_type:
-                        'Node'
-                  visibility:
-                    None
-              isMutable:
-                False
-            Param:
-              declarationInfo:
-                DeclarationInfo:
-                  name:
-                    'key'
-                  type:
-                    'i32'
-                  visibility:
-                    None
-              isMutable:
-                False
-          param_len:
-            0
-      return_type:
-        PointerType:
-          isMutable:
-            False
-          pointee_type:
-            'String'
-      body:
-        Block:
-          stmts:
-            LetStmt:
-              body:
-                None
-              var_defs:
-                VarDef:
-                  declarationInfo:
-                    DeclarationInfo:
-                      name:
-                        'return_val'
-                      type:
-                        None
-                      visibility:
-                        None
-                  isMutable:
-                    False
-                  by_ref:
-                    False
-              values:
-                StrLiteral:
-                  type:
-                    StringType:
-                  isMutable:
-                    False
-                  expr:
-                    None
-                  isUnsafe:
-                    False
-                  value:
-                    'None'
-            IfStmt:
-              body:
-                None
-              condition:
-                BinaryExpr:
-                  type:
-                    None
-                  isMutable:
-                    False
-                  expr:
-                    None
-                  isUnsafe:
-                    False
-                  left:
-                    IdentifierExpr:
-                      type:
-                        None
-                      isMutable:
-                        False
-                      expr:
-                        None
-                      isUnsafe:
-                        False
-                      name:
-                        'root'
-                  op:
-                    '=='
-                  right:
-                    None
-              then_branch:
-                Block:
-                  stmts:
-                    ReturnStmt:
-                      body:
-                        None
+                                's'
                       value:
                         IdentifierExpr:
                           type:
@@ -1210,83 +582,7 @@ Program:
                           isUnsafe:
                             False
                           name:
-                            'return_val'
-                  isUnsafe:
-                    False
-              else_branch:
-                None
-            IfStmt:
-              body:
-                None
-              condition:
-                BinaryExpr:
-                  type:
-                    None
-                  isMutable:
-                    False
-                  expr:
-                    None
-                  isUnsafe:
-                    False
-                  left:
-                    IdentifierExpr:
-                      type:
-                        None
-                      isMutable:
-                        False
-                      expr:
-                        None
-                      isUnsafe:
-                        False
-                      name:
-                        'key'
-                  op:
-                    '=='
-                  right:
-                    FieldAccessExpr:
-                      type:
-                        None
-                      isMutable:
-                        False
-                      expr:
-                        None
-                      isUnsafe:
-                        False
-                      receiver:
-                        DereferenceExpr:
-                          type:
-                            None
-                          isMutable:
-                            False
-                          expr:
-                            IdentifierExpr:
-                              type:
-                                None
-                              isMutable:
-                                False
-                              expr:
-                                None
-                              isUnsafe:
-                                False
-                              name:
-                                'root'
-                          isUnsafe:
-                            False
-                      name:
-                        IdentifierExpr:
-                          type:
-                            None
-                          isMutable:
-                            False
-                          expr:
-                            None
-                          isUnsafe:
-                            False
-                          name:
-                            'key'
-              then_branch:
-                Block:
-                  stmts:
+                            's'
                     AssignStmt:
                       body:
                         None
@@ -1301,8 +597,34 @@ Program:
                           isUnsafe:
                             False
                           name:
-                            'return_val'
+                            'l'
                       value:
+                        IdentifierExpr:
+                          type:
+                            None
+                          isMutable:
+                            False
+                          expr:
+                            None
+                          isUnsafe:
+                            False
+                          name:
+                            'next'
+                  isUnsafe:
+                    False
+              condition:
+                UnaryExpr:
+                  type:
+                    None
+                  isMutable:
+                    False
+                  expr:
+                    FunctionCall:
+                      body:
+                        None
+                      caller:
+                        <Cycle: builtin_function_or_method>
+                      callee:
                         FieldAccessExpr:
                           type:
                             None
@@ -1323,7 +645,7 @@ Program:
                               isUnsafe:
                                 False
                               name:
-                                'root'
+                                'l'
                           name:
                             IdentifierExpr:
                               type:
@@ -1335,14 +657,160 @@ Program:
                               isUnsafe:
                                 False
                               name:
-                                'value'
+                                'is_null'
+                      args:
+
                   isUnsafe:
                     False
-              else_branch:
-                None
-            IfStmt:
+                  op:
+                    '!'
+          isUnsafe:
+            False
+      isUnsafe:
+        True
+    FunctionDef:
+      identifier:
+        'PtrList_append'
+      params:
+        FunctionParamList:
+          params:
+            Param:
+              declarationInfo:
+                DeclarationInfo:
+                  name:
+                    'l1'
+                  type:
+                    PointerType:
+                      isMutable:
+                        True
+                      pointee_type:
+                        'PtrList'
+                  visibility:
+                    None
+              isMutable:
+                True
+            Param:
+              declarationInfo:
+                DeclarationInfo:
+                  name:
+                    'l2'
+                  type:
+                    PointerType:
+                      isMutable:
+                        True
+                      pointee_type:
+                        'PtrList'
+                  visibility:
+                    None
+              isMutable:
+                False
+          param_len:
+            0
+      return_type:
+        PointerType:
+          isMutable:
+            True
+          pointee_type:
+            'PtrList'
+      body:
+        Block:
+          stmts:
+            LetStmt:
               body:
                 None
+              var_defs:
+                VarDef:
+                  declarationInfo:
+                    DeclarationInfo:
+                      name:
+                        'oldl1'
+                      type:
+                        PointerType:
+                          isMutable:
+                            True
+                          pointee_type:
+                            'PtrList'
+                      visibility:
+                        None
+                  isMutable:
+                    False
+                  by_ref:
+                    False
+              values:
+                IdentifierExpr:
+                  type:
+                    None
+                  isMutable:
+                    False
+                  expr:
+                    None
+                  isUnsafe:
+                    False
+                  name:
+                    'l1'
+            WhileStmt:
+              body:
+                Block:
+                  stmts:
+                    AssignStmt:
+                      body:
+                        None
+                      target:
+                        IdentifierExpr:
+                          type:
+                            None
+                          isMutable:
+                            False
+                          expr:
+                            None
+                          isUnsafe:
+                            False
+                          name:
+                            'l1'
+                      value:
+                        FieldAccessExpr:
+                          type:
+                            None
+                          isMutable:
+                            False
+                          expr:
+                            None
+                          isUnsafe:
+                            False
+                          receiver:
+                            DereferenceExpr:
+                              type:
+                                None
+                              isMutable:
+                                False
+                              expr:
+                                IdentifierExpr:
+                                  type:
+                                    None
+                                  isMutable:
+                                    False
+                                  expr:
+                                    None
+                                  isUnsafe:
+                                    False
+                                  name:
+                                    'l1'
+                              isUnsafe:
+                                False
+                          name:
+                            IdentifierExpr:
+                              type:
+                                None
+                              isMutable:
+                                False
+                              expr:
+                                None
+                              isUnsafe:
+                                False
+                              name:
+                                'next'
+                  isUnsafe:
+                    False
               condition:
                 BinaryExpr:
                   type:
@@ -1354,20 +822,6 @@ Program:
                   isUnsafe:
                     False
                   left:
-                    IdentifierExpr:
-                      type:
-                        None
-                      isMutable:
-                        False
-                      expr:
-                        None
-                      isUnsafe:
-                        False
-                      name:
-                        'key'
-                  op:
-                    '<'
-                  right:
                     FieldAccessExpr:
                       type:
                         None
@@ -1394,7 +848,7 @@ Program:
                               isUnsafe:
                                 False
                               name:
-                                'root'
+                                'l1'
                           isUnsafe:
                             False
                       name:
@@ -1408,14 +862,31 @@ Program:
                           isUnsafe:
                             False
                           name:
-                            'key'
-              then_branch:
-                Block:
-                  stmts:
-                    AssignStmt:
-                      body:
+                            'next'
+                  op:
+                    '!='
+                  right:
+                    None
+            AssignStmt:
+              body:
+                None
+              target:
+                FieldAccessExpr:
+                  type:
+                    None
+                  isMutable:
+                    False
+                  expr:
+                    None
+                  isUnsafe:
+                    False
+                  receiver:
+                    DereferenceExpr:
+                      type:
                         None
-                      target:
+                      isMutable:
+                        False
+                      expr:
                         IdentifierExpr:
                           type:
                             None
@@ -1426,96 +897,10 @@ Program:
                           isUnsafe:
                             False
                           name:
-                            'return_val'
-                      value:
-                        FunctionCall:
-                          body:
-                            None
-                          caller:
-                            <Cycle: builtin_function_or_method>
-                          callee:
-                            IdentifierExpr:
-                              type:
-                                None
-                              isMutable:
-                                False
-                              expr:
-                                None
-                              isUnsafe:
-                                False
-                              name:
-                                'search'
-                          args:
-                            FieldAccessExpr:
-                              type:
-                                None
-                              isMutable:
-                                False
-                              expr:
-                                None
-                              isUnsafe:
-                                False
-                              receiver:
-                                DereferenceExpr:
-                                  type:
-                                    None
-                                  isMutable:
-                                    False
-                                  expr:
-                                    IdentifierExpr:
-                                      type:
-                                        None
-                                      isMutable:
-                                        False
-                                      expr:
-                                        None
-                                      isUnsafe:
-                                        False
-                                      name:
-                                        'root'
-                                  isUnsafe:
-                                    False
-                              name:
-                                IdentifierExpr:
-                                  type:
-                                    None
-                                  isMutable:
-                                    False
-                                  expr:
-                                    None
-                                  isUnsafe:
-                                    False
-                                  name:
-                                    'left'
-                            IdentifierExpr:
-                              type:
-                                None
-                              isMutable:
-                                False
-                              expr:
-                                None
-                              isUnsafe:
-                                False
-                              name:
-                                'key'
-                  isUnsafe:
-                    False
-              else_branch:
-                None
-            IfStmt:
-              body:
-                None
-              condition:
-                BinaryExpr:
-                  type:
-                    None
-                  isMutable:
-                    False
-                  expr:
-                    None
-                  isUnsafe:
-                    False
-                  left:
+                            'l1'
+                      isUnsafe:
+                        False
+                  name:
                     IdentifierExpr:
                       type:
                         None
@@ -1526,147 +911,7 @@ Program:
                       isUnsafe:
                         False
                       name:
-                        'key'
-                  op:
-                    '>'
-                  right:
-                    FieldAccessExpr:
-                      type:
-                        None
-                      isMutable:
-                        False
-                      expr:
-                        None
-                      isUnsafe:
-                        False
-                      receiver:
-                        DereferenceExpr:
-                          type:
-                            None
-                          isMutable:
-                            False
-                          expr:
-                            IdentifierExpr:
-                              type:
-                                None
-                              isMutable:
-                                False
-                              expr:
-                                None
-                              isUnsafe:
-                                False
-                              name:
-                                'root'
-                          isUnsafe:
-                            False
-                      name:
-                        IdentifierExpr:
-                          type:
-                            None
-                          isMutable:
-                            False
-                          expr:
-                            None
-                          isUnsafe:
-                            False
-                          name:
-                            'key'
-              then_branch:
-                Block:
-                  stmts:
-                    AssignStmt:
-                      body:
-                        None
-                      target:
-                        IdentifierExpr:
-                          type:
-                            None
-                          isMutable:
-                            False
-                          expr:
-                            None
-                          isUnsafe:
-                            False
-                          name:
-                            'return_val'
-                      value:
-                        FunctionCall:
-                          body:
-                            None
-                          caller:
-                            <Cycle: builtin_function_or_method>
-                          callee:
-                            IdentifierExpr:
-                              type:
-                                None
-                              isMutable:
-                                False
-                              expr:
-                                None
-                              isUnsafe:
-                                False
-                              name:
-                                'search'
-                          args:
-                            FieldAccessExpr:
-                              type:
-                                None
-                              isMutable:
-                                False
-                              expr:
-                                None
-                              isUnsafe:
-                                False
-                              receiver:
-                                DereferenceExpr:
-                                  type:
-                                    None
-                                  isMutable:
-                                    False
-                                  expr:
-                                    IdentifierExpr:
-                                      type:
-                                        None
-                                      isMutable:
-                                        False
-                                      expr:
-                                        None
-                                      isUnsafe:
-                                        False
-                                      name:
-                                        'root'
-                                  isUnsafe:
-                                    False
-                              name:
-                                IdentifierExpr:
-                                  type:
-                                    None
-                                  isMutable:
-                                    False
-                                  expr:
-                                    None
-                                  isUnsafe:
-                                    False
-                                  name:
-                                    'right'
-                            IdentifierExpr:
-                              type:
-                                None
-                              isMutable:
-                                False
-                              expr:
-                                None
-                              isUnsafe:
-                                False
-                              name:
-                                'key'
-                  isUnsafe:
-                    False
-              else_branch:
-                None
-            ReturnStmt:
-              body:
-                None
+                        'next'
               value:
                 IdentifierExpr:
                   type:
@@ -1678,7 +923,7 @@ Program:
                   isUnsafe:
                     False
                   name:
-                    'return_val'
+                    'l2'
           isUnsafe:
             False
       isUnsafe:
@@ -1693,44 +938,85 @@ Program:
       body:
         Block:
           stmts:
-            Block:
-              stmts:
-                LetStmt:
-                  body:
-                    None
-                  var_defs:
-                    VarDef:
+            LetStmt:
+              body:
+                None
+              var_defs:
+                VarDef:
+                  declarationInfo:
+                    DeclarationInfo:
+                      name:
+                        's1'
+                      type:
+                        None
+                      visibility:
+                        None
+                  isMutable:
+                    True
+                  by_ref:
+                    False
+              values:
+                StructDef:
+                  name:
+                    'State'
+                  fields:
+                    StructLiteralField:
+                      type:
+                        None
+                      isMutable:
+                        False
+                      expr:
+                        None
+                      isUnsafe:
+                        False
                       declarationInfo:
                         DeclarationInfo:
                           name:
-                            'root'
+                            'c'
                           type:
                             None
                           visibility:
                             None
-                      isMutable:
-                        False
-                      by_ref:
-                        False
-                  values:
-                    FunctionCall:
-                      body:
-                        None
-                      caller:
-                        <Cycle: builtin_function_or_method>
-                      callee:
-                        IdentifierExpr:
+                      value:
+                        CastExpr:
                           type:
-                            None
+                            'i32'
                           isMutable:
                             False
                           expr:
-                            None
+                            CharLiteral:
+                              type:
+                                None
+                              isMutable:
+                                False
+                              expr:
+                                None
+                              isUnsafe:
+                                False
+                              value:
+                                'a'
                           isUnsafe:
                             False
+                          typePath:
+                            None
+                    StructLiteralField:
+                      type:
+                        None
+                      isMutable:
+                        False
+                      expr:
+                        None
+                      isUnsafe:
+                        False
+                      declarationInfo:
+                        DeclarationInfo:
                           name:
-                            'new_node'
-                      args:
+                            'lastlist'
+                          type:
+                            None
+                          visibility:
+                            None
+                      value:
                         IntLiteral:
                           type:
                             IntType:
@@ -1741,65 +1027,86 @@ Program:
                           isUnsafe:
                             False
                           value:
-                            3
-                        StrLiteral:
-                          type:
-                            StringType:
-                          isMutable:
-                            False
-                          expr:
-                            None
-                          isUnsafe:
-                            False
-                          value:
-                            'three'
-                LetStmt:
-                  body:
-                    None
-                  var_defs:
-                    VarDef:
+                            0
+            LetStmt:
+              body:
+                None
+              var_defs:
+                VarDef:
+                  declarationInfo:
+                    DeclarationInfo:
+                      name:
+                        's2'
+                      type:
+                        None
+                      visibility:
+                        None
+                  isMutable:
+                    True
+                  by_ref:
+                    False
+              values:
+                StructDef:
+                  name:
+                    'State'
+                  fields:
+                    StructLiteralField:
+                      type:
+                        None
+                      isMutable:
+                        False
+                      expr:
+                        None
+                      isUnsafe:
+                        False
                       declarationInfo:
                         DeclarationInfo:
                           name:
-                            'three_found'
+                            'c'
                           type:
                             None
                           visibility:
                             None
+                      value:
+                        CastExpr:
+                          type:
+                            'i32'
+                          isMutable:
+                            False
+                          expr:
+                            CharLiteral:
+                              type:
+                                None
+                              isMutable:
+                                False
+                              expr:
+                                None
+                              isUnsafe:
+                                False
+                              value:
+                                'b'
+                          isUnsafe:
+                            False
+                          typePath:
+                            None
+                    StructLiteralField:
+                      type:
+                        None
                       isMutable:
                         False
-                      by_ref:
-                        False
-                  values:
-                    FunctionCall:
-                      body:
+                      expr:
                         None
-                      caller:
-                        <Cycle: builtin_function_or_method>
-                      callee:
-                        IdentifierExpr:
+                      isUnsafe:
+                        False
+                      declarationInfo:
+                        DeclarationInfo:
+                          name:
+                            'lastlist'
                           type:
                             None
-                          isMutable:
-                            False
-                          expr:
+                          visibility:
                             None
-                          isUnsafe:
-                            False
-                          name:
-                            'search'
-                      args:
-                        IdentifierExpr:
-                          type:
-                            None
-                          isMutable:
-                            False
-                          expr:
-                            None
-                          isUnsafe:
-                            False
-                          name:
-                            'root'
+                      value:
                         IntLiteral:
                           type:
                             IntType:
@@ -1810,11 +1117,320 @@ Program:
                           isUnsafe:
                             False
                           value:
-                            3
-                AssignStmt:
+                            0
+            LetStmt:
+              body:
+                None
+              var_defs:
+                VarDef:
+                  declarationInfo:
+                    DeclarationInfo:
+                      name:
+                        's3'
+                      type:
+                        None
+                      visibility:
+                        None
+                  isMutable:
+                    False
+                  by_ref:
+                    False
+              values:
+                StructDef:
+                  name:
+                    'State'
+                  fields:
+                    StructLiteralField:
+                      type:
+                        None
+                      isMutable:
+                        False
+                      expr:
+                        None
+                      isUnsafe:
+                        False
+                      declarationInfo:
+                        DeclarationInfo:
+                          name:
+                            'c'
+                          type:
+                            None
+                          visibility:
+                            None
+                      value:
+                        CastExpr:
+                          type:
+                            'i32'
+                          isMutable:
+                            False
+                          expr:
+                            CharLiteral:
+                              type:
+                                None
+                              isMutable:
+                                False
+                              expr:
+                                None
+                              isUnsafe:
+                                False
+                              value:
+                                'c'
+                          isUnsafe:
+                            False
+                          typePath:
+                            None
+                    StructLiteralField:
+                      type:
+                        None
+                      isMutable:
+                        False
+                      expr:
+                        None
+                      isUnsafe:
+                        False
+                      declarationInfo:
+                        DeclarationInfo:
+                          name:
+                            'out'
+                          type:
+                            None
+                          visibility:
+                            None
+                      value:
+                        BorrowExpr:
+                          type:
+                            None
+                          isMutable:
+                            False
+                          expr:
+                            Expression:
+                              type:
+                                None
+                              isMutable:
+                                False
+                              expr:
+                                IdentifierExpr:
+                                  type:
+                                    None
+                                  isMutable:
+                                    False
+                                  expr:
+                                    None
+                                  isUnsafe:
+                                    False
+                                  name:
+                                    's1'
+                              isUnsafe:
+                                False
+                          isUnsafe:
+                            False
+                    StructLiteralField:
+                      type:
+                        None
+                      isMutable:
+                        False
+                      expr:
+                        None
+                      isUnsafe:
+                        False
+                      declarationInfo:
+                        DeclarationInfo:
+                          name:
+                            'out1'
+                          type:
+                            None
+                          visibility:
+                            None
+                      value:
+                        BorrowExpr:
+                          type:
+                            None
+                          isMutable:
+                            False
+                          expr:
+                            Expression:
+                              type:
+                                None
+                              isMutable:
+                                False
+                              expr:
+                                IdentifierExpr:
+                                  type:
+                                    None
+                                  isMutable:
+                                    False
+                                  expr:
+                                    None
+                                  isUnsafe:
+                                    False
+                                  name:
+                                    's2'
+                              isUnsafe:
+                                False
+                          isUnsafe:
+                            False
+            FunctionCall:
+              body:
+                None
+              caller:
+                None
+              callee:
+                IdentifierExpr:
+                  type:
+                    None
+                  isMutable:
+                    False
+                  expr:
+                    None
+                  isUnsafe:
+                    False
+                  name:
+                    'println'
+              args:
+                StrLiteral:
+                  type:
+                    StringType:
+                  isMutable:
+                    False
+                  expr:
+                    None
+                  isUnsafe:
+                    False
+                  value:
+                    'Created {} states'
+                FunctionCall:
                   body:
                     None
-                  target:
+                  caller:
+                    <Cycle: builtin_function_or_method>
+                  callee:
+                    FieldAccessExpr:
+                      type:
+                        None
+                      isMutable:
+                        False
+                      expr:
+                        None
+                      isUnsafe:
+                        False
+                      receiver:
+                        IdentifierExpr:
+                          type:
+                            None
+                          isMutable:
+                            False
+                          expr:
+                            None
+                          isUnsafe:
+                            False
+                          name:
+                            'NSTATE'
+                      name:
+                        IdentifierExpr:
+                          type:
+                            None
+                          isMutable:
+                            False
+                          expr:
+                            None
+                          isUnsafe:
+                            False
+                          name:
+                            'load'
+                  args:
+                    TypePathExpression:
+                      type:
+                        None
+                      isMutable:
+                        False
+                      expr:
+                        None
+                      isUnsafe:
+                        False
+                      last_type:
+                        IdentifierExpr:
+                          type:
+                            None
+                          isMutable:
+                            False
+                          expr:
+                            None
+                          isUnsafe:
+                            False
+                          name:
+                            'Relaxed'
+                      type_path:
+                        TypePathExpression:
+                          type:
+                            None
+                          isMutable:
+                            False
+                          expr:
+                            None
+                          isUnsafe:
+                            False
+                          last_type:
+                            ''
+                          type_path:
+                            'Ordering'
+                            ''
+            LetStmt:
+              body:
+                None
+              var_defs:
+                VarDef:
+                  declarationInfo:
+                    DeclarationInfo:
+                      name:
+                        'outp'
+                      type:
+                        PointerType:
+                          isMutable:
+                            True
+                          pointee_type:
+                            'State'
+                      visibility:
+                        None
+                  isMutable:
+                    True
+                  by_ref:
+                    False
+              values:
+                IdentifierExpr:
+                  type:
+                    None
+                  isMutable:
+                    False
+                  expr:
+                    None
+                  isUnsafe:
+                    False
+                  name:
+                    's3'
+            LetStmt:
+              body:
+                None
+              var_defs:
+                VarDef:
+                  declarationInfo:
+                    DeclarationInfo:
+                      name:
+                        'list1'
+                      type:
+                        None
+                      visibility:
+                        None
+                  isMutable:
+                    False
+                  by_ref:
+                    False
+              values:
+                FunctionCall:
+                  body:
+                    None
+                  caller:
+                    <Cycle: builtin_function_or_method>
+                  callee:
                     IdentifierExpr:
                       type:
                         None
@@ -1825,119 +1441,35 @@ Program:
                       isUnsafe:
                         False
                       name:
-                        'root'
-                  value:
-                    FunctionCall:
-                      body:
+                        'PtrList_list1'
+                  args:
+                    BorrowExpr:
+                      type:
                         None
-                      caller:
-                        <Cycle: builtin_function_or_method>
-                      callee:
-                        IdentifierExpr:
-                          type:
-                            None
-                          isMutable:
-                            False
-                          expr:
-                            None
-                          isUnsafe:
-                            False
-                          name:
-                            'insert'
-                      args:
-                        IdentifierExpr:
-                          type:
-                            None
-                          isMutable:
-                            False
-                          expr:
-                            None
-                          isUnsafe:
-                            False
-                          name:
-                            'root'
-                        IntLiteral:
-                          type:
-                            IntType:
-                          isMutable:
-                            False
-                          expr:
-                            None
-                          isUnsafe:
-                            False
-                          value:
-                            5
-                        StrLiteral:
-                          type:
-                            StringType:
-                          isMutable:
-                            False
-                          expr:
-                            None
-                          isUnsafe:
-                            False
-                          value:
-                            'five'
-                LetStmt:
-                  body:
-                    None
-                  var_defs:
-                    VarDef:
-                      declarationInfo:
-                        DeclarationInfo:
-                          name:
-                            'five_found'
-                          type:
-                            None
-                          visibility:
-                            None
                       isMutable:
                         False
-                      by_ref:
+                      expr:
+                        Expression:
+                          type:
+                            None
+                          isMutable:
+                            False
+                          expr:
+                            IdentifierExpr:
+                              type:
+                                None
+                              isMutable:
+                                False
+                              expr:
+                                None
+                              isUnsafe:
+                                False
+                              name:
+                                'outp'
+                          isUnsafe:
+                            False
+                      isUnsafe:
                         False
-                  values:
-                    FunctionCall:
-                      body:
-                        None
-                      caller:
-                        <Cycle: builtin_function_or_method>
-                      callee:
-                        IdentifierExpr:
-                          type:
-                            None
-                          isMutable:
-                            False
-                          expr:
-                            None
-                          isUnsafe:
-                            False
-                          name:
-                            'search'
-                      args:
-                        IdentifierExpr:
-                          type:
-                            None
-                          isMutable:
-                            False
-                          expr:
-                            None
-                          isUnsafe:
-                            False
-                          name:
-                            'root'
-                        IntLiteral:
-                          type:
-                            IntType:
-                          isMutable:
-                            False
-                          expr:
-                            None
-                          isUnsafe:
-                            False
-                          value:
-                            5
-              isUnsafe:
-                True
           isUnsafe:
             False
       isUnsafe:

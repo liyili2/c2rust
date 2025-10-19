@@ -53,6 +53,15 @@ class RustListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by RustParser#staticVarDecl.
+    def enterStaticVarDecl(self, ctx:RustParser.StaticVarDeclContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#staticVarDecl.
+    def exitStaticVarDecl(self, ctx:RustParser.StaticVarDeclContext):
+        pass
+
+
     # Enter a parse tree produced by RustParser#defKind.
     def enterDefKind(self, ctx:RustParser.DefKindContext):
         pass
@@ -440,15 +449,6 @@ class RustListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by RustParser#staticVarDecl.
-    def enterStaticVarDecl(self, ctx:RustParser.StaticVarDeclContext):
-        pass
-
-    # Exit a parse tree produced by RustParser#staticVarDecl.
-    def exitStaticVarDecl(self, ctx:RustParser.StaticVarDeclContext):
-        pass
-
-
     # Enter a parse tree produced by RustParser#initBlock.
     def enterInitBlock(self, ctx:RustParser.InitBlockContext):
         pass
@@ -761,6 +761,15 @@ class RustListener(ParseTreeListener):
 
     # Exit a parse tree produced by RustParser#booleanLiteral.
     def exitBooleanLiteral(self, ctx:RustParser.BooleanLiteralContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#arrayAccess.
+    def enterArrayAccess(self, ctx:RustParser.ArrayAccessContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#arrayAccess.
+    def exitArrayAccess(self, ctx:RustParser.ArrayAccessContext):
         pass
 
 

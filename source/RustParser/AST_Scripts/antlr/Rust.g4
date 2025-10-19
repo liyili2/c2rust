@@ -13,6 +13,7 @@ topLevelItem
 useDecl: 'use' typePath ('{' (typePath? (Identifier | '{' (Identifier ','?)* '}') ','? )* '}' ',' )* ';';
 topLevelDef: functionDef | structDef | interfaceDef | topLevelVarDef;
 topLevelVarDef: visibility? defKind? Identifier  ((':' typeExpr '=' expression ';') | '{' varDefField* '}');
+staticVarDecl: visibility? 'static'? 'mut'? Identifier ':' (typeExpr | Identifier) '=' initializer ';';
 defKind: 'const' | 'union' | 'unsafe';
 varDefField: visibility? Identifier ':' typeExpr ','?;
 
@@ -106,7 +107,6 @@ matchArm: matchPattern ('|' matchPattern)* '=>' (block | 'return' (expression)?)
 matchPattern: byteLiteral | Number | UNDERSCORE | Identifier;
 whileStmt: 'while' expression block;
 initializer: initBlock | block | expression ;
-staticVarDecl: visibility? 'static' 'mut'? Identifier ':' (typeExpr | Identifier) '=' initializer ';';
 initBlock: '{' (Identifier ':' expression ',')* '}' ';' expression;
 assignStmt: expression '=' expression ';';
 forStmt: 'for' Identifier 'in' expression block;
@@ -119,6 +119,7 @@ safeWrapper: 'Some' '(' expression ')' | 'Some' '(' 'ref'? 'mut'? expression ')'
 
 expression
     : MUT expression
+    | arrayAccess
     | expression callExpressionPostFix
     | expression fieldAccessPostFix
     | safeWrapper
@@ -180,7 +181,8 @@ byteLiteral: 'b\'.\'' | 'b\'|\'' | 'b\'*\'' | 'b\'' LPAREN '\'' | 'b\'' RPAREN '
 
 booleanLiteral: TRUE | FALSE;
 Binary: '0b' [0-1]+;
-arrayLiteral: Identifier? '!'? '[' expression (',' expression)* ']' | Identifier? '!'? '[' expression ';' expression ']' | Identifier? '!'? '[' ']';
+arrayAccess: Identifier '[' expression ']';
+arrayLiteral: Identifier? '!'? '[' expression (',' expression)+ ']' | Identifier? '!'? '[' expression ';' expression ']' | Identifier? '!'? '[' ']';
 STRING_LITERAL: '"' (~["\\] | '\\' .)* '"';
 stringLiteral: '"' .*? '"';
 Identifier: [a-zA-Z_][a-zA-Z0-9_]*;

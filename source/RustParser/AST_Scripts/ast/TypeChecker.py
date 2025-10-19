@@ -283,6 +283,7 @@ class TypeChecker:
                 expr_type = var_def_type
 
             if (
+                node.values[0] is not None and
                 not isinstance(expr_type, var_def_type.__class__) and
                 not isinstance(var_def_type, SafeNonNullWrapper) and
                 not node.values[0].isUnsafe == True
@@ -305,6 +306,15 @@ class TypeChecker:
         return self.visit(node.expr)
 
     def visit_SafeNonNullWrapper(self, node):
+        return node
+
+    def visit_ByteLiteralExpr(self, node):
+        return node
+    
+    def visit_ArrayAccess(self, node):
+        return node
+    
+    def visit_TopLevelVarDef(self, node):
         return node
     
     def visit_BreakStmt(self, node):
@@ -785,13 +795,15 @@ class TypeChecker:
 
     def visit_Statement(self, node):
         return self.visit(node.body)
-    
+
     def visit_ConditionalAssignmentStmt(self, node):
         return self.visit(node.body)
 
     def visit_TypePathExpression(self, node):
         if isinstance(node.last_type, IdentifierExpr):
             return node.last_type
+        if isinstance(node.last_type, FunctionCall):
+            return node.last_type.callee
         if str.__contains__(node.last_type, "int"):
             return IntType()
         if str.__contains__(node.last_type, "str"):
