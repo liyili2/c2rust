@@ -433,18 +433,15 @@ class Simulator(ProgramVisitor):
     #     else:
     #         return self.visitTerminal(ctx)
 
-    # def visit_IdentifierExpr(self, ctx: IdentifierExpr):
-    #     return ctx.accept(self)
+    def visit_IdentifierExpr(self, node: IdentifierExpr):
+        identifier_val = self.stack.get(node.name)
+        return identifier_val
 
     def visit_CastExpr(self, node: CastExpr):
         return node.expr.accept(self)
 
     def visit_DereferenceExpr(self, node: DereferenceExpr):
         return node.expr.accept(self)
-
-    def visit_IdentifierExpr(self, node: IdentifierExpr):
-        identifier_val = self.stack.get(node.name)
-        return identifier_val
 
     # library functions
 
