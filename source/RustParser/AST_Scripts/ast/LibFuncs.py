@@ -17,7 +17,7 @@ class LibFuncUnwrap(LibFunction):
     def __call__(self, visitor, caller, args=None):
         val = caller.accept(visitor) if caller else None
         if val is None:
-            raise ReturnSignal(value=Exception(arg="called unwrap() on a None value"))
+            raise ReturnSignal(value=Exception("called unwrap() on a None value"))
         return val
 
 class LibFuncLen(LibFunction):
@@ -41,7 +41,7 @@ class LibFuncIntoRaw(LibFunction):
     def __call__(self, visitor, caller, args=None):
         val = caller.accept(visitor) if caller else None
         if val is None:
-            raise ReturnSignal(value=Exception(arg="called into_raw() on a None value"))
+            raise ReturnSignal(value=Exception("called into_raw() on a None value"))
         return val
 
 class LibFuncNullMut(LibFunction):
@@ -52,8 +52,6 @@ class LibFuncNullMut(LibFunction):
         val = caller.accept(visitor) if caller else None
         if val is None:
             return None
-
-        # raise ReturnSignal(value=Exception(arg="called null_mut() on a None value"))
         return None
 
 class LibFuncAsRef(LibFunction):
@@ -63,7 +61,7 @@ class LibFuncAsRef(LibFunction):
     def __call__(self, visitor, caller, args=None):
         val = caller.accept(visitor) if caller else None
         if val is None:
-            raise ReturnSignal(value=Exception(arg="called as_ref() on a None value"))
+            raise ReturnSignal(value=Exception("called as_ref() on a None value"))
         return val
 
 class LibFuncIsEmpty(LibFunction):
@@ -96,9 +94,9 @@ class LibFuncPush(LibFunction):
     def __call__(self, visitor, caller, args=None):
         caller = caller.accept(visitor) if caller else None
         if caller is None:
-            raise ReturnSignal(value=Exception(arg="called push() on a None value"))
+            raise ReturnSignal(value=Exception("called push() on a None value"))
         if len(args) > 1:
-            raise ReturnSignal(value=Exception(arg="called push() with more than one argument"))
+            raise ReturnSignal(value=Exception("called push() with more than one argument"))
         if isinstance(caller, ArrayLiteral):
             caller.elements.append(args[0])
 
@@ -109,10 +107,10 @@ class LibFuncPop(LibFunction):
     def __call__(self, visitor, caller, args=None):
         caller = caller.accept(visitor) if caller else None
         if caller is None:
-            raise ReturnSignal(value=Exception(arg="called pop() on a None value"))
+            raise ReturnSignal(value=Exception("called pop() on a None value"))
         if isinstance(caller, ArrayLiteral):
             if not caller.elements:
-                raise ReturnSignal(value=Exception(arg="called pop() on an empty ArrayLiteral"))
+                raise ReturnSignal(value=Exception("called pop() on an empty ArrayLiteral"))
             return caller.elements.pop()
         
 class LibFuncIter(LibFunction):
@@ -122,10 +120,10 @@ class LibFuncIter(LibFunction):
     def __call__(self, visitor, caller, args=None):
         caller = caller.accept(visitor) if caller else None
         if caller is None:
-            raise ReturnSignal(value=Exception(arg="called iter() on a None value"))
+            raise ReturnSignal(value=Exception("called iter() on a None value"))
         if isinstance(caller, ArrayLiteral):
             if not caller.elements:
-                raise ReturnSignal(value=Exception(arg="called iter() on an empty ArrayLiteral"))
+                raise ReturnSignal(value=Exception("called iter() on an empty ArrayLiteral"))
             return len(caller.elements)
         if isinstance(caller, str):
             return len(caller)
@@ -137,7 +135,7 @@ class LibFuncAsBytes(LibFunction):
     def __call__(self, visitor, caller, args=None):
         caller = caller.accept(visitor) if caller else None
         if caller is None:
-            raise ReturnSignal(value=Exception(arg="called as_bytes() on a None value"))
+            raise ReturnSignal(value=Exception("called as_bytes() on a None value"))
         if isinstance(caller, StrLiteral):
             return caller.encode('utf-8')
         return caller
@@ -150,7 +148,7 @@ class LibFuncIntoString(LibFunction):
     def __call__(self, visitor, caller, args=None):
         caller = caller.accept(visitor) if caller else None
         if caller is None:
-            raise ReturnSignal(value=Exception(arg="called into_string() on a None value"))
+            raise ReturnSignal(value=Exception("called into_string() on a None value"))
 
         return str(caller)
 
@@ -162,7 +160,7 @@ class LibFuncAddrOfMut(LibFunction):
     def __call__(self, visitor, caller, args=None):
         expr = caller.accept(visitor) if caller else None
         if expr is None:
-            raise ReturnSignal(value=Exception(arg="called addr_of_mut!() on a None value"))
+            raise ReturnSignal(value=Exception("called addr_of_mut!() on a None value"))
 
         return expr
 
@@ -174,7 +172,7 @@ class LibFuncFetchAdd(LibFunction):
     def __call__(self, visitor, caller, args=None):
         val = caller.accept(visitor) if caller else None
         if val is None:
-            raise ReturnSignal(value=Exception(arg="called fetch_add() on a None value"))
+            raise ReturnSignal(value=Exception("called fetch_add() on a None value"))
 
         new_val = val + args[0]
 
@@ -190,7 +188,7 @@ class LibFuncByRef(LibFunction):
     def __call__(self, visitor, caller, args=None):
         iterator = caller.accept(visitor) if caller else None
         if iterator is None:
-            raise ReturnSignal(value=Exception(arg="called by_ref() on a None value"))
+            raise ReturnSignal(value=Exception("called by_ref() on a None value"))
 
         return iterator
 
@@ -202,6 +200,6 @@ class LibFuncIntoBoxedSlice(LibFunction):
     def __call__(self, visitor, caller, args=None):
         vector = caller.accept(visitor) if caller else None
         if vector is None:
-            raise ReturnSignal(value=Exception(arg="called into_boxed_slice() on a None value"))
+            raise ReturnSignal(value=Exception("called into_boxed_slice() on a None value"))
 
         return vector

@@ -8,20 +8,20 @@
 // Insert . as explicit concatenation operator.
 // Returns `None` for invalid patterns.
 fn re2post(re: &[u8]) -> Option<Vec<u8> > {
-    // struct Paren {
-    //     nalt: i32,
-    //     natom: i32,
-    // }
+    struct Paren {
+        nalt: i32,
+        natom: i32,
+    }
 
     // Unlike the original program, we reject the
     // empty pattern as invalid. This avoids an
     // error case in post2nfa.
-    // if re.is_empty() {
-    //     return None;
-    // }
-    // if re.len() >= (8000 / 2) {
-    //     return None;
-    // }
+    if re.is_empty() {
+        return None;
+    }
+    if re.len() >= (8000 / 2) {
+        return None;
+    }
     let (mut nalt, mut natom) = (0, 0);
     let mut paren = vec![];
     let mut dst = vec![];

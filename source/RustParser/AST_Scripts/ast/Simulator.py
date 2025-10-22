@@ -296,6 +296,10 @@ class Simulator(ProgramVisitor):
     # def visitIdexp(self, ctx: XMLExpParser.IdexpContext):
     #     return
 
+    def visit_Expression(self, node: Expression):
+        if isinstance(node, BorrowExpr):
+            return node.expr.accept(self)
+
     def visit_FieldAccessExpr(self, node: FieldAccessExpr):
         struct_value = node.receiver.accept(self)
         for field in struct_value.fields:

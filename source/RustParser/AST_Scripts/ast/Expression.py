@@ -11,7 +11,7 @@ class Expression(ASTNode):
         self.isUnsafe=isUnsafe
 
     def accept(self, visitor):
-        self.expr.accept(visitor)
+        return self.expr.accept(visitor)
 
 class QualifiedExpression(Expression):
     def __init__(self, expr):
