@@ -186,17 +186,20 @@ class Simulator(ProgramVisitor):
                 return node.else_branch.accept(self)
 
     def visit_MatchStmt(self, node: MatchStmt):
-        match_arms = node.arms
         match_expr = node.expr.accept(self)
+        wildcard_arm = None
+        for arm in node.arms:
+            patterns = arm.accept(self)
+            for pattern in patterns:
+                val = pattern.accept(self)
 
-        for i in range(0, len(match_arms)):
-            arm_res = match_arms[i].accept(self)
-            for pattern_res in arm_res:
-                pattern_val = pattern_res.accept(self)
-                if match_expr == pattern_val:
-                    return match_arms[i].body.accept(self)
-                elif pattern_val == '_':
-                    return match_arms[i].body.accept(self)
+                if val == '_' or val == None:
+                    wildcard_arm = arm   # save for later
+                elif match_expr == val:
+                    return arm.body.accept(self)
+
+        if wildcard_arm:
+            return wildcard_arm.body.accept(self)
         return
 
     def visit_MatchArm(self, node: MatchArm):
@@ -255,25 +258,6 @@ class Simulator(ProgramVisitor):
         while condition:
             node.body.accept(self)
             condition = node.condition.accept(self)
-        return
-
-    def visit_MatchStmt(self, node: MatchStmt):
-        match_arms = node.arms
-        match_expr = node.expr.accept(self)
-
-        for i in range(0, len(match_arms)):
-            arm_res = match_arms[i].accept(self)
-
-            for pattern_res in arm_res:
-                pattern_val = pattern_res.accept(self)
-                # print(pattern_val)
-                # print(match_expr.__class__)
-                if match_expr == pattern_val:
-                    # print("entered")
-                    return match_arms[i].body.accept(self)
-                elif pattern_val == '_':
-                    return match_arms[i].body.accept(self)
-
         return
 
     def visit_MatchArm(self, node: MatchArm):

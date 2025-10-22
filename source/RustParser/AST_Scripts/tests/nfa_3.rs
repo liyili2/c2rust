@@ -22,9 +22,115 @@ struct PtrList {
     s: *mut State,
 }
 
+fn re2post(re: &[u8]) -> Option<Vec<u8> > {
+    struct Paren {
+        nalt: i32,
+        natom: i32,
+    }
+
+    // Unlike the original program, we reject the
+    // empty pattern as invalid. This avoids an
+    // error case in post2nfa.
+    // if re.is_empty() {
+    //     return None;
+    // }
+    // if re.len() >= (8000 / 2) {
+    //     return None;
+    // }
+    let (mut nalt, mut natom) = (0, 0);
+    let mut paren = vec![];
+    let mut dst = vec![];
+    for &byte in re.iter() {
+        let pat = re[byte];
+        match pat {
+            b'(' => {
+                if natom > 1 {
+                    natom -= 1;
+                    dst.push( b'.' );
+                }
+                if paren.len() >= 100 {
+                    return None;
+                }
+                paren.push(Paren { nalt, natom });
+                nalt = 0 ;
+                natom = 0;
+            }
+            b'|' => {
+                if natom == 0 {
+                    return None;
+                }
+                natom -= 1;
+                while natom > 0 {
+                    dst.push(b'.');
+                    natom -= 1;
+                }
+                nalt += 1;
+            }
+            b')' => {
+                let p = paren.pop();
+                if natom == 0 {
+                    return None;
+                }
+                natom -= 1;
+                while natom > 0 {
+                    dst.push(b'.');
+                    natom -= 1;
+                }
+                while nalt > 0 {
+                    dst.push(b'|');
+                    nalt -= 1;
+                }
+                nalt = p.nalt;
+                natom = p.natom;
+                natom += 1;
+            }
+            b'*' | b'+' | b'?' => {
+                if natom == 0 {
+                    return None;
+                }
+                dst.push(pat);
+            }
+            // Not handled in the original program.
+            // Since '.' is a meta character in the
+            // postfix syntax, it can result in UB.
+            // So we reject it here.
+            _ => {
+                if natom > 1 {
+                    natom -= 1;
+                    dst.push(b'.');
+                }
+                dst.push(pat);
+                natom += 1;
+            }
+        }
+    }
+    // if !paren.is_empty() {
+
+    //     return None;
+    // }
+    // The original program doesn't handle this case, which in turn
+    // causes UB in post2nfa. It occurs when a pattern ends with a |.
+    // Other cases like `a||b` and `(a|)` are rejected correctly above.
+    // if natom == 0 && nalt > 0 {
+    //     return None;
+    // }
+    natom -= 1;
+    while natom > 0 {
+        dst.push(b'.');
+        natom -= 1;
+    }
+    while nalt > 0 {
+        dst.push(b'|');
+        nalt -= 1;
+    }
+
+    return dst;
+}
+
 fn post2nfa(postfix: &[u8]) -> *mut State {
     let mut stack: Vec<Frag> = vec![];
-    for &p in postfix.iter() {
+    for &byte in postfix.iter() {
+        let p = postfix[byte];
         match p {
             // catenate
             b'.' => {
@@ -96,65 +202,8 @@ fn post2nfa(postfix: &[u8]) -> *mut State {
     return e.start;
 }
 
-struct List {
-    s: Box< [*mut State] >,
-    n: i32,
-}
-static LIST_ID: AtomicI32 = AtomicI32::new(0);
-
-unsafe fn list_start(&mut self, start: *mut State) -> &mut List {
-    self.n = 0;
-    LIST_ID.fetch_add(1, Ordering::AcqRel);
-    self.list_add_state(start);
-    return self;
-}
-
-unsafe fn list_is_match(&mut self) -> bool {
-    for i in 0..self.n {
-        if self.s[i] == addr_of_mut!(MATCH_STATE) {
-            return true;
-        }
-    }
-    return false;
-}
-
-unsafe fn list_add_state(&mut self, s: *mut State) {
-    if s.is_null() || (*s).lastlist == LIST_ID.load(Ordering::Acquire) {
-        return;
-    }
-    (*s).lastlist = LIST_ID.load(Ordering::Acquire);
-    if (*s).c == SPLIT {
-        // follow unlabeled arrows
-        list_add_state(self, (*s).out);
-        list_add_state(self, (*s).out1);
-        return;
-    }
-    self.s[self.n as usize] = s;
-    self.n += 1;
-}
-
-unsafe fn step(clist: &mut List, c: i32, nlist: &mut List) {
-    LIST_ID.fetch_add(1, Ordering::AcqRel);
-    nlist.n = 0;
-    for i in 0..clist.n {
-        let s = clist.s[i as usize];
-        if (*s).c == c {
-            list_add_state(nlist, (*s).out);
-        }
-    }
-}
-
-unsafe fn rmatch(l1: &mut List, l2: &mut List, start: *mut State, s: &[u8]) -> bool {
-    let clist = list_start(l1, start);
-    let nlist = l2;
-    for &byte in s.iter() {
-        step(clist, i32::from(byte), nlist);
-        std::mem::swap(clist, nlist);
-    }
-    list_is_match(clist);
-}
-
 fn main() {
-    let psot : String = "a*(a+b)+";
-    let start = post2nfa(&post);
+    let re = "a(b|c)*d";
+    let post = re2post(re.as_bytes());
+    // let start = post2nfa(&post);
 }

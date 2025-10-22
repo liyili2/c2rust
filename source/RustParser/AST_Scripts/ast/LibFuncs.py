@@ -111,7 +111,9 @@ class LibFuncPop(LibFunction):
         if isinstance(caller, ArrayLiteral):
             if not caller.elements:
                 raise ReturnSignal(value=Exception("called pop() on an empty ArrayLiteral"))
-            return caller.elements.pop()
+            last = caller.elements.pop()
+            # caller.elements.pop()
+            return last
         
 class LibFuncIter(LibFunction):
     def __init__(self):
