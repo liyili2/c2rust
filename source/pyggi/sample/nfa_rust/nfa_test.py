@@ -1,36 +1,22 @@
-import os, sys
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))
 import pytest
-import subprocess
-from antlr4 import InputStream, CommonTokenStream
-from RustParser.AST_Scripts.antlr.RustLexer import RustLexer
-from RustParser.AST_Scripts.antlr.RustParser import RustParser
-from RustParser.AST_Scripts.ast.Transformer import Transformer
-from RustParser.AST_Scripts.ast.TypeChecker import TypeChecker
+import builtins
+from RustParser.AST_Scripts.ast.Simulator import Simulator
 
-class TestBstRustSuite:
-    def test_rust_functional_tests(self):
-        """Runs the original Rust tests using `cargo test`."""
-        result = subprocess.run(["cargo", "test"], capture_output=True, text=True)
-        print(result.stdout)
-        assert result.returncode == 0, f"Cargo test failed:\n{result.stderr}"
+def test_list_len_after_insertion():
+    mem = dict()
+    stack = dict()
+    simulator = Simulator(memory=mem, stack=stack)
+    simulator.visit(builtins.ast)
+    assert(simulator.stack.get("MATCH") == 256)
+    assert(simulator.stack.get("SPLIT") == 257)
+    assert(len(simulator.stack.get("post")) == 8)
+    assert(simulator.stack.get("post").elements[0] == 'a')
+    assert(simulator.stack.get("post").elements[1] == 'b')
+    assert(simulator.stack.get("post").elements[2] == 'c')
+    assert(simulator.stack.get("post").elements[3] == '|')
+    assert(simulator.stack.get("post").elements[4] == '*')
+    assert(simulator.stack.get("post").elements[5] == '.')
+    assert(simulator.stack.get("post").elements[6] == 'd')
+    assert(simulator.stack.get("post").elements[7] == '.')
+    assert(simulator.stack.get("start").getChild('c') == 97)
 
-    def test_type_checker_on_bst(self):
-        """Runs the custom type checker on bst.rs."""
-        file_path = os.path.join(os.path.dirname(__file__), "nfa.rs")
-        with open(file_path, "r", encoding="utf-8") as f:
-            rust_code = f.read()
-
-        lexer = RustLexer(InputStream(rust_code))
-        tokens = CommonTokenStream(lexer)
-        parser = RustParser(tokens)
-        tree = parser.program()
-
-        builder = Transformer()
-        custom_ast = builder.visit_Program(tree)
-
-        checker = TypeChecker()
-        checker.visit(custom_ast)
-        print("Fitness eval: ", 1 / (checker.error_count + 1))
-
-        assert checker.error_count < 200, f"Type checker found {checker.error_count} errors"
