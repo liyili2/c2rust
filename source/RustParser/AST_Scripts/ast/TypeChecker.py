@@ -832,6 +832,9 @@ class TypeChecker:
     def visit_UseDecl(self, node):
         pass
 
+    def visit_CharLiteral(self, node):
+        pass
+
     def visit_StaticVarDecl(self, node):
         node_type = self.visit(node.declarationInfo.type)
         self.env.declare(name=node.declarationInfo.name, typ=node_type, mutable=node.isMutable)

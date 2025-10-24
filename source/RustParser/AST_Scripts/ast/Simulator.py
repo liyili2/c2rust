@@ -32,7 +32,7 @@ class Simulator(ProgramVisitor):
         self.libMap = dict()
         self.lib_funcs = ["is_empty", "len", "iter", "push", "pop", "null_mut", "into_raw",
                           "into_string", "cast", "is_null", "unwrap","as_ref", "append", "as_bytes", "addr_of_mut!",
-                          "fetch_add", "by_ref", "into_boxed_slice"]
+                          "fetch_add", "by_ref", "into_boxed_slice", "from"]
         self.fill_lib_map()
 
     def fill_lib_map(self):
@@ -70,16 +70,16 @@ class Simulator(ProgramVisitor):
             fn.accept(self)
 
     def visit_LetStmt(self, node: LetStmt):
-        newStack = copy.deepcopy(self.stack)
+        # newStack = copy.deepcopy(self.stack)
 
         for i in range(0, len(node.var_defs)):
             arVar = node.var_defs[i].declarationInfo.name
             value = node.values[i]
             if value is not None:
                 value = node.values[i].accept(self)
-            newStack.update({arVar : value})
+            self.stack.update({arVar : value})
 
-        self.stack = newStack
+        # self.stack = newStack
         return None
 
     def find_stack_key(self, target):
@@ -132,7 +132,7 @@ class Simulator(ProgramVisitor):
             raise ret
 
     def visit_FunctionCall(self, node: FunctionCall):
-        if node.caller is None:
+        if node.caller is None and isinstance(node.callee, IdentifierExpr):
             if str.__contains__(node.callee.name, "print"):
                 return None
 
@@ -324,22 +324,31 @@ class Simulator(ProgramVisitor):
 
     def visit_ArrayLiteral(self, node: ArrayLiteral):
         return node
+    
+    def visit_CharLiteral(self, node: CharLiteral):
+        return node.value
 
     def visit_ArrayAccess(self, node: ArrayAccess):
         index = node.expr.accept(self)
         target = node.name.accept(self)
         if isinstance(target, ArrayLiteral):
-            return target.elements[index]
-        return target[index]        
+            if hasattr(target.elements[index], "accept") and callable(target.elements[index].accept):
+                return (target.elements[index]).accept(self)
+            else:
+                return target.elements[index]
+            
+        if hasattr(target[index], "accept") and callable(target[index].accept):
+            return (target[index]).accept(self)
+        else:
+            return target[index]     
 
     def visit_Struct(self, node: StructDef):
-        # Maybe store struct in the stack as a dict or array?
-        # self.stack.update(node)
-        for field in node.fields:
+        newNode = copy.deepcopy(node)
+        for field in newNode.fields:
             if isinstance(field, StructLiteralField):
                 if hasattr(field.value, "accept") and callable(field.value.accept):
-                    field.value = field.value.accept(self)
-        return node
+                    newNode[field.declarationInfo.name] = field.value.accept(self)
+        return newNode
 
     def visit_CompoundAssignment(self, node:CompoundAssignment):
         operation = node.op[0]

@@ -50,6 +50,14 @@ class StructDef(TopLevel):
     def setChildren(self, fields):
         self.fields = fields
 
+    def __setitem__(self, key, value):
+        for field in self.fields:
+            if field.declarationInfo.name == key:
+                field.value = value
+                return
+        raise KeyError(f"No field named {key} in struct {self.name}")
+
+
 class Attribute(TopLevel):
     def __init__(self, name, args=None):
         super().__init__()

@@ -33,6 +33,18 @@ class LibFuncLen(LibFunction):
                 return len(caller)
             except Exception:
                 raise Exception("len() called on non-iterable")
+            
+class LibFuncFrom(LibFunction):
+    def __init__(self):
+        super().__init__("from")
+
+    def __call__(self, visitor, caller, args=None):
+        caller = caller.accept(visitor) if caller else None
+        arg = args[0].accept(visitor) if args and args[0] else None
+        if isinstance(arg, str) and len(arg) == 1:
+            return ord(arg)
+        return int(arg)
+        # TODO
 
 class LibFuncIntoRaw(LibFunction):
     def __init__(self):
@@ -98,7 +110,7 @@ class LibFuncPush(LibFunction):
         if len(args) > 1:
             raise ReturnSignal(value=Exception("called push() with more than one argument"))
         if isinstance(caller, ArrayLiteral):
-            caller.elements.append(args[0])
+            caller.elements.append(args[0].accept(visitor))
 
 class LibFuncPop(LibFunction):
     def __init__(self):
@@ -112,7 +124,7 @@ class LibFuncPop(LibFunction):
             if not caller.elements:
                 raise ReturnSignal(value=Exception("called pop() on an empty ArrayLiteral"))
             last = caller.elements.pop()
-            # caller.elements.pop()
+            # visitor.stack.update({caller.name: caller})
             return last
         
 class LibFuncIter(LibFunction):

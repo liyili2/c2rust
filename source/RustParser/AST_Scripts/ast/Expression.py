@@ -114,7 +114,7 @@ class CharLiteral(Expression):
         # self.type = CharLiteral(value=value)
 
     def accept(self, visitor):
-        pass
+        return visitor.visit_CharLiteral(self)
 
 class IntLiteral(Expression):
     def __init__(self, value: int):
@@ -170,6 +170,8 @@ class ArrayLiteral(Expression):
     def __repr__(self):
         return f"ArrayLiteral({self.elements})"
     def len(self):
+        return len(self.elements)
+    def __len__(self):
         return len(self.elements)
     
 class ArrayAccess(Expression):
