@@ -133,7 +133,7 @@ class Simulator(ProgramVisitor):
         if isinstance(node.caller, type(len)):
             if isinstance(node.callee, IdentifierExpr):
                 node.caller = None
-            else:
+            elif isinstance(node.callee, FieldAccessExpr):
                 node.caller = node.callee.receiver
             
         if isinstance(node.callee, IdentifierExpr):

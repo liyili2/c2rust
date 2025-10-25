@@ -8,7 +8,7 @@ fn AtomicI32_new(v: i32) -> AtomicI32 {
     return v;
 }
 static LIST_ID: AtomicI32 = AtomicI32_new(0);
-
+const SPLIT: i32 = 257;
 unsafe fn list_start(self: &mut List, start: *mut State) -> &mut List {
     self.n = 0;
     LIST_ID.fetch_add(1, Ordering::AcqRel);
@@ -26,18 +26,23 @@ unsafe fn list_is_match(&mut self) -> bool {
 }
 
 unsafe fn list_add_state(self: &mut List, s: *mut State) {
-    if s.is_null() || (*s).lastlist == LIST_ID {
-        return;
+    if s.is_null() {
+        return None;
     }
+
+    if (*s).lastlist == LIST_ID {
+        return None;
+    }
+
     (*s).lastlist = LIST_ID;
     if (*s).c == SPLIT {
-        // follow unlabeled arrows
         list_add_state(self, (*s).out);
         list_add_state(self, (*s).out1);
-        return;
+        return None;
     }
     self.s[self.n] = s;
     self.n += 1;
+    return self;
 }
 
 unsafe fn list_step(clist: &mut List, c: i32, nlist: &mut List) {
@@ -62,5 +67,8 @@ unsafe fn rmatch(l1: &mut List, l2: &mut List, start: *mut State, s: &[u8]) -> b
 }
 
 fn main() {
-    LIST_ID.fetch_add(1, Ordering::AcqRel);
+    // LIST_ID.fetch_add(1, Ordering::AcqRel);
+    let s1 : State = State{c: 257, lastlist: 11};
+    let l : List = List{s: s1, n: 0}
+    l = l.list_add_state(l, s1);
 }
