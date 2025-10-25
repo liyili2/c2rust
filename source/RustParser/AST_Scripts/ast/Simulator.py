@@ -413,6 +413,9 @@ class Simulator(ProgramVisitor):
 
     def visit_DereferenceExpr(self, node: DereferenceExpr):
         return node.expr.accept(self)
+    
+    def visit_TypePathExpression(self, node: TypePathExpression):
+        return node.last_type
 
     # library functions
 

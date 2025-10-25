@@ -70,5 +70,5 @@ fn main() {
     // LIST_ID.fetch_add(1, Ordering::AcqRel);
     let s1 : State = State{c: 257, lastlist: 11};
     let l : List = List{s: s1, n: 0}
-    l = l.list_add_state(l, s1);
+    // l = l.list_add_state(l, s1);
 }

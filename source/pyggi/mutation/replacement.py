@@ -229,11 +229,11 @@ class ReplacementOperator:
         for stmt in block.getChildren():
             if isinstance(stmt, LetStmt):
                 if len(stmt.var_defs) == 1:
-                    if isinstance(stmt.var_defs[0].declarationInfo.type, PointerType) and stmt.var_defs[0].mutable:
+                    if isinstance(stmt.var_defs[0].declarationInfo.type, PointerType) and stmt.var_defs[0].isMutable:
                         new_stmt = LetStmt(values=stmt.values[0],
                             var_defs=[
                                 VarDef(var_type=SafeNonNullWrapper(typeExpr=stmt.var_defs[0].type), 
-                                    name=stmt.var_defs[0].name, mutable=stmt.var_defs[0].mutable)
+                                    name=stmt.var_defs[0].name, mutable=stmt.var_defs[0].isMutable)
                             ]
                         )
                         new_stmts.append(new_stmt)
