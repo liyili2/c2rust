@@ -37,11 +37,8 @@ class Simulator(ProgramVisitor):
 
     def fill_lib_map(self):
         for name in self.lib_funcs:
-            # Convert snake_case → CamelCase for class name
             parts = name.split('_')
             class_name = "LibFunc" + ''.join(p.capitalize() for p in parts)
-
-            # Look for class inside libfuncs module
             cls = getattr(LibFuncs, class_name, None)
             if cls is not None:
                 self.libMap[name] = cls()
@@ -70,16 +67,12 @@ class Simulator(ProgramVisitor):
             fn.accept(self)
 
     def visit_LetStmt(self, node: LetStmt):
-        # newStack = copy.deepcopy(self.stack)
-
         for i in range(0, len(node.var_defs)):
             arVar = node.var_defs[i].declarationInfo.name
             value = node.values[i]
             if value is not None:
                 value = node.values[i].accept(self)
             self.stack.update({arVar : value})
-
-        # self.stack = newStack
         return None
 
     def find_stack_key(self, target):
@@ -103,8 +96,6 @@ class Simulator(ProgramVisitor):
                 for field in target_original_val.fields:
                     if str.__eq__(field.declarationInfo.name, node.target.name.name):
                         field.value = value
-            # else:
-            #     setattr(target_original_val, node.target.name.name, value)
             newStack.update({target : target_original_val})
         else:
             target = self.find_stack_key(node.target)
@@ -114,7 +105,10 @@ class Simulator(ProgramVisitor):
         return None
     
     def visit_StaticVarDecl(self, node: StaticVarDecl):
-        self.stack.update({node.declarationInfo.name : node.initial_value})
+        init_val = None
+        if node.initial_value is not None:
+            init_val = node.initial_value.accept(self)
+        self.stack.update({node.declarationInfo.name : init_val})
 
     def visit_FunctionDef(self, node: FunctionDef):
         self.funMap.update({node.identifier : node})

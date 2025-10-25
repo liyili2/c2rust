@@ -98,6 +98,18 @@ class LibFuncIsNull(LibFunction):
         if val is None:
             return True
         return False
+    
+class LibFuncFetchAdd(LibFunction):
+    def __init__(self):
+        super().__init__("fetch_add")
+
+    def __call__(self, visitor, caller, args=None):
+        val = caller.accept(visitor) if caller else None
+        if val is None:
+            raise ReturnSignal(value=Exception("called push() with more than one argument"))
+        to_be_added = args[0].accept(visitor)
+        visitor.stack.update({caller.name: val + to_be_added})
+        return val
 
 class LibFuncPush(LibFunction):
     def __init__(self):
@@ -187,13 +199,12 @@ class LibFuncFetchAdd(LibFunction):
         val = caller.accept(visitor) if caller else None
         if val is None:
             raise ReturnSignal(value=Exception("called fetch_add() on a None value"))
-
-        new_val = val + args[0]
-
-        caller.stack[caller.name] = new_val
-
+        if len(args) < 1:
+            raise ReturnSignal(value=Exception("called fetch_add() without an argument"))
+        to_be_added = args[0].accept(visitor)
+        new_val = val + to_be_added
+        visitor.stack[caller.name] = new_val
         return val
-
 
 class LibFuncByRef(LibFunction):
     def __init__(self):
