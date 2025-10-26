@@ -247,7 +247,7 @@ class TypePathExpression(Expression):
         return visitor.visit_TypePathExpression(self)
 
     def __repr__(self):
-        return f"TypePathExpression(type_path={self.type_path}, value_expr={self.value_expr})"
+        return f"TypePathExpression(type_path={self.type_path})"
 
 class RangeExpression(Expression):
     def __init__(self, initial, last):

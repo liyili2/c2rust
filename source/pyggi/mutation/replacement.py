@@ -19,10 +19,10 @@ class ReplacementOperator:
             self.safe_wrap_raw_pointers,
             self.safe_wrap_raw_pointer_argumetns,
             self.make_global_static_pointers_unmutable,
-            # self.move_ast_node,
-            # self.shrink_unsafe_block_stmts,
-            # self.flip_mutabilities,
-            # self.safe_wrap_struct_field,
+            self.move_ast_node,
+            self.shrink_unsafe_block_stmts,
+            self.flip_mutabilities,
+            self.safe_wrap_struct_field,
             self.replace_raw_dereferences_in_unsafe_wrapper,
         ]
         self.new_ast = self.apply_random_mutations(ast, node, 4)
@@ -256,18 +256,18 @@ class ReplacementOperator:
     def make_global_static_pointers_unmutable(self, ast_root, target_node):
         print("OP: make_global_static_pointers_unmutable")
         top_items = []
-        if isinstance(target_node, TopLevel):
-            for top in ast_root.getChildren():
-                if isinstance(top, StaticVarDecl):
-                    new_top_item = StaticVarDecl(var_type=top.var_type, mutable=False, name= top.name,
-                                                initial_value=top.initial_value, visibility=top.visibility)
+
+        for top in ast_root.getChildren():
+            if isinstance(top, StaticVarDecl):
+                if top.isMutable:
+                    new_top_item = StaticVarDecl(var_type=top.declarationInfo.type, isMutable=False, name= top.declarationInfo.name,
+                                                initial_value=top.initial_value, visibility=top.declarationInfo.visibility)
                     top_items.append(new_top_item)
                 else:
                     top_items.append(top)
-
-            return Program(items=top_items)
-        else:
-            return ast_root
+            else:
+                top_items.append(top)
+        return Program(items=top_items)
 
     # check param list parent
     def safe_wrap_raw_pointer_argumetns(self, ast_root, target_node):
