@@ -24,6 +24,7 @@ class ReplacementOperator:
             self.flip_mutabilities,
             self.safe_wrap_struct_field,
             self.replace_raw_dereferences_in_unsafe_wrapper,
+            # self.eplace_unsafe_func_with_safe_and_wrap_the_body_in_unsafe_block,
         ]
         self.new_ast = self.apply_random_mutations(ast, node, 4)
 

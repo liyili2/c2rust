@@ -86,9 +86,9 @@ class MyRustProgram(TreeProgram):
                 try:
                     functional_test_report = ResultCapture()
                     builtins.ast = mutated_ast
-                    # exit_code  = pytest.main(["-s", self.config["test_command"]], plugins=[functional_test_report])
-                    # res.fitness += functional_test_report.failed
-                    # self.compute_fitness(res, exit_code)
+                    exit_code  = pytest.main(["-s", self.config["test_command"]], plugins=[functional_test_report])
+                    res.fitness += functional_test_report.failed
+                    self.compute_fitness(res, exit_code)
 
                 except Exception as e:
                     pass
