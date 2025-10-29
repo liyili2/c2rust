@@ -16,8 +16,8 @@
             "args": [
                 "--project_path", "../source/pyggi/sample/nfa_rust",
                 "--mode", "tree",
-                "--epoch", "2",
-                "--iter", "8"
+                "--epoch", "5",
+                "--iter", "80"
             ],
             "console": "integratedTerminal",
             "justMyCode": true,
@@ -84,14 +84,14 @@
         "args": [
             "--project_path", "../source/pyggi/sample/bst_rust",
             "--mode", "tree",
-            "--epoch", "3",
-            "--iter", "7"
+            "--epoch", "2",
+            "--iter", "5"
         ],
         "console": "integratedTerminal",
         "justMyCode": true,
         "subProcess": true
         },
-        
+
         {
             "type": "lldb",
             "request": "launch",
