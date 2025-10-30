@@ -61,6 +61,7 @@ class ReplacementOperator:
             parent_1, parent_2 = parents[-2], parents[-3]
             top_type_matches = isinstance(parent_1, type(top))
             if not (isinstance(top, FunctionDef) or isinstance(top, InterfaceDef)):
+                remaining_tops.append(top)
                 continue
             top_children = top if isinstance(top, list) else top.getChildren()
 
@@ -76,7 +77,7 @@ class ReplacementOperator:
                     for stmt in block.getChildren():
                         if self.utils.statements_eq(stmt, target_node):
                             new_stmt = transform_fn(stmt)
-                            new_stmts.append(new_stmt if new_stmt else stmt)
+                            new_stmts.append(new_stmt)
                         else:
                             new_stmts.append(stmt)
 
