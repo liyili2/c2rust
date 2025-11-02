@@ -99,13 +99,26 @@ class RustEngine(AbstractTreeEngine):
         if isinstance(node, FunctionParamList):
             results.append(node)
 
-        if isinstance(node, Statement) or (isinstance(node, Block) and node.isUnsafe):
-            # print("cllected_node_", node.__class__)
+        if isinstance(node, Statement):
             results.append(node)
+            if isinstance(node, IfStmt):
+                if node.then_branch:
+                    results.extend(cls._collect_nodes(node.then_branch, visited))
+                if node.else_branch:
+                    results.extend(cls._collect_nodes(node.else_branch, visited))
+
+        if isinstance(node, Block):
+            for child in node.stmts:
+                results.extend(cls._collect_nodes(child, visited))
 
         if isinstance(node, list):
             for child in node:
                 results.extend(cls._collect_nodes(child, visited))
+
+        if hasattr(node, "__body__"):
+            for val in vars(node).values():
+                results.extend(cls._collect_nodes(val, visited))
+
         elif hasattr(node, "__dict__"):
             for val in vars(node).values():
                 results.extend(cls._collect_nodes(val, visited))
@@ -124,8 +137,6 @@ class RustEngine(AbstractTreeEngine):
 
     @classmethod
     def do_insert(cls, program, op, trees, modification_points):
-        #TODO
-        # pass
         file_name, target_node = op.target
         if isinstance(target_node, tuple):
             _, target_node = target_node
@@ -136,13 +147,6 @@ class RustEngine(AbstractTreeEngine):
 
     @classmethod
     def do_delete(cls, program, op, trees, modification_points):
-        file_name, target_node = op.target
-        # if isinstance(target_node, tuple):
-        #     _, target_node = target_node
-        # deletionOperator = DeletionOperator(trees[file_name], target_node)
-        # trees[file_name] = deletionOperator.get_new_ast()
-        # program.trees[file_name] = trees[file_name] 
-        # return trees
         file_name, target_node = op.target
         if isinstance(target_node, tuple):
             _, target_node = target_node

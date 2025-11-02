@@ -415,26 +415,28 @@ class Transformer(RustVisitor):
 
     def visitStaticVarDecl(self, ctx):
         visibility = ctx.visibility().getText() if ctx.visibility() else None
-        mutable = (ctx.getChild(1).getText() == 'mut' or ctx.getChild(2).getText() == 'mut')
-        identifier_index = 3 if mutable else 2
+        mutable = ctx.MUT() is not None
         name = ctx.Identifier(0).getText()
+
+        # type
         var_type = None
         if ctx.typeExpr():
             var_type = self.visit(ctx.typeExpr())
         else:
-            colon_index = [i for i, child in enumerate(ctx.children) if child.getText() == ':'][0]
-            eq_index = [i for i, child in enumerate(ctx.children) if child.getText() == '='][0]
-            type_tokens = ctx.children[colon_index + 1:eq_index]
-            type_str = ''.join(child.getText() for child in type_tokens).strip()
-            var_type = self._basic_type_from_str(type_str)
+            # fallback simple identifier case (like "State")
+            id2 = ctx.Identifier(1).getText()
+            var_type = self._basic_type_from_str(id2)
 
-        initializer = self.visit(ctx.initializer())
+        # initializer
+        init = self.visit(ctx.initializer())
+
         return StaticVarDecl(
             name=name,
             var_type=var_type,
+            initial_value=init,
             isMutable=mutable,
             visibility=visibility,
-            initial_value=initializer)
+        )
 
     binary_operators = {'==', '!=', '<', '>', '<=', '>=', '+', '-', '*', '/', '%', '&&', '||'}
 

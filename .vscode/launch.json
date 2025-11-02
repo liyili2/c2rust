@@ -5,6 +5,35 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python: Debug nfa",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/source/pyggi/example/nfa_rust.py",   // adjust path if needed
+            "cwd": "${workspaceFolder}/source",
+            "env": {
+            "PYTHONPATH": "${workspaceFolder}/source"
+            },
+            "args": [
+                "--project_path", "../source/pyggi/sample/nfa_rust",
+                "--mode", "tree",
+                "--epoch", "5",
+                "--iter", "80"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "subProcess": true
+        },
+        {
+            "name": "Python: Debug simulator",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/source/RustParser/AST_Scripts/tests/SimulatorTest.py",   // adjust path if needed
+            "cwd": "${workspaceFolder}/source",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/source"
+            }
+        },
+        {
             "name": "Python: Debug test1",
             "type": "debugpy",
             "request": "launch",
@@ -55,14 +84,14 @@
         "args": [
             "--project_path", "../source/pyggi/sample/bst_rust",
             "--mode", "tree",
-            "--epoch", "3",
-            "--iter", "7"
+            "--epoch", "2",
+            "--iter", "5"
         ],
         "console": "integratedTerminal",
         "justMyCode": true,
         "subProcess": true
         },
-        
+
         {
             "type": "lldb",
             "request": "launch",

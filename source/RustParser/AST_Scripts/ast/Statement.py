@@ -12,6 +12,9 @@ class Statement(ASTNode):
         super().__init__()
         self.body = body
 
+    def __body__(self):
+        return self.body
+
     def accept(self, visitor):
         method_name = f'visit_{self.__class__.__name__}'
         return getattr(visitor, method_name, visitor.generic_visit)(self)
@@ -172,6 +175,13 @@ class StructDef(Statement):
 
     def __repr__(self):
         return f"StructDef(type_name={self.type_name}, fields={self.fields})"
+    
+    def __setitem__(self, key, value):
+        for field in self.fields:
+            if field.declarationInfo.name == key:
+                field.value = value
+                return
+        raise KeyError(f"No field named {key} in struct {self.name}")
 
 class FunctionCall(Statement):
     def __init__(self, callee, args, caller=None):

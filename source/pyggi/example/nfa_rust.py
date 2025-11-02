@@ -100,7 +100,7 @@ if __name__ == "__main__":
         #TODO: check the target file
         config = {
             "target_files": ["nfa.rs"],
-            "test_command": "./run.sh"
+            "test_command": "pyggi/sample/nfa_rust/nfa_test.py"
         }
 
         program = MyRustProgram(args.project_path, config=config)

@@ -64,7 +64,7 @@ class TypeChecker:
 
     def visit_FunctionDef(self, node: FunctionDef):
         if node.isUnsafe:
-            self.error(node, "unsafe function definition")
+            self.error(node, "unsafe function definition", error_weight=len(node.body.stmts)/10)
 
         fn_name = node.identifier
         param_types = [param.declarationInfo.type for param in node.params]
@@ -373,7 +373,7 @@ class TypeChecker:
         if isinstance(node.stmts, Block):
             self.visit(node.stmts)
         if node.isUnsafe:
-            self.error(node, "unsafe blcok observed")
+            self.error(node, "unsafe blcok observed", error_weight=len(node.stmts)/10)
         for stmt in node.stmts:
             result_stmt = self.visit(stmt)
             result_stmts.append(result_stmt)
@@ -830,6 +830,9 @@ class TypeChecker:
         pass
 
     def visit_UseDecl(self, node):
+        pass
+
+    def visit_CharLiteral(self, node):
         pass
 
     def visit_StaticVarDecl(self, node):

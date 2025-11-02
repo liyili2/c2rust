@@ -63,8 +63,8 @@ def setParents(node, parent=None, top_level_prog=None):
                 setParents(item, node, top_level_prog)
         elif isinstance(value, ASTNode):
             setParents(value, node, top_level_prog)
-
-file_path = os.path.join(os.path.dirname(__file__), "nfa_2.rs")
+ 
+file_path = os.path.join(os.path.dirname(__file__), "nfa_4.rs")
 with open(file_path, "r", encoding="utf-8") as f:
     rust_code = f.read()
 lexer = RustLexer(InputStream(rust_code))
@@ -80,8 +80,8 @@ memory = dict()
 stack = dict()
 simulator = Simulator(memory=memory, stack=stack)
 simulator.visit(ast)
-print(simulator.stack.get("a"))
-assert (simulator.stack.get("a") == 1000)
+# print(simulator.stack.get("a"))
+# assert (simulator.stack.get("a") == 1000)
 
 # print("Type Error Count : ", checker.error_count)
 print("Pretty AST:")

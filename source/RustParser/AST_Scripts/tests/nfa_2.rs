@@ -45,15 +45,15 @@ unsafe fn PtrList_append(mut l1: *mut PtrList, l2: *mut PtrList) -> *mut PtrList
 }
 
 fn main() {
-    let mut s1 = State { c: 'a' as i32, lastlist: 0 };
-    let mut s2 = State { c: 'b' as i32, lastlist: 0 };
+    // let mut s1 = State { c: 'a' as i32, lastlist: 0 };
+    // let mut s2 = State { c: 'b' as i32, lastlist: 0 };
     let s3 = State{c: 'c' as i32, out: &mut s1, out1: &mut s2};
 
-    println!("Created {} states", NSTATE.load(Ordering::Relaxed));
+    // println!("Created {} states", NSTATE.load(Ordering::Relaxed));
 
     let mut outp: *mut State = s3;
     let list1 = PtrList_list1(&mut outp);
-    // PtrList_patch(list1, s3);
+    PtrList_patch(list1, s3);
     // let list2 = PtrList_list1(&mut outp);
     // let combined = PtrList_append(list1, list2);
     // let frag = Frag{start: s3, out: combined};

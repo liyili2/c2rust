@@ -11,7 +11,7 @@ class Expression(ASTNode):
         self.isUnsafe=isUnsafe
 
     def accept(self, visitor):
-        self.expr.accept(visitor)
+        return self.expr.accept(visitor)
 
 class QualifiedExpression(Expression):
     def __init__(self, expr):
@@ -114,7 +114,7 @@ class CharLiteral(Expression):
         # self.type = CharLiteral(value=value)
 
     def accept(self, visitor):
-        pass
+        return visitor.visit_CharLiteral(self)
 
 class IntLiteral(Expression):
     def __init__(self, value: int):
@@ -170,6 +170,8 @@ class ArrayLiteral(Expression):
     def __repr__(self):
         return f"ArrayLiteral({self.elements})"
     def len(self):
+        return len(self.elements)
+    def __len__(self):
         return len(self.elements)
     
 class ArrayAccess(Expression):
@@ -245,7 +247,7 @@ class TypePathExpression(Expression):
         return visitor.visit_TypePathExpression(self)
 
     def __repr__(self):
-        return f"TypePathExpression(type_path={self.type_path}, value_expr={self.value_expr})"
+        return f"TypePathExpression(type_path={self.type_path})"
 
 class RangeExpression(Expression):
     def __init__(self, initial, last):

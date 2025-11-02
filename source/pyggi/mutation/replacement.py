@@ -1,4 +1,5 @@
 
+import copy
 from RustParser.AST_Scripts.ast.Program import Program
 from RustParser.AST_Scripts.ast.Expression import *
 from RustParser.AST_Scripts.ast.Statement import *
@@ -9,23 +10,27 @@ from RustParser.AST_Scripts.ast.TypeChecker import *
 from RustParser.AST_Scripts.ast.ASTNode import *
 from RustParser.AST_Scripts.ast.Type import *
 from RustParser.AST_Scripts.ast.VarDef import *
+from RustParser.AST_Scripts.ast.Transformer import setParents
 from pyggi.mutation.utils import MutationUtils
 import random
 
 class ReplacementOperator:
     def __init__(self, ast, node):
         self.utils = MutationUtils()
+        # self.new_ast = self.remove_unsafe_tags(ast_root=ast)
         self.operators = [
-            self.safe_wrap_raw_pointers,
-            self.safe_wrap_raw_pointer_argumetns,
-            self.make_global_static_pointers_unmutable,
+            # self.safe_wrap_raw_pointers, #no harm!
+            # self.safe_wrap_raw_pointer_argumetns,
+            # self.make_global_static_pointers_unmutable,
             # self.move_ast_node,
             # self.shrink_unsafe_block_stmts,
-            # self.flip_mutabilities,
+            self.flip_mutabilities, #harmful!
             # self.safe_wrap_struct_field,
-            self.replace_raw_dereferences_in_unsafe_wrapper,
+            # self.replace_raw_dereferences_in_unsafe_wrapper,
+            # self.remove_unsafe_tags,
         ]
-        self.new_ast = self.apply_random_mutations(ast, node, 4)
+        self.new_ast = self.apply_random_mutations(ast, node, 1)
+        setParents(self.new_ast)
 
     def apply_random_mutations(self, ast, node, num_ops):
         selected_ops = random.sample(self.operators, k=num_ops)
@@ -56,6 +61,7 @@ class ReplacementOperator:
             parent_1, parent_2 = parents[-2], parents[-3]
             top_type_matches = isinstance(parent_1, type(top))
             if not (isinstance(top, FunctionDef) or isinstance(top, InterfaceDef)):
+                remaining_tops.append(top)
                 continue
             top_children = top if isinstance(top, list) else top.getChildren()
 
@@ -71,7 +77,7 @@ class ReplacementOperator:
                     for stmt in block.getChildren():
                         if self.utils.statements_eq(stmt, target_node):
                             new_stmt = transform_fn(stmt)
-                            new_stmts.append(new_stmt if new_stmt else stmt)
+                            new_stmts.append(new_stmt)
                         else:
                             new_stmts.append(stmt)
 
@@ -88,79 +94,89 @@ class ReplacementOperator:
 
     def replace_raw_dereferences_in_unsafe_wrapper(self, ast_root, target_node=None):
         print("OP: replace_raw_dereferences_in_unsafe_wrapper")
-        for top in ast_root.getChildren():
-            if not (isinstance(top, FunctionDef) or isinstance(top, InterfaceDef)):
-                continue
-            top_children = top if isinstance(top, list) else top.getChildren()
-            block = top_children.body if isinstance(top_children, FunctionDef) else top_children
-            if isinstance(block, Block):
-                for stmt in block.stmts:
-                    if isinstance(stmt, IfStmt):
-                        if isinstance(stmt.condition, BinaryExpr):
-                            if isinstance(stmt.condition.left, DereferenceExpr):
-                                stmt.replace_dereference_with_ref_unwrap_call()
-                            if isinstance(stmt.condition.right, DereferenceExpr):
-                                stmt.replace_dereference_with_ref_unwrap_call()
-                            if isinstance(stmt.condition.left, FieldAccessExpr):
-                                stmt.condition.left=FieldAccessExpr(receiver=FunctionCallExpr(
-                                    caller=FunctionCallExpr(
-                                        caller=stmt.condition.left,
-                                        callee="as_ref",
-                                        args=[]
-                                    ),
-                                    callee="unwrap",
-                                    args=[]
-                                ),
-                                field_name= stmt.condition.left.name)
+        return self.utils.transform_ast(ast_root, target_node, self.replace_raw_dereferences_in_unsafe_wrapper_fn)
 
-                            if isinstance(stmt.condition.right, FieldAccessExpr):
-                                stmt.condition.right=FieldAccessExpr(receiver=FunctionCallExpr(
-                                    caller=FunctionCallExpr(
-                                        caller=stmt.condition.right,
-                                        callee="as_ref",
-                                        args=[]
-                                    ),
-                                    callee="unwrap",
-                                    args=[]
-                                ),
-                                field_name= stmt.condition.right.name)
-                    if isinstance(stmt, AssignStmt):
-                        if isinstance(stmt.target, DereferenceExpr):
-                            stmt.target = Expression(
-                                expr=FunctionCallExpr(
-                                    caller=FunctionCallExpr(
-                                        caller=stmt.value,
-                                        callee="as_ref",
-                                        args=[]
-                                    ),
-                                    callee="unwrap",
-                                    args=[]
-                                )
-                            )
-                        if isinstance(stmt.value, DereferenceExpr):
-                            stmt.value = Expression(
-                                expr=FunctionCallExpr(
-                                    caller=FunctionCallExpr(
-                                        caller=stmt.value,
-                                        callee="as_ref",
-                                        args=[]
-                                    ),
-                                    callee="unwrap",
-                                    args=[]
-                                )
-                            )
+    def replace_raw_dereferences_in_unsafe_wrapper_fn(self, ast_root, target_node):
+            # top_children = target_node if isinstance(target_node, list) else target_node.getChildren()
+            # block = top_children.body if isinstance(top_children, FunctionDef) else top_children
+            # block = target_node
+            if isinstance(target_node, FunctionDef):
+                for stmt in target_node.body.stmts:
+                    self.a(stmt)
+            if isinstance(target_node, Block):
+                for stmt in target_node.stmts:
+                    self.a(stmt)
+            elif isinstance(target_node, Statement):
+                self.a(stmt)
 
-                    if isinstance(stmt, LetStmt) and len(stmt.var_defs) == 1:
-                        val = stmt.values[0]
-                        if isinstance(val, DereferenceExpr):
-                            stmt = LetStmt(
-                                var_defs=VarDef(
-                                    name=stmt.var_defs[0].declarationInfo.name,
-                                    mutable=stmt.var_defs[0].mutable,
-                                    by_ref=stmt.var_defs[0].by_ref,
-                                    type=RefType("T")
-                                ), values=Expression(expr=BorrowExpr(expr=val), isUnsafe=True))
-        return ast_root
+    def a(self, stmt):
+        if isinstance(stmt, IfStmt):
+            if isinstance(stmt.condition, BinaryExpr):
+                if isinstance(stmt.condition.left, DereferenceExpr):
+                    stmt.replace_dereference_with_ref_unwrap_call()
+                if isinstance(stmt.condition.right, DereferenceExpr):
+                    stmt.replace_dereference_with_ref_unwrap_call()
+                if isinstance(stmt.condition.left, FieldAccessExpr):
+                    if isinstance(stmt.condition.left.receiver, DereferenceExpr):
+                        stmt.condition.left=FieldAccessExpr(receiver=FunctionCallExpr(
+                            caller=FunctionCallExpr(
+                                caller=stmt.condition.left,
+                                callee="as_ref",
+                                args=[]
+                            ),
+                            callee="unwrap",
+                            args=[]
+                        ),
+                        field_name= stmt.condition.left.name)
+
+                if isinstance(stmt.condition.right, FieldAccessExpr):
+                    if isinstance(stmt.condition.right.receiver, DereferenceExpr):
+                        stmt.condition.right=FieldAccessExpr(receiver=FunctionCallExpr(
+                            caller=FunctionCallExpr(
+                                caller=stmt.condition.right,
+                                callee="as_ref",
+                                args=[]
+                            ),
+                            callee="unwrap",
+                            args=[]
+                        ),
+                        field_name= stmt.condition.right.name)
+        if isinstance(stmt, AssignStmt):
+            if isinstance(stmt.target, DereferenceExpr):
+                stmt.target = Expression(
+                    expr=FunctionCallExpr(
+                        caller=FunctionCallExpr(
+                            caller=stmt.value,
+                            callee="as_ref",
+                            args=[]
+                        ),
+                        callee="unwrap",
+                        args=[]
+                    )
+                )
+            if isinstance(stmt.value, DereferenceExpr):
+                stmt.value = Expression(
+                    expr=FunctionCallExpr(
+                        caller=FunctionCallExpr(
+                            caller=stmt.value,
+                            callee="as_ref",
+                            args=[]
+                        ),
+                        callee="unwrap",
+                        args=[]
+                    )
+                )
+
+        if isinstance(stmt, LetStmt) and len(stmt.var_defs) == 1:
+            val = stmt.values[0]
+            if isinstance(val, DereferenceExpr):
+                stmt = LetStmt(
+                    var_defs=VarDef(
+                        name=stmt.var_defs[0].declarationInfo.name,
+                        mutable=stmt.var_defs[0].mutable,
+                        by_ref=stmt.var_defs[0].by_ref,
+                        type=RefType("T")
+                    ), values=Expression(expr=BorrowExpr(expr=val), isUnsafe=True))
 
     def flip_mutabilities(self, ast_root, target_node):
         print("OP: flip_mutabilities")
@@ -169,13 +185,13 @@ class ReplacementOperator:
                 return LetStmt(
                     var_defs=VarDef(
                         name=stmt.var_defs[0].declarationInfo.name,
-                        mutable=not stmt.var_defs[0].mutable,
+                        isMutable=not stmt.var_defs[0].isMutable,
                         by_ref=stmt.var_defs[0].by_ref,
                         var_type=stmt.var_defs[0].declarationInfo.type
                     ),
                     values=stmt.values[0]
                 )
-            return None
+            return stmt
         return self.transform_let_stmt(ast_root, target_node, transform, label="flip_mutabilities")
 
     def safe_wrap_struct_field(self, ast_root, target_node):
@@ -229,11 +245,11 @@ class ReplacementOperator:
         for stmt in block.getChildren():
             if isinstance(stmt, LetStmt):
                 if len(stmt.var_defs) == 1:
-                    if isinstance(stmt.var_defs[0].declarationInfo.type, PointerType) and stmt.var_defs[0].mutable:
+                    if isinstance(stmt.var_defs[0].declarationInfo.type, PointerType) and stmt.var_defs[0].isMutable:
                         new_stmt = LetStmt(values=stmt.values[0],
                             var_defs=[
                                 VarDef(var_type=SafeNonNullWrapper(typeExpr=stmt.var_defs[0].type), 
-                                    name=stmt.var_defs[0].name, mutable=stmt.var_defs[0].mutable)
+                                    name=stmt.var_defs[0].name, mutable=stmt.var_defs[0].isMutable)
                             ]
                         )
                         new_stmts.append(new_stmt)
@@ -256,18 +272,44 @@ class ReplacementOperator:
     def make_global_static_pointers_unmutable(self, ast_root, target_node):
         print("OP: make_global_static_pointers_unmutable")
         top_items = []
-        if isinstance(target_node, TopLevel):
-            for top in ast_root.getChildren():
-                if isinstance(top, StaticVarDecl):
-                    new_top_item = StaticVarDecl(var_type=top.var_type, mutable=False, name= top.name,
-                                                initial_value=top.initial_value, visibility=top.visibility)
+
+        for top in ast_root.getChildren():
+            if isinstance(top, StaticVarDecl):
+                if top.isMutable:
+                    new_top_item = StaticVarDecl(var_type=top.declarationInfo.type, isMutable=False, name= top.declarationInfo.name,
+                                                initial_value=top.initial_value, visibility=top.declarationInfo.visibility)
                     top_items.append(new_top_item)
                 else:
                     top_items.append(top)
+            else:
+                top_items.append(top)
+        return Program(items=top_items)
 
-            return Program(items=top_items)
-        else:
-            return ast_root
+    # TODO: Not checked yet + remove unsafe tags from blocks as well
+    def remove_unsafe_tags(self, ast_root,target_node=None):
+        ast = copy.deepcopy(ast_root)
+        print("OP: remove_unsafe_tags")
+        for top in ast.getChildren():
+            if isinstance(top, FunctionDef):
+                if top.isUnsafe:
+                    top.isUnsafe = False
+                if top.body.isUnsafe:
+                    top.body.isUnsafe = False
+                for stmt in top.body.stmts:
+                    if isinstance(stmt, Block):
+                        if stmt.isUnsafe:
+                            stmt.isUnsafe = False
+            elif isinstance(top, InterfaceDef):
+                for top_child in top.getChildren():
+                    if isinstance(top_child, FunctionDef):
+                        if top_child.isUnsafe:
+                            top_child.isUnsafe = False
+                        if top_child.body.isUnsafe:
+                            top_child.body.isUnsafe = False
+                        for stmt in top_child.body.stmts:
+                            if stmt.isUnsafe:
+                                stmt.isUnsafe = False
+        return ast
 
     # check param list parent
     def safe_wrap_raw_pointer_argumetns(self, ast_root, target_node):
