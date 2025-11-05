@@ -755,36 +755,36 @@ class TypeChecker:
                 self.error(node, f"access to an undefined struct {node.receiver}")
                 return
 
-        parent_list = get_all_parents(target_node=node, ast_root=self.root, parent=None)
-        check_done = False
-        for p in parent_list:
-            if isinstance(p, InterfaceDef):
-                info = self.env.lookup(p.name)
-                if isinstance(info["type"], StructType):
-                    for f in info["type"].fields:
-                        if str.__eq__(field, f):
-                            check_done = True
+        # parent_list = get_all_parents(target_node=node, ast_root=self.root, parent=None)
+        # check_done = False
+        # for p in parent_list:
+        #     if isinstance(p, InterfaceDef):
+        #         info = self.env.lookup(p.name)
+        #         if isinstance(info["type"], StructType):
+        #             for f in info["type"].fields:
+        #                 if str.__eq__(field, f):
+        #                     check_done = True
 
-        if not check_done:
-            if not( isinstance(base_type, StructType) or isinstance(base_type, StructDef)):
-                # self.error(node, "access to a wrong type of variable (not a struct)")
-                return
+        # if not check_done:
+        #     if not( isinstance(base_type, StructType) or isinstance(base_type, StructDef)):
+        #         # self.error(node, "access to a wrong type of variable (not a struct)")
+        #         return
 
-            if isinstance(base_type, StructType) and base_type.isUnion:
-                self.error(node, f"union struct {base_type.name} field {node.name.name} access ")
+        #     if isinstance(base_type, StructType) and base_type.isUnion:
+        #         self.error(node, f"union struct {base_type.name} field {node.name.name} access ")
 
-            for field in base_info["type"].fields:
-                if isinstance(field, str):
-                    if str.__eq__(field, node.name.name):
-                        field_type = field.__class__
-                        break
-                else:
-                    if str.__eq__(field.declarationInfo.name, node.name.name):
-                        field_type = field.declarationInfo.type
-                        break
-            if field_type is None:
-                self.error(node, "no such a field to access")
-                return None
+        #     for field in base_info["type"].fields:
+        #         if isinstance(field, str):
+        #             if str.__eq__(field, node.name.name):
+        #                 field_type = field.__class__
+        #                 break
+        #         else:
+        #             if str.__eq__(field.declarationInfo.name, node.name.name):
+        #                 field_type = field.declarationInfo.type
+        #                 break
+        #     if field_type is None:
+        #         self.error(node, "no such a field to access")
+        #         return None
 
         return field_type
 

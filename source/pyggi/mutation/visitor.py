@@ -33,6 +33,7 @@ class MutationVisitor():
                 return self.visitChildren(tree)
         except Exception:
             pass
+        return self.ast
 
     def visitProgram(self, node:Program):
         for i in node.getChildren():

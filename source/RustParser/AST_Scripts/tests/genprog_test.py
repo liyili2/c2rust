@@ -1,7 +1,6 @@
 import sys
 import os
 
-
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
 from pyggi.genprog import GenProg
@@ -51,4 +50,5 @@ parser = RustParser(tokens)
 tree=parser.program()
 builder = Transformer()
 custom_ast = builder.visit(tree)
-GenProg(original_ast=custom_ast)
+genprog = GenProg(original_ast=custom_ast)
+print(pretty_print_ast(genprog.final_answer))
