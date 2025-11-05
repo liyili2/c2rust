@@ -106,7 +106,19 @@ class LocalSearch(Algorithm):
 
                 return patch.add(LineDeletion.random(program))
         """
-        pass
+        new_patch = patch.clone()
+        if len(new_patch) > 0 and random.random() < 0.3:
+            idx_to_remove = random.randrange(0, len(new_patch))
+            new_patch.remove(idx_to_remove)
+            print(f"Removed edit #{idx_to_remove}")
+        else:
+            if not hasattr(self, "operators") or not self.operators:
+                raise RuntimeError("No mutation operators defined for local search!")
+            operator = random.choice(self.operators)
+            new_edit = operator.create(self.program)
+            new_patch.add(new_edit)
+            print(f"Added new edit using {operator.__name__}")
+        return new_patch
 
     def run(self, warmup_reps=1, epoch=5, max_iter=100, timeout=15, verbose=True):
         """
@@ -147,25 +159,31 @@ class LocalSearch(Algorithm):
         if verbose:
             self.program.logger.info("Epoch\tIter\tStatus\tFitness\tPatch")
 
+        best_patch = empty_patch
+        best_fitness = original_fitness
+
+        best_patch_original = empty_patch  # always the pristine base
+
         for cur_epoch in range(1, epoch + 1):
-            # Reset Search
             self.setup()
             cur_result = {}
-            best_patch = empty_patch
-            best_fitness = original_fitness
-
-            # Result Initilization
-            cur_result['BestPatch'] =None
+            
+            # Result Initialization
+            cur_result['BestPatch'] = None
             cur_result['Success'] = False
             cur_result['FitnessEval'] = 0
             cur_result['InvalidPatch'] = 0
             cur_result['diff'] = None
 
+            # Reset per-epoch best patch to the original
+            best_patch = best_patch_original.clone()
+            best_fitness = original_fitness
+
             start = time.time()
+
             for cur_iter in range(1, max_iter + 1):
                 patch = self.get_neighbour(best_patch.clone())
                 run = self.program.evaluate_patch(patch, timeout=timeout)
-
                 if run.fitness is not None:
                     cur_result['FitnessEval'] += run.fitness
 
@@ -173,36 +191,29 @@ class LocalSearch(Algorithm):
                     cur_result['InvalidPatch'] += 1
                     update_best = False
                 else:
-                    print("update_best")
                     update_best = self.is_better_than_the_best(run.fitness, best_fitness)
 
                 if update_best:
-                    print("best_fitness", best_fitness)
                     best_fitness, best_patch = run.fitness, patch
+                    print(f"[Epoch {cur_epoch}, Iter {cur_iter}] 🔹 New best fitness: {best_fitness}")
 
                 if verbose:
                     self.program.logger.info("{}\t{}\t{}\t{}{}\t{}".format(
-                        cur_epoch, cur_iter, run.status, '*' if update_best else '',
-                        run.fitness, patch))
+                        cur_epoch, cur_iter, run.status,
+                        '*' if update_best else '', run.fitness, patch))
 
-                if run.fitness is not None and self.stopping_criterion(cur_iter, run.fitness):
-                    cur_result['Success'] = True
-                    # with open("mutated_ast"+ cur_iter +".txt", "w", encoding="utf-8") as f:
-                    #   f.write(pretty_print_ast(run.program))
-                    break
-
-                # print("diff: ", patch.diff())
+                # Optional stopping criterion (if you want early exit)
+                # if run.fitness is not None and self.stopping_criterion(cur_iter, run.fitness):
+                #     cur_result['Success'] = True
+                #     break
 
             cur_result['Time'] = time.time() - start
-
-            if best_patch:
-                cur_result['BestPatch'] = best_patch
-                cur_result['BestFitness'] = best_fitness
-                # print("best patch: ", pretty_print_ast(best_patch.program.trees[best_patch.program.main_file]))
-                # cur_result['diff'] = self.program.diff(best_patch)
-                # cur_result['diff'] = None
+            cur_result['BestPatch'] = best_patch
+            cur_result['BestFitness'] = best_fitness
 
             result.append(cur_result)
-            print("=== PATCHED CODE ===", self.program.path)
+            print(f"=== END OF EPOCH {cur_epoch} ===")
+            print(f"Best fitness of this epoch: {best_fitness}")
+
 
         return result

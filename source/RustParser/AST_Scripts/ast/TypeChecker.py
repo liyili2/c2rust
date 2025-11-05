@@ -767,7 +767,7 @@ class TypeChecker:
 
         if not check_done:
             if not( isinstance(base_type, StructType) or isinstance(base_type, StructDef)):
-                self.error(node, "access to a wrong type of variable (not a struct)")
+                # self.error(node, "access to a wrong type of variable (not a struct)")
                 return
 
             if isinstance(base_type, StructType) and base_type.isUnion:
