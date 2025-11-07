@@ -688,9 +688,10 @@ class TypeChecker:
             if info["borrowed"]:
                 self.error(node, "cannot immutably borrow a variable that's already borrowed", 2)
 
-        info["borrowed"] = True
+        if not isinstance(node, FieldAccessExpr):
+            info["borrowed"] = True
         return RefType(info["type"])
-    
+
     def visit_PatternExpr(self, node):
         pass
     

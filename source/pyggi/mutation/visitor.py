@@ -158,6 +158,9 @@ class MutationVisitor():
         self.visit(node.body)
 
     def visitBorrowExpr(self, node: BorrowExpr):
+        mutation_probability = random.random()
+        if mutation_probability > self.mutation_const:
+            node.isMutable = not node.isMutable
         self.visit(node.expr)
 
     def visitUnaryExpr(self, node: UnaryExpr):

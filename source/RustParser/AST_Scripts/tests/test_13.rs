@@ -7,6 +7,17 @@ struct Node {
 
 static mut NSTATE: AtomicI32 = AtomicI32::new(0);
 
+fn new_node(key: i32, value: String) -> Self {
+    let node: Node = Node {
+        key: key,
+        value: value,
+        left: None,
+        right: None,
+    }
+
+    return node;
+}
+
 unsafe fn insert(root: *mut Node, key: i32, value: &str) -> *mut Node {
     if root == None {
         return;
@@ -60,15 +71,5 @@ fn main() {
         let three_found = search(root, 3);
         root = insert(root, 5, "five");
         let five_found = search(root, 5);
-        // insert(root, 7, "seven");
-        // search(root, 7);
-        // insert(root, 4, "four");
-        // search(root, 4);
-        // insert(root, 2, "two");
-        // search(root, 2);
-        // insert(root, 6, "six");
-        // search(root, 6);
-        // insert(root, 8, "eight");
-        // search(root, 8);
     }
 }
