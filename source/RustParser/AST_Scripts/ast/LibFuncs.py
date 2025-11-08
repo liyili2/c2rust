@@ -228,3 +228,28 @@ class LibFuncIntoBoxedSlice(LibFunction):
             raise ReturnSignal(value=Exception("called into_boxed_slice() on a None value"))
 
         return vector
+
+
+# class LibFuncCast(LibFunction):
+#     def __init__(self):
+#         super().__init__("cast")
+#
+#     def __call__(self, visitor, caller, args=None):
+#         caller = caller.accept(visitor) if caller else None
+#         if caller is None:
+#             raise ReturnSignal(value=Exception("called cast on a None value"))
+#
+#         return caller
+#
+#
+# class LibFuncAppend(LibFunction):
+#     def __init__(self):
+#         super().__init__("append")
+#
+#     def __call__(self, visitor, caller, args=None):
+#         vector = caller.accept(visitor) if caller else None
+#         if vector is None:
+#             raise ReturnSignal(value=Exception("called append on a None value"))
+#
+#         return vector
+

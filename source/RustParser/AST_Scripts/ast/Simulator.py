@@ -39,6 +39,7 @@ class Simulator(ProgramVisitor):
         for name in self.lib_funcs:
             parts = name.split('_')
             class_name = "LibFunc" + ''.join(p.capitalize() for p in parts)
+            class_name = class_name.replace("!", "")
             cls = getattr(LibFuncs, class_name, None)
             if cls is not None:
                 self.libMap[name] = cls()
@@ -60,7 +61,9 @@ class Simulator(ProgramVisitor):
     def visit_Program(self, ctx: Program):
         for i in ctx.items:
             if not isinstance(i, list):
-                i.accept(self)
+                if i is not None:
+                    print("None type detected in program items")
+                    i.accept(self)
 
     def visit_InterfaceDef(self, node: InterfaceDef):
         for fn in node.functions:
