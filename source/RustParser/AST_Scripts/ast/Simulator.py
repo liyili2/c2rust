@@ -47,7 +47,7 @@ class Simulator(ProgramVisitor):
                 print(f"[warn] Lib function class not found: {class_name}")
 
     def get_state(self):
-        return self.memory
+        return self.heap
 
     def get_val_address(self):
         return self.stack
