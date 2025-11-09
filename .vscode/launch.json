@@ -5,6 +5,16 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python: Debug genprog",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/source/RustParser/AST_Scripts/tests/genprog_test.py",   // adjust path if needed
+            "cwd": "${workspaceFolder}/source",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/source"
+            }
+        },
+        {
             "name": "Python: Debug nfa",
             "type": "debugpy",
             "request": "launch",
@@ -17,7 +27,7 @@
                 "--project_path", "../source/pyggi/sample/nfa_rust",
                 "--mode", "tree",
                 "--epoch", "5",
-                "--iter", "80"
+                "--iter", "120"
             ],
             "console": "integratedTerminal",
             "justMyCode": true,
@@ -84,8 +94,8 @@
         "args": [
             "--project_path", "../source/pyggi/sample/bst_rust",
             "--mode", "tree",
-            "--epoch", "2",
-            "--iter", "5"
+            "--epoch", "4",
+            "--iter", "32"
         ],
         "console": "integratedTerminal",
         "justMyCode": true,

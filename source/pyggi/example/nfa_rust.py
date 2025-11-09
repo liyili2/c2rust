@@ -53,15 +53,28 @@ class MyLineProgram(LineProgram, MyProgram):
 
 class MyLocalSearch(LocalSearch):
     def get_neighbour(self, patch):
-        if len(patch) > 0 and random.random() < 0.5:
-            patch.remove(random.randrange(0, len(patch)))
+        """
+        Generate a neighboring patch by slightly modifying the given patch.
+        Strategy:
+          - With some probability, remove a random edit (exploration)
+          - Otherwise, apply a new small mutation using a random operator
+        """
+        new_patch = patch.clone()
+        if len(new_patch) > 0 and random.random() < 0.3:
+            idx_to_remove = random.randrange(0, len(new_patch))
+            new_patch.remove(idx_to_remove)
+            print(f"Removed edit #{idx_to_remove}")
         else:
-            edit_operator = random.choice(self.operators)
-            patch.add(edit_operator.create(self.program))
-        return patch
+            if not hasattr(self, "operators") or not self.operators:
+                raise RuntimeError("No mutation operators defined for local search!")
+            operator = random.choice(self.operators)
+            new_edit = operator.create(self.program)
+            new_patch.add(new_edit)
+            print(f"Added new edit using {operator.__name__}")
+        return new_patch
 
     def stopping_criterion(self, iter, fitness):
-        return fitness < 100
+        return False
 
 def pretty_print_ast(node, indent=0):
     spacer = '  ' * indent

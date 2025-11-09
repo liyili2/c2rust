@@ -78,12 +78,16 @@ class Simulator(ProgramVisitor):
     def find_stack_key(self, target):
         if isinstance(target, IdentifierExpr):
             return target.name
+        if isinstance(target.expr, IdentifierExpr):
+            return target.expr.name
         if isinstance(target, FieldAccessExpr):
             return self.find_stack_key(target.receiver)
         if isinstance(target, DereferenceExpr):
             return self.find_stack_key(target=target.expr)
         if isinstance(target, BorrowExpr):
             return self.find_stack_key(target=target.expr)
+        if isinstance(target, FunctionCall):
+            return self.find_stack_key(target.caller)
 
     def visit_Assignment(self, node: AssignStmt):
         newStack = copy.deepcopy(self.stack)
@@ -288,7 +292,7 @@ class Simulator(ProgramVisitor):
 
     def visit_int(self, node):
         return node
-    
+
     def visit_ByteLiteralExpr(self, node:ByteLiteralExpr):
         return node.expr
 

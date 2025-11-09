@@ -246,17 +246,21 @@ class Transformer(RustVisitor):
         mutable = False
         name = None
         var_type = None
+        name_index = 0
 
+        txt = ctx.getText()
         tokens = [ctx.getChild(i).getText() for i in range(ctx.getChildCount())]
 
-        if 'ref' in tokens:
+        if str.__contains__(txt, 'ref'):
             by_ref = True
-            if 'mut' in tokens:
-                mutable = True
-            name_index = tokens.index('mut') + 1 if 'mut' in tokens else tokens.index('ref') + 1
-            name = tokens[name_index]
+            name_index += 1
+        if str.__contains__(txt, 'mut'):
+            mutable = True
+            name_index += 1
+        
+        name = tokens[name_index]
 
-        elif tokens[0] == 'mut':
+        if tokens[0] == 'mut':
             mutable = True
             name = tokens[1]
         else:
@@ -609,10 +613,10 @@ class Transformer(RustVisitor):
         return DereferenceExpr(target_expr)
 
     def visitBorrowExpression(self, ctx):
-        mutable = ctx.getChild(1).getText() == "mut"
-        expr_index = 2 if mutable else 1
+        txt = ctx.getText()
+        mutable = str.__contains__(txt, "mut")
+        expr_index = 1 if mutable else 0
         expr = self.visit(ctx.getChild(expr_index))
-        mutable = expr.isMutable
         return BorrowExpr(expr=expr, isMutable=mutable)
 
     def visitCastExpr(self, node):

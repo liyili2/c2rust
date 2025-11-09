@@ -19,17 +19,17 @@ class ReplacementOperator:
         self.utils = MutationUtils()
         # self.new_ast = self.remove_unsafe_tags(ast_root=ast)
         self.operators = [
-            # self.safe_wrap_raw_pointers, #no harm!
-            # self.safe_wrap_raw_pointer_argumetns,
-            # self.make_global_static_pointers_unmutable,
+            self.safe_wrap_raw_pointers, #no harm!
+            self.safe_wrap_raw_pointer_argumetns,
+            self.make_global_static_pointers_unmutable,
             # self.move_ast_node,
             # self.shrink_unsafe_block_stmts,
             self.flip_mutabilities, #harmful!
-            # self.safe_wrap_struct_field,
-            # self.replace_raw_dereferences_in_unsafe_wrapper,
-            # self.remove_unsafe_tags,
+            self.safe_wrap_struct_field,
+            self.replace_raw_dereferences_in_unsafe_wrapper,
+            self.remove_unsafe_tags,
         ]
-        self.new_ast = self.apply_random_mutations(ast, node, 1)
+        self.new_ast = self.apply_random_mutations(ast, node, 4)
         setParents(self.new_ast)
 
     def apply_random_mutations(self, ast, node, num_ops):
@@ -340,9 +340,9 @@ class ReplacementOperator:
                         if isinstance(param.declarationInfo.type, PointerType) and param.isMutable:
                             new_param = Param(
                                 name=param.declarationInfo.name,
-                                type=RefType(inner=SafeNonNullWrapper(
+                                typ=RefType(inner=SafeNonNullWrapper(
                                     typeExpr=param.declarationInfo.type)),
-                                mutable=param.isMutable
+                                isMutable=param.isMutable
                             )
                             new_params.append(new_param)
                         else:
@@ -354,6 +354,8 @@ class ReplacementOperator:
                         parent_1.setParamList(new_params)
 
                     remaining_tops.append(parent_1)
+                else:
+                    remaining_tops.append(top)
             else:
                 remaining_tops.append(top)
 
