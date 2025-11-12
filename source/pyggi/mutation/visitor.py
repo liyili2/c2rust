@@ -190,3 +190,8 @@ class MutationVisitor():
         if mutation_probability > self.mutation_const:
             if not isinstance(node.last_type, SafeNonNullWrapper):
                 node.last_type = SafeNonNullWrapper(typeExpr=node.last_type)
+
+    def visitIdentifierExpr(self, node:IdentifierExpr):
+        mutation_probability = random.random()
+        if mutation_probability > self.mutation_const:
+            node.isMutable = not node.isMutable

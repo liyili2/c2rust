@@ -24,7 +24,7 @@ class Gene:
 
 class GenProg:
     def __init__(self, original_ast):
-        self.population_size = 10
+        self.population_size = 25
         self.max_iteration_num = 200
         self.mutation_const = 0.3
         self.crossover_const = 0.1
@@ -65,8 +65,8 @@ class GenProg:
         type_checker.visit(variant)
         fitness = type_checker.error_count
         functional_test_report = ResultCapture()
-        builtins.ast = variant
-        exit_code  = pytest.main(["-s", "pyggi/sample/pair_test.py"], plugins=[functional_test_report])
+        # builtins.ast = variant
+        # exit_code  = pytest.main(["-s", "pyggi/sample/nfa_rust/nfa_test.py"], plugins=[functional_test_report])
         fitness += functional_test_report.failed
         return fitness
 
@@ -76,6 +76,7 @@ class GenProg:
             i += 1
             elite_population = self.select_best_genes(self.population)
             j=0
+            self.mutation_const = random.random()
             for elite in elite_population:
                 j += 1
                 elite = self.apply_mutation(elite.gene)

@@ -425,14 +425,14 @@ class TypeChecker:
                 # self.error(node, "usage of undefined variable in compound assignment")
                 return
 
-            if not target_info.get("mutable", False):
-                self.error(node, "assignment target must be mutable in compound assignment")
+            # if not node.target.isMutable:
+            #     self.error(node, "assignment target must be mutable in compound assignment")
 
-            if target_info.get("borrowed", False):
+            if not target_info.get("borrowed"):
                 self.error(node, "usage of not borrowed variable in compound assignment")
 
-            if target_info.get("owned", False):
-                self.error(node, "usage of not owned variable in compound assignment", 2)
+            if not target_info.get("owned"):
+                self.error(node, f"usage of not owned variable in compound assignment: {target_info}", 2)
 
         # Type compatibility check for compound ops
         if node.op in ['+=', '-=', '*=', '/=']:
