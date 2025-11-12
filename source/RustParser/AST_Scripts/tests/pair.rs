@@ -5,7 +5,7 @@ struct Pair {
 }
 
 fn main() {
-    let mut p = Pair { x: 10, y: 20 };
+    let mut p : Pair = Pair { x: 10, y: 20 };
     let x_ptr: *mut i32 = & mut p.x;
     let y_ptr: *mut i32 = & mut p.y;
 

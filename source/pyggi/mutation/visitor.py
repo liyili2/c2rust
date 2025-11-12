@@ -25,6 +25,8 @@ class MutationVisitor():
             return [self.visit(child) for child in tree]
         rule_name = tree.__class__.__name__.replace("Context", "")
         method_name = f"visit{rule_name}"
+        if str.__eq__("visitGene", method_name):
+            method_name = "visitProgram"
         visitor_fn = getattr(self, method_name, None)
         try:
             if visitor_fn is not None:
@@ -35,7 +37,7 @@ class MutationVisitor():
             pass
         return self.ast
 
-    def visitProgram(self, node:Program):
+    def visitProgram(self, node):
         for i in node.getChildren():
             self.visit(i)
         return self.ast
@@ -47,7 +49,8 @@ class MutationVisitor():
 
         mutation_probability = random.random()
         if mutation_probability > self.mutation_const:
-            node.declarationInfo.type = SafeNonNullWrapper(typeExpr=node.declarationInfo.type)
+            if not isinstance(node.declarationInfo.type, SafeNonNullWrapper):
+                node.declarationInfo.type = SafeNonNullWrapper(typeExpr=node.declarationInfo.type)
 
     def visitFunctionDef(self, node:FunctionDef):
         mutation_probability = random.random()
@@ -65,7 +68,8 @@ class MutationVisitor():
     def visitParam(self, node:Param):
         mutation_probability = random.random()
         if mutation_probability > self.mutation_const:
-            node.declarationInfo.type = SafeNonNullWrapper(typeExpr=node.declarationInfo.type)
+            if not isinstance(node.declarationInfo.type, SafeNonNullWrapper):
+                node.declarationInfo.type = SafeNonNullWrapper(typeExpr=node.declarationInfo.type)
 
     def visitBlock(self, node: Block):
         mutation_probability = random.random()
@@ -84,7 +88,8 @@ class MutationVisitor():
     def visitVarDef(self, node:VarDef):
         mutation_probability = random.random()
         if mutation_probability > self.mutation_const:
-            node.declarationInfo.type = SafeNonNullWrapper(typeExpr=node.declarationInfo.type)
+            if not isinstance(node.declarationInfo.type, SafeNonNullWrapper):
+                node.declarationInfo.type = SafeNonNullWrapper(typeExpr=node.declarationInfo.type)
 
         mutation_probability = random.random()
         if mutation_probability > self.mutation_const:
@@ -97,7 +102,8 @@ class MutationVisitor():
     def visitStructField(self, node:StructField):
         mutation_probability = random.random()
         if mutation_probability > self.mutation_const:
-            node.declarationInfo.type = SafeNonNullWrapper(typeExpr=node.declarationInfo.type)
+            if not isinstance(node.declarationInfo.type, SafeNonNullWrapper):
+                node.declarationInfo.type = SafeNonNullWrapper(typeExpr=node.declarationInfo.type)
 
     def visitFieldAccessExpr(self, node:FieldAccessExpr):
         self.visit(node.receiver)
@@ -105,7 +111,7 @@ class MutationVisitor():
 
     def visitDereferenceExpr(self, node:DereferenceExpr):
         mutation_probability = random.random()
-        if mutation_probability > self.mutation_const:
+        if mutation_probability > self.mutation_const and not isinstance(node, FunctionCallExpr):
             new_call = FunctionCallExpr(caller=FunctionCallExpr
                                         (caller=node.expr, callee="as_ref", args=[]), callee="unwrap", args=[])
             node.__class__ = FunctionCallExpr
@@ -182,4 +188,5 @@ class MutationVisitor():
     def visitTypePathExpression(self, node:TypePathExpression):
         mutation_probability = random.random()
         if mutation_probability > self.mutation_const:
-            node.last_type = SafeNonNullWrapper(typeExpr=node.last_type)
+            if not isinstance(node.last_type, SafeNonNullWrapper):
+                node.last_type = SafeNonNullWrapper(typeExpr=node.last_type)

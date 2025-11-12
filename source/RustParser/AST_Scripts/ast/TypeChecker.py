@@ -204,13 +204,36 @@ class TypeChecker:
             return None
 
     def visit_StructDef(self, node):
-        field_dict = {}
-        for field in node.fields:
-            field_type = self.visit(field)
-            field_name = field.declarationInfo.name
-            field_dict[field_name] = field_type
+        if isinstance(node.fields[0], StructLiteralField):
+            struct_type = self.visit(node.name)
+            info = self.env.lookup(struct_type)
+            if not isinstance(info['type'], StructType):
+                self.error(node, f"{struct_type} is not a valid struct type")
+                return
 
-        self.env.declare(name=node.name, typ=StructType(name=node.name, fields=field_dict))
+            field_types = info['type'].fields
+            used_fields = set()
+            for field in node.fields:
+                field_name = field.declarationInfo.name
+                if field_name not in field_types:
+                    # self.error(field, f"Field '{field_name}' is not defined in struct")
+                    continue
+
+                expected_type = field_types[field_name]
+                actual_type = self.visit(field.value)
+                if not self.is_type_compatible(expected_type, actual_type) and expected_type is not None:
+                    pass
+                    # self.error(field, f"Type mismatch for field '{field_name}': expected {expected_type}, got {actual_type}")
+                used_fields.add(field_name)
+        
+        else:
+            field_dict = {}
+            for field in node.fields:
+                field_type = self.visit(field)
+                field_name = field.declarationInfo.name
+                field_dict[field_name] = field_type
+
+            self.env.declare(name=node.name, typ=StructType(name=node.name, fields=field_dict))
 
     def visit_StructLiteral(self, node):
         struct_type = self.visit(node.type_name)
@@ -681,12 +704,19 @@ class TypeChecker:
 
         if node.isMutable:
             if not info["mutable"]:
-                self.error(node, "cannot mutably borrow an immutable variable")
+                if isinstance(node, FieldAccessExpr) and not node.receiver.isMutable:
+                    self.error(node, "cannot mutably borrow an immutable variable")
+                elif not isinstance(node, FieldAccessExpr):
+                    self.error(node, "cannot mutably borrow an immutable variable")
             if info["borrowed"]:
-                self.error(node, "cannot mutably borrow a variable that's already borrowed", 2)
+                if isinstance(node, FieldAccessExpr) and not node.receiver.isMutable:
+                    self.error(node, "cannot mutably borrow a variable that's already borrowed", 2)
+                elif not isinstance(node, FieldAccessExpr):
+                    self.error(node, "cannot mutably borrow a variable that's already borrowed", 2)
         else:
             if info["borrowed"]:
-                self.error(node, "cannot immutably borrow a variable that's already borrowed", 2)
+                if not isinstance(node.expr, FieldAccessExpr):
+                    self.error(node, "cannot immutably borrow a variable that's already borrowed", 2)
 
         if not isinstance(node, FieldAccessExpr):
             info["borrowed"] = True
