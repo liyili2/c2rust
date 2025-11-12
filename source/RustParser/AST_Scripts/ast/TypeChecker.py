@@ -425,8 +425,8 @@ class TypeChecker:
                 # self.error(node, "usage of undefined variable in compound assignment")
                 return
 
-            # if not node.target.isMutable:
-            #     self.error(node, "assignment target must be mutable in compound assignment")
+            if not node.target.isMutable:
+                self.error(node, "assignment target must be mutable in compound assignment")
 
             if not target_info.get("borrowed"):
                 self.error(node, "usage of not borrowed variable in compound assignment")
