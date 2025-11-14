@@ -24,13 +24,14 @@ class Gene:
 
 class GenProg:
     def __init__(self, original_ast):
-        self.population_size = 25
+        self.population_size = 100
         self.max_iteration_num = 200
-        self.mutation_const = 0.3
+        self.mutation_const = 1
         self.crossover_const = 0.1
         self.max_fitness = 0
         self.best_fitness = sys.float_info.max
         self.original_ast = copy.deepcopy(original_ast)
+        self.best_gene = Gene(fitness=self.best_fitness, gene=original_ast)
         self.population = self.generate_initial_population()
         self.final_answer = self.run_iterations().gene
 
@@ -43,13 +44,11 @@ class GenProg:
         return initial_population
 
     def select_best_genes(self, population):
-        sorted_pop = sorted(population, key=lambda g: g.fitness, reverse=True)
-        cutoff = int(len(sorted_pop) * 4 / 5)
-        # cutoff = int(len(sorted_pop))
-        best_genes = sorted_pop[:cutoff]
+        best_genes = sorted(population, key=lambda g: g.fitness, reverse=True)
         best_genes.reverse()
-        self.best_fitness = best_genes[0].fitness
-        print("Best Fitness So Far: ", best_genes[0].fitness)
+        cutoff = int(len(best_genes) * 4 / 5)
+        best_genes = best_genes[:cutoff]
+        self.best_gene = Gene(fitness=self.best_fitness, gene=best_genes[0].gene)
         return best_genes
 
     def apply_mutation(self, variant):
@@ -72,18 +71,21 @@ class GenProg:
 
     def run_iterations(self):
         i = 0
-        while i < self.max_iteration_num and self.best_fitness != self.max_fitness:
+        elite_population = self.population
+        while i < self.max_iteration_num and self.best_gene.fitness != self.max_fitness:
             i += 1
-            elite_population = self.select_best_genes(self.population)
-            j=0
-            self.mutation_const = random.random()
-            for elite in elite_population:
-                j += 1
-                elite = self.apply_mutation(elite.gene)
-                # crossover_probability = random.random()
-                # if crossover_probability > self.crossover_const:
-                #     elite.gene = self.apply_crossover(variant=elite.gene)
-                elite.fitness = (self.calculate_fitness(variant=elite))
-                print("fitness#" , j, ": ", elite.fitness)
+            elite_population = self.select_best_genes(elite_population)
+            for idx, elite in enumerate(elite_population):
+                self.mutation_const = random.random()
+                mutated_gene = self.apply_mutation(elite.gene)
+                new_fitness = self.calculate_fitness(variant=mutated_gene)
+                if new_fitness < elite.fitness:
+                    elite.fitness = new_fitness
+                    elite.gene = mutated_gene
+                print(f"fitness#{idx+1}: {elite.fitness}")
 
+            self.best_fitness = min(e.fitness for e in elite_population)
+            print("Best Fitness So Far: ", self.best_fitness)
+
+        elite_population.sort(key=lambda e: e.fitness, reverse=True)
         return elite_population[0]

@@ -279,9 +279,6 @@ class TypeChecker:
             for var_def, expr_type in zip(node.var_defs, expr_types):
                 declared_type = self.visit(var_def.declarationInfo.type) if var_def.declarationInfo.type else expr_type
 
-                if var_def.declarationInfo.type and type(declared_type) != type(expr_type) and not isinstance(expr_type, RefType):
-                    self.error(node, "in the group-let, type of one of the values do not match its target")
-
                 self.env.declare(var_def.declarationInfo.name, declared_type)
                 self.symbol_table[var_def.declarationInfo.name] = declared_type
                 self._handle_borrowing(var_def, node.values[0])
@@ -325,7 +322,7 @@ class TypeChecker:
         return self.visit(node.pointee_type)
 
     def visit_DereferenceExpr(self, node):
-        self.error(node, f"unsafe pointer dereferencing {node.expr.name}", 2)
+        self.error(node, f"unsafe pointer dereferencing {node.expr}", 2)
         return self.visit(node.expr)
 
     def visit_SafeNonNullWrapper(self, node):
@@ -425,11 +422,9 @@ class TypeChecker:
                 # self.error(node, "usage of undefined variable in compound assignment")
                 return
 
-            if not node.target.isMutable:
-                self.error(node, "assignment target must be mutable in compound assignment")
-
-            if not target_info.get("borrowed"):
-                self.error(node, "usage of not borrowed variable in compound assignment")
+            # TODO: problems lie here
+            # if not node.target.isMutable:
+            #     self.error(node, "assignment target must be mutable in compound assignment")
 
             if not target_info.get("owned"):
                 self.error(node, f"usage of not owned variable in compound assignment: {target_info}", 2)
@@ -453,8 +448,8 @@ class TypeChecker:
             if value_info:
                 if value_info["borrowed"]:
                     self.error(self, f"usage of a borrowed variable {value_expr.name}")
-                if not value_info["owned"]:
-                    self.error(self, f"usage of a variable which ownership was moved: {value_expr.name}", 2)
+                # if not value_info["owned"]:
+                #     self.error(self, f"usage of a variable which ownership was moved: {value_expr.name}", 2)
                 value_info["owned"] = False
 
         elif isinstance(value_expr, BorrowExpr):
@@ -494,10 +489,10 @@ class TypeChecker:
             # self.error(node, f"undefined variable {self.get_expr_identifier(node.target)} in assignment {self.get_expr_identifier(node.target)} = {self.get_expr_identifier(node.value)}")
             return
 
-        if not info["owned"]:
-            self.error(node, f"assigning to a not-owned variable in {self.get_expr_identifier(node.target)} = {self.get_expr_identifier(node.value)}")
-        if info["borrowed"]:
-            self.error(node, f"assigning to a borrowed variable {self.get_expr_identifier(node.target)} = {self.get_expr_identifier(node.value)}")
+        # if not info["owned"]:
+        #     self.error(node, f"assigning to a not-owned variable in {self.get_expr_identifier(node.target)} = {self.get_expr_identifier(node.value)}")
+        # if info["borrowed"]:
+        #     self.error(node, f"assigning to a borrowed variable {self.get_expr_identifier(node.target)} = {self.get_expr_identifier(node.value)}")
 
         target_type = self.visit(node.target)
 
@@ -594,10 +589,7 @@ class TypeChecker:
 
                     if not info["owned"] or info["borrowed"]:
                         self.error(arg.name, f"no owners found for the argument {arg.name} in {node.callee}")
-                    if not info["owned"] or info["borrowed"]:
-                        self.error(arg.name, f"no owners found for the argument {arg.name} in {node.callee}")
 
-                    info["borrowed"] = True
                     info["borrowed"] = True
 
             arg_types = [self.visit(arg) for arg in node.args]
@@ -835,6 +827,8 @@ class TypeChecker:
             return node.last_type
         if isinstance(node.last_type, FunctionCall):
             return node.last_type.callee
+        if isinstance(node.last_type, SafeNonNullWrapper):
+            return self.visit(node.type)
         if str.__contains__(node.last_type, "int"):
             return IntType()
         if str.__contains__(node.last_type, "str"):
