@@ -64,15 +64,15 @@ class GenProg:
         type_checker.visit(variant)
         fitness = type_checker.error_count
         functional_test_report = ResultCapture()
-        # builtins.ast = variant
-        # exit_code  = pytest.main(["-s", "pyggi/sample/nfa_rust/nfa_test.py"], plugins=[functional_test_report])
+        builtins.ast = variant
+        exit_code  = pytest.main(["-s", "pyggi/sample/bst_rust/bst_test.py"], plugins=[functional_test_report])
         fitness += functional_test_report.failed
         return fitness
 
     def run_iterations(self):
         i = 0
         elite_population = self.population
-        while i < self.max_iteration_num and self.best_gene.fitness != self.max_fitness:
+        while i < self.max_iteration_num and self.best_fitness != self.max_fitness:
             i += 1
             elite_population = self.select_best_genes(elite_population)
             for idx, elite in enumerate(elite_population):
