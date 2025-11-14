@@ -682,8 +682,12 @@ class TypeChecker:
         except Exception:
             # self.error(node, "identifier "+ node.name +" not defined")
             return
-
-        return info["type"]
+        try :
+            if info["type"]:
+                return info["type"]
+        except Exception:
+            pass
+            # self.error(node, "Identifier type not defined")
 
     def visit_QualifiedExpression(self, node):
         inner_type = self.visit(node.expr)

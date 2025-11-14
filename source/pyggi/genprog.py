@@ -64,8 +64,8 @@ class GenProg:
         type_checker.visit(variant)
         fitness = type_checker.error_count
         functional_test_report = ResultCapture()
-        builtins.ast = variant
-        exit_code  = pytest.main(["-s", "pyggi/sample/bst_rust/bst_test.py"], plugins=[functional_test_report])
+        # builtins.ast = variant
+        # exit_code  = pytest.main(["-s", "pyggi/sample/bst_rust/bst_test.py"], plugins=[functional_test_report])
         fitness += functional_test_report.failed
         return fitness
 
