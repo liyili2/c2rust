@@ -349,6 +349,8 @@ class Simulator(ProgramVisitor):
             if isinstance(field, StructLiteralField):
                 if hasattr(field.value, "accept") and callable(field.value.accept):
                     newNode[field.declarationInfo.name] = field.value.accept(self)
+
+        self.stack
         return newNode
 
     def visit_CompoundAssignment(self, node:CompoundAssignment):

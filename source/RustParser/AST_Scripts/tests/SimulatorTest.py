@@ -84,7 +84,9 @@ simulator.visit(ast)
 # assert (simulator.stack.get("a") == 1000)
 
 # print("Type Error Count : ", checker.error_count)
-print("Pretty AST:")
-# print(pretty_print_ast(custom_ast))
 print(simulator.get_state())
 print(simulator.get_val_address())
+print(simulator.funMap)
+
+print("Pretty AST:")
+print(pretty_print_ast(ast))
