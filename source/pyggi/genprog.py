@@ -6,6 +6,7 @@ import sys
 import pytest
 from pyggi.mutation.visitor import MutationVisitor
 from RustParser.AST_Scripts.ast.TypeChecker import TypeChecker
+from RustParser.AST_Scripts.ast import Program
 
 class ResultCapture:
     def __init__(self):
@@ -17,15 +18,15 @@ class ResultCapture:
         self.passed = session.testscollected - session.testsfailed
 
 class Gene:
-    def __init__(self, gene, fitness):
+    def __init__(self, gene: Program, fitness):
         self.gene = gene
         self.fitness = fitness
 
 class GenProg:
     def __init__(self, original_ast):
-        self.population_size = 50
+        self.population_size = 25
         self.max_iteration_num = 200
-        self.mutation_const = 0.5
+        self.mutation_const = 0.3
         self.crossover_const = 0.1
         self.max_fitness = 0
         self.best_fitness = sys.float_info.max
@@ -44,7 +45,9 @@ class GenProg:
     def select_best_genes(self, population):
         sorted_pop = sorted(population, key=lambda g: g.fitness, reverse=True)
         cutoff = int(len(sorted_pop) * 4 / 5)
+        # cutoff = int(len(sorted_pop))
         best_genes = sorted_pop[:cutoff]
+        best_genes.reverse()
         self.best_fitness = best_genes[0].fitness
         print("Best Fitness So Far: ", best_genes[0].fitness)
         return best_genes
@@ -62,8 +65,8 @@ class GenProg:
         type_checker.visit(variant)
         fitness = type_checker.error_count
         functional_test_report = ResultCapture()
-        builtins.ast = variant
-        exit_code  = pytest.main(["-s", "pyggi/sample/pair_test.py"], plugins=[functional_test_report])
+        # builtins.ast = variant
+        # exit_code  = pytest.main(["-s", "pyggi/sample/nfa_rust/nfa_test.py"], plugins=[functional_test_report])
         fitness += functional_test_report.failed
         return fitness
 
@@ -73,13 +76,14 @@ class GenProg:
             i += 1
             elite_population = self.select_best_genes(self.population)
             j=0
+            self.mutation_const = random.random()
             for elite in elite_population:
                 j += 1
-                elite = self.apply_mutation(elite)
+                elite = self.apply_mutation(elite.gene)
                 # crossover_probability = random.random()
                 # if crossover_probability > self.crossover_const:
                 #     elite.gene = self.apply_crossover(variant=elite.gene)
-                elite.fitness = (self.calculate_fitness(variant=elite.gene))
+                elite.fitness = (self.calculate_fitness(variant=elite))
                 print("fitness#" , j, ": ", elite.fitness)
 
         return elite_population[0]
