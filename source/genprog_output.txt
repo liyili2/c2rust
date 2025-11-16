@@ -134,20 +134,22 @@ Program:
               name:
                 'key'
               type:
-                TypePathExpression:
+                SafeNonNullWrapper:
                   type:
-                    None
-                  isMutable:
-                    False
-                  expr:
-                    None
-                  isUnsafe:
-                    False
-                  last_type:
-                    ''
-                  type_path:
-                    'libc'
-                    ''
+                    TypePathExpression:
+                      type:
+                        None
+                      isMutable:
+                        False
+                      expr:
+                        None
+                      isUnsafe:
+                        False
+                      last_type:
+                        ''
+                      type_path:
+                        'libc'
+                        ''
               visibility:
                 None
         StructField:
@@ -156,11 +158,13 @@ Program:
               name:
                 'left'
               type:
-                PointerType:
-                  isMutable:
-                    True
-                  pointee_type:
-                    'Node'
+                SafeNonNullWrapper:
+                  type:
+                    PointerType:
+                      isMutable:
+                        True
+                      pointee_type:
+                        'Node'
               visibility:
                 None
         StructField:
@@ -169,11 +173,13 @@ Program:
               name:
                 'right'
               type:
-                PointerType:
-                  isMutable:
-                    True
-                  pointee_type:
-                    'Node'
+                SafeNonNullWrapper:
+                  type:
+                    PointerType:
+                      isMutable:
+                        True
+                      pointee_type:
+                        'Node'
               visibility:
                 None
         StructField:
@@ -182,20 +188,22 @@ Program:
               name:
                 'height'
               type:
-                TypePathExpression:
+                SafeNonNullWrapper:
                   type:
-                    None
-                  isMutable:
-                    False
-                  expr:
-                    None
-                  isUnsafe:
-                    False
-                  last_type:
-                    ''
-                  type_path:
-                    'libc'
-                    ''
+                    TypePathExpression:
+                      type:
+                        None
+                      isMutable:
+                        False
+                      expr:
+                        None
+                      isUnsafe:
+                        False
+                      last_type:
+                        ''
+                      type_path:
+                        'libc'
+                        ''
               visibility:
                 None
     Attribute:
@@ -215,11 +223,13 @@ Program:
                   name:
                     'N'
                   type:
-                    PointerType:
-                      isMutable:
-                        True
-                      pointee_type:
-                        'Node'
+                    SafeNonNullWrapper:
+                      type:
+                        PointerType:
+                          isMutable:
+                            True
+                          pointee_type:
+                            'Node'
                   visibility:
                     None
               isMutable:
@@ -237,7 +247,9 @@ Program:
           isUnsafe:
             False
           last_type:
-            ''
+            SafeNonNullWrapper:
+              type:
+                ''
           type_path:
             'libc'
             ''
@@ -308,7 +320,9 @@ Program:
                               isUnsafe:
                                 False
                               last_type:
-                                ''
+                                SafeNonNullWrapper:
+                                  type:
+                                    ''
                               type_path:
                                 'libc'
                                 ''
@@ -348,13 +362,17 @@ Program:
                   isUnsafe:
                     False
                   receiver:
-                    DereferenceExpr:
+                    FunctionCall:
                       type:
                         None
                       isMutable:
                         False
                       expr:
-                        IdentifierExpr:
+                        None
+                      isUnsafe:
+                        False
+                      caller:
+                        FunctionCall:
                           type:
                             None
                           isMutable:
@@ -363,16 +381,32 @@ Program:
                             None
                           isUnsafe:
                             False
-                          name:
-                            'N'
-                      isUnsafe:
-                        False
+                          caller:
+                            IdentifierExpr:
+                              type:
+                                None
+                              isMutable:
+                                True
+                              expr:
+                                None
+                              isUnsafe:
+                                False
+                              name:
+                                'N'
+                          callee:
+                            'as_ref'
+                          args:
+
+                      callee:
+                        'unwrap'
+                      args:
+
                   name:
                     IdentifierExpr:
                       type:
                         None
                       isMutable:
-                        False
+                        True
                       expr:
                         None
                       isUnsafe:
@@ -382,7 +416,7 @@ Program:
           isUnsafe:
             False
       isUnsafe:
-        True
+        False
     Attribute:
       name:
         'no_mangle'
@@ -400,20 +434,22 @@ Program:
                   name:
                     'a'
                   type:
-                    TypePathExpression:
+                    SafeNonNullWrapper:
                       type:
-                        None
-                      isMutable:
-                        False
-                      expr:
-                        None
-                      isUnsafe:
-                        False
-                      last_type:
-                        ''
-                      type_path:
-                        'libc'
-                        ''
+                        TypePathExpression:
+                          type:
+                            None
+                          isMutable:
+                            False
+                          expr:
+                            None
+                          isUnsafe:
+                            False
+                          last_type:
+                            ''
+                          type_path:
+                            'libc'
+                            ''
                   visibility:
                     None
               isMutable:
@@ -424,20 +460,22 @@ Program:
                   name:
                     'b'
                   type:
-                    TypePathExpression:
+                    SafeNonNullWrapper:
                       type:
-                        None
-                      isMutable:
-                        False
-                      expr:
-                        None
-                      isUnsafe:
-                        False
-                      last_type:
-                        ''
-                      type_path:
-                        'libc'
-                        ''
+                        TypePathExpression:
+                          type:
+                            None
+                          isMutable:
+                            False
+                          expr:
+                            None
+                          isUnsafe:
+                            False
+                          last_type:
+                            ''
+                          type_path:
+                            'libc'
+                            ''
                   visibility:
                     None
               isMutable:
@@ -455,7 +493,9 @@ Program:
           isUnsafe:
             False
           last_type:
-            ''
+            SafeNonNullWrapper:
+              type:
+                ''
           type_path:
             'libc'
             ''
@@ -466,7 +506,7 @@ Program:
           isUnsafe:
             False
       isUnsafe:
-        True
+        False
     None
     None
     TopLevelVarDef:

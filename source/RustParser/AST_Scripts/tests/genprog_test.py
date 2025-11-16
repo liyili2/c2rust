@@ -40,7 +40,7 @@ def pretty_print_ast(node, indent=0, visited=None):
 
     return '\n'.join(lines)
 
-file_path = os.path.join(os.path.dirname(__file__), "nfa_genprog.rs")
+file_path = os.path.join(os.path.dirname(__file__), "avl.rs")
 with open(file_path, "r", encoding="utf-8") as f:
     rust_code = f.read()
 
@@ -51,4 +51,6 @@ tree=parser.program()
 builder = Transformer()
 custom_ast = builder.visit(tree)
 genprog = GenProg(original_ast=custom_ast)
-print(pretty_print_ast(genprog.final_answer))
+# print(pretty_print_ast(genprog.final_answer))
+with open("genprog_output.txt", "w", encoding="utf-8") as f:
+    f.write(pretty_print_ast(genprog.final_answer))
