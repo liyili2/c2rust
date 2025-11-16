@@ -230,6 +230,20 @@ class LibFuncIntoBoxedSlice(LibFunction):
         return vector
 
 
+class LibFuncMalloc(LibFunction):
+    def __init__(self):
+        super().__init__("malloc")
+
+    def __call__(self, visitor, caller, args=None):
+        vector = caller.accept(visitor) if caller else None
+        # if vector is None:
+            # raise ReturnSignal(value=Exception("called malloc on a None value"))
+
+        # visitor.stack.update({caller.name: val + to_be_added})
+
+        return #vector
+
+
 # class LibFuncCast(LibFunction):
 #     def __init__(self):
 #         super().__init__("cast")

@@ -112,7 +112,7 @@ assignStmt: expression '=' expression ';';
 forStmt: 'for' Identifier 'in' expression block;
 ifStmt: 'if' expression block ('else if' expression block)* ('else' block)?;
 exprStmt: primaryExpression ';';
-returnStmt: 'return' (expression)? ';' | Identifier;
+returnStmt: 'return' (expression | statement)? ';' | Identifier;
 loopStmt: 'loop' block;
 
 safeWrapper: 'Some' '(' expression ')' | 'Some' '(' 'ref'? 'mut'? expression ')' | 'Box' DOUBLE_COLON Identifier '(' expression ')' ;

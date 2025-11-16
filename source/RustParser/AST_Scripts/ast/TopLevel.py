@@ -124,9 +124,9 @@ class ExternFunctionDecl(TopLevel):
         self.visibility = visibility  # e.g., 'pub', or None
 
     def __repr__(self):
-        return (
+        return ( # , variadic={self.variadic},
             f"ExternFunctionDecl(name={self.name!r}, params={self.params}, "
-            f"return_type={self.return_type}, variadic={self.variadic}, "
+            f"return_type={self.return_type} "
             f"visibility={self.visibility})")
 
 class TypeAliasDecl(TopLevel):

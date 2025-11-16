@@ -758,6 +758,7 @@ class RustParser ( Parser ):
         localctx = RustParser.ProgramContext(self, self._ctx, self.state)
         self.enterRule(localctx, 0, self.RULE_program)
         self._la = 0 # Token type
+        print("program")
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 177
@@ -3017,6 +3018,7 @@ class RustParser ( Parser ):
             self.state = 477
             self._errHandler.sync(self)
             token = self._input.LA(1)
+            print(token)
             if token in [17]:
                 self.state = 471
                 self.match(RustParser.T__16)
@@ -5414,6 +5416,8 @@ class RustParser ( Parser ):
         def expression(self):
             return self.getTypedRuleContext(RustParser.ExpressionContext,0)
 
+        def statement(self):
+                return self.getTypedRuleContexts(RustParser.StatementContext,0)
 
         def Identifier(self):
             return self.getToken(RustParser.Identifier, 0)
@@ -5447,6 +5451,7 @@ class RustParser ( Parser ):
             self.state = 810
             self._errHandler.sync(self)
             token = self._input.LA(1)
+            print(token)
             if token in [44]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 804
@@ -5468,6 +5473,7 @@ class RustParser ( Parser ):
                 self.match(RustParser.Identifier)
                 pass
             else:
+                print(token)
                 raise NoViableAltException(self)
 
         except RecognitionException as re:

@@ -32,7 +32,7 @@ class Simulator(ProgramVisitor):
         self.libMap = dict()
         self.lib_funcs = ["is_empty", "len", "iter", "push", "pop", "null_mut", "into_raw",
                           "into_string", "cast", "is_null", "unwrap","as_ref", "append", "as_bytes", "addr_of_mut!",
-                          "fetch_add", "by_ref", "into_boxed_slice", "from"]
+                          "fetch_add", "by_ref", "into_boxed_slice", "from", "malloc"]
         self.fill_lib_map()
 
     def fill_lib_map(self):
@@ -59,11 +59,13 @@ class Simulator(ProgramVisitor):
         return ctx.accept(self)
 
     def visit_Program(self, ctx: Program):
+        # print(ctx.items)
         for i in ctx.items:
             if not isinstance(i, list):
                 if i is not None:
-                    print("None type detected in program items")
                     i.accept(self)
+                else:
+                    print("None type detected in program items")
 
     def visit_InterfaceDef(self, node: InterfaceDef):
         for fn in node.functions:
