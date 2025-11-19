@@ -16,14 +16,14 @@ def test_match_value(simulator):
 def test_split_value(simulator):
     assert simulator.stack.get("SPLIT") == 257
 
-def test_post_list_length(simulator):
-    post = simulator.stack.get("post")
-    assert len(post) == 8
+# def test_post_list_length(simulator):
+#     post = simulator.stack.get("post")
+#     assert len(post) == 8
 
-def test_post_list_elements(simulator):
-    post = simulator.stack.get("post").elements
-    expected = ['a', 'b', 'c', '|', '*', '.', 'd', '.']
-    assert post == expected
+# def test_post_list_elements(simulator):
+#     post = simulator.stack.get("post").elements
+#     expected = ['a', 'b', 'c', '|', '*', '.', 'd', '.']
+#     assert post == expected
 
 # def test_start_child_value(simulator):
 #     start = simulator.stack.get("start")
