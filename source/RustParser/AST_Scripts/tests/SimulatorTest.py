@@ -94,4 +94,5 @@ print(simulator.get_val_address())
 print(simulator.funMap)
 
 print("Pretty AST:")
-print(pretty_print_ast(ast))
+pretty = pretty_print_ast(ast)
+print(pretty)
