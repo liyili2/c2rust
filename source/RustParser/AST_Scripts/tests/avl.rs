@@ -198,3 +198,8 @@ pub unsafe extern "C" fn preOrder(mut root: *mut Node) {
 // pub fn main() {
 //     unsafe { ::std::process::exit(main_0() as i32) }
 // }
+pub fn main() {
+    let mut root = 0 as *mut Node;
+    root = insert(root, 9 as libc::c_int);
+}
+
