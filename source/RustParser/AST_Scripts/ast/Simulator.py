@@ -289,11 +289,15 @@ class Simulator(ProgramVisitor):
 
     def visit_FieldAccessExpr(self, node: FieldAccessExpr):
         struct_value = node.receiver.accept(self)
-        for field in struct_value.fields:
-            if node.name.name == field.declarationInfo.name:
-                if hasattr(field.value, "accept") and callable(field.value.accept):
-                    return field.value.accept(self)
-                return field.value
+
+        if isinstance(struct_value, StructDef):
+            for field in struct_value.fields:
+                if node.name.name == field.declarationInfo.name:
+                    if hasattr(field.value, "accept") and callable(field.value.accept):
+                        return field.value.accept(self)
+                    return field.value
+
+        return
 
     def visit_int(self, node):
         return node
@@ -420,7 +424,13 @@ class Simulator(ProgramVisitor):
         return identifier_val
 
     def visit_CastExpr(self, node: CastExpr):
-        return node.expr.accept(self)
+        # print(node.expr)
+        cast_result = node.expr.accept(self)
+        print(cast_result)
+        if isinstance(cast_result, FunctionCall):
+            print(cast_result.caller)
+
+        return cast_result
 
     def visit_DereferenceExpr(self, node: DereferenceExpr):
         return node.expr.accept(self)

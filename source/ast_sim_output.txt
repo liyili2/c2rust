@@ -5607,6 +5607,75 @@ Program:
                     False
                   typePath:
                     None
+            AssignStmt:
+              body:
+                None
+              target:
+                IdentifierExpr:
+                  type:
+                    None
+                  isMutable:
+                    False
+                  expr:
+                    None
+                  isUnsafe:
+                    False
+                  name:
+                    'root'
+              value:
+                FunctionCall:
+                  body:
+                    None
+                  caller:
+                    None
+                  callee:
+                    'insert'
+                  args:
+                    IdentifierExpr:
+                      type:
+                        None
+                      isMutable:
+                        False
+                      expr:
+                        None
+                      isUnsafe:
+                        False
+                      name:
+                        'root'
+                    CastExpr:
+                      type:
+                        TypePathExpression:
+                          type:
+                            None
+                          isMutable:
+                            False
+                          expr:
+                            None
+                          isUnsafe:
+                            False
+                          last_type:
+                            ''
+                          type_path:
+                            'libc'
+                            ''
+                      isMutable:
+                        False
+                      expr:
+                        IntLiteral:
+                          type:
+                            IntType:
+                          isMutable:
+                            False
+                          expr:
+                            None
+                          isUnsafe:
+                            False
+                          value:
+                            9
+                      isUnsafe:
+                        False
+                      typePath:
+                        None
           isUnsafe:
             False
       isUnsafe:

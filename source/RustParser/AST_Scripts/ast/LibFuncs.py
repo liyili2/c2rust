@@ -88,7 +88,8 @@ class LibFuncIsEmpty(LibFunction):
             if len(val) == 0:
                 return True
         return False
-    
+
+
 class LibFuncIsNull(LibFunction):
     def __init__(self):
         super().__init__("is_null")
@@ -97,8 +98,13 @@ class LibFuncIsNull(LibFunction):
         val = caller.accept(visitor) if caller else None
         if val is None:
             return True
+
+        if val == 0:
+            return True
+
         return False
-    
+
+
 class LibFuncFetchAdd(LibFunction):
     def __init__(self):
         super().__init__("fetch_add")
@@ -235,10 +241,11 @@ class LibFuncMalloc(LibFunction):
         super().__init__("malloc")
 
     def __call__(self, visitor, caller, args=None):
-        vector = caller.accept(visitor) if caller else None
+        vector = args[0].accept(visitor) if args else None
         # if vector is None:
-            # raise ReturnSignal(value=Exception("called malloc on a None value"))
+        #     raise ReturnSignal(value=Exception("called malloc on a None value"))
 
+        print(args[0])
         # visitor.stack.update({caller.name: val + to_be_added})
 
         return #vector
