@@ -21,11 +21,11 @@ pub unsafe extern "C" fn height(mut N: *mut Node) -> libc::c_int {
 }
 #[no_mangle]
 pub unsafe extern "C" fn max(mut a: libc::c_int, mut b: libc::c_int) -> libc::c_int {
-    return if a > b { a } else { b };
+     return if a > b { a } else { b };
 }
 #[no_mangle]
 pub unsafe extern "C" fn newNode(mut key: libc::c_int) -> *mut Node {
-    let mut node = malloc(::std::mem::size_of::<Node>() as libc::c_ulong) as *mut Node;
+    let mut node = malloc(std::mem::size_of::<Node>() as libc::c_ulong) as *mut Node;
     (*node).key = key;
     let ref mut fresh0 = (*node).left;
     *fresh0 = 0 as *mut Node;
@@ -77,7 +77,7 @@ pub unsafe extern "C" fn insert(mut node: *mut Node, mut key: libc::c_int) -> *m
         let ref mut fresh7 = (*node).right;
         *fresh7 = insert((*node).right, key);
     } else {
-        return node
+        return node; // added semi-colon
     }
     (*node).height = 1 as libc::c_int + max(height((*node).left), height((*node).right));
     let mut balance = getBalance(node);
@@ -198,3 +198,8 @@ pub unsafe extern "C" fn preOrder(mut root: *mut Node) {
 // pub fn main() {
 //     unsafe { ::std::process::exit(main_0() as i32) }
 // }
+pub fn main() {
+    let mut root = 0 as *mut Node;
+    root = insert(root, 9 as libc::c_int);
+}
+

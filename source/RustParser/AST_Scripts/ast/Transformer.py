@@ -408,7 +408,12 @@ class Transformer(RustVisitor):
     def visitReturnStmt(self, ctx):
         if ctx.getChildCount() == 3:
             expr = self.visit(ctx.expression())
-            return ReturnStmt(expr)
+
+            if expr is not None:
+                return ReturnStmt(expr)
+            else:
+                stmt = self.visit(ctx.statement())
+                return ReturnStmt(stmt)
         elif ctx.getChildCount() == 2:
             return ReturnStmt()
         elif ctx.Identifier():

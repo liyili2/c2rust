@@ -32,7 +32,7 @@ class Simulator(ProgramVisitor):
         self.libMap = dict()
         self.lib_funcs = ["is_empty", "len", "iter", "push", "pop", "null_mut", "into_raw",
                           "into_string", "cast", "is_null", "unwrap","as_ref", "append", "as_bytes", "addr_of_mut!",
-                          "fetch_add", "by_ref", "into_boxed_slice", "from"]
+                          "fetch_add", "by_ref", "into_boxed_slice", "from", "malloc"]
         self.fill_lib_map()
 
     def fill_lib_map(self):
@@ -59,11 +59,14 @@ class Simulator(ProgramVisitor):
         return ctx.accept(self)
 
     def visit_Program(self, ctx: Program):
+        # print(ctx.items)
         for i in ctx.items:
             if not isinstance(i, list):
                 if i is not None:
-                    print("None type detected in program items")
                     i.accept(self)
+                else:
+                    print("None type detected in program items")
+
 
     def visit_InterfaceDef(self, node: InterfaceDef):
         for fn in node.functions:
@@ -287,11 +290,15 @@ class Simulator(ProgramVisitor):
 
     def visit_FieldAccessExpr(self, node: FieldAccessExpr):
         struct_value = node.receiver.accept(self)
-        for field in struct_value.fields:
-            if node.name.name == field.declarationInfo.name:
-                if hasattr(field.value, "accept") and callable(field.value.accept):
-                    return field.value.accept(self)
-                return field.value
+
+        if isinstance(struct_value, StructDef):
+            for field in struct_value.fields:
+                if node.name.name == field.declarationInfo.name:
+                    if hasattr(field.value, "accept") and callable(field.value.accept):
+                        return field.value.accept(self)
+                    return field.value
+
+        return
 
     def visit_int(self, node):
         return node
@@ -349,6 +356,8 @@ class Simulator(ProgramVisitor):
             if isinstance(field, StructLiteralField):
                 if hasattr(field.value, "accept") and callable(field.value.accept):
                     newNode[field.declarationInfo.name] = field.value.accept(self)
+
+        self.stack
         return newNode
 
     def visit_CompoundAssignment(self, node:CompoundAssignment):
@@ -416,7 +425,13 @@ class Simulator(ProgramVisitor):
         return identifier_val
 
     def visit_CastExpr(self, node: CastExpr):
-        return node.expr.accept(self)
+        # print(node.expr)
+        cast_result = node.expr.accept(self)
+        print(cast_result)
+        if isinstance(cast_result, FunctionCall):
+            print(cast_result.caller)
+
+        return cast_result
 
     def visit_DereferenceExpr(self, node: DereferenceExpr):
         return node.expr.accept(self)
