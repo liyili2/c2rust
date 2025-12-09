@@ -67,6 +67,7 @@ class Simulator(ProgramVisitor):
                 else:
                     print("None type detected in program items")
 
+
     def visit_InterfaceDef(self, node: InterfaceDef):
         for fn in node.functions:
             fn.accept(self)

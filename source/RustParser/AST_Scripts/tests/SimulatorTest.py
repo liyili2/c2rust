@@ -94,6 +94,7 @@ print(simulator.get_val_address())
 print(simulator.funMap)
 
 print("Pretty AST:")
+
 pretty = pretty_print_ast(ast)
 # print(pretty)
 with open("ast_sim_output.txt", "w", encoding="utf-8") as f:
