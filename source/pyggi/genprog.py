@@ -24,8 +24,8 @@ class Gene:
 
 class GenProg:
     def __init__(self, original_ast):
-        self.population_size = 100
-        self.max_iteration_num = 200
+        self.population_size = 300
+        self.max_iteration_num = 500
         self.mutation_const = 1
         self.crossover_const = 0.1
         self.max_fitness = 0
@@ -64,8 +64,8 @@ class GenProg:
         type_checker.visit(variant)
         fitness = type_checker.error_count
         functional_test_report = ResultCapture()
-        # builtins.ast = variant
-        # exit_code  = pytest.main(["-s", "pyggi/sample/bst_rust/bst_test.py"], plugins=[functional_test_report])
+        builtins.ast = variant
+        exit_code  = pytest.main(["-s", "pyggi/sample/nfa_rust/nfa_test.py"], plugins=[functional_test_report])
         fitness += functional_test_report.failed
         return fitness
 

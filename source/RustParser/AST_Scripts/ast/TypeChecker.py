@@ -63,6 +63,8 @@ class TypeChecker:
         pass
 
     def visit_FunctionDef(self, node: FunctionDef):
+        if not node.body:
+            return
         if node.isUnsafe:
             self.error(node, "unsafe function definition", error_weight=len(node.body.stmts)/10)
 
@@ -76,8 +78,8 @@ class TypeChecker:
                 "param_types": param_types,
                 "return_type": return_type
             }
-        else:
-            self.error(node, f"redefinition of function '{fn_name}'")
+        # else:
+        #     self.error(node, f"redefinition of function '{fn_name}'")
 
         self.env.enter_scope()
         for i, param in enumerate(node.params):
