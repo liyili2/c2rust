@@ -245,10 +245,17 @@ class LibFuncMalloc(LibFunction):
         # if vector is None:
         #     raise ReturnSignal(value=Exception("called malloc on a None value"))
 
-        print(args[0])
+        print("argument")
+        print(args[0].expr)
+        print(args[0].type)
+        print("result from visitor")
+        print(args[0].accept(visitor))
         # visitor.stack.update({caller.name: val + to_be_added})
+        # The root issue is that the outer as *mut Node doesn't seem to do anything?
 
-        return #vector
+        visitor.memory.update({"a": 1})
+
+        return [] #vector
 
 
 # class LibFuncCast(LibFunction):
