@@ -24,10 +24,11 @@ class Simulator(ProgramVisitor):
     # Coq_nval(b,r) b == |0> | |1>, r == e^(2 pi i * 1 / n), r = 0 Coq_nval(b, 0)
     # x -> v1 ----> run simulator -----> v2 ---> calInt(v2,128) == (x + 2^10) % 2^128
     # Sorry for the late reply Razie. I haven't been able to fully test the simulator yet, but maybe
-    def __init__(self, memory: dict, stack: dict):
+    def __init__(self, heap: dict, stack: dict):
         # need st --> state we are dealing with
-        self.heap = memory
+        self.heap = heap
         self.stack = stack
+        self.memory = dict() # store a location and the size of the memory.
         self.funMap = dict()
         self.libMap = dict()
         self.lib_funcs = ["is_empty", "len", "iter", "push", "pop", "null_mut", "into_raw",
@@ -154,6 +155,7 @@ class Simulator(ProgramVisitor):
         if node.callee in self.lib_funcs:
             func = self.libMap.get(node.callee)
             if func is not None:
+                # print(func)
                 return func(caller=node.caller, visitor=self, args=node.args)
 
         origFunc = self.funMap.get(node.callee)
@@ -178,6 +180,7 @@ class Simulator(ProgramVisitor):
             return ret.value
 
         self.stack = oldStack
+        print("got none son")
         return None
 
     def visit_IfStmt(self, node: IfStmt):
