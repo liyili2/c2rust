@@ -59,6 +59,11 @@ class Simulator(ProgramVisitor):
     def visit(self, ctx):
         return ctx.accept(self)
 
+    #I assume this is the top level
+    #each top level is a function definition
+    #here, we should first do a top level grabing to form the funMap
+    #then, we look for the "main" function, and then execute the main function
+    #or we can make a choice where users can define what is the function to simulate
     def visit_Program(self, ctx: Program):
         # print(ctx.items)
         for i in ctx.items:
@@ -73,13 +78,15 @@ class Simulator(ProgramVisitor):
         for fn in node.functions:
             fn.accept(self)
 
+    #need to talk about sizeof
+    #devided the case of box and string new vs stack variables
     def visit_LetStmt(self, node: LetStmt):
         for i in range(0, len(node.var_defs)):
             arVar = node.var_defs[i].declarationInfo.name
             value = node.values[i]
             if value is not None:
                 value = node.values[i].accept(self)
-            self.stack.update({arVar : value})
+            self.stack.update({arVar : value}) #this only takes care of the stack variable declaration.
         return None
 
     def find_stack_key(self, target):
@@ -136,10 +143,23 @@ class Simulator(ProgramVisitor):
         except ReturnSignal as ret:
             raise ret
 
+    #need to simplify the function call
     def visit_FunctionCall(self, node: FunctionCall):
         if node.caller is None and isinstance(node.callee, IdentifierExpr):
             if str.__contains__(node.callee.name, "print"):
                 return None
+
+    #the algoglrotihm should be for each callees, we first do visit them, then return a value of calless
+        #callee could be expression.
+
+    #before that, we should have another set here,
+        #the set is a lib function call set
+        #we can call an extra function here to deal with all lib function
+        #by seeing if the name of the caller is given in a set
+        #so this class should have a set defining all the lib function
+        #then, for other non-lib function, we just call the caller in the funMap map
+        #then, we will acce the funMap item, and then grab the callee data
+        #then, we form a new stack and then call the body of the funMap
 
         if isinstance(node.caller, type(len)):
             if isinstance(node.callee, IdentifierExpr):
@@ -192,6 +212,7 @@ class Simulator(ProgramVisitor):
             if node.else_branch is not None:
                 return node.else_branch.accept(self)
 
+    #ok
     def visit_MatchStmt(self, node: MatchStmt):
         match_expr = node.expr.accept(self)
         wildcard_arm = None
@@ -227,7 +248,7 @@ class Simulator(ProgramVisitor):
             if node.value is not None:
                 val = node.value.accept(self)
         raise ReturnSignal(val)
-    
+
     def visit_TopLevelVarDef(self, node: TopLevelVarDef):
         value = None
         if node.initial_val is not None:
@@ -291,6 +312,9 @@ class Simulator(ProgramVisitor):
         if isinstance(node, BorrowExpr):
             return node.expr.accept(self)
 
+   #what is fieldaccess? I guess it refers to a struct field, like something.something
+    # are we sure that something.something must refer to field?
+    #how about lib function?
     def visit_FieldAccessExpr(self, node: FieldAccessExpr):
         struct_value = node.receiver.accept(self)
 
@@ -315,6 +339,7 @@ class Simulator(ProgramVisitor):
             return None
         return node.pattern.accept(self)
 
+    #what is a borrow?
     def visit_BorrowExpr(self, node: BorrowExpr):
         return node.expr.accept(self)
 
@@ -340,8 +365,8 @@ class Simulator(ProgramVisitor):
         return node.value
 
     def visit_ArrayAccess(self, node: ArrayAccess):
-        index = node.expr.accept(self)
-        target = node.name.accept(self)
+        index = node.expr.accept(self) #this is ok.
+        target = node.name.accept(self) #how can someone access the name? is this the index expression?
         if isinstance(target, ArrayLiteral):
             if hasattr(target.elements[index], "accept") and callable(target.elements[index].accept):
                 return (target.elements[index]).accept(self)
@@ -363,6 +388,7 @@ class Simulator(ProgramVisitor):
         self.stack
         return newNode
 
+    #what is compound assignment?
     def visit_CompoundAssignment(self, node:CompoundAssignment):
         operation = node.op[0]
         assign_Stmt = AssignStmt(target=node.target, value=BinaryExpr(left=node.target, op=operation, right=node.value))
@@ -423,6 +449,8 @@ class Simulator(ProgramVisitor):
         else:
             raise Exception(f"Unsupported unary operator: {oper}")
 
+    #Here, we have a variable defined as looking up from the stack
+    #how about heap variable?
     def visit_IdentifierExpr(self, node: IdentifierExpr):
         identifier_val = self.stack.get(node.name)
         return identifier_val
@@ -436,8 +464,12 @@ class Simulator(ProgramVisitor):
 
         return cast_result
 
+    #deference is unsafe, so it is the same as the C
+    #getting the expression value is incorrect.
+    #need to access the heap memory field.
     def visit_DereferenceExpr(self, node: DereferenceExpr):
-        return node.expr.accept(self)
+        v = node.expr.accept(self)
+        return self.heap.get(self.stack.get(v))
     
     def visit_TypePathExpression(self, node: TypePathExpression):
         return node.last_type
