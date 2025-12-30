@@ -6,7 +6,7 @@ class Program(ASTNode):
         self.items = items  # A list TopLevels
 
     def accept(self, visitor):
-        return visitor.visit_Program(self)
+        return visitor.visitProgram(self)
     
     def getChildren(self):
         return self.items

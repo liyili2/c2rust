@@ -39,30 +39,30 @@ class TypeChecker:
     def generic_visit(self, node):
         raise NotImplementedError(f"No visit_{type(node).__name__} method defined.")
 
-    def visit_StructField(self, node):
+    def visitStructField(self, node):
         if isinstance(node.declarationInfo.type, PointerType):
             self.error(node, "raw pointer usage in a struct field")
 
-    def visit_TopLevelVarDef(self, node):
+    def visitTopLevelVarDef(self, node):
         if node.def_kind:
             isUnion = str.__eq__(node.def_kind, "union")
             self.env.declare(name=node.declarationInfo.name, 
                             typ=StructType(name=node.declarationInfo.name, fields=node.fields, isUnion=isUnion))
 
-    def visit_Expression(self, node):
+    def visitExpression(self, node):
         return self.visit(node.expr)
 
-    def visit_InterfaceDef(self, node):
+    def visitInterfaceDef(self, node):
         for item in node.functions:
             self.visit(item)
 
-    def visit_Attribute(self, node):
+    def visitAttribute(self, node):
         pass
 
-    def visit_SafeWrapper(self, node):
+    def visitSafeWrapper(self, node):
         pass
 
-    def visit_FunctionDef(self, node: FunctionDef):
+    def visitFunctionDef(self, node: FunctionDef):
         if node.isUnsafe:
             self.error(node, "unsafe function definition", error_weight=len(node.body.stmts)/10)
 
@@ -146,7 +146,7 @@ class TypeChecker:
         else:
             self.error(self, "unknown literal type")
 
-    def visit_Type(self, ctx):
+    def visitType(self, ctx):
         if not isinstance(ctx, str):
             type_str = ctx.getText()
         else:
@@ -172,16 +172,16 @@ class TypeChecker:
             return node.accept(self)
         return node
 
-    def visit_Program(self, node):
+    def visitProgram(self, node):
         for item in node.items:
             self.visit(item)
 
-    def visit_WhileStmt(self, node):
+    def visitWhileStmt(self, node):
         cond_type = self.visit(node.condition)
         # self.visit(node.condition)
         self.visit(node.body)
 
-    def visit_CastExpr(self, node: CastExpr):
+    def visitCastExpr(self, node: CastExpr):
         if isinstance(node.expr, DereferenceExpr):
             self.error(node, "raw pointer dereference in a cast expression")
         expr_type = self.visit(node.expr)
@@ -195,7 +195,7 @@ class TypeChecker:
 
         return target_type
 
-    def visit_Struct(self, node):
+    def visitStruct(self, node):
         if isinstance(node, TopLevel):
             self.visit_StructDef(node)
         if isinstance(node, Statement):
@@ -203,7 +203,7 @@ class TypeChecker:
         else:
             return None
 
-    def visit_StructDef(self, node):
+    def visitStructDef(self, node):
         if isinstance(node.fields[0], StructLiteralField):
             struct_type = self.visit(node.name)
             info = self.env.lookup(struct_type)
@@ -235,7 +235,7 @@ class TypeChecker:
 
             self.env.declare(name=node.name, typ=StructType(name=node.name, fields=field_dict))
 
-    def visit_StructLiteral(self, node):
+    def visitStructLiteral(self, node):
         struct_type = self.visit(node.type_name)
         info = self.env.lookup(struct_type)
         if not isinstance(info['type'], StructType):
@@ -263,10 +263,10 @@ class TypeChecker:
         #         self.error(node, f"Missing field '{mf}' in struct literal of type '{struct_type}'")
         return
 
-    def visit_StructLiteralField(self, node):
+    def visitStructLiteralField(self, node):
         pass
 
-    def visit_LetStmt(self, node):
+    def visitLetStmt(self, node):
         expr_types = []
         for expr in node.values:
             expr_types.append(self.visit(expr))
@@ -318,32 +318,29 @@ class TypeChecker:
         if isinstance(type, PointerType) and isMutable:
             self.error(self, f"raw pointer definition: {name} = *mut {type.accept(self)}")
 
-    def visit_PointerType(self, node):
+    def visitPointerType(self, node):
         return self.visit(node.pointee_type)
 
-    def visit_DereferenceExpr(self, node):
+    def visitDereferenceExpr(self, node):
         self.error(node, f"unsafe pointer dereferencing {node.expr}", 2)
         return self.visit(node.expr)
 
-    def visit_SafeNonNullWrapper(self, node):
+    def visitSafeNonNullWrapper(self, node):
         return node
 
-    def visit_ByteLiteralExpr(self, node):
+    def visitByteLiteralExpr(self, node):
         return node
     
-    def visit_ArrayAccess(self, node):
+    def visitArrayAccess(self, node):
         return node
-    
-    def visit_TopLevelVarDef(self, node):
-        return node
-    
-    def visit_BreakStmt(self, node):
+
+    def visitBreakStmt(self, node):
         pass
 
-    def visit_ContinueStmt(self, node):
+    def visitContinueStmt(self, node):
         pass
 
-    def visit_BinaryExpr(self, node):
+    def visitBinaryExpr(self, node):
         left = self.visit(node.left)
         right = self.visit(node.right)
         op = node.op
@@ -388,7 +385,7 @@ class TypeChecker:
             self.error(node, f"Unknown binary operator: {op}")
             return IntType()
 
-    def visit_Block(self, node):
+    def visitBlock(self, node):
         result_stmts = []
         if isinstance(node.stmts, Block):
             self.visit(node.stmts)
@@ -398,13 +395,13 @@ class TypeChecker:
             result_stmt = self.visit(stmt)
             result_stmts.append(result_stmt)
 
-    def visit_ExternBlock(self, node):
+    def visitExternBlock(self, node):
         pass
 
-    def visit_TypeAliasDecl(self, node):
+    def visitTypeAliasDecl(self, node):
         pass
 
-    def visit_CompoundAssignment(self, node):
+    def visitCompoundAssignment(self, node):
         target_type = self.visit(node.target)
         value_type = self.visit(node.value)
         target_name = self.get_expr_identifier(node.target)
@@ -477,7 +474,7 @@ class TypeChecker:
         elif isinstance(expr, Expression):
             return self.get_expr_identifier(expr.expr)
 
-    def visit_Assignment(self, node):
+    def visitAssignment(self, node):
         try:
             if self.get_expr_identifier(node.target) is not None:
                 info = self.env.lookup(self.get_expr_identifier(node.target))
@@ -534,13 +531,13 @@ class TypeChecker:
                 "owned": True, "borrowed": False, "mutable": info["mutable"]}
         return
 
-    def visit_LoopStmt(self, node):
+    def visitLoopStmt(self, node):
         self.visit(node.body)
 
-    def visit_UnaryExpr(self, node):
+    def visitUnaryExpr(self, node):
         pass
 
-    def visit_IfStmt(self, node):
+    def visitIfStmt(self, node):
         self.visit(node.condition)
         self.visit(node.then_branch)
         if node.else_branch is not None:
@@ -550,22 +547,22 @@ class TypeChecker:
     def check_iterable_type(self, node):
         return True
 
-    def visit_ForStmt(self, node):
+    def visitForStmt(self, node):
         for stmt in node.body.getChildren():
             self.visit(stmt)
         return True
 
-    def visit_RangeExpression(self, node):
+    def visitRangeExpression(self, node):
         return RangeExpression(node.initial, node.last)
 
-    def visit_ReturnStmt(self, node):
+    def visitReturnStmt(self, node):
         if node.value is None:
             return_type = "unit"
         else:
             return_type = self.visit(node.value)
         return return_type
 
-    def visit_FunctionCall(self, node):
+    def visitFunctionCall(self, node):
         if isinstance(node, Expression):
             func_info = self.env.lookup_function(node.callee)
             if not func_info or func_info["kind"] != "function":
@@ -612,12 +609,12 @@ class TypeChecker:
 
             return func_info["return_type"]
 
-    def visit_VarDef(self, ctx):
+    def visitVarDef(self, ctx):
         name = ctx.name
         typ = self.visit(ctx.var_type)
         return (name, typ)
 
-    def visit_ParamNode(self, node):
+    def visitParamNode(self, node):
         name = node.declarationInfo.name
         if isinstance(node.declarationInfo.type, PointerType) and(node.isMutable or node.declarationInfo.type.isMutable):
             self.error(node, "raw pointer usage in the function signature")
@@ -625,20 +622,20 @@ class TypeChecker:
         self.env.declare(name, node.declarationInfo.type, isMutable)
         return (name, node.declarationInfo.type, isMutable)
 
-    def visit_FunctionParamList(self, ctx):
+    def visitFunctionParamList(self, ctx):
         params = []
         for param_ctx in ctx.params:
             name, typ, mutable = self.visit(param_ctx)
             params.append((name, typ, mutable))
         return params
 
-    def visit_IntType(self, node):
+    def visitIntType(self, node):
         return IntType()
 
-    def visit_BoolType(self, node):
+    def visitBoolType(self, node):
         return BoolType()
 
-    def visit_ArrayType(self, node: ArrayType):
+    def visitArrayType(self, node: ArrayType):
         elem_type = self.visit(node.var_type)
 
         if node.size is not None:
@@ -656,14 +653,14 @@ class TypeChecker:
             return self.is_compile_time_constant(node.left) and self.is_compile_time_constant(node.right)
         return False
 
-    def visit_MatchPattern(self, node):
+    def visitMatchPattern(self, node):
         pattern_type = self.visit(node.value)
         if pattern_type not in ["i32", "bool", "char", "String", "enum_variant"]:
             self.error(f"Unsupported match pattern type: {pattern_type}")
 
         return pattern_type
 
-    def visit_LiteralExpr(self, node):
+    def visitLiteralExpr(self, node):
         if isinstance(node.expr, int):
             return IntType()
         if isinstance(node.expr, str):
@@ -675,7 +672,7 @@ class TypeChecker:
         else:
             self.error(node, f"unknown literal type for {node.expr}")
 
-    def visit_IdentifierExpr(self, node):
+    def visitIdentifierExpr(self, node):
         info = None
         try:
             info = self.env.lookup(node.name)
@@ -689,11 +686,11 @@ class TypeChecker:
             pass
             # self.error(node, "Identifier type not defined")
 
-    def visit_QualifiedExpression(self, node):
+    def visitQualifiedExpression(self, node):
         inner_type = self.visit(node.expr)
         return inner_type
 
-    def visit_BorrowExpr(self, node):
+    def visitBorrowExpr(self, node):
         info = self.env.lookup(self.get_expr_identifier(node.expr))
         if not info["owned"]:
             self.error(node, "cannot borrow a variable which ownership already moved")
@@ -718,13 +715,13 @@ class TypeChecker:
             info["borrowed"] = True
         return RefType(info["type"])
 
-    def visit_PatternExpr(self, node):
+    def visitPatternExpr(self, node):
         pass
     
-    def visit_FunctionCallExpression(self, node):
+    def visitFunctionCallExpression(self, node):
         pass
 
-    def visit_ArrayLiteral(self, node):
+    def visitArrayLiteral(self, node):
         if not node.elements:
             return None
         elem_types = [self.visit(elem) for elem in node.elements]
@@ -758,7 +755,7 @@ class TypeChecker:
                     # self.error(node, f"undefined argument {arg.name}")
                     continue
 
-    def visit_FieldAccessExpr(self, node):
+    def visitFieldAccessExpr(self, node):
         base_type = self.visit(node.receiver)
         field_type = self.visit(node.name)
         field = node.name.name
@@ -815,18 +812,18 @@ class TypeChecker:
 
         return field_type
 
-    def visit_MatchStmt(self, node):
+    def visitMatchStmt(self, node):
         self.visit(node.expr)
         for arm in node.arms:
             self.visit(arm.body)
 
-    def visit_Statement(self, node):
+    def visitStatement(self, node):
         return self.visit(node.body)
 
-    def visit_ConditionalAssignmentStmt(self, node):
+    def visitConditionalAssignmentStmt(self, node):
         return self.visit(node.body)
 
-    def visit_TypePathExpression(self, node):
+    def visitTypePathExpression(self, node):
         if isinstance(node.last_type, IdentifierExpr):
             return node.last_type
         if isinstance(node.last_type, FunctionCall):
@@ -843,28 +840,28 @@ class TypeChecker:
             return BoolType()
         # self.error(node, "type path expression instead of primitive types")
 
-    def visit_BoolLiteral(self, node):
+    def visitBoolLiteral(self, node):
         return BoolType()
 
-    def visit_IntLiteral(self, node):
+    def visitIntLiteral(self, node):
         return IntType()
 
-    def visit_StrLiteral(self, node):
+    def visitStrLiteral(self, node):
         return StringType()
 
-    def visit_PrimaryExpression(self, node):
+    def visitPrimaryExpression(self, node):
         pass
 
-    def visit_typeWrapper(self, node):
+    def visittypeWrapper(self, node):
         pass
 
-    def visit_UseDecl(self, node):
+    def visitUseDecl(self, node):
         pass
 
-    def visit_CharLiteral(self, node):
+    def visitCharLiteral(self, node):
         pass
 
-    def visit_StaticVarDecl(self, node):
+    def visitStaticVarDecl(self, node):
         node_type = self.visit(node.declarationInfo.type)
         self.env.declare(name=node.declarationInfo.name, typ=node_type, mutable=node.isMutable)
         if node.isMutable and isinstance(node, TopLevel):

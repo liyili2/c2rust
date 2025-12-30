@@ -107,6 +107,8 @@ class ProgramVisitor:
                 return self.visitRangeExpression(ctx)
             case SafeWrapper():
                 return self.visitSafeWrapper(ctx)
+            case StaticVarDecl():
+                return self.visitStaticVarDecl(ctx)
             case _:
                 raise NotImplementedError(f"No visit method defined for {type(ctx)}")
 
@@ -247,3 +249,5 @@ class ProgramVisitor:
         node.expr.accept(self)
         #node.last.accept(self)
 
+    def visitStaticVarDecl(self, node: StaticVarDecl):
+        node.initial_value.accept(self)

@@ -24,12 +24,12 @@ class Simulator(ProgramVisitor):
     # Coq_nval(b,r) b == |0> | |1>, r == e^(2 pi i * 1 / n), r = 0 Coq_nval(b, 0)
     # x -> v1 ----> run simulator -----> v2 ---> calInt(v2,128) == (x + 2^10) % 2^128
     # Sorry for the late reply Razie. I haven't been able to fully test the simulator yet, but maybe
-    def __init__(self, heap: dict, stack: dict):
+    def __init__(self, heap: dict, stack: dict, funMap):
         # need st --> state we are dealing with
         self.heap = heap
         self.stack = stack
         self.memory = dict() # store a location and the size of the memory.
-        self.funMap = dict()
+        self.funMap = funMap
         self.libMap = dict()
         self.lib_funcs = ["is_empty", "len", "iter", "push", "pop", "null_mut", "into_raw",
                           "into_string", "cast", "is_null", "unwrap","as_ref", "append", "as_bytes", "addr_of_mut!",
@@ -64,7 +64,7 @@ class Simulator(ProgramVisitor):
     #here, we should first do a top level grabing to form the funMap
     #then, we look for the "main" function, and then execute the main function
     #or we can make a choice where users can define what is the function to simulate
-    def visit_Program(self, ctx: Program):
+    def visitProgram(self, ctx: Program):
         # print(ctx.items)
         for i in ctx.items:
             if not isinstance(i, list):
@@ -74,13 +74,13 @@ class Simulator(ProgramVisitor):
                     print("None type detected in program items")
 
 
-    def visit_InterfaceDef(self, node: InterfaceDef):
+    def visitInterfaceDef(self, node: InterfaceDef):
         for fn in node.functions:
             fn.accept(self)
 
     #need to talk about sizeof
     #devided the case of box and string new vs stack variables
-    def visit_LetStmt(self, node: LetStmt):
+    def visitLetStmt(self, node: LetStmt):
         for i in range(0, len(node.var_defs)):
             arVar = node.var_defs[i].declarationInfo.name
             value = node.values[i]
@@ -103,7 +103,7 @@ class Simulator(ProgramVisitor):
         if isinstance(target, FunctionCall):
             return self.find_stack_key(target.caller)
 
-    def visit_Assignment(self, node: AssignStmt):
+    def visitAssignment(self, node: AssignStmt):
         newStack = copy.deepcopy(self.stack)
         value = node.value.accept(self)
 
@@ -122,21 +122,21 @@ class Simulator(ProgramVisitor):
         self.stack = newStack
         return None
     
-    def visit_StaticVarDecl(self, node: StaticVarDecl):
+    def visitStaticVarDecl(self, node: StaticVarDecl):
         init_val = None
         if node.initial_value is not None:
             init_val = node.initial_value.accept(self)
         self.stack.update({node.declarationInfo.name : init_val})
 
-    def visit_FunctionDef(self, node: FunctionDef):
-        self.funMap.update({node.identifier : node})
+    def visitFunctionDef(self, node: FunctionDef):
+        #self.funMap.update({node.identifier : node})
         if str.__eq__(node.identifier, "main"):
             node.body.accept(self)
         # return_value = node.body.accept(self)
         # if return_value is not None: 
         #     return return_value
 
-    def visit_Block(self, node: Block):
+    def visitBlock(self, node: Block):
         try:
             for stmt in node.stmts:
                 stmt.accept(self)
@@ -144,7 +144,7 @@ class Simulator(ProgramVisitor):
             raise ret
 
     #need to simplify the function call
-    def visit_FunctionCall(self, node: FunctionCall):
+    def visitFunctionCall(self, node: FunctionCall):
         if node.caller is None and isinstance(node.callee, IdentifierExpr):
             if str.__contains__(node.callee.name, "print"):
                 return None
@@ -203,7 +203,7 @@ class Simulator(ProgramVisitor):
         print("got none son")
         return None
 
-    def visit_IfStmt(self, node: IfStmt):
+    def visitIfStmt(self, node: IfStmt):
         if_result = node.condition.accept(self)
 
         if if_result:
@@ -213,7 +213,7 @@ class Simulator(ProgramVisitor):
                 return node.else_branch.accept(self)
 
     #ok
-    def visit_MatchStmt(self, node: MatchStmt):
+    def visitMatchStmt(self, node: MatchStmt):
         match_expr = node.expr.accept(self)
         wildcard_arm = None
         for arm in node.arms:
@@ -230,11 +230,11 @@ class Simulator(ProgramVisitor):
             return wildcard_arm.body.accept(self)
         return
 
-    def visit_MatchArm(self, node: MatchArm):
+    def visitMatchArm(self, node: MatchArm):
         match_pattern = node.patterns
         return match_pattern
 
-    def visit_MatchPattern(self, node: MatchPattern):
+    def visitMatchPattern(self, node: MatchPattern):
         return node.value.accept(self)
 
     def visitBreakStmt(self, node: BreakStmt):
@@ -242,20 +242,20 @@ class Simulator(ProgramVisitor):
             return node.accept(self) # .vexp()
         return None # maybe this is better to return?
 
-    def visit_ReturnStmt(self, node: ReturnStmt):
+    def visitReturnStmt(self, node: ReturnStmt):
         val = None
         if hasattr(node, "accept") and callable(node.accept):
             if node.value is not None:
                 val = node.value.accept(self)
         raise ReturnSignal(val)
 
-    def visit_TopLevelVarDef(self, node: TopLevelVarDef):
+    def visitTopLevelVarDef(self, node: TopLevelVarDef):
         value = None
         if node.initial_val is not None:
             value = node.initial_val.accept(self)
         self.stack.update({ node.declarationInfo.name : value})
 
-    def visit_LoopStmt(self, ctx: LoopStmt):
+    def visitLoopStmt(self, ctx: LoopStmt):
         # This is the loop keyword. For this type of loop, break statement can return a value
         # A loop statement contains a block statement, and if a break appears in the immediate block statement,
         # this loop will end?
@@ -274,32 +274,32 @@ class Simulator(ProgramVisitor):
 
         return None
 
-    def visit_ForStmt(self, ctx: ForStmt):
+    def visitForStmt(self, ctx: ForStmt):
         iterations = ctx.iterable.accept(self)
         self.stack.update({ctx.var: 0})
         while self.stack.get(ctx.var) < iterations:
             ctx.body.accept(self)
             self.stack.update({ctx.var: self.stack.get(ctx.var) + 1})
 
-    def visit_WhileStmt(self, node: WhileStmt):
+    def visitWhileStmt(self, node: WhileStmt):
         condition = node.condition.accept(self)
         while condition:
             node.body.accept(self)
             condition = node.condition.accept(self)
         return
 
-    def visit_MatchArm(self, node: MatchArm):
+    def visitMatchArm(self, node: MatchArm):
 
         match_pattern = node.patterns
         # print(match_pattern)
 
         return match_pattern
 
-    def visit_MatchPattern(self, node: MatchPattern):
+    def visitMatchPattern(self, node: MatchPattern):
 
         return node.value.accept(self)
 
-    def visit_RangeExpression(self, node: RangeExpression):
+    def visitRangeExpression(self, node: RangeExpression):
         last = float(node.last.accept(self))
         first = float(node.initial.accept(self))
         range_len = last - first + 1
@@ -308,14 +308,14 @@ class Simulator(ProgramVisitor):
     # def visitIdexp(self, ctx: XMLExpParser.IdexpContext):
     #     return
 
-    def visit_Expression(self, node: Expression):
+    def visitExpression(self, node: Expression):
         if isinstance(node, BorrowExpr):
             return node.expr.accept(self)
 
    #what is fieldaccess? I guess it refers to a struct field, like something.something
     # are we sure that something.something must refer to field?
     #how about lib function?
-    def visit_FieldAccessExpr(self, node: FieldAccessExpr):
+    def visitFieldAccessExpr(self, node: FieldAccessExpr):
         struct_value = node.receiver.accept(self)
 
         if isinstance(struct_value, StructDef):
@@ -330,41 +330,41 @@ class Simulator(ProgramVisitor):
     def visit_int(self, node):
         return node
 
-    def visit_ByteLiteralExpr(self, node:ByteLiteralExpr):
+    def visitByteLiteralExpr(self, node:ByteLiteralExpr):
         return node.expr
 
-    def visit_PatternExpr(self, node: PatternExpr):
+    def visitPatternExpr(self, node: PatternExpr):
         pattern = node.pattern.accept(self)
         if pattern is None:
             return None
         return node.pattern.accept(self)
 
     #what is a borrow?
-    def visit_BorrowExpr(self, node: BorrowExpr):
+    def visitBorrowExpr(self, node: BorrowExpr):
         return node.expr.accept(self)
 
-    def visit_SafeWrapper(self, node: SafeWrapper):
+    def visitSafeWrapper(self, node: SafeWrapper):
         return node.expr.accept(self)
     
-    def visit_LiteralExpr(self, node: LiteralExpr):
+    def visitLiteralExpr(self, node: LiteralExpr):
         return node.expr.accept(self)
 
-    def visit_StrLiteral(self, ctx: StrLiteral):
+    def visitStrLiteral(self, ctx: StrLiteral):
         return ctx.value
 
-    def visit_IntLiteral(self, ctx: IntLiteral):
+    def visitIntLiteral(self, ctx: IntLiteral):
         return ctx.value
 
-    def visit_BoolLiteral(self, ctx: BoolLiteral):
+    def visitBoolLiteral(self, ctx: BoolLiteral):
         return ctx.value
 
-    def visit_ArrayLiteral(self, node: ArrayLiteral):
+    def visitArrayLiteral(self, node: ArrayLiteral):
         return node
     
-    def visit_CharLiteral(self, node: CharLiteral):
+    def visitCharLiteral(self, node: CharLiteral):
         return node.value
 
-    def visit_ArrayAccess(self, node: ArrayAccess):
+    def visitArrayAccess(self, node: ArrayAccess):
         index = node.expr.accept(self) #this is ok.
         target = node.name.accept(self) #how can someone access the name? is this the index expression?
         if isinstance(target, ArrayLiteral):
@@ -378,7 +378,7 @@ class Simulator(ProgramVisitor):
         else:
             return target[index]     
 
-    def visit_Struct(self, node: StructDef):
+    def visitStruct(self, node: StructDef):
         newNode = copy.deepcopy(node)
         for field in newNode.fields:
             if isinstance(field, StructLiteralField):
@@ -389,12 +389,12 @@ class Simulator(ProgramVisitor):
         return newNode
 
     #what is compound assignment?
-    def visit_CompoundAssignment(self, node:CompoundAssignment):
+    def visitCompoundAssignment(self, node:CompoundAssignment):
         operation = node.op[0]
         assign_Stmt = AssignStmt(target=node.target, value=BinaryExpr(left=node.target, op=operation, right=node.value))
         assign_Stmt.accept(self)
 
-    def visit_BinaryExpr(self, node: BinaryExpr):
+    def visitBinaryExpr(self, node: BinaryExpr):
         oper = str(node.op)
         # This will be very complicated.
         a = node.left.accept(self)
@@ -437,7 +437,7 @@ class Simulator(ProgramVisitor):
             #return result
         return None
     
-    def visit_UnaryExpr(self, node: UnaryExpr):
+    def visitUnaryExpr(self, node: UnaryExpr):
         oper = str(node.op)
         expr = node.expr.accept(self)
         if oper == '-':
@@ -451,11 +451,11 @@ class Simulator(ProgramVisitor):
 
     #Here, we have a variable defined as looking up from the stack
     #how about heap variable?
-    def visit_IdentifierExpr(self, node: IdentifierExpr):
+    def visitIdentifierExpr(self, node: IdentifierExpr):
         identifier_val = self.stack.get(node.name)
         return identifier_val
 
-    def visit_CastExpr(self, node: CastExpr):
+    def visitCastExpr(self, node: CastExpr):
         # print(node.expr)
         cast_result = node.expr.accept(self)
         print(cast_result)
@@ -467,11 +467,11 @@ class Simulator(ProgramVisitor):
     #deference is unsafe, so it is the same as the C
     #getting the expression value is incorrect.
     #need to access the heap memory field.
-    def visit_DereferenceExpr(self, node: DereferenceExpr):
+    def visitDereferenceExpr(self, node: DereferenceExpr):
         v = node.expr.accept(self)
         return self.heap.get(self.stack.get(v))
     
-    def visit_TypePathExpression(self, node: TypePathExpression):
+    def visitTypePathExpression(self, node: TypePathExpression):
         return node.last_type
 
     # library functions
