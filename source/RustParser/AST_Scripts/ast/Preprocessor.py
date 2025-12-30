@@ -18,7 +18,9 @@ class Preprocessor(ProgramVisitor):
         #self.heap = heap
         #self.stack = stack
         #self.memory = dict() # store a location and the size of the memory.
+        self.stack = dict()
         self.funMap = dict()
+        self.structMap = dict()
         #self.libMap = dict()
         #self.lib_funcs = ["is_empty", "len", "iter", "push", "pop", "null_mut", "into_raw",
         #                  "into_string", "cast", "is_null", "unwrap","as_ref", "append", "as_bytes", "addr_of_mut!",
@@ -35,7 +37,7 @@ class Preprocessor(ProgramVisitor):
                     print("None type detected in program items")
 
     def visitFunctionDef(self, node: FunctionDef):
-        self.funMap.update({node.identifier : ("fun", node.params, node.return_type, node.body)})
+        self.funMap.update({node.identifier : (node.params, node.return_type, node.body)})
         #if str.__eq__(node.identifier, "main"):
         #    node.body.accept(self)
         # return_value = node.body.accept(self)
@@ -43,13 +45,24 @@ class Preprocessor(ProgramVisitor):
         #     return return_value
 
 
-    def visitStruct(self, node: StructDef):
-        self.funMap.update({node.name : ("struct", node.fields)})
+    def visitStructDef(self, node: StructDef):
+        self.structMap.update({node.name : node.fields})
 
     def visitInterfaceDef(self, node: InterfaceDef):
         for fn in node.functions:
             fn.accept(self)
 
     def visitStaticVarDecl(self, node: StaticVarDecl):
-        self.funMap.update({node.name : ("static", node.var_type, node.isMutable, node.initial_value)})
+        value = None
+        if node.initial_value is not None:
+            value = node.initial_value
+        self.stack.update({ node.name: (value,
+                            DeclarationInfo(node.var_type,
+                                            None, None, None, node.visibility, node.isMutable, node.isExtern))})
 
+    def visitTopLevelVarDef(self, node: TopLevelVarDef):
+        value = None
+        if node.initial_val is not None:
+            value = node.initial_val
+        self.stack.update({ node.name: (value,
+                            DeclarationInfo(node.type, node.fields, node.isUnsafe, node.def_kinds, node.visibility))})

@@ -24,12 +24,13 @@ class Simulator(ProgramVisitor):
     # Coq_nval(b,r) b == |0> | |1>, r == e^(2 pi i * 1 / n), r = 0 Coq_nval(b, 0)
     # x -> v1 ----> run simulator -----> v2 ---> calInt(v2,128) == (x + 2^10) % 2^128
     # Sorry for the late reply Razie. I haven't been able to fully test the simulator yet, but maybe
-    def __init__(self, heap: dict, stack: dict, funMap):
+    def __init__(self, heap: dict, stack: dict, funMap:dict, structMap:dict):
         # need st --> state we are dealing with
         self.heap = heap
         self.stack = stack
         self.memory = dict() # store a location and the size of the memory.
         self.funMap = funMap
+        self.structMap = structMap
         self.libMap = dict()
         self.lib_funcs = ["is_empty", "len", "iter", "push", "pop", "null_mut", "into_raw",
                           "into_string", "cast", "is_null", "unwrap","as_ref", "append", "as_bytes", "addr_of_mut!",
@@ -72,11 +73,6 @@ class Simulator(ProgramVisitor):
                     i.accept(self)
                 else:
                     print("None type detected in program items")
-
-
-    def visitInterfaceDef(self, node: InterfaceDef):
-        for fn in node.functions:
-            fn.accept(self)
 
     #need to talk about sizeof
     #devided the case of box and string new vs stack variables
@@ -121,12 +117,6 @@ class Simulator(ProgramVisitor):
 
         self.stack = newStack
         return None
-    
-    def visitStaticVarDecl(self, node: StaticVarDecl):
-        init_val = None
-        if node.initial_value is not None:
-            init_val = node.initial_value.accept(self)
-        self.stack.update({node.declarationInfo.name : init_val})
 
     def visitFunctionDef(self, node: FunctionDef):
         #self.funMap.update({node.identifier : node})
@@ -249,11 +239,7 @@ class Simulator(ProgramVisitor):
                 val = node.value.accept(self)
         raise ReturnSignal(val)
 
-    def visitTopLevelVarDef(self, node: TopLevelVarDef):
-        value = None
-        if node.initial_val is not None:
-            value = node.initial_val.accept(self)
-        self.stack.update({ node.declarationInfo.name : value})
+
 
     def visitLoopStmt(self, ctx: LoopStmt):
         # This is the loop keyword. For this type of loop, break statement can return a value
@@ -378,15 +364,14 @@ class Simulator(ProgramVisitor):
         else:
             return target[index]     
 
-    def visitStruct(self, node: StructDef):
-        newNode = copy.deepcopy(node)
-        for field in newNode.fields:
-            if isinstance(field, StructLiteralField):
-                if hasattr(field.value, "accept") and callable(field.value.accept):
-                    newNode[field.declarationInfo.name] = field.value.accept(self)
-
-        self.stack
-        return newNode
+    #def visitStruct(self, node: StructDef):
+    #    newNode = copy.deepcopy(node)
+    #    for field in newNode.fields:
+    #        if isinstance(field, StructLiteralField):
+    #            if hasattr(field.value, "accept") and callable(field.value.accept):
+    #                newNode[field.declarationInfo.name] = field.value.accept(self)
+    #    self.stack
+    #    return newNode
 
     #what is compound assignment?
     def visitCompoundAssignment(self, node:CompoundAssignment):
