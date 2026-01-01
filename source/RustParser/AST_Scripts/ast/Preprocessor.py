@@ -13,7 +13,7 @@ from RustParser.AST_Scripts.ast import LibFuncs
 
 class Preprocessor(ProgramVisitor):
 
-    def __init__(self, heap: dict, stack: dict):
+    def __init__(self): # , heap: dict, stack: dict
         # need st --> state we are dealing with
         #self.heap = heap
         #self.stack = stack
@@ -26,6 +26,9 @@ class Preprocessor(ProgramVisitor):
         #                  "into_string", "cast", "is_null", "unwrap","as_ref", "append", "as_bytes", "addr_of_mut!",
         #                  "fetch_add", "by_ref", "into_boxed_slice", "from", "malloc"]
         #self.fill_lib_map()
+
+    def visit(self, ctx):
+        return ctx.accept(self)
 
     def visitProgram(self, ctx: Program):
             # print(ctx.items)
