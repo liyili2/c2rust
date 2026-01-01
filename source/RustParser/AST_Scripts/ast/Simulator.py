@@ -24,11 +24,12 @@ class Simulator(ProgramVisitor):
     # Coq_nval(b,r) b == |0> | |1>, r == e^(2 pi i * 1 / n), r = 0 Coq_nval(b, 0)
     # x -> v1 ----> run simulator -----> v2 ---> calInt(v2,128) == (x + 2^10) % 2^128
     # Sorry for the late reply Razie. I haven't been able to fully test the simulator yet, but maybe
-    def __init__(self, heap: dict, stack: dict, funMap:dict, structMap:dict):
+    def __init__(self, num: int, heap: dict, stack: dict, funMap:dict, structMap:dict):
         # need st --> state we are dealing with
+        self.heapNum = num
         self.heap = heap
         self.stack = stack
-        self.memory = dict() # store a location and the size of the memory.
+        #self.memory = dict() # store a location and the size of the memory.
         self.funMap = funMap
         self.structMap = structMap
         self.libMap = dict()
@@ -76,12 +77,34 @@ class Simulator(ProgramVisitor):
 
     #need to talk about sizeof
     #devided the case of box and string new vs stack variables
+    # implement the let statement
+    # 1. divide different cases
+    # 1 int, char constant directly stored in stack
+    # we do not distinguish stack.heap array
+    # they are all in heap. we will generate a pointer address in the stack
     def visitLetStmt(self, node: LetStmt):
         for i in range(0, len(node.var_defs)):
             arVar = node.var_defs[i].declarationInfo.name
             value = node.values[i]
             if value is not None:
-                value = node.values[i].accept(self)
+                if isinstance(value, FunctionCall):
+                    va = value.caller
+                    if isinstance(va, StringLiteral):
+                        vaStr = va.value
+                        if "::new" in vaStr:
+                            args = value.args
+                            if not args:
+                                self.heap.update({self.heapNum: 0})
+                                self.stack.update({arVar : self.heapNum})
+                                self.heapNum += 1
+                            else:
+                                varNum = args[0]
+                                for j in range(varNum):
+                                    self.heapNum.update({self.heapNum + j : 0})
+                                self.stack.update({arVar : self.heapNum})
+                                self.heapNum += varNum
+                else:
+                    value = node.values[i].accept(self)
             self.stack.update({arVar : value}) #this only takes care of the stack variable declaration.
         return None
 
