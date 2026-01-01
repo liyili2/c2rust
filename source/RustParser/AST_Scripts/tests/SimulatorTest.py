@@ -86,11 +86,11 @@ heap = dict()
 stack = dict()
 print("Running Preprocessor:")
 preprocessor = Preprocessor()
-preprocessor.visitProgram(ast)
+preprocessor.visit(ast) # Program
 print("Running simulator:")
-simulator = Simulator(heap=heap, stack=copy.deepcopy(preprocessor.stack))
-simulator.funMap = copy.deepcopy(preprocessor.funMap)
-simulator.structMap = copy.deepcopy(preprocessor.structMap)
+simulator = Simulator(num=0, heap=heap, stack=copy.deepcopy(preprocessor.stack),
+                      funMap=copy.deepcopy(preprocessor.funMap), structMap=copy.deepcopy(preprocessor.structMap))
+# This has caused simulator get decoupled somehow from the type checker
 simulator.visit(ast)
 # print(simulator.stack.get("a"))
 # assert (simulator.stack.get("a") == 1000)
