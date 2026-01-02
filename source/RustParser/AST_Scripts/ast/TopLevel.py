@@ -24,7 +24,7 @@ class FunctionDef(TopLevel):
 
     def accept(self, visitor):
         #method_Identifier = f'visit_{self.__class__.__name__}'
-        return visitor.visit_FunctionDef(self)
+        return visitor.visitFunctionDef(self)
     
     def getChildren(self):
         return self.body
@@ -42,7 +42,7 @@ class StructDef(TopLevel):
         self.fields = fields
 
     def accept(self, visitor):
-        return visitor.visit_Struct(self)
+        return visitor.visitStructDef(self)
 
     def getChildren(self):
         return self.fields

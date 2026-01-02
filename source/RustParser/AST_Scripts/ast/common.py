@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 @dataclass
 class DeclarationInfo:
+    name: Optional[str] = None
     type: Optional[str] = None
     fields: Optional[list] = None
     isUnsafe: Optional[bool] = None
@@ -14,4 +15,3 @@ class DeclarationInfo:
 class ReturnSignal(Exception):
     def __init__(self, value):
         self.value = value
-

@@ -1,5 +1,6 @@
 import sys
 import os
+import copy
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
@@ -8,6 +9,7 @@ from RustParser.AST_Scripts.antlr.RustLexer import RustLexer
 from RustParser.AST_Scripts.antlr.RustParser import RustParser
 from RustParser.AST_Scripts.ast.Transformer import Transformer
 from RustParser.AST_Scripts.ast.Simulator import Simulator
+from RustParser.AST_Scripts.ast.Preprocessor import Preprocessor
 from RustParser.AST_Scripts.ast.TypeChecker import TypeChecker
 from RustParser.AST_Scripts.ast.TopLevel import *
 from RustParser.AST_Scripts.ast.ASTNode import *
@@ -80,18 +82,23 @@ ast = transformer.visit(tree)
 setParents(ast)
 # checker = TypeChecker()
 # checker.visit(ast)
-memory = dict()
+heap = dict()
 stack = dict()
+print("Running Preprocessor:")
+preprocessor = Preprocessor()
+preprocessor.visit(ast) # Program
 print("Running simulator:")
-simulator = Simulator(heap=memory, stack=stack)
+simulator = Simulator(num=0, heap=heap, stack=copy.deepcopy(preprocessor.stack),
+                      funMap=copy.deepcopy(preprocessor.funMap), structMap=copy.deepcopy(preprocessor.structMap))
+# This has caused simulator get decoupled somehow from the type checker
 simulator.visit(ast)
 # print(simulator.stack.get("a"))
 # assert (simulator.stack.get("a") == 1000)
 
 # print("Type Error Count : ", checker.error_count)
-print(simulator.get_state())
-print(simulator.get_val_address())
-print(simulator.funMap)
+# print(simulator.get_state())
+# print(simulator.get_val_address())
+# print(simulator.funMap)
 
 print("Pretty AST:")
 
