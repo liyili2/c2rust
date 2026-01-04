@@ -42,7 +42,7 @@ class StructDef(TopLevel):
         self.fields = fields
 
     def accept(self, visitor):
-        return visitor.visitStructDef(self)
+        return visitor.visitStruct(self)
 
     def getChildren(self):
         return self.fields

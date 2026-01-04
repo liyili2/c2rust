@@ -197,9 +197,9 @@ class TypeChecker:
 
     def visitStruct(self, node):
         if isinstance(node, TopLevel):
-            self.visit_StructDef(node)
+            self.visitStructDef(node)
         if isinstance(node, Statement):
-            self.visit_StructLiteral(node)
+            self.visitStructLiteral(node)
         else:
             return None
 
@@ -288,7 +288,7 @@ class TypeChecker:
             expr_type = self.visit(expr_types[0])
 
             if isinstance(var_def.declarationInfo.type, str):
-                var_def_type = self.visit_Type(var_def.declarationInfo.type)
+                var_def_type = self.visitType(var_def.declarationInfo.type)
             else:
                 var_def_type = self.visit(var_def.declarationInfo.type)
 

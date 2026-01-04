@@ -6,7 +6,7 @@ class Statement(ASTNode):
         self.body = body
 
     def accept(self, visitor):
-        method_name = f'visit_{self.__class__.__name__}'
+        method_name = f'visit{self.__class__.__name__}'
         return getattr(visitor, method_name, visitor.generic_visit)(self)
     def __init__(self, body=None):
         super().__init__()
@@ -16,7 +16,7 @@ class Statement(ASTNode):
         return self.body
 
     def accept(self, visitor):
-        method_name = f'visit_{self.__class__.__name__}'
+        method_name = f'visit{self.__class__.__name__}'
         return getattr(visitor, method_name, visitor.generic_visit)(self)
 
 class LetStmt(Statement):
@@ -39,7 +39,7 @@ class LetStmt(Statement):
             return f"LetStmt({var.declarationInfo.name} = {val})"
 
     def accept(self, visitor):
-        return visitor.visit_LetStmt(self)
+        return visitor.visitLetStmt(self)
 
 class ForStmt(Statement):
     def __init__(self, var, iterable, body):
@@ -49,7 +49,7 @@ class ForStmt(Statement):
         self.body = body
 
     def accept(self, visitor):
-        return visitor.visit_ForStmt(self)
+        return visitor.visitForStmt(self)
 
 class IfStmt(Statement):
     def __init__(self, condition, then_branch, else_branch=None):
@@ -58,7 +58,7 @@ class IfStmt(Statement):
         self.then_branch = then_branch
         self.else_branch = else_branch
     def accept(self, visitor):
-        return visitor.visit_IfStmt(self)
+        return visitor.visitIfStmt(self)
 
 class AssignStmt(Statement):
     def __init__(self, target, value):
@@ -70,7 +70,7 @@ class AssignStmt(Statement):
         return f"{self.target} = {self.value}"
 
     def accept(self, visitor):
-        return visitor.visit_Assignment(self)
+        return visitor.visitAssignment(self)
 
 class ConditionalAssignmentStmt(Statement):
     def __init__(self, cond, body):
@@ -90,7 +90,7 @@ class WhileStmt(Statement):
         self.body = body
 
     def accept(self, visitor):
-        return visitor.visit_WhileStmt(self)
+        return visitor.visitWhileStmt(self)
 
 class MatchStmt(Statement):
     def __init__(self, expr, arms):
@@ -99,7 +99,7 @@ class MatchStmt(Statement):
         self.arms = arms
 
     def accept(self, visitor):
-        return visitor.visit_MatchStmt(self)
+        return visitor.visitMatchStmt(self)
 
 class MatchArm(Statement):
     def __init__(self, patterns, body):
@@ -108,7 +108,7 @@ class MatchArm(Statement):
         self.body = body
 
     def accept(self, visitor):
-        return visitor.visit_MatchArm(self)
+        return visitor.visitMatchArm(self)
 
 class MatchPattern(Statement):
     def __init__(self, value):
@@ -116,7 +116,7 @@ class MatchPattern(Statement):
         self.value = value
 
     def accept(self, visitor):
-        return visitor.visit_MatchPattern(self)
+        return visitor.visitMatchPattern(self)
 
 class CompoundAssignment(Statement):
     def __init__(self, target, op, value):
@@ -126,7 +126,7 @@ class CompoundAssignment(Statement):
         self.value = value
 
     def accept(self, visitor):
-        return visitor.visit_CompoundAssignment(self)
+        return visitor.visitCompoundAssignment(self)
 
 class ReturnStmt(Statement):
     def __init__(self, value=None):
@@ -134,7 +134,7 @@ class ReturnStmt(Statement):
         self.value = value
 
     def accept(self, visitor):
-        return visitor.visit_ReturnStmt(self)
+        return visitor.visitReturnStmt(self)
     
     def __repr__(self):
         return f"ReturnStmt(value={self.value})"
@@ -145,7 +145,7 @@ class LoopStmt(Statement):
         self.body = body
 
     def accept(self, visitor):
-        return visitor.visit_LoopStmt(self)
+        return visitor.visitLoopStmt(self)
 
     def __repr__(self):
         return f"LoopStmt(body={repr(self.body)})"
@@ -156,13 +156,13 @@ class BreakStmt(Statement):
         super().__init__()
 
     def accept(self, visitor):
-        return visitor.visit_BreakStmt(self)
+        return visitor.visitBreakStmt(self)
 
 class ContinueStmt(Statement):
     def __init__(self):
         super().__init__()
     def accept(self, visitor):
-        return visitor.visit_ContinueStmt(self)
+        return visitor.visitContinueStmt(self)
 
 class StructDef(Statement):
     def __init__(self, name: str, fields: list):
@@ -171,7 +171,7 @@ class StructDef(Statement):
         self.fields = fields
 
     def accept(self, visitor):
-        return visitor.visit_Struct(self)
+        return visitor.visitStruct(self)
 
     def __repr__(self):
         return f"StructDef(type_name={self.type_name}, fields={self.fields})"
@@ -191,7 +191,7 @@ class FunctionCall(Statement):
         self.args = args
 
     def accept(self, visitor):
-        return visitor.visit_FunctionCall(self)
+        return visitor.visitFunctionCall(self)
 
 class Block(Statement):
     def __init__(self, stmts, isUnsafe=False):
@@ -200,7 +200,7 @@ class Block(Statement):
         self.isUnsafe = isUnsafe
 
     def accept(self, visitor):
-        return visitor.visit_Block(self)
+        return visitor.visitBlock(self)
     
     def getChildren(self):
         return self.stmts
@@ -211,4 +211,4 @@ class TypeWrapper(Statement):
         self.expr = expr
 
     def accept(self, visitor):
-        return visitor.visit_typeWrapper(self)
+        return visitor.visittypeWrapper(self)

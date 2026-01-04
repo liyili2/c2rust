@@ -253,7 +253,7 @@ class LibFuncMalloc(LibFunction):
         # visitor.stack.update({caller.name: val + to_be_added})
         # The root issue is that the outer as *mut Node doesn't seem to do anything?
 
-        visitor.memory.update({"a": 1})
+        visitor.heap.update({"a": 1})
 
         return [] #vector
 

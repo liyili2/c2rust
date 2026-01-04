@@ -87,6 +87,8 @@ stack = dict()
 print("Running Preprocessor:")
 preprocessor = Preprocessor()
 preprocessor.visit(ast) # Program
+print(preprocessor.stack)
+print(preprocessor.funMap)
 print("Running simulator:")
 simulator = Simulator(num=0, heap=heap, stack=copy.deepcopy(preprocessor.stack),
                       funMap=copy.deepcopy(preprocessor.funMap), structMap=copy.deepcopy(preprocessor.structMap))
