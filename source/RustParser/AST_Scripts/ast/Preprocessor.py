@@ -39,6 +39,14 @@ class Preprocessor(ProgramVisitor):
                 else:
                     print("None type detected in program items")
 
+    def visitStruct(self, node: StructDef):
+        newNode = copy.deepcopy(node)
+        for field in newNode.fields:
+            if isinstance(field, StructLiteralField):
+                if hasattr(field.value, "accept") and callable(field.value.accept):
+                    newNode[field.declarationInfo.name] = field.value.accept(self)
+        return newNode
+
     def visitFunctionDef(self, node: FunctionDef):
         self.funMap.update({node.identifier : (node.params, node.return_type, node.body)})
         #if str.__eq__(node.identifier, "main"):

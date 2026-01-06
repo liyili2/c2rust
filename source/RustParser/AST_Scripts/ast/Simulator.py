@@ -59,6 +59,7 @@ class Simulator(ProgramVisitor):
         return self.heap
 
     def visit(self, ctx):
+        print(ctx)
         return ctx.accept(self)
 
     #I assume this is the top level
@@ -191,20 +192,21 @@ class Simulator(ProgramVisitor):
                 # print(func)
                 return func(caller=node.caller, visitor=self, args=node.args)
 
+        # Note stored as a object now.
         origFunc = self.funMap.get(node.callee)
-        newNode = copy.deepcopy(origFunc)
+        newNode = copy.deepcopy(origFunc) # newNodeParams, newNodeRetType, newNodeBody
         if newNode is None:
             newNode = self.funMap.get(node.callee)
         # self.stack.update({"self": node.caller})
         newStack = copy.deepcopy(self.stack)
-        for i in range(0, len(newNode.params)):
-            arVar = newNode.params.params[i].declarationInfo.name
+        for i in range(0, len(newNode[0])):
+            arVar = newNode[0].params[i].declarationInfo.name
             value = node.args[i].accept(self)
             newStack.update({arVar : value})
         oldStack = self.stack
         self.stack = newStack
         try:
-            newNode.body.accept(self)
+            newNode[2].accept(self)
         except ReturnSignal as ret:
             self.stack = oldStack
             if isinstance(ret.value, IdentifierExpr):
@@ -215,6 +217,14 @@ class Simulator(ProgramVisitor):
         self.stack = oldStack
         print("got none son")
         return None
+
+    def visitStruct(self, node: StructDef):
+        newNode = copy.deepcopy(node)
+        for field in newNode.fields:
+            if isinstance(field, StructLiteralField):
+                if hasattr(field.value, "accept") and callable(field.value.accept):
+                    newNode[field.declarationInfo.name] = field.value.accept(self)
+        return newNode
 
     def visitIfStmt(self, node: IfStmt):
         if_result = node.condition.accept(self)
@@ -461,6 +471,7 @@ class Simulator(ProgramVisitor):
     #how about heap variable?
     def visitIdentifierExpr(self, node: IdentifierExpr):
         identifier_val = self.stack.get(node.name)
+        print(node.name)
         return identifier_val
 
     def visitCastExpr(self, node: CastExpr):
@@ -477,6 +488,7 @@ class Simulator(ProgramVisitor):
     #need to access the heap memory field.
     def visitDereferenceExpr(self, node: DereferenceExpr):
         v = node.expr.accept(self)
+        # print(v)
         return self.heap.get(self.stack.get(v))
     
     def visitTypePathExpression(self, node: TypePathExpression):

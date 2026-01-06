@@ -47,5 +47,5 @@ class StructField(ASTNode):
         self.declarationInfo = DeclarationInfo(name=name, type=typeExpr, visibility=visibility)
 
     def accept(self, visitor):
-        method_name = f'visit_{self.__class__.__name__}'
+        method_name = f'visit{self.__class__.__name__}'
         return getattr(visitor, method_name, visitor.generic_visit)(self)

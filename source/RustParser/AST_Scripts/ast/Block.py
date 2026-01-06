@@ -9,7 +9,7 @@ class Block(ASTNode):
         self.stmts = stmts
 
     def accept(self, visitor):
-        return visitor.visit_Block(self)
+        return visitor.visitBlock(self)
 
     def getChildren(self):
         return self.stmts
