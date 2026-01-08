@@ -76,6 +76,12 @@ class Simulator(ProgramVisitor):
                 else:
                     print("None type detected in program items")
 
+
+    def isStackValue(self, node:Expression):
+        if isinstance(node, IntLiteral) and isinstance(node, CharLiteral)  and isinstance(node, BoolLiteral):
+            return True
+        return False
+
     #need to talk about sizeof
     #devided the case of box and string new vs stack variables
     # implement the let statement
@@ -87,26 +93,36 @@ class Simulator(ProgramVisitor):
         for i in range(0, len(node.var_defs)):
             arVar = node.var_defs[i].declarationInfo.name
             value = node.values[i]
-            if value is not None:
-                if isinstance(value, FunctionCall):
-                    va = value.caller
-                    if isinstance(va, StringLiteral):
-                        vaStr = va.value
-                        if "::new" in vaStr:
-                            args = value.args
-                            if not args:
-                                self.heap.update({self.heapNum: 0})
-                                self.stack.update({arVar : self.heapNum})
-                                self.heapNum += 1
-                            else:
-                                varNum = args[0]
-                                for j in range(varNum):
-                                    self.heapNum.update({self.heapNum + j : 0})
-                                self.stack.update({arVar : self.heapNum})
-                                self.heapNum += varNum
-                else:
-                    value = node.values[i].accept(self)
-            self.stack.update({arVar : value}) #this only takes care of the stack variable declaration.
+
+            v = value.accept(self)
+            if self.isStackValue(v):
+                self.stack.update({arVar: v})
+            else:
+                pointer = self.heapNum
+                self.heapNum += 1
+                self.stack.update({arVar : pointer})
+                self.heap.update({pointer : v})
+
+            #if value is not None:
+            #    if isinstance(value, FunctionCall):
+            #        va = value.caller
+            #        if isinstance(va, StringLiteral):
+            #            vaStr = va.value
+            #            if "::new" in vaStr:
+            #                args = value.args
+            #                if not args:
+            #                    self.heap.update({self.heapNum: 0})
+            #                    self.stack.update({arVar : self.heapNum})
+            #                    self.heapNum += 1
+            #                else:
+            #                    varNum = args[0]
+            #                    for j in range(varNum):
+            #                        self.heapNum.update({self.heapNum + j : 0})
+            #                    self.stack.update({arVar : self.heapNum})
+            #                    self.heapNum += varNum
+             #   else:
+            #        value = node.values[i].accept(self)
+            #self.stack.update({arVar : value}) #this only takes care of the stack variable declaration.
         return None
 
     def find_stack_key(self, target):
@@ -124,38 +140,40 @@ class Simulator(ProgramVisitor):
             return self.find_stack_key(target.caller)
 
     def visitAssignment(self, node: AssignStmt):
-        newStack = copy.deepcopy(self.stack)
+        #newStack = copy.deepcopy(self.stack)
         value = node.value.accept(self)
 
         if isinstance(node.target, FieldAccessExpr):
-            target = self.find_stack_key(node.target)
-            target_original_val = newStack.get(target)
-            if isinstance(target_original_val, StructDef):
-                for field in target_original_val.fields:
-                    if str.__eq__(field.declarationInfo.name, node.target.name.name):
+            rec = node.target.receiver.accept(self)
+            target = self.heap.get(rec)
+            #target = self.find_stack_key(node.target)
+            if isinstance(target, StructDef):
+                for field in target.fields:
+                    if str.__eq__(field.declarationInfo.name, node.target.name):
                         field.value = value
-            newStack.update({target : target_original_val})
+            #newStack.update({target : target_original_val})
         else:
             target = self.find_stack_key(node.target)
-            newStack.update({target : value})
+            self.stack.update({target : value})
+        #self.stack = newStack
+        return target
 
-        self.stack = newStack
-        return None
-
-    def visitFunctionDef(self, node: FunctionDef):
-        #self.funMap.update({node.identifier : node})
-        if str.__eq__(node.identifier, "main"):
-            node.body.accept(self)
+    #def visitFunctionDef(self, node: FunctionDef):
+    #    #self.funMap.update({node.identifier : node})
+    #    if str.__eq__(node.identifier, "main"):
+    #        node.body.accept(self)
         # return_value = node.body.accept(self)
         # if return_value is not None: 
         #     return return_value
 
     def visitBlock(self, node: Block):
+        oldStack = copy.deepcopy(self.stack)
         try:
             for stmt in node.stmts:
                 stmt.accept(self)
         except ReturnSignal as ret:
             raise ret
+        self.stack = oldStack
 
     #need to simplify the function call
     def visitFunctionCall(self, node: FunctionCall):
@@ -240,7 +258,7 @@ class Simulator(ProgramVisitor):
         match_expr = node.expr.accept(self)
         wildcard_arm = None
         for arm in node.arms:
-            patterns = arm.accept(self)
+            patterns = arm.patterns
             for pattern in patterns:
                 val = pattern.accept(self)
 
@@ -251,11 +269,11 @@ class Simulator(ProgramVisitor):
 
         if wildcard_arm:
             return wildcard_arm.body.accept(self)
-        return
+        return None
 
-    def visitMatchArm(self, node: MatchArm):
-        match_pattern = node.patterns
-        return match_pattern
+    #def visitMatchArm(self, node: MatchArm):
+    #    match_pattern = node.patterns
+    #    return match_pattern
 
     def visitMatchPattern(self, node: MatchPattern):
         return node.value.accept(self)
@@ -307,15 +325,13 @@ class Simulator(ProgramVisitor):
             condition = node.condition.accept(self)
         return
 
-    def visitMatchArm(self, node: MatchArm):
+    #def visitMatchArm(self, node: MatchArm):
 
-        match_pattern = node.patterns
+    #    match_pattern = node.patterns
         # print(match_pattern)
-
-        return match_pattern
+    #    return match_pattern
 
     def visitMatchPattern(self, node: MatchPattern):
-
         return node.value.accept(self)
 
     def visitRangeExpression(self, node: RangeExpression):
@@ -327,9 +343,9 @@ class Simulator(ProgramVisitor):
     # def visitIdexp(self, ctx: XMLExpParser.IdexpContext):
     #     return
 
-    def visitExpression(self, node: Expression):
-        if isinstance(node, BorrowExpr):
-            return node.expr.accept(self)
+    #def visitExpression(self, node: Expression):
+    #    if isinstance(node, BorrowExpr):
+    #        return node.expr.accept(self)
 
    #what is fieldaccess? I guess it refers to a struct field, like something.something
     # are we sure that something.something must refer to field?
@@ -337,17 +353,19 @@ class Simulator(ProgramVisitor):
     def visitFieldAccessExpr(self, node: FieldAccessExpr):
         struct_value = node.receiver.accept(self)
 
-        if isinstance(struct_value, StructDef):
-            for field in struct_value.fields:
-                if node.name.name == field.declarationInfo.name:
+        v = self.heap.get(struct_value)
+
+        if isinstance(v, StructDef):
+            for field in v.fields:
+                if node.name == field.declarationInfo.name:
                     if hasattr(field.value, "accept") and callable(field.value.accept):
                         return field.value.accept(self)
                     return field.value
 
-        return
+        return None
 
-    def visit_int(self, node):
-        return node
+    #def visit_int(self, node):
+    #    return node
 
     def visitByteLiteralExpr(self, node:ByteLiteralExpr):
         return node.expr
@@ -468,24 +486,22 @@ class Simulator(ProgramVisitor):
             raise Exception(f"Unsupported unary operator: {oper}")
 
     #Here, we have a variable defined as looking up from the stack
-    #how about heap variable?
+    #good
     def visitIdentifierExpr(self, node: IdentifierExpr):
         identifier_val = self.stack.get(node.name)
-        print(node.name)
+        #print(node.name)
         return identifier_val
 
+    #cast has no effect
     def visitCastExpr(self, node: CastExpr):
         # print(node.expr)
         cast_result = node.expr.accept(self)
-        print(cast_result)
-        if isinstance(cast_result, FunctionCall):
-            print(cast_result.caller)
-
+        #print(cast_result)
+        #if isinstance(cast_result, FunctionCall):
+        #    print(cast_result.caller)
         return cast_result
 
-    #deference is unsafe, so it is the same as the C
-    #getting the expression value is incorrect.
-    #need to access the heap memory field.
+    #looks good
     def visitDereferenceExpr(self, node: DereferenceExpr):
         v = node.expr.accept(self)
         # print(v)
