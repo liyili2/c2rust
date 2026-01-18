@@ -31,4 +31,5 @@ class FunctionParamList(ASTNode):
     def __repr__(self):
         return f"FunctionParamList(params={self.params})"
     def accept(self, visitor):
-        return visitor.visit_FunctionParamList(self)
+        #
+        return visitor.visitFunctionParamList(self)

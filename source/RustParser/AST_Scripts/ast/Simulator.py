@@ -9,6 +9,7 @@ from RustParser.AST_Scripts.ast.Program import *
 from RustParser.AST_Scripts.ast.TopLevel import *
 from RustParser.AST_Scripts.ast.common import *
 from RustParser.AST_Scripts.ast import LibFuncs
+from RustParser.AST_Scripts.ast.Func import *
 
 NoneType = type(None)
 
@@ -60,6 +61,7 @@ class Simulator(ProgramVisitor):
 
     def visit(self, ctx):
         print(ctx)
+        # This should go to the type checker first right?
         return ctx.accept(self)
 
     #I assume this is the top level
@@ -165,6 +167,10 @@ class Simulator(ProgramVisitor):
         # return_value = node.body.accept(self)
         # if return_value is not None: 
         #     return return_value
+
+    def visitFunctionParamList(self, node: FunctionParamList):
+
+        return
 
     def visitBlock(self, node: Block):
         oldStack = copy.deepcopy(self.stack)
