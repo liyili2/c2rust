@@ -90,10 +90,24 @@ preprocessor.visit(ast) # Program
 print(preprocessor.stack)
 print(preprocessor.funMap)
 print("Running simulator:")
+file_path_main = os.path.join(os.path.dirname(__file__), "avl_main.rs")
+with open(file_path_main, "r", encoding="utf-8") as f:
+    rust_code_main = f.read()
+print("Tokenizing:")
+lexer_main = RustLexer(InputStream(rust_code_main))
+tokens_main = CommonTokenStream(lexer_main)
+print("Parsing:")
+parser_main = RustParser(tokens_main)
+print("running program")
+tree_main = parser_main.program()
+print("Transforming:")
+transformer_main = Transformer()
+ast_main = transformer_main.visit(tree_main)
+setParents(ast_main)
 simulator = Simulator(num=0, heap=heap, stack=copy.deepcopy(preprocessor.stack),
                       funMap=copy.deepcopy(preprocessor.funMap), structMap=copy.deepcopy(preprocessor.structMap))
 # This has caused simulator get decoupled somehow from the type checker
-simulator.visit(ast)
+simulator.visit(ast_main)
 # print(simulator.stack.get("a"))
 # assert (simulator.stack.get("a") == 1000)
 

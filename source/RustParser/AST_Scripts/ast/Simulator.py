@@ -174,6 +174,7 @@ class Simulator(ProgramVisitor):
 
     def visitBlock(self, node: Block):
         oldStack = copy.deepcopy(self.stack)
+        print(node.stmts)
         try:
             for stmt in node.stmts:
                 stmt.accept(self)
