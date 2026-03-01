@@ -1,0 +1,59 @@
+import sys
+import os
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+
+from antlr4 import CommonTokenStream, InputStream
+from rust.parser.RustLexer import RustLexer
+from rust.parser import RustParser
+from rust.ast.Transformer import ParseTreeASTTransformer, setParents
+from rust.ast import TypeChecker
+
+def pretty_print_ast(node, indent=0, visited=None):
+    if visited is None:
+        visited = set()
+
+    lines = []
+    prefix = ' ' * indent
+
+    if isinstance(node, (str, int, float, bool, type(None))):
+        return f"{prefix}{repr(node)}"
+
+    node_id = id(node)
+    if node_id in visited:
+        return f"{prefix}<Cycle: {type(node).__name__}>"
+
+    visited.add(node_id)
+
+    if isinstance(node, list):
+        for n in node:
+            lines.append(pretty_print_ast(n, indent, visited))
+    elif hasattr(node, '__dict__'):
+        lines.append(f"{prefix}{type(node).__name__}:")
+        for attr, value in vars(node).items():
+            if attr == "parent":
+                continue
+            lines.append(f"{prefix}  {attr}:")
+            lines.append(pretty_print_ast(value, indent + 4, visited))
+    else:
+        lines.append(f"{prefix}{repr(node)}")
+
+    return '\n'.join(lines)
+
+file_path = os.path.join(os.path.dirname(__file__), "avl.rs")
+with open(file_path, "r", encoding="utf-8") as f:
+    rust_code = f.read()
+lexer = RustLexer(InputStream(rust_code))
+tokens = CommonTokenStream(lexer)
+parser = RustParser(tokens)
+tree=parser.program()
+builder = ParseTreeASTTransformer()
+custom_ast = builder.visit(tree)
+setParents(custom_ast)
+print("Pretty AST:")
+with open("ast_output.txt", "w", encoding="utf-8") as f:
+    f.write(pretty_print_ast(custom_ast))
+# print(pretty_print_ast(custom_ast))
+checker = TypeChecker()
+checker.visit(custom_ast)
+print("Type Error Count : ", checker.error_count)
