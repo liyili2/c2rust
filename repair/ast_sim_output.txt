@@ -148,7 +148,17 @@ Program:
                   type_path:
                     'libc'
                     ''
+              fields:
+                None
+              isUnsafe:
+                None
+              def_kind:
+                None
               visibility:
+                None
+              isMutable:
+                None
+              isExtern:
                 None
         StructField:
           declarationInfo:
@@ -161,7 +171,17 @@ Program:
                     True
                   pointee_type:
                     'Node'
+              fields:
+                None
+              isUnsafe:
+                None
+              def_kind:
+                None
               visibility:
+                None
+              isMutable:
+                None
+              isExtern:
                 None
         StructField:
           declarationInfo:
@@ -174,7 +194,17 @@ Program:
                     True
                   pointee_type:
                     'Node'
+              fields:
+                None
+              isUnsafe:
+                None
+              def_kind:
+                None
               visibility:
+                None
+              isMutable:
+                None
+              isExtern:
                 None
         StructField:
           declarationInfo:
@@ -196,7 +226,17 @@ Program:
                   type_path:
                     'libc'
                     ''
+              fields:
+                None
+              isUnsafe:
+                None
+              def_kind:
+                None
               visibility:
+                None
+              isMutable:
+                None
+              isExtern:
                 None
     Attribute:
       name:
@@ -220,7 +260,17 @@ Program:
                         True
                       pointee_type:
                         'Node'
+                  fields:
+                    None
+                  isUnsafe:
+                    None
+                  def_kind:
+                    None
                   visibility:
+                    None
+                  isMutable:
+                    None
+                  isExtern:
                     None
               isMutable:
                 True
@@ -414,7 +464,17 @@ Program:
                       type_path:
                         'libc'
                         ''
+                  fields:
+                    None
+                  isUnsafe:
+                    None
+                  def_kind:
+                    None
                   visibility:
+                    None
+                  isMutable:
+                    None
+                  isExtern:
                     None
               isMutable:
                 True
@@ -438,7 +498,17 @@ Program:
                       type_path:
                         'libc'
                         ''
+                  fields:
+                    None
+                  isUnsafe:
+                    None
+                  def_kind:
+                    None
                   visibility:
+                    None
+                  isMutable:
+                    None
+                  isExtern:
                     None
               isMutable:
                 True
@@ -552,7 +622,17 @@ Program:
                       type_path:
                         'libc'
                         ''
+                  fields:
+                    None
+                  isUnsafe:
+                    None
+                  def_kind:
+                    None
                   visibility:
+                    None
+                  isMutable:
+                    None
+                  isExtern:
                     None
               isMutable:
                 True
@@ -578,7 +658,17 @@ Program:
                         'node'
                       type:
                         None
+                      fields:
+                        None
+                      isUnsafe:
+                        None
+                      def_kind:
+                        None
                       visibility:
+                        None
+                      isMutable:
+                        None
+                      isExtern:
                         None
                   isMutable:
                     True
@@ -741,7 +831,17 @@ Program:
                         'ref'
                       type:
                         None
+                      fields:
+                        None
+                      isUnsafe:
+                        None
+                      def_kind:
+                        None
                       visibility:
+                        None
+                      isMutable:
+                        None
+                      isExtern:
                         None
                   isMutable:
                     True
@@ -849,7 +949,17 @@ Program:
                         'ref'
                       type:
                         None
+                      fields:
+                        None
+                      isUnsafe:
+                        None
+                      def_kind:
+                        None
                       visibility:
+                        None
+                      isMutable:
+                        None
+                      isExtern:
                         None
                   isMutable:
                     True
@@ -1067,7 +1177,17 @@ Program:
                         True
                       pointee_type:
                         'Node'
+                  fields:
+                    None
+                  isUnsafe:
+                    None
+                  def_kind:
+                    None
                   visibility:
+                    None
+                  isMutable:
+                    None
+                  isExtern:
                     None
               isMutable:
                 True
@@ -1093,7 +1213,17 @@ Program:
                         'x'
                       type:
                         None
+                      fields:
+                        None
+                      isUnsafe:
+                        None
+                      def_kind:
+                        None
                       visibility:
+                        None
+                      isMutable:
+                        None
+                      isExtern:
                         None
                   isMutable:
                     True
@@ -1152,7 +1282,17 @@ Program:
                         'T2'
                       type:
                         None
+                      fields:
+                        None
+                      isUnsafe:
+                        None
+                      def_kind:
+                        None
                       visibility:
+                        None
+                      isMutable:
+                        None
+                      isExtern:
                         None
                   isMutable:
                     True
@@ -1211,7 +1351,17 @@ Program:
                         'ref'
                       type:
                         None
+                      fields:
+                        None
+                      isUnsafe:
+                        None
+                      def_kind:
+                        None
                       visibility:
+                        None
+                      isMutable:
+                        None
+                      isExtern:
                         None
                   isMutable:
                     True
@@ -1534,7 +1684,17 @@ Program:
                         'ref'
                       type:
                         None
+                      fields:
+                        None
+                      isUnsafe:
+                        None
+                      def_kind:
+                        None
                       visibility:
+                        None
+                      isMutable:
+                        None
+                      isExtern:
                         None
                   isMutable:
                     True
@@ -1887,7 +2047,17 @@ Program:
                         True
                       pointee_type:
                         'Node'
+                  fields:
+                    None
+                  isUnsafe:
+                    None
+                  def_kind:
+                    None
                   visibility:
+                    None
+                  isMutable:
+                    None
+                  isExtern:
                     None
               isMutable:
                 True
@@ -1913,7 +2083,17 @@ Program:
                         'y'
                       type:
                         None
+                      fields:
+                        None
+                      isUnsafe:
+                        None
+                      def_kind:
+                        None
                       visibility:
+                        None
+                      isMutable:
+                        None
+                      isExtern:
                         None
                   isMutable:
                     True
@@ -1972,7 +2152,17 @@ Program:
                         'T2'
                       type:
                         None
+                      fields:
+                        None
+                      isUnsafe:
+                        None
+                      def_kind:
+                        None
                       visibility:
+                        None
+                      isMutable:
+                        None
+                      isExtern:
                         None
                   isMutable:
                     True
@@ -2031,7 +2221,17 @@ Program:
                         'ref'
                       type:
                         None
+                      fields:
+                        None
+                      isUnsafe:
+                        None
+                      def_kind:
+                        None
                       visibility:
+                        None
+                      isMutable:
+                        None
+                      isExtern:
                         None
                   isMutable:
                     True
@@ -2354,7 +2554,17 @@ Program:
                         'ref'
                       type:
                         None
+                      fields:
+                        None
+                      isUnsafe:
+                        None
+                      def_kind:
+                        None
                       visibility:
+                        None
+                      isMutable:
+                        None
+                      isExtern:
                         None
                   isMutable:
                     True
@@ -2707,7 +2917,17 @@ Program:
                         True
                       pointee_type:
                         'Node'
+                  fields:
+                    None
+                  isUnsafe:
+                    None
+                  def_kind:
+                    None
                   visibility:
+                    None
+                  isMutable:
+                    None
+                  isExtern:
                     None
               isMutable:
                 True
@@ -2982,7 +3202,17 @@ Program:
                         True
                       pointee_type:
                         'Node'
+                  fields:
+                    None
+                  isUnsafe:
+                    None
+                  def_kind:
+                    None
                   visibility:
+                    None
+                  isMutable:
+                    None
+                  isExtern:
                     None
               isMutable:
                 True
@@ -3006,7 +3236,17 @@ Program:
                       type_path:
                         'libc'
                         ''
+                  fields:
+                    None
+                  isUnsafe:
+                    None
+                  def_kind:
+                    None
                   visibility:
+                    None
+                  isMutable:
+                    None
+                  isExtern:
                     None
               isMutable:
                 True
@@ -3189,7 +3429,17 @@ Program:
                                 'ref'
                               type:
                                 None
+                              fields:
+                                None
+                              isUnsafe:
+                                None
+                              def_kind:
+                                None
                               visibility:
+                                None
+                              isMutable:
+                                None
+                              isExtern:
                                 None
                           isMutable:
                             True
@@ -3417,7 +3667,17 @@ Program:
                                     'ref'
                                   type:
                                     None
+                                  fields:
+                                    None
+                                  isUnsafe:
+                                    None
+                                  def_kind:
+                                    None
                                   visibility:
+                                    None
+                                  isMutable:
+                                    None
+                                  isExtern:
                                     None
                               isMutable:
                                 True
@@ -3821,7 +4081,17 @@ Program:
                         'balance'
                       type:
                         None
+                      fields:
+                        None
+                      isUnsafe:
+                        None
+                      def_kind:
+                        None
                       visibility:
+                        None
+                      isMutable:
+                        None
+                      isExtern:
                         None
                   isMutable:
                     True
@@ -4471,7 +4741,17 @@ Program:
                                 'ref'
                               type:
                                 None
+                              fields:
+                                None
+                              isUnsafe:
+                                None
+                              def_kind:
+                                None
                               visibility:
+                                None
+                              isMutable:
+                                None
+                              isExtern:
                                 None
                           isMutable:
                             True
@@ -4833,7 +5113,17 @@ Program:
                                 'ref'
                               type:
                                 None
+                              fields:
+                                None
+                              isUnsafe:
+                                None
+                              def_kind:
+                                None
                               visibility:
+                                None
+                              isMutable:
+                                None
+                              isExtern:
                                 None
                           isMutable:
                             True
@@ -5042,7 +5332,17 @@ Program:
                         True
                       pointee_type:
                         'Node'
+                  fields:
+                    None
+                  isUnsafe:
+                    None
+                  def_kind:
+                    None
                   visibility:
+                    None
+                  isMutable:
+                    None
+                  isExtern:
                     None
               isMutable:
                 True
@@ -5068,7 +5368,17 @@ Program:
                         'current'
                       type:
                         None
+                      fields:
+                        None
+                      isUnsafe:
+                        None
+                      def_kind:
+                        None
                       visibility:
+                        None
+                      isMutable:
+                        None
+                      isExtern:
                         None
                   isMutable:
                     True
@@ -5272,7 +5582,17 @@ Program:
                         True
                       pointee_type:
                         'Node'
+                  fields:
+                    None
+                  isUnsafe:
+                    None
+                  def_kind:
+                    None
                   visibility:
+                    None
+                  isMutable:
+                    None
+                  isExtern:
                     None
               isMutable:
                 True
@@ -5575,7 +5895,17 @@ Program:
                         'root'
                       type:
                         None
+                      fields:
+                        None
+                      isUnsafe:
+                        None
+                      def_kind:
+                        None
                       visibility:
+                        None
+                      isMutable:
+                        None
+                      isExtern:
                         None
                   isMutable:
                     True
@@ -5627,9 +5957,19 @@ Program:
                   body:
                     None
                   caller:
-                    None
+                    <Cycle: builtin_function_or_method>
                   callee:
-                    'insert'
+                    IdentifierExpr:
+                      type:
+                        None
+                      isMutable:
+                        False
+                      expr:
+                        None
+                      isUnsafe:
+                        False
+                      name:
+                        'insert'
                   args:
                     IdentifierExpr:
                       type:
