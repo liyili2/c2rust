@@ -11,10 +11,10 @@ from jmetal.algorithm.singleobjective import GeneticAlgorithm
 from jmetal.operator import BinaryTournamentSelection
 from jmetal.util.termination_criterion import StoppingByEvaluations
 # For modified program + repair
-from source.repairCode.cprogram import CProgram
-from source.repairCode.cproblem import CProblem
-from source.repairCode.mutation import PyGGiMutation
-from source.repairCode.crossover import PyGGiCrossover
+from repair.framework.cprogram import CProgram
+from repair.framework.cproblem import CProblem
+from repair.framework.mutation import PyGGiMutation
+from repair.framework.crossover import PyGGiCrossover
 # Custom Operators
 #from repairCode.operators import CGateReplacement, CGateInsertion, CGateDeletion
 

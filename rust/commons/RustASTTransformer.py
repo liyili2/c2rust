@@ -1,0 +1,799 @@
+from rust.ast.ASTNode import *
+from rust.parser.RustPTVisitor import RustPTVisitor
+from rust.ast.TopLevel import *
+from rust.ast.Struct import *
+from rust.ast.VarDef import *
+from rust.ast.Func import *
+from rust.ast.Block import *
+from rust.ast.utils import *
+from rust.parser.RustParser import RustParser
+
+
+class RustASTTransformer(RustPTVisitor):
+
+    def __init__(self):
+        super().__init__()
+        self.struct_defs = {}
+        self._depth = 0
+
+    def visit(self, tree):
+        if isinstance(tree, list):
+            return [self.visit(child) for child in tree]
+
+        rule_name = tree.__class__.__name__.replace("Context", "")
+        method_name = f"visit{rule_name}"
+        visitor_fn = getattr(self, method_name, None)
+        self._depth += 1
+
+        try:
+            if tree is None:
+                return None
+
+            if visitor_fn is not None:
+                return visitor_fn(tree)
+            else:
+                return self.visitChildren(tree)
+        finally:
+            self._depth -= 1
+
+    topNode = None
+    def visitProgram(self, ctx):
+        items = []
+        for item_ctx in ctx.topLevelItem():
+            result = self.visit(item_ctx)
+            items.append(result)
+        return Program(items)
+
+    def visitTopLevelDef(self, ctx):
+        if ctx.functionDef():
+            return self.visit(ctx.functionDef())
+        elif ctx.structDef():
+            return self.visit(ctx.structDef())
+        elif ctx.interfaceDef():
+            return self.visit(ctx.interfaceDef())
+        elif ctx.topLevelVarDef():
+            return self.visit(ctx.topLevelVarDef())
+
+    def visitTopLevelVarDef(self, ctx):
+        visibility = (self.visit(ctx.visibility()) if ctx.visibility() else None)
+        def_kind = (ctx.defKind().getText() if ctx.defKind() else None)
+        name = ctx.Identifier().getText()
+        value = self.visit(ctx.expression())
+        if ctx.COLON():
+            type_expr = self.visit(ctx.typeExpr())
+            fields = None
+        else:
+            type_expr = None
+
+            fields = []
+            for fld_ctx in ctx.varDefField():
+                fld_visibility = (self.visit(fld_ctx.visibility()) if fld_ctx.visibility() else None)
+                fld_name = fld_ctx.Identifier().getText()
+                fld_type = self.visit(fld_ctx.typeExpr())
+                fields.append(VarDefField(fld_name, fld_type, fld_visibility))
+
+        node = TopLevelVarDef(
+            name=name, fields=fields, type=type_expr, initial_val=value,
+            def_kind=def_kind, visibility=visibility)
+
+        return node
+
+    def visitTopLevelItem(self, ctx):
+        for child in ctx.getChildren():
+            result = self.visit(child)
+            if result is not None:
+                return result
+        print("Unrecognized topLevelItem:", ctx.getText())
+        return None
+
+    def visitInterfaceDef(self, ctx):
+        name = ctx.Identifier().getText()
+        functions = []
+        for func_ctx in ctx.functionDef():
+            func = self.visit(func_ctx)
+            if func is not None:
+                functions.append(func)
+            else:
+                print("Warning: Skipped a null functionDef during interface visit.")
+        return InterfaceDef(name, functions)
+
+    def visitTypeAlias(self, ctx):
+        visibility = ctx.visibility().getText() if ctx.visibility() else None
+        name = ctx.Identifier().getText()
+        type = self.visit(ctx.typeExpr())
+        return TypeAliasDecl(name=name, type=type, visibility=visibility)
+
+    def visitFunctionDef(self, ctx):
+        name = ctx.Identifier().getText()
+        params = self.visit(ctx.paramList()) if ctx.paramList() else []
+        return_type = self.visit(ctx.typeExpr()) if ctx.typeExpr() else None
+        body = self.visit(ctx.block())
+        unsafe = False
+        if ctx.unsafeModifier():
+            unsafe = True
+        return FunctionDef(identifier=name, params=params, return_type=return_type, body=body, isUnsafe=unsafe)
+
+    def visitParam(self, ctx):
+        is_mut = ctx.getChild(0).getText() == "mut"
+        identifier = ctx.Identifier().getText()
+        type_ctx = ctx.typeExpr()
+        typ = self.visit(type_ctx) if type_ctx else None
+        return Param(name=identifier, typ=typ, isMutable=is_mut)
+
+    def visitParamList(self, ctx):
+        param_list = FunctionParamList([])
+        for param_ctx in ctx.param():
+            param = self.visit(param_ctx)
+            param.set_parent(param_list)
+            param_list.params.append(param)
+        return param_list
+
+    def visitStructDef(self, ctx):
+        name = ctx.Identifier().getText()
+        fields = [self.visit(f) for f in ctx.structField()]
+        return StructDef(name=name, fields=fields)
+
+    def visitStructField(self, ctx):
+        name_token = ctx.Identifier()
+        name = name_token.getText() if name_token else "<missing>"
+        dtype = self.visit(ctx.typeExpr())
+        visibility = self.visit(ctx.visibility()) if ctx.visibility() else None
+        return StructField(name, dtype=dtype, visibility=visibility)
+
+    def visitStructLiteral(self, ctx):
+        type_name = ctx.Identifier().getText()
+        fields = [self.visit(field_ctx) for field_ctx in ctx.structLiteralField()]
+        return StructDef(name=type_name, fields=fields)
+
+    def visitStructLiteralField(self, ctx):
+        field_name = ctx.Identifier().getText()
+        value = self.visit(ctx.expression()) if ctx.expression() else None
+        return StructLiteralField(field_name, value)
+
+    def visitAttributes(self, ctx):
+        return [self.visit(inner) for inner in ctx.innerAttribute()]
+
+    def visitInnerAttribute(self, ctx):
+        return self.visit(ctx.attribute())
+
+    def visitAttribute(self, ctx):
+        name = ctx.Identifier().getText()
+        if ctx.attrValue():
+            value = self.visit(ctx.attrValue())
+            return Attribute(name=name, args=value)
+        elif ctx.attrArgs():
+            args = self.visit(ctx.attrArgs())
+            return Attribute(name=name, args=args)
+        else:
+            return Attribute(name=name)
+
+    def visitAttrArgs(self, ctx):
+        return [self.visit(arg) for arg in ctx.attrArg()]
+
+    def visitAttrArg(self, ctx):
+        name = ctx.Identifier().getText()
+        if ctx.attrValue():
+            value = self.visit(ctx.attrValue())
+            return (name, value)
+        else:
+            return (name, None)
+
+    def visitAttrValue(self, ctx):
+        if ctx.STRING_LITERAL():
+            return ctx.STRING_LITERAL().getText()
+        elif ctx.Number():
+            return int(ctx.Number().getText())  # or float, depending on your grammar
+        else:
+            return ctx.Identifier().getText()
+
+    def visitExternBlock(self, ctx):
+        abi = ctx.STRING_LITERAL().getText().strip('"')
+        items = [self.visit(item) for item in ctx.externItem()]
+        return ExternBlock(abi, items)
+
+    def visitExternItem(self, ctx):
+        if "type" in ctx.getChild(1).getText():
+            visibility = ctx.visibility().getText() if ctx.visibility() else None
+            name = ctx.Identifier().getText()
+            return ExternTypeDecl(name=name, visibility=visibility)
+
+        elif "static" in ctx.getChild(0).getText():
+            visibility = ctx.visibility().getText() if ctx.visibility() else None
+            mutable = ctx.getChild(1).getText() == "mut"
+            name = ctx.Identifier().getText()
+            var_type = self.visit(ctx.typeExpr())
+            return StaticVarDecl(name=name, var_type=var_type, initial_value= None, isMutable=mutable, visibility=visibility, isExtern=True)
+
+        elif ctx.LPAREN() and ctx.RPAREN() and ctx.externParams():
+            visibility = ctx.visibility().getText() if ctx.visibility() else None
+            name = ctx.Identifier().getText()
+            params = []
+
+            for param_ctx in ctx.externParams().externParam():
+                if param_ctx.typeExpr():
+                    type_node = self.visit(param_ctx.typeExpr())
+                    params.append(type_node)
+
+            return_type = self.visit(ctx.typeExpr()) if ctx.typeExpr() else None
+            return ExternFunctionDecl(name=name, params=params, return_type=return_type, visibility=visibility)
+
+        raise Exception("Unsupported externItem structure")
+
+    def visitLetStmt(self, ctx):
+        var_defs = ctx.varDef()
+        expressions = ctx.expression()
+
+        # case 1: let varDef = expression;
+        if len(var_defs) == 1 and len(expressions) == 1:
+            var_def = self.visit(var_defs[0])
+            expr = self.visit(expressions[0])
+            return LetStmt(var_def, expr)
+
+        # case 3: let (varDef, ...) = (expression, ...)
+        elif len(var_defs) > 1 and len(expressions) > 1:
+            var_defs_visited = [self.visit(vd) for vd in var_defs]
+            expressions_visited = [self.visit(ex) for ex in expressions]
+            return LetStmt(var_defs_visited, expressions_visited)
+
+        else:
+            raise NotImplementedError("Unsupported let statement structure")
+
+    def visitVarDef(self, ctx):
+        by_ref = False
+        mutable = False
+        name = None
+        var_type = None
+        name_index = 0
+
+        txt = ctx.getText()
+        tokens = [ctx.getChild(i).getText() for i in range(ctx.getChildCount())]
+
+        if str.__contains__(txt, 'ref'):
+            by_ref = True
+            name_index += 1
+        if str.__contains__(txt, 'mut'):
+            mutable = True
+            name_index += 1
+        
+        name = tokens[name_index]
+
+        if tokens[0] == 'mut':
+            mutable = True
+            name = tokens[1]
+        else:
+            name = tokens[0]
+
+        if ':' in tokens:
+            var_type = self.visit(ctx.typeExpr())
+
+        return VarDef(name=name, isMutable=mutable, by_ref=by_ref, var_type=var_type)
+
+    def visitStaticItem(self, ctx):
+        visibility = ctx.visibility().getText() if ctx.visibility() else None
+        mutable = ctx.getChild(1).getText() == "mut"
+        name = ctx.Identifier().getText()
+        var_type = self.visit(ctx.typeExpr())
+        value = self.visit(ctx.expression()) if ctx.expression() else None
+        return StaticVarDecl(
+            name=name,
+            var_type=var_type,
+            isMutable=mutable,
+            visibility=visibility,
+            initial_value=value,
+            isExtern=True)
+
+    def visitIfStmt(self, ctx):
+        condition = self.visit(ctx.expression(0))
+        then_branch = self.visit(ctx.block(0))
+        n_expr = len(ctx.expression())
+        n_blocks = len(ctx.block())
+        else_branch = None
+
+        if n_blocks > n_expr:
+            else_branch = self.visit(ctx.block(n_blocks - 1))
+
+        for i in reversed(range(1, n_expr)):
+            elseif_condition = self.visit(ctx.expression(i))
+            elseif_then = self.visit(ctx.block(i))
+            else_branch = IfStmt(condition=elseif_condition, then_branch=elseif_then, else_branch=else_branch)
+        return IfStmt(condition=condition, then_branch=then_branch, else_branch=else_branch)
+
+    def visitAssignStmt(self, ctx):
+        value_expr = self.visit(ctx.expression(1))
+        target_expr = self.visit(ctx.expression(0))
+        return AssignStmt(target=target_expr, value=value_expr)
+
+    def visitForStmt(self, ctx):
+        var_name = ctx.Identifier().getText()
+        iterable_expr = self.visit(ctx.expression())
+        body = self.visit(ctx.block())
+        return ForStmt(var=var_name, iterable=iterable_expr, body=body)
+
+    def visitBlock(self, ctx):
+        stmts = []
+        isUnsafe = False
+        if ctx.unsafeModifier():
+            isUnsafe = True
+        for stmt_ctx in ctx.statement():
+            result = self.visit(stmt_ctx)
+            stmts.append(result)
+        return Block(stmts=stmts, is_unsafe=isUnsafe)
+
+    def visitExprStmt(self, ctx):
+        expr = self.visit(ctx.primaryExpression())
+        return Statement(body=expr)
+
+    def visitFunctionCall(self, ctx):
+        a = ctx.expression()
+        if isinstance(ctx.expression(), list) and len(ctx.expression()) > 1:
+            func_name = self.visit(ctx.expression(len(ctx.expression())-1))
+            caller = self.visit(ctx.expression(0))
+        else:
+            func_name = self.visit(ctx.expression(0))
+            caller = None
+        postfix = ctx.callExpressionPostFix()
+        if postfix.functionCallArgs():
+            args_ctx = postfix.functionCallArgs().expression()
+            args = [self.visit(arg) for arg in args_ctx]
+        else:
+            args = []
+        return FunctionCallExpression(caller=caller, callee=func_name, args=args)
+
+    def visitStatement(self, ctx):
+        if ctx.block():
+            return self.visit(ctx.block())
+        if ctx.letStmt():
+            return self.visit(ctx.letStmt())
+        elif ctx.ifStmt():
+            return self.visit(ctx.ifStmt())
+        elif ctx.functionCall():
+            return self.visit(ctx.functionCall())
+        elif ctx.structLiteral():
+            return self.visit(ctx.structLiteral())
+        elif ctx.assignStmt():
+            return self.visit(ctx.assignStmt())
+        elif ctx.forStmt():
+            return self.visit(ctx.forStmt())
+        elif ctx.staticVarDecl():
+            return self.visit(ctx.staticVarDecl())
+        elif ctx.whileStmt():
+            return self.visit(ctx.whileStmt())
+        elif ctx.matchStmt():
+            return self.visit(ctx.matchStmt())
+        elif ctx.compoundAssignment():
+            return self.visit(ctx.compoundAssignment())
+        elif ctx.returnStmt():
+            return self.visit(ctx.returnStmt())
+        elif ctx.loopStmt():
+            return self.visit(ctx.loopStmt())
+        elif ctx.getText() == "break;":
+            return BreakStmt()
+        elif ctx.getText() == "continue;":
+            return ContinueStmt()
+        elif ctx.exprStmt():
+            return self.visit(ctx.exprStmt())
+        elif ctx.structDef():
+            return self.visit(ctx.structDef())
+        elif ctx.conditionalAssignmentStmt():
+            return self.visit(ctx.conditionalAssignmentStmt())
+        elif ctx.block():
+            return self.visitBlock(ctx.block())
+        elif ctx.block():
+            return self.visitBlock(ctx.block())
+        else:
+            print("⚠️ Unknown statement:", ctx.getText())
+            return None
+
+    def visitConditionalAssignmentStmt(self, ctx):
+        cond = self.visit(ctx.block())
+        if ctx.safeWrapper():
+            left = self.visit(ctx.safeWrapper())
+        if ctx.safeWrapper():
+            left = self.visit(ctx.safeWrapper())
+            right = self.visit(ctx.expression(0))
+        else:
+            left = self.visit(ctx.expression(0))
+            right = self.visit(ctx.expression(1))
+        return ConditionalAssignmentStmt(cond=cond, body=AssignStmt(target=left, value=right))
+
+    def visitLoopStmt(self, ctx):
+        block = self.visit(ctx.block())
+        return LoopStmt(body=block)
+
+    def visitReturnStmt(self, ctx):
+        if ctx.getChildCount() == 3:
+            expr = self.visit(ctx.expression())
+
+            if expr is not None:
+                return ReturnStmt(expr)
+            else:
+                stmt = self.visit(ctx.statement())
+                return ReturnStmt(stmt)
+        elif ctx.getChildCount() == 2:
+            return ReturnStmt()
+        elif ctx.Identifier():
+            label_name = ctx.Identifier().getText()
+            return label_name
+        else:
+            raise Exception("Unrecognized return statement")
+
+    def visitStaticVarDecl(self, ctx):
+        visibility = ctx.visibility().getText() if ctx.visibility() else None
+        mutable = ctx.MUT() is not None
+        name = ctx.Identifier(0).getText()
+
+        # type
+        var_type = None
+        if ctx.typeExpr():
+            var_type = self.visit(ctx.typeExpr())
+        else:
+            # fallback simple identifier case (like "State")
+            id2 = ctx.Identifier(1).getText()
+            var_type = self._basic_type_from_str(id2)
+
+        # initializer
+        init = self.visit(ctx.initializer())
+
+        return StaticVarDecl(
+            name=name,
+            var_type=var_type,
+            initial_value=init,
+            isMutable=mutable,
+            visibility=visibility,
+        )
+
+    binary_operators = {'==', '!=', '<', '>', '<=', '>=', '+', '-', '*', '/', '%', '&&', '||'}
+
+    def visitExpression(self, ctx):
+        if ctx.primaryExpression() and len(ctx.children) == 1:
+            return self.visit(ctx.primaryExpression())
+        
+        elif ctx.fieldAccessPostFix():
+            base = self.visit(ctx.getChild(0))
+            postfix = self.visitPrimaryExpression(ctx.fieldAccessPostFix().primaryExpression())
+            return FieldAccessExpr(base, postfix)
+
+        elif ctx.MUT():
+            expr = self.visit(ctx.expression(0))
+            return Expression(expression=expr)
+        
+        elif ctx.unaryOpes():
+            op = ctx.unaryOpes().getText()
+            expr = self.visit(ctx.expression(0))
+            return UnaryExpr(op, expr)
+
+        elif ctx.binaryOps():
+            op = ctx.binaryOps().getText()
+            left = self.visit(ctx.expression(0))
+            right = self.visit(ctx.expression(1))
+            return BinaryExpression(op=op, left=left, right=right)
+
+        elif ctx.rangeSymbol():
+            left = self.visit(ctx.expression(0))
+            op = ctx.rangeSymbol().getText()
+            right = self.visit(ctx.expression(1))
+            return RangeExpression(left, right)
+
+        elif ctx.compoundOps():
+            left = self.visit(ctx.expression(0))
+            op = ctx.compoundOps().getText()
+            right = self.visit(ctx.expression(1))
+            return BinaryExpression(op, left, right)
+
+        elif ctx.basicTypeCastExpr():
+            basicType = self.visit(ctx.basicTypeCastExpr().typeExpr())
+            typePath = self.visit(ctx.basicTypeCastExpr().typePath())
+            return CastExpression(dtype=basicType, typePath=typePath)
+
+        elif ctx.castExpressionPostFix():
+            expr = self.visit(ctx.expression(0))
+            cast = self.visit(ctx.castExpressionPostFix())
+            return CastExpression(expression=expr, dtype=cast)
+
+        # Add caller and callee
+        elif ctx.callExpressionPostFix():
+            func = self.visit(ctx.expression(0))
+            args = self.visit(ctx.callExpressionPostFix())
+            return FunctionCallExpression(callee=func, args=args, caller=id)
+
+        elif ctx.parenExpression():
+            return self.visit(ctx.parenExpression().expression())
+
+        elif ctx.structFieldDec():
+            return self.visit(ctx.structFieldDec())
+
+        elif ctx.borrowExpression():
+            return self.visit(ctx.borrowExpression())
+
+        elif ctx.dereferenceExpression():
+            return self.visit(ctx.dereferenceExpression())
+
+        elif ctx.expressionBlock():
+            return self.visit(ctx.expressionBlock())
+
+        elif ctx.typePathExpression():
+            typePath = self.visit(ctx.typePathExpression())
+            identifier = self.visit(ctx.expression(0))
+            return TypePathExpression(type_path=typePath, last_type=identifier)
+
+        elif ctx.patternPrefix():
+            value_expr = self.visit(ctx.expression(0))
+            pattern_ctx = ctx.patternPrefix().pattern()
+            pattern_node = self.visit(pattern_ctx)
+            return PatternExpr(value_expr, pattern_node)
+
+        elif ctx.arrayDeclaration():
+            return self.visit(ctx.arrayDeclaration())
+
+        elif ctx.structLiteral():
+            return self.visit(ctx.structLiteral())
+
+        elif ctx.qualifiedExpression():
+            return self.visit(ctx.qualifiedExpression())
+
+        elif ctx.typeExpr():
+            expr = self.visit(ctx.expression(0))
+            typeAccess = self.visit(ctx.typeExpr())
+            return Expression(expression=expr, dtype=typeAccess)
+
+        elif ctx.unsafeModifier():
+            expr = self.visit(ctx.unsafeExpression().expression())
+            return Expression(expression=expr, is_unsafe=True)
+
+        elif ctx.safeWrapper():
+            return self.visit(ctx.safeWrapper())
+        
+        elif ctx.arrayAccess():
+            return self.visit(ctx.arrayAccess())
+
+        raise Exception(f"Unrecognized expression structure: {ctx.getText()}")
+
+    def visitSafeWrapper(self, ctx):
+        expr = self.visit(ctx.expression())
+        return SafeWrapper(expression=expr)
+
+    def visitSafeNonNullWrapper(self, ctx):
+        typeExpr = self.visit(ctx.typeExpr())
+        return SafeNonNullWrapper(typeExpr=typeExpr)
+
+    def visitQualifiedExpression(self, ctx: RustParser.QualifiedExpressionContext):
+        expr = self.visit(ctx.expression())
+        return QualifiedExpression(expr)
+
+    def visitArrayDeclaration(self, ctx):
+        identifier = ctx.Identifier().getText()
+        force = ctx.getChild(1).getText() == "!" if ctx.getChildCount() > 1 else False
+        size = int(ctx.Number().getText())
+        value_expr = self.visit(ctx.expression())
+
+        return ArrayDeclaration(
+            identifier=identifier,
+            force=force,
+            size=size,
+            value=value_expr)
+
+    def visitCallExpressionPostFix(self, ctx):
+        args_ctx = ctx.functionCallArgs()
+        if args_ctx is None:
+            return []
+        args = []
+        for expr in args_ctx.expression():
+            args.append(self.visit(expr))
+
+        return args
+
+    # TODO: Problematic
+    def visitTypePathExpression(self, ctx):
+        type_str = ctx.getText()
+        return TypePathExpression(type_path=type_str.split("::") , last_type=type_str.split("::")[-1])
+
+    def visitPrimaryExpression(self, ctx: RustParser.PrimaryExpressionContext):
+        if isinstance(ctx, list):
+            if len(ctx) != 1:
+                raise Exception(f"Expected exactly one primaryExpression, got: {len(ctx)} in {ctx}")
+            ctx = ctx[0]
+        if ctx.literal():
+            return self.visit(ctx.literal())
+        elif ctx.Identifier():
+            return IdentifierExpression(ctx.Identifier().getText())
+        else:
+            raise Exception(f"Unknown primary expression: {ctx.getText()}")
+
+    def visitGenericArgs(self, ctx):
+        print("generic arg call")
+        return [self.visit(ty) for ty in ctx.dtype()]
+
+    def visitDereferenceExpression(self, ctx):
+        target_expr = self.visit(ctx.expression())
+        return DereferenceExpr(target_expr)
+
+    def visitBorrowExpression(self, ctx):
+        txt = ctx.getText()
+        mutable = str.__contains__(txt, "mut")
+        expr_index = 1 if mutable else 0
+        expr = self.visit(ctx.getChild(expr_index))
+        return BorrowExpr(expression=expr, is_mutable=mutable)
+
+    def visitCastExpr(self, node):
+        expr = self.visit(node.expression)
+        target_type = self.visit(node.dtype)
+        return CastExpression(expression=expr, dtype=target_type)
+
+    def visitTypeExpr(self, ctx):
+        type_str = ctx.getText()
+        if ctx.basicType():
+            return self.visit(ctx.basicType())
+
+        elif type_str.startswith('[') and ';' in type_str and type_str.endswith(']'):
+            inner_type_str, size_str = type_str[1:-1].split(';')
+            inner_type = self._basic_type_from_str(inner_type_str.strip())
+            size = int(size_str.strip())
+            return ArrayType(inner_type, size)
+
+        elif type_str.startswith('[') and type_str.endswith(']'):
+            inner_type_str = type_str[1:-1]
+            inner_type = self._basic_type_from_str(inner_type_str.strip())
+            return ArrayType(inner_type, None)
+
+        elif ctx.pointerType():
+            return self.visit(ctx.pointerType())
+        elif str.__eq__(type_str,"i32"):
+            return IntType()
+        elif str.__eq__(type_str,"String"):
+            return StringType()
+        else:
+            return type_str
+
+    def visitBasicType(self, ctx):
+        type_str = ctx.getText()
+        if ctx.safeNonNullWrapper():
+            return self.visit(ctx.safeNonNullWrapper())
+        elif ctx.typePath():
+            type_str = ctx.typePath().getText()
+            return TypePathExpression(type_path=type_str.split("::") , last_type=type_str.split("::")[-1])
+        else:
+            return type_str
+
+    def visitPointerType(self, ctx):
+        mut_token = ctx.getChild(1).getText()
+        mutable = (mut_token == "mut")
+        pointee_type_ctxs = ctx.typeExpr()
+        if isinstance(pointee_type_ctxs, list) :
+            pointee_type = self.visit(pointee_type_ctxs[0]) if pointee_type_ctxs else None
+        else:
+            pointee_type = self.visit(pointee_type_ctxs) if pointee_type_ctxs else None
+
+        return PointerType(mutable, pointee_type)
+
+    def visitPathType(self, ctx):
+        return self.visit(ctx.path())
+
+    def visitPath(self, ctx):
+        segments = [seg.getText() for seg in ctx.pathSegment()]
+        return PathType(segments=segments)
+
+    def visitLiteral(self, ctx):
+        if ctx.arrayLiteral():
+            return self.visit(ctx.arrayLiteral())
+        elif ctx.booleanLiteral():
+            return BoolLiteral(value=self.visit(ctx.booleanLiteral()))
+        elif ctx.HexNumber():
+            return int(ctx.HexNumber().getText(), 16)
+        elif ctx.Number():
+            return IntLiteral(value=int(ctx.Number().getText()))
+        elif ctx.SignedNumber():
+            return IntLiteral(int(ctx.SignedNumber().getText()))
+        elif ctx.BYTE_STRING_LITERAL():
+            text = ctx.BYTE_STRING_LITERAL().getText()
+            return bytes(text[2:-1], "utf-8")
+        elif ctx.Binary():
+            return int(ctx.Binary().getText(), 2)
+        elif ctx.STRING_LITERAL():
+            return StrLiteral(ctx.STRING_LITERAL().getText()[1:-1])
+        elif ctx.CHAR_LITERAL():
+            return CharLiteral(ctx.CHAR_LITERAL().getText()[1:-1])
+        elif ctx.byteLiteral():
+            return ByteLiteralExpression(expression=ctx.getText()[2:-1])
+        elif ctx.NONE():
+            return None
+        else:
+            raise ValueError("Unknown literal type")
+
+    def visitParenExpr(self, ctx):
+        inner_expr = ctx.expression()
+        result = self.visit(inner_expr)
+        return result
+
+    def visitArrayLiteral(self, ctx):
+        name = ""
+        if ctx.Identifier():
+            name = ctx.Identifier().getText()
+            if ctx.expression(0):
+                index_exprs = [self.visit(ctx.expression(0))]
+                if ctx.expression(1):
+                    index_exprs += [self.visit(expr) for expr in ctx.expression()[1:]]
+                return ArrayLiteral(
+                    name=IdentifierExpression(name=name),
+                    elements=index_exprs)
+        
+        element_exprs = [self.visit(expr) for expr in ctx.expression()]
+        return ArrayLiteral(name=name, elements=element_exprs)
+
+    def visitWhileStmt(self, ctx):
+        condition = self.visit(ctx.expression())
+        body = [self.visit(stmt) for stmt in ctx.block().statement()]
+        body_block = Block(stmts=body, is_unsafe=False)
+        return WhileStmt(condition=condition, body=body_block)
+
+    def visitMatchStmt(self, ctx):
+        expr = self.visit(ctx.expression())
+        arms = [self.visit(arm_ctx) for arm_ctx in ctx.matchArm()]
+        return MatchStmt(expr=expr, arms=arms)
+
+    def visitMatchArm(self, ctx):
+        patterns = [self.visit(pat_ctx) for pat_ctx in ctx.matchPattern()]
+        body = self.visit(ctx.block())
+        return MatchArm(patterns=patterns, body=body)
+
+    def visitMatchPattern(self, ctx):
+        if ctx.Number():
+            return MatchPattern(IntLiteral(value=int(ctx.Number().getText())))
+        elif ctx.UNDERSCORE():
+            return MatchPattern('_')
+        elif ctx.Identifier():
+            return MatchPattern(IdentifierExpression(name=ctx.Identifier().getText()))
+        elif ctx.byteLiteral():
+            return ByteLiteralExpression(expression=ctx.getText()[2:-1])
+        else:
+            raise ValueError("Unknown matchPattern type")
+
+    def visitCompoundAssignment(self, ctx):
+        lhs_ctx = ctx.expression(0)
+        rhs_ctx = ctx.expression(1)
+        target = self.visit(lhs_ctx)
+        value = self.visit(rhs_ctx)
+        op = ctx.compoundOp().getText()
+        return CompoundAssignment(
+            target=target, op=op, value=value)
+
+    def visitUseDecl(self, ctx):
+        paths = [self.visit(tp) for tp in ctx.typePath()]
+        identifiers = ctx.Identifier()
+        aliases = [id_.getText() for id_ in identifiers] if identifiers else [None] * len(paths)
+
+        while len(aliases) < len(paths):
+            aliases.append(None)
+
+        return UseDecl(paths, aliases)
+    
+    def visitArrayAccess(self, ctx):
+        index = self.visit(ctx.expression())
+        name_token = ctx.Identifier()  # This returns a list of terminal nodes
+        if isinstance(name_token, list):
+            name_token = name_token[0]
+        name = IdentifierExpression(name=name_token.getText()) # get the string name
+        return ArrayAccess(name=name, expression=index)
+
+def setParents(node, parent=None, top_level_prog=None):
+    if not isinstance(node, ASTNode):
+        return
+
+    if isinstance(node, Program):
+        top_level_prog = node
+
+    if isinstance(node, FunctionDef) and isinstance(parent, InterfaceDef):
+        node.parent = parent
+    elif isinstance(node, TopLevel) and top_level_prog:
+        node.parent = top_level_prog
+    elif parent is not None:
+        node.parent = parent
+
+    for attr, value in vars(node).items():
+        if attr == "parent":
+            continue
+
+        if isinstance(value, list):
+            for item in value:
+                setParents(item, node, top_level_prog)
+        elif isinstance(value, ASTNode):
+            setParents(value, node, top_level_prog)
