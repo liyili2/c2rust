@@ -638,15 +638,6 @@ class RustListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by RustParser#binaryExpression.
-    def enterBinaryExpression(self, ctx:RustParser.BinaryExpressionContext):
-        pass
-
-    # Exit a parse tree produced by RustParser#binaryExpression.
-    def exitBinaryExpression(self, ctx:RustParser.BinaryExpressionContext):
-        pass
-
-
     # Enter a parse tree produced by RustParser#structFieldDec.
     def enterStructFieldDec(self, ctx:RustParser.StructFieldDecContext):
         pass

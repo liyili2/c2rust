@@ -19,7 +19,7 @@ class VoidType:
     def accept(self, visitor):
         return super().accept(visitor)
 
-class BoolType:
+class BoolType(Type):
     def __init__(self):
         super().__init__()
 

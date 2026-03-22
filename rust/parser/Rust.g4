@@ -158,7 +158,6 @@ compoundOps: '+=' | '-=' | '*=' | '/=' | '%=' | '&=' | '|=' | '^=';
 rangeSymbol: '..';
 
 binaryOps: '*' | '/' | '%' | '+' | '-' | '==' | '!=' | '>' | '<' | '||' | '&&' | '>>' | '&' | '>=' | '<=';
-binaryExpression: expression binaryOps expression ;
 structFieldDec: Identifier '{' structLiteralField (',' structLiteralField)* ','? '}' ;
 MUT: 'mut';
 unaryOpes: '!' | '+' | '-';

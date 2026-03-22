@@ -82,7 +82,7 @@ class RustASTPrinter(RustASTVisitor):
             result += f" else {self.visit(node.else_branch)}"
         return result
 
-    def visitBinaryExpr(self, node):
+    def visitBinaryExpression(self, node):
         left = self.visit(node.left)
         right = self.visit(node.right)
         return f"({left} {node.op} {right})"

@@ -1,6 +1,6 @@
 from types import NoneType
 from rust.ast.Block import *
-from rust.ast.Expression import FunctionCallExpression as FunctionCallExpr
+from rust.ast.Expression import FunctionCallExpression
 from rust.ast.TopLevel import *
 from rust.ast.utils import *
 
@@ -338,18 +338,18 @@ class TypeChecker:
     def visit_ContinueStmt(self, node):
         pass
 
-    def visit_BinaryExpr(self, node):
-        left = self.visit(node.left)
-        right = self.visit(node.right)
-        op = node.op
+    def visitBinaryExpression(self, node: BinaryExpression):
+        left = self.visit(node.left())
+        right = self.visit(node.right())
+        op = node.op()
 
-        if isinstance(node.left, PointerType) or isinstance(node.left, DereferenceExpr):
+        if isinstance(node.left(), PointerType) or isinstance(node.left(), DereferenceExpr):
             self.error(node, "usage of raw pointers in a binary expression's left operand")
-        if isinstance(node.right, PointerType) or isinstance(node.right, DereferenceExpr):
+        if isinstance(node.right(), PointerType) or isinstance(node.right(), DereferenceExpr):
             self.error(node, "usage of raw pointers in a binary expression's right operand")
 
         # print("visit_BinaryExpr", node.op, node.left, node.right)
-        if isinstance(node.left, FunctionCallExpr) or isinstance(node.right, FunctionCallExpr):
+        if isinstance(node.left(), FunctionCallExpression) or isinstance(node.right(), FunctionCallExpression):
             return
 
         if op in ['+', '-', '*', '/', '>>', '<<']:
@@ -412,7 +412,7 @@ class TypeChecker:
         # Check mutability
         if isinstance(node.target, IdentifierExpression):
             try:
-                target_info = self.env.lookup(node.target.name)
+                target_info = self.env.lookup(node.target.name())
             except Exception:
                 # self.error(node, "usage of undefined variable in compound assignment")
                 return
@@ -435,7 +435,7 @@ class TypeChecker:
     def _handle_borrowing(self, var_def, value_expr):
         if isinstance(value_expr, IdentifierExpression):
             try:
-                value_info = self.env.lookup(value_expr.name)
+                value_info = self.env.lookup(value_expr.name())
             except Exception:
                 # self.error(self, f"undefined variable: {value_expr.name}")
                 return
@@ -447,7 +447,7 @@ class TypeChecker:
                 #     self.error(self, f"usage of a variable which ownership was moved: {value_expr.name}", 2)
                 value_info["owned"] = False
 
-        elif isinstance(value_expr, BorrowExpr):
+        elif isinstance(value_expr, BorrowExpression):
             try:
                 value_info = self.env.lookup(value_expr.name)
             except Exception:
@@ -463,7 +463,7 @@ class TypeChecker:
 
     def get_expr_identifier(self,expr):
         if isinstance(expr, IdentifierExpression):
-            return expr.name
+            return expr.name()
         elif isinstance(expr, DereferenceExpr):
             return self.get_expr_identifier(expr.expr)
         elif isinstance(expr, FieldAccessExpr):
@@ -492,26 +492,26 @@ class TypeChecker:
         target_type = self.visit(node.target)
 
         value_type = self.visit(node.value)
-        if type(info["type"]) != type(value_type) and not isinstance(node.value, FunctionCallExpr) and not isinstance(node.target, FieldAccessExpr) and type(value_type) != NoneType:
+        if type(info["type"]) != type(value_type) and not isinstance(node.value, FunctionCallExpression) and not isinstance(node.target, FieldAccessExpr) and type(value_type) != NoneType:
             if info["type"] != value_type:
                 pass
                 # self.error(node, f"type mismatch in assignemnt {self.get_expr_identifier(node.target)} = {self.get_expr_identifier(node.value)}")
 
         if isinstance(node.value, IdentifierExpression):
             try:
-                value_info = self.env.lookup(node.value.name)
+                value_info = self.env.lookup(node.value.name())
             except Exception:
                 # self.error(node, f"undefined variable in assignment value : {self.get_expr_identifier(node.target)} = {self.get_expr_identifier(node.value)}")
                 value_info = None
 
             #TODO: Check it better
-            if ( value_type is IntType) or ( value_type is BoolType) or ( value_type is CharType):
+            if (value_type is IntType) or (value_type is BoolType) or (value_type is CharType):
                 if value_info:
                     if not value_info["owned"]:
                         self.error(node, f"assigning a not-owned variable to target : {self.get_expr_identifier(node.target)} = {self.get_expr_identifier(node.value)}", 2)
                     value_info["owned"] = False
 
-        if isinstance(node.value, BorrowExpr):
+        if isinstance(node.value, BorrowExpression):
             try:
                 value_info = self.env.lookup(node.value.name)
             except Exception:
@@ -570,20 +570,13 @@ class TypeChecker:
             for arg in node.args:
                 if isinstance(arg, IdentifierExpression):
                     try:
-                        info = self.env.lookup(arg.name)
-                    except Exception:
-                        # self.error(arg.name, f"undefined arg in {node.func}")
-                        continue
-            for arg in node.args:
-                if isinstance(arg, IdentifierExpression):
-                    try:
-                        info = self.env.lookup(arg.name)
+                        info = self.env.lookup(arg.name())
                     except Exception:
                         # self.error(arg.name, f"undefined arg in {node.func}")
                         continue
 
                     if not info["owned"] or info["borrowed"]:
-                        self.error(arg.name, f"no owners found for the argument {arg.name} in {node.callee}")
+                        self.error(arg.name(), f"no owners found for the argument {arg.name()} in {node.callee}")
 
                     info["borrowed"] = True
 
@@ -601,7 +594,7 @@ class TypeChecker:
 
             for arg in node.args:
                 if isinstance(arg, IdentifierExpression):
-                    info = self.env.lookup(arg.name)
+                    info = self.env.lookup(arg.name())
                     info["borrowed"] = False
                     info["owned"] = False
 
@@ -648,7 +641,7 @@ class TypeChecker:
         if isinstance(node, IntLiteral) or isinstance(node, int):
             return True
         if isinstance(node, BinaryExpression):
-            return self.is_compile_time_constant(node.left) and self.is_compile_time_constant(node.right)
+            return self.is_compile_time_constant(node.left()) and self.is_compile_time_constant(node.right())
         return False
 
     def visit_MatchPattern(self, node):
@@ -736,18 +729,18 @@ class TypeChecker:
         for arg in node.args:
             if isinstance(arg, IdentifierExpression):
                 try:
-                    info = self.env.lookup(arg.name)
+                    info = self.env.lookup(arg.name())
                 except Exception:
                     # self.error(node, f"undefined argument {arg.name}")
                     continue
                 if not info["owned"] or info["borrowed"]:
-                    self.error(node, f"no owners found for the argument {arg.name}")
+                    self.error(node, f"no owners found for the argument {arg.name()}")
                 info["borrowed"] = True
 
         for arg in node.args:
             if isinstance(arg, IdentifierExpression):
                 try:
-                    info = self.env.lookup(arg.name)
+                    info = self.env.lookup(arg.name())
                     info["borrowed"] = False
                 except Exception:
                     # self.error(node, f"undefined argument {arg.name}")
@@ -759,7 +752,7 @@ class TypeChecker:
         field = node.name.name
 
         if isinstance(node.receiver, FunctionCallExpression):
-            base_type = self.visit(node.receiver.callee)
+            base_type = self.visit(node.receiver.callee())
             try:
                 base_info = self.env.lookup(base_type)
                 base_type = base_info["type"]
@@ -825,7 +818,7 @@ class TypeChecker:
         if isinstance(node.last_type, IdentifierExpression):
             return node.last_type
         if isinstance(node.last_type, FunctionCallExpression):
-            return node.last_type.callee
+            return node.last_type.callee()
         if isinstance(node.last_type, SafeNonNullWrapper):
             return self.visit(node.dtype)
         if str.__contains__(node.last_type, "int"):

@@ -80,17 +80,17 @@ class Simulator(RustProgramVisitor):
 
     def find_stack_key(self, target):
         if isinstance(target, IdentifierExpression):
-            return target.name
+            return target.name()
         if isinstance(target.expression, IdentifierExpression):
-            return target.expression.name
+            return target.expression.name()
         if isinstance(target, FieldAccessExpr):
             return self.find_stack_key(target.receiver)
         if isinstance(target, DereferenceExpr):
             return self.find_stack_key(target=target.expr)
-        if isinstance(target, BorrowExpr):
+        if isinstance(target, BorrowExpression):
             return self.find_stack_key(target=target.expr)
         if isinstance(target, FunctionCallExpression):
-            return self.find_stack_key(target.caller)
+            return self.find_stack_key(target.caller())
 
     def visit_Assignment(self, node: AssignStmt):
         newStack = copy.deepcopy(self.stack)
@@ -132,36 +132,40 @@ class Simulator(RustProgramVisitor):
         except ReturnSignal as ret:
             raise ret
 
-    def visit_FunctionCall(self, node: FunctionCallExpression):
-        if node.caller is None and isinstance(node.callee, IdentifierExpression):
-            if str.__contains__(node.callee.name, "print"):
+    def visitFunctionCall(self, node: FunctionCallExpression):
+        callee = node.callee()
+        args = node.args()
+        caller = node.caller()
+
+        if caller is None and isinstance(callee, IdentifierExpression):
+            if "print" in callee.name():
                 return None
 
-        if isinstance(node.caller, type(len)):
-            if isinstance(node.callee, IdentifierExpression):
-                node.caller = None
-            elif isinstance(node.callee, FieldAccessExpr):
-                node.caller = node.callee.receiver
-            
-        if isinstance(node.callee, IdentifierExpression):
-            node.callee = node.callee.name
-        elif isinstance(node.callee, FieldAccessExpr):
-            node.callee = node.callee.name.name
+        if isinstance(caller, type(len)):
+            if isinstance(callee, IdentifierExpression):
+                caller = None
+            elif isinstance(callee, FieldAccessExpr):
+                caller = callee.receiver
 
-        if node.callee in self.lib_funcs:
-            func = self.libMap.get(node.callee)
+        if isinstance(callee, IdentifierExpression):
+            callee = callee.name()
+        elif isinstance(callee, FieldAccessExpr):
+            callee = callee.name.name
+
+        if callee in self.lib_funcs:
+            func = self.libMap.get(callee)
             if func is not None:
-                return func(caller=node.caller, visitor=self, args=node.args)
+                return func(caller=caller, visitor=self, args=args)
 
-        origFunc = self.funMap.get(node.callee)
+        origFunc = self.funMap.get(callee)
         newNode = copy.deepcopy(origFunc)
         if newNode is None:
-            newNode = self.funMap.get(node.callee)
+            newNode = self.funMap.get(callee)
         # self.stack.update({"self": node.caller})
         newStack = copy.deepcopy(self.stack)
         for i in range(0, len(newNode.params)):
             arVar = newNode.params.params[i].declarationInfo.name
-            value = node.args[i].accept(self)
+            value = args[i].accept(self)
             newStack.update({arVar : value})
         oldStack = self.stack
         self.stack = newStack
@@ -170,8 +174,8 @@ class Simulator(RustProgramVisitor):
         except ReturnSignal as ret:
             self.stack = oldStack
             if isinstance(ret.value, IdentifierExpression):
-                ret.value = self.stack.get(ret.value.name)
-                self.stack.update({ret.value.name: ret.value})
+                ret.value = self.stack.get(ret.value.name())
+                self.stack.update({ret.value.name(): ret.value})
             return ret.value
 
         self.stack = oldStack
@@ -282,7 +286,7 @@ class Simulator(RustProgramVisitor):
     #     return
 
     def visit_Expression(self, node: Expression):
-        if isinstance(node, BorrowExpr):
+        if isinstance(node, BorrowExpression):
             return node.expr.accept(self)
 
     def visit_FieldAccessExpr(self, node: FieldAccessExpr):
@@ -300,8 +304,8 @@ class Simulator(RustProgramVisitor):
     def visit_int(self, node):
         return node
 
-    def visit_ByteLiteralExpr(self, node:ByteLiteralExpression):
-        return node.expr
+    def visitByteLiteralExpression(self, node: ByteLiteralExpression):
+        return node.expression()
 
     def visit_PatternExpr(self, node: PatternExpr):
         pattern = node.pattern.accept(self)
@@ -309,7 +313,7 @@ class Simulator(RustProgramVisitor):
             return None
         return node.pattern.accept(self)
 
-    def visit_BorrowExpr(self, node: BorrowExpr):
+    def visit_BorrowExpr(self, node: BorrowExpression):
         return node.expr.accept(self)
 
     def visit_SafeWrapper(self, node: SafeWrapper):
@@ -321,7 +325,7 @@ class Simulator(RustProgramVisitor):
     def visit_IntLiteral(self, ctx: IntLiteral):
         return ctx.value
 
-    def visit_BoolLiteral(self, ctx: BoolLiteral):
+    def visit_BoolLiteral(self, ctx: BooleanLiteral):
         return ctx.value
 
     def visit_ArrayLiteral(self, node: ArrayLiteral):
@@ -359,13 +363,13 @@ class Simulator(RustProgramVisitor):
         assign_Stmt = AssignStmt(target=node.target, value=BinaryExpression(left=node.target, op=operation, right=node.value))
         assign_Stmt.accept(self)
 
-    def visit_BinaryExpr(self, node: BinaryExpression):
-        oper = str(node.op)
+    def visitBinaryExpression(self, node: BinaryExpression):
+        oper = node.op()
         # This will be very complicated.
-        a = node.left.accept(self)
+        a = node.left().accept(self)
 
-        if node.right is not None:
-            b = node.right.accept(self)
+        if node.right() is not None:
+            b = node.right().accept(self)
         else:
             b = None
         # range is more complicated due to there being an = operator. I can forget about this case for now.
@@ -414,8 +418,8 @@ class Simulator(RustProgramVisitor):
         else:
             raise Exception(f"Unsupported unary operator: {oper}")
 
-    def visit_IdentifierExpr(self, node: IdentifierExpression):
-        identifier_val = self.stack.get(node.name)
+    def visitIdentifierExpression(self, node: IdentifierExpression):
+        identifier_val = self.stack.get(node.name())
         return identifier_val
 
     def visit_CastExpr(self, node: CastExpression):
@@ -423,7 +427,7 @@ class Simulator(RustProgramVisitor):
         cast_result = node.expr.accept(self)
         print(cast_result)
         if isinstance(cast_result, FunctionCallExpression):
-            print(cast_result.caller)
+            print(cast_result.caller())
 
         return cast_result
 

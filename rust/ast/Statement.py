@@ -180,7 +180,7 @@ class FunctionCall(Statement):
         self.args = args
 
     def accept(self, visitor):
-        return visitor.visit_FunctionCall(self)
+        return visitor.visitFunctionCall(self)
 
 class Block(Statement):
     def __init__(self, stmts, isUnsafe=False):

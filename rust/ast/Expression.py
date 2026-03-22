@@ -32,7 +32,7 @@ class Expression(CloneableASTNode):
 
 class QualifiedExpression(Expression):
 
-    def __init__(self, expression: Any):
+    def __init__(self, expression: Expression):
         super().__init__(expression = expression)
 
     def accept(self, visitor: RustASTVisitor):
@@ -40,24 +40,33 @@ class QualifiedExpression(Expression):
 
 
 class IdentifierExpression(Expression):
+
     def __init__(self, name: str, dtype: Type = None):
-        super().__init__(dtype = dtype)
-        self.name = name
+        super().__init__(expression = name, dtype = dtype)
 
     def accept(self, visitor: RustASTVisitor):
-        return visitor.visitIdentifierExpr(self)
+        return visitor.visitIdentifierExpression(self)
+
+    def name(self):
+        return super().expression()
 
 
 class BinaryExpression(Expression):
 
     def __init__(self, left: Expression, op: str, right: Expression):
-        super().__init__()
-        self.left = left
-        self.op = op
-        self.right = right
+        super().__init__(expression = (left, op, right))
 
     def accept(self, visitor: RustASTVisitor):
-        return visitor.visitBinaryExpr(self)
+        return visitor.visitBinaryExpression(self)
+
+    def left(self):
+        return self.expression()[0]
+
+    def op(self):
+        return self.expression()[1]
+
+    def right(self):
+        return self.expression()[2]
 
 
 class ByteLiteralExpression(Expression):
@@ -72,41 +81,45 @@ class ByteLiteralExpression(Expression):
 class FunctionCallExpression(Expression):
 
     def __init__(self, callee: Expression, args: List[Expression], caller: Expression = None):
-        super().__init__()
-        self.caller = caller
-        self.callee = callee
-        self.args = args
+        super().__init__(expression = (callee, args, caller))
 
     def accept(self, visitor: RustASTVisitor):
         return visitor.visitFunctionCallExpression(self)
+
+    def callee(self):
+        return self.expression()[0]
+
+    def args(self):
+        return self.expression()[1]
+
+    def caller(self):
+        return self.expression()[2]
 
 
 class CastExpression(Expression):
 
     def __init__(self, dtype: Type, expression: Any = None, typePath: TypePathExpression = None):
         super().__init__(expression = expression, dtype = dtype)
-        self.expr = expression
-        self.type = dtype
         self.typePath = typePath
 
     def accept(self, visitor: RustASTVisitor):
         return visitor.visitCastExpression(self)
 
 
-class BorrowExpr(Expression):
-    def __init__(self, expression, is_mutable=False):
-        super().__init__()
-        self.expr = expression
-        self.isMutable = is_mutable
+class BorrowExpression(Expression):
 
-    def accept(self, visitor):
-        return visitor.visit_BorrowExpr(self)
+    def __init__(self, expression: Any, is_mutable : bool = False):
+        super().__init__(expression = expression, is_mutable = is_mutable)
 
-class BoolLiteral(Expression):
+    def accept(self, visitor: RustASTVisitor):
+        return visitor.visitBorrowExpression(self)
+
+
+class BooleanLiteral(Expression):
+
     def __init__(self, value: bool):
-        super().__init__()
+        super().__init__(dtype = BoolType())
         self.value = value
-        self.type = BoolType()
 
     def accept(self, visitor):
         return visitor.visit_BoolLiteral(self)
