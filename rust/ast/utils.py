@@ -77,7 +77,7 @@ def get_literal_type(self, value):
         return IntType()
     elif isinstance(value, StrLiteral):
         return StringType()
-    elif isinstance(value, BoolLiteral):
+    elif isinstance(value, BooleanLiteral):
         return BoolType()
     elif isinstance(value, ArrayLiteral):
         return ArrayType()

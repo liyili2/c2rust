@@ -1,72 +1,78 @@
-from rust.ast.ASTNode import *
+from rust.ast.Expression import QualifiedExpression, IdentifierExpression, BinaryExpression, FunctionCallExpression, \
+    BorrowExpression, ArrayLiteral, CastExpression, UnaryExpr, DereferenceExpr, ParenExpr, RangeExpression, SafeWrapper, \
+    ByteLiteralExpression
 from rust.ast.Func import FunctionParamList, Param
+from rust.ast.Program import Program
+from rust.ast.Statement import LetStmt, ForStmt, IfStmt, AssignStmt, ReturnStmt, WhileStmt, MatchStmt, MatchArm, \
+    MatchPattern, CompoundAssignment, LoopStmt, BreakStmt, ContinueStmt, TypeWrapper
+from rust.ast.Struct import StructField
 from rust.ast.TopLevel import *
 from rust.ast.Block import *
-from rust.ast.utils import *
+from rust.ast.ASTNode import ASTNode
 
 
 class RustASTVisitor:
 
-    def visit(self, ctx):
-        match ctx:
+    def visit(self, node: ASTNode):
+        match node:
             case Program():
-                return self.visitProgram(ctx)
+                return self.visitProgram(node)
             case FunctionDef():
-                return self.visitFunctionDef(ctx)
+                return self.visitFunctionDef(node)
             case FunctionParamList():
-                return self.visitFunctionParamList(ctx)
+                return self.visitFunctionParamList(node)
             case Param():
-                return self.visitParam(ctx)
+                return self.visitParam(node)
             case StructDef():
-                return self.visitStructDef(ctx)
+                return self.visitStructDef(node)
             case StructField():
-                return self.visitStructField(ctx)
+                return self.visitStructField(node)
             case LetStmt():
-                return self.visitLetStmt(ctx)
+                return self.visitLetStmt(node)
             case ForStmt():
-                return self.visitForStmt(ctx)
+                return self.visitForStmt(node)
             case IfStmt():
-                return self.visitIfStmt(ctx)
+                return self.visitIfStmt(node)
             case AssignStmt():
-                return self.visitAssignStmt(ctx)
+                return self.visitAssignStmt(node)
             case ReturnStmt():
-                return self.visitReturnStmt(ctx)
+                return self.visitReturnStmt(node)
             case WhileStmt():
-                return self.visitWhileStmt(ctx)
+                return self.visitWhileStmt(node)
             case MatchStmt():
-                return self.visitMatchStmt(ctx)
+                return self.visitMatchStmt(node)
             case MatchArm():
-                return self.visitMatchArm(ctx)
+                return self.visitMatchArm(node)
             case MatchPattern():
-                return self.visitMatchPattern(ctx)
+                return self.visitMatchPattern(node)
             case CompoundAssignment():
-                return self.visitCompoundAssignment(ctx)
+                return self.visitCompoundAssignment(node)
             # case ExpressionStmt():
             #     return self.visitExpressionStmt(ctx)
             case LoopStmt():
-                return self.visitLoopStmt(ctx)
+                return self.visitLoopStmt(node)
             case BreakStmt():
-                return self.visitBreakStmt(ctx)
+                return self.visitBreakStmt(node)
             case ContinueStmt():
-                return self.visitContinueStmt(ctx)
+                return self.visitContinueStmt(node)
             # case CallStmt():
             #     return self.visitCallStmt(ctx)
             # case UnsafeBlock():
             #     return self.visitUnsafeBlock(ctx)
             case Block():
-                return self.visitBlock(ctx)
+                return self.visitBlock(node)
             # case InitBlock():
             #     return self.visitInitBlock(ctx)
             # case MutableExpr():
             #     return self.visitMutableExpr(ctx)
             case QualifiedExpression():
-                return self.visitQualifiedExpression(ctx)
+                return self.visitQualifiedExpression(node)
             case IdentifierExpression():
-                return self.visitIdentifierExpr(ctx)
+                return self.visitIdentifierExpression(node)
             case BinaryExpression():
-                return self.visitBinaryExpr(ctx)
+                return self.visitBinaryExpression(node)
             case FunctionCallExpression():
-                return self.visitFunctionCallExpression(ctx)
+                return self.visitFunctionCallExpression(node)
             # case UnsafeExpression():
             #     return self.visitUnsafeExpression(ctx)
             # case BasicTypeCastExpr():
@@ -77,32 +83,32 @@ class RustASTVisitor:
             #     return self.visitTypeWrapperExpr(ctx)
             # case BoxWrapperExpr():
             #     return self.visitBoxWrapperExpr(ctx)
-            case BorrowExpr():
-                return self.visitBorrowExpr(ctx)
+            case BorrowExpression():
+                return self.visitBorrowExpression(node)
             # case VariableRef():
             #     return self.visitVariableRef(ctx)
             # case ReferenceExpr():
             #     return self.visitReferenceExpr(ctx)
             case ArrayLiteral():
-                return self.visitArrayLiteral(ctx)
+                return self.visitArrayLiteral(node)
             case CastExpression():
-                return self.visitCastExpression(ctx)
+                return self.visitCastExpression(node)
             case UnaryExpr():
-                return self.visitUnaryExpr(ctx)
+                return self.visitUnaryExpr(node)
             # case MethodCallExpr():
             #     return self.visitMethodCallExpr(ctx)
             case DereferenceExpr():
-                return self.visitDereferenceExpr(ctx)
+                return self.visitDereferenceExpr(node)
             # case IndexExpr():
             #     return self.visitIndexExpr(ctx)
             case ParenExpr():
-                return self.visitParenExpr(ctx)
+                return self.visitParenExpr(node)
             case RangeExpression():
-                return self.visitRangeExpression(ctx)
+                return self.visitRangeExpression(node)
             case SafeWrapper():
-                return self.visitSafeWrapper(ctx)
+                return self.visitSafeWrapper(node)
             case _:
-                raise NotImplementedError(f"No visit method defined for {type(ctx)}")
+                raise NotImplementedError(f"No visit method defined for {type(node)}")
 
     def visitProgram(self, ctx: Program):
         ret = False
@@ -131,7 +137,7 @@ class RustASTVisitor:
     def visitStructDef(self, ctx: StructDef):
         ret = True
         for child in ctx.getChildren():
-            self.visit(i)
+            self.visit(child)
 
     def visitStructField(self, node: StructField):
         # mut = "mut " if node.mutable else ""
@@ -194,8 +200,11 @@ class RustASTVisitor:
         # node.value.accept(self)
 
     def visitFunctionCallExpression(self, node: FunctionCallExpression):
-        for i in node.args:
-            i.accept(self)
+        retval = True
+        for arg in node.args():
+            retval = retval and arg.accept(self)
+
+        return retval
 
     def visitBlock(self, node: Block):
         for i in node.stmts:
@@ -204,18 +213,17 @@ class RustASTVisitor:
     # def visitInitBlock(self, node: InitBlock):
     #     node.returnExpr.accept(self)
 
-    def visitQualifiedExpression(self, node: QualifiedExpression):
-        node.inner_expr.accept(self)
+    def visitQualifiedExpression(self, ctx: QualifiedExpression):
+        return ctx.expression().accept(self)
 
-    def visitIdentifierExpr(self, node: IdentifierExpression):
-        pass
+    def visitIdentifierExpression(self, ctx: IdentifierExpression):
+        return True
 
-    def visitBinaryExpr(self, node: BinaryExpression):
-        node.left.accept(self)
-        node.right.accept(self)
+    def visitBinaryExpression(self, node: BinaryExpression):
+        return node.left().accept(self) and node.right().accept(self)
 
-    def visitByteLiteralExpression(self, ctx: ByteLiteralExpression):
-        pass
+    def visitByteLiteralExpression(self, node: ByteLiteralExpression):
+        return True
 
     def visitTypeWrapper(self, node: TypeWrapper):
         node.expr.accept(self)
@@ -224,8 +232,8 @@ class RustASTVisitor:
     #     node.expr.accept(self)
     #     node.path.accept(self)
 
-    def visitBorrowExpr(self, node: BorrowExpr):
-        node.expr.accept(self)
+    def visitBorrowExpression(self, ctx: BorrowExpression):
+        ctx.expression().accept(self)
 
     # def visitReferenceExpr(self, node: Ref):
     #     node.expr.accept(self)

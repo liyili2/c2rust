@@ -1,5 +1,4 @@
 from rust.ast.ASTNode import *
-from rust.parser.RustPTVisitor import RustPTVisitor
 from rust.ast.TopLevel import *
 from rust.ast.Struct import *
 from rust.ast.VarDef import *
@@ -7,9 +6,10 @@ from rust.ast.Func import *
 from rust.ast.Block import *
 from rust.ast.utils import *
 from rust.parser.RustParser import RustParser
+from rust.parser.RustVisitor import RustVisitor
 
 
-class RustASTTransformer(RustPTVisitor):
+class RustASTTransformer(RustVisitor):
 
     def __init__(self):
         super().__init__()
@@ -323,13 +323,12 @@ class RustASTTransformer(RustPTVisitor):
         expr = self.visit(ctx.primaryExpression())
         return Statement(body=expr)
 
-    def visitFunctionCall(self, ctx):
-        a = ctx.expression()
+    def visitFunctionCall(self, ctx: RustParser.FunctionCallContext):
         if isinstance(ctx.expression(), list) and len(ctx.expression()) > 1:
-            func_name = self.visit(ctx.expression(len(ctx.expression())-1))
-            caller = self.visit(ctx.expression(0))
+            callee = self.visitExpression(ctx.expression(len(ctx.expression()) - 1))
+            caller = self.visitExpression(ctx.expression(0))
         else:
-            func_name = self.visit(ctx.expression(0))
+            callee = self.visitExpression(ctx.expression(0))
             caller = None
         postfix = ctx.callExpressionPostFix()
         if postfix.functionCallArgs():
@@ -337,7 +336,7 @@ class RustASTTransformer(RustPTVisitor):
             args = [self.visit(arg) for arg in args_ctx]
         else:
             args = []
-        return FunctionCallExpression(caller=caller, callee=func_name, args=args)
+        return FunctionCallExpression(caller=caller, callee=callee, args=args)
 
     def visitStatement(self, ctx):
         if ctx.block():
@@ -444,10 +443,19 @@ class RustASTTransformer(RustPTVisitor):
 
     binary_operators = {'==', '!=', '<', '>', '<=', '>=', '+', '-', '*', '/', '%', '&&', '||'}
 
-    def visitExpression(self, ctx):
-        if ctx.primaryExpression() and len(ctx.children) == 1:
-            return self.visit(ctx.primaryExpression())
-        
+    def visitExpression(self, ctx: RustParser.ExpressionContext):
+        if ctx.primaryExpression() is not None:
+            return self.visitPrimaryExpression(ctx.primaryExpression())
+        elif ctx.qualifiedExpression() is not None:
+            return self.visitQualifiedExpression(ctx.qualifiedExpression())
+        elif ctx.binaryOps():
+            op = ctx.binaryOps().getText()
+            left = self.visitExpression(ctx.expression(0))
+            right = self.visitExpression(ctx.expression(1))
+            return BinaryExpression(op = op, left = left, right = right)
+        elif ctx.compoundOps():
+            return self.visitCompoundAssignment(ctx.compoundOps())
+
         elif ctx.fieldAccessPostFix():
             base = self.visit(ctx.getChild(0))
             postfix = self.visitPrimaryExpression(ctx.fieldAccessPostFix().primaryExpression())
@@ -462,11 +470,7 @@ class RustASTTransformer(RustPTVisitor):
             expr = self.visit(ctx.expression(0))
             return UnaryExpr(op, expr)
 
-        elif ctx.binaryOps():
-            op = ctx.binaryOps().getText()
-            left = self.visit(ctx.expression(0))
-            right = self.visit(ctx.expression(1))
-            return BinaryExpression(op=op, left=left, right=right)
+
 
         elif ctx.rangeSymbol():
             left = self.visit(ctx.expression(0))
@@ -474,11 +478,7 @@ class RustASTTransformer(RustPTVisitor):
             right = self.visit(ctx.expression(1))
             return RangeExpression(left, right)
 
-        elif ctx.compoundOps():
-            left = self.visit(ctx.expression(0))
-            op = ctx.compoundOps().getText()
-            right = self.visit(ctx.expression(1))
-            return BinaryExpression(op, left, right)
+
 
         elif ctx.basicTypeCastExpr():
             basicType = self.visit(ctx.basicTypeCastExpr().typeExpr())
@@ -493,7 +493,7 @@ class RustASTTransformer(RustPTVisitor):
         # Add caller and callee
         elif ctx.callExpressionPostFix():
             func = self.visit(ctx.expression(0))
-            args = self.visit(ctx.callExpressionPostFix())
+            args = self.visit(ctx.callExpressionPostFix().functionCallArgs())
             return FunctionCallExpression(callee=func, args=args, caller=id)
 
         elif ctx.parenExpression():
@@ -528,8 +528,7 @@ class RustASTTransformer(RustPTVisitor):
         elif ctx.structLiteral():
             return self.visit(ctx.structLiteral())
 
-        elif ctx.qualifiedExpression():
-            return self.visit(ctx.qualifiedExpression())
+
 
         elif ctx.typeExpr():
             expr = self.visit(ctx.expression(0))
@@ -548,6 +547,29 @@ class RustASTTransformer(RustPTVisitor):
 
         raise Exception(f"Unrecognized expression structure: {ctx.getText()}")
 
+    def visitPrimaryExpression(self, ctx: RustParser.PrimaryExpressionContext):
+        if isinstance(ctx, list):
+            if len(ctx) != 1:
+                raise Exception(f"Expected exactly one primaryExpression, got: {len(ctx)} in {ctx}")
+            ctx = ctx[0]
+
+        if ctx.literal():
+            return self.visit(ctx.literal())
+        elif ctx.Identifier():
+            return IdentifierExpression(ctx.Identifier().getText())
+        else:
+            raise Exception(f"Unknown primary expression: {ctx.getText()}")
+
+    def visitQualifiedExpression(self, ctx: RustParser.QualifiedExpressionContext):
+        expression = self.visitExpression(ctx.expression())
+        return QualifiedExpression(expression)
+
+    def visitCompoundAssignment(self, ctx: RustParser.CompoundAssignmentContext):
+        left = self.visit(ctx.expression(0))
+        op = ctx.compoundOp().getText()
+        right = self.visit(ctx.expression(1))
+        return BinaryExpression(op=op, left=left, right=right)
+
     def visitSafeWrapper(self, ctx):
         expr = self.visit(ctx.expression())
         return SafeWrapper(expression=expr)
@@ -555,10 +577,6 @@ class RustASTTransformer(RustPTVisitor):
     def visitSafeNonNullWrapper(self, ctx):
         typeExpr = self.visit(ctx.typeExpr())
         return SafeNonNullWrapper(typeExpr=typeExpr)
-
-    def visitQualifiedExpression(self, ctx: RustParser.QualifiedExpressionContext):
-        expr = self.visit(ctx.expression())
-        return QualifiedExpression(expr)
 
     def visitArrayDeclaration(self, ctx):
         identifier = ctx.Identifier().getText()
@@ -587,18 +605,6 @@ class RustASTTransformer(RustPTVisitor):
         type_str = ctx.getText()
         return TypePathExpression(type_path=type_str.split("::") , last_type=type_str.split("::")[-1])
 
-    def visitPrimaryExpression(self, ctx: RustParser.PrimaryExpressionContext):
-        if isinstance(ctx, list):
-            if len(ctx) != 1:
-                raise Exception(f"Expected exactly one primaryExpression, got: {len(ctx)} in {ctx}")
-            ctx = ctx[0]
-        if ctx.literal():
-            return self.visit(ctx.literal())
-        elif ctx.Identifier():
-            return IdentifierExpression(ctx.Identifier().getText())
-        else:
-            raise Exception(f"Unknown primary expression: {ctx.getText()}")
-
     def visitGenericArgs(self, ctx):
         print("generic arg call")
         return [self.visit(ty) for ty in ctx.dtype()]
@@ -612,7 +618,7 @@ class RustASTTransformer(RustPTVisitor):
         mutable = str.__contains__(txt, "mut")
         expr_index = 1 if mutable else 0
         expr = self.visit(ctx.getChild(expr_index))
-        return BorrowExpr(expression=expr, is_mutable=mutable)
+        return BorrowExpression(expression=expr, is_mutable=mutable)
 
     def visitCastExpr(self, node):
         expr = self.visit(node.expression)
@@ -676,7 +682,7 @@ class RustASTTransformer(RustPTVisitor):
         if ctx.arrayLiteral():
             return self.visit(ctx.arrayLiteral())
         elif ctx.booleanLiteral():
-            return BoolLiteral(value=self.visit(ctx.booleanLiteral()))
+            return BooleanLiteral(value=self.visit(ctx.booleanLiteral()))
         elif ctx.HexNumber():
             return int(ctx.HexNumber().getText(), 16)
         elif ctx.Number():
