@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="dcc42058-4152-419b-b581-7a33460d23b2" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/RustCode/AST_Scripts/XMLExp.g4" beforeDir="false" afterPath="$PROJECT_DIR$/RustCode/AST_Scripts/XMLExp.g4" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectId" id="2ePfAoLjIM2VGMOOhwzoWuo7yTD" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "last_opened_file_path": "C:/Users/aqwan/Documents/GitHub/c2rust",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyIntegratedToolsModulesConfigurable",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\aqwan\Documents\GitHub\c2rust\source\RustCode\AST_Scripts" />
+    </key>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="dcc42058-4152-419b-b581-7a33460d23b2" name="Changes" comment="" />
+      <created>1711810992683</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1711810992683</updated>
+      <workItem from="1711810993958" duration="1841000" />
+      <workItem from="1712093416854" duration="597000" />
+      <workItem from="1716559320096" duration="1785000" />
+      <workItem from="1717094539726" duration="4196000" />
+      <workItem from="1717591156475" duration="24650000" />
+      <workItem from="1718935962540" duration="8459000" />
+      <workItem from="1719584289756" duration="28000" />
+      <workItem from="1719584329563" duration="306000" />
+      <workItem from="1719584650811" duration="1235000" />
+      <workItem from="1719585910954" duration="16000" />
+      <workItem from="1719585936563" duration="7264000" />
+      <workItem from="1721396564237" duration="26213000" />
+      <workItem from="1723816981320" duration="3000" />
+      <workItem from="1723817202040" duration="2778000" />
+      <workItem from="1724108843662" duration="9361000" />
+      <workItem from="1726236660806" duration="7674000" />
+      <workItem from="1727196957550" duration="9555000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/source$TriangleJMetal.coverage" NAME="TriangleJMetal Coverage Results" MODIFIED="1711811145626" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/source$test_printer.coverage" NAME="test_printer Coverage Results" MODIFIED="1721960756672" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/RustCode/AST_Scripts" />
+    <SUITE FILE_PATH="coverage/source$XMLPrinter.coverage" NAME="XMLPrinter Coverage Results" MODIFIED="1721398251775" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/RustCode/AST_Scripts" />
+    <SUITE FILE_PATH="coverage/source$.coverage" NAME=" Coverage Results" MODIFIED="1719583648932" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/RustCode/AST_Scripts" />
+  </component>
+</project>
