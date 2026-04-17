@@ -1,7 +1,7 @@
-from typing import Any, List
+from typing import Any, List, Tuple
 from rust.ast.ASTNode import ASTNode, CloneableASTNode
 from rust.ast.RustASTVisitor import RustASTVisitor
-from rust.ast.Type import BoolType, IntType, StringType, FloatType, Type
+from rust.ast.Type import BoolType, SignedIntType, StringType, FloatingPointType, Type
 
 
 class Expression(CloneableASTNode):
@@ -98,9 +98,9 @@ class FunctionCallExpression(Expression):
 
 class CastExpression(Expression):
 
-    def __init__(self, dtype: Type, expression: Any = None, typePath: TypePathExpression = None):
-        super().__init__(expression = expression, dtype = dtype)
-        self.typePath = typePath
+    def __init__(self, expression: Any = None, type_expressions: List[Expression] = None):
+        super().__init__(expression = expression)
+        self.type_expressions = type_expressions
 
     def accept(self, visitor: RustASTVisitor):
         return visitor.visitCastExpression(self)
@@ -136,7 +136,7 @@ class CharLiteral(Expression):
 class IntLiteral(Expression):
     def __init__(self, value: int):
         super().__init__()
-        self.type = IntType()
+        self.type = SignedIntType()
         self.value = value
 
     def accept(self, visitor):
@@ -253,6 +253,16 @@ class PatternExpr(Expression):
 
     def accept(self, visitor):
         return visitor.visit_PatternExpr(self)
+
+
+class TypePath(Expression):
+
+    def __init__(self, types: List[str]):
+        super().__init__(expression = types)
+
+    def accept(self, visitor: RustASTVisitor):
+        return visitor.visitTypePath(self)
+
 
 class TypePathExpression(Expression):
     def __init__(self, type_path, last_type):
