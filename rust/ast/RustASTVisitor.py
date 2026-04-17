@@ -1,6 +1,6 @@
 from rust.ast.Expression import QualifiedExpression, IdentifierExpression, BinaryExpression, FunctionCallExpression, \
     BorrowExpression, ArrayLiteral, CastExpression, UnaryExpr, DereferenceExpr, ParenExpr, RangeExpression, SafeWrapper, \
-    ByteLiteralExpression
+    ByteLiteralExpression, TypePath
 from rust.ast.Func import FunctionParamList, Param
 from rust.ast.Program import Program
 from rust.ast.Statement import LetStmt, ForStmt, IfStmt, AssignStmt, ReturnStmt, WhileStmt, MatchStmt, MatchArm, \
@@ -9,6 +9,9 @@ from rust.ast.Struct import StructField
 from rust.ast.TopLevel import *
 from rust.ast.Block import *
 from rust.ast.ASTNode import ASTNode
+from rust.ast.Type import SafeNonNullWrapper, SignedIntType, StringType, BoolType, ArrayType, \
+    PathType, \
+    GenericType, ReferenceType, SliceType, CharType, UnknownType, UnsignedIntType, FloatingPointType, PointerType
 
 
 class RustASTVisitor:
@@ -202,7 +205,7 @@ class RustASTVisitor:
     def visitFunctionCallExpression(self, node: FunctionCallExpression):
         retval = True
         for arg in node.args():
-            retval = retval and arg.accept(self)
+            retval = arg.accept(self) and retval
 
         return retval
 
@@ -213,14 +216,16 @@ class RustASTVisitor:
     # def visitInitBlock(self, node: InitBlock):
     #     node.returnExpr.accept(self)
 
-    def visitQualifiedExpression(self, ctx: QualifiedExpression):
-        return ctx.expression().accept(self)
+    def visitQualifiedExpression(self, node: QualifiedExpression):
+        return node.expression().accept(self)
 
-    def visitIdentifierExpression(self, ctx: IdentifierExpression):
+    def visitIdentifierExpression(self, node: IdentifierExpression):
         return True
 
     def visitBinaryExpression(self, node: BinaryExpression):
-        return node.left().accept(self) and node.right().accept(self)
+        retval = node.left().accept(self)
+        retval = node.right().accept(self) and retval
+        return retval
 
     def visitByteLiteralExpression(self, node: ByteLiteralExpression):
         return True
@@ -262,3 +267,54 @@ class RustASTVisitor:
     def visitSafeWrapper(self, node: SafeWrapper):
         node.expr.accept(self)
         # node.last.accept(self)
+
+    def visitTypePath(self, node: TypePath):
+        return True
+
+    def visitSignedIntType(self, node: SignedIntType):
+        return True
+
+    def visitUnsignedIntType(self, node: UnsignedIntType):
+        return True
+
+    def visitFloatingPointType(self, node: FloatingPointType):
+        return True
+
+    def visitBoolType(self, node: BoolType):
+        return True
+
+    def visitCharType(self, node: CharType):
+        return True
+
+    def visitStringType(self, node: StringType):
+        return True
+
+    def visitSafeNonNullWrapper(self, node: SafeNonNullWrapper):
+        return node.dtype.accept(self)
+
+    def visitArrayType(self, node: ArrayType):
+        return node.dtype.accept(self)
+
+    def visitPathType(self, node: PathType):
+        retval = node.type_path.accept(self)
+        retval = node.dtype.accept(self) and retval
+        return retval
+
+    def visitGenericType(self, node: GenericType):
+        retval = node.type_path.accept(self) if node.type_path else True
+        for generic_dtype in node.generic_dtypes:
+            retval = generic_dtype.accept(self) and retval
+
+        return retval
+
+    def visitReferenceType(self, node: ReferenceType):
+        return node.dtype.accept(self)
+
+    def visitSliceType(self, node: SliceType):
+        return node.dtype.accept(self)
+
+    def visitUnknownType(self, node: UnknownType):
+        return True
+
+    def visitPointerType(self, node: PointerType):
+        return node.dtype.accept(self)

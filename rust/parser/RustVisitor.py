@@ -159,13 +159,13 @@ class RustVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by RustParser#typeExpr.
-    def visitTypeExpr(self, ctx:RustParser.TypeExprContext):
+    # Visit a parse tree produced by RustParser#typePath.
+    def visitTypePath(self, ctx:RustParser.TypePathContext):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by RustParser#pointerType.
-    def visitPointerType(self, ctx:RustParser.PointerTypeContext):
+    # Visit a parse tree produced by RustParser#typeExpression.
+    def visitTypeExpression(self, ctx:RustParser.TypeExpressionContext):
         return self.visitChildren(ctx)
 
 
@@ -174,18 +174,88 @@ class RustVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by RustParser#pointerType.
+    def visitPointerType(self, ctx:RustParser.PointerTypeContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#scalarType.
+    def visitScalarType(self, ctx:RustParser.ScalarTypeContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#intType.
+    def visitIntType(self, ctx:RustParser.IntTypeContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#signedIntType.
+    def visitSignedIntType(self, ctx:RustParser.SignedIntTypeContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#unsignedIntType.
+    def visitUnsignedIntType(self, ctx:RustParser.UnsignedIntTypeContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#floatingPointType.
+    def visitFloatingPointType(self, ctx:RustParser.FloatingPointTypeContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#boolType.
+    def visitBoolType(self, ctx:RustParser.BoolTypeContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#charType.
+    def visitCharType(self, ctx:RustParser.CharTypeContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#stdLibraryType.
+    def visitStdLibraryType(self, ctx:RustParser.StdLibraryTypeContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#stringType.
+    def visitStringType(self, ctx:RustParser.StringTypeContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by RustParser#safeNonNullWrapper.
     def visitSafeNonNullWrapper(self, ctx:RustParser.SafeNonNullWrapperContext):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by RustParser#typePath.
-    def visitTypePath(self, ctx:RustParser.TypePathContext):
+    # Visit a parse tree produced by RustParser#arrayType.
+    def visitArrayType(self, ctx:RustParser.ArrayTypeContext):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by RustParser#arrayType.
-    def visitArrayType(self, ctx:RustParser.ArrayTypeContext):
+    # Visit a parse tree produced by RustParser#pathType.
+    def visitPathType(self, ctx:RustParser.PathTypeContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#genericType.
+    def visitGenericType(self, ctx:RustParser.GenericTypeContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#referenceType.
+    def visitReferenceType(self, ctx:RustParser.ReferenceTypeContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#sliceType.
+    def visitSliceType(self, ctx:RustParser.SliceTypeContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by RustParser#unitType.
+    def visitUnitType(self, ctx:RustParser.UnitTypeContext):
         return self.visitChildren(ctx)
 
 
@@ -296,11 +366,6 @@ class RustVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by RustParser#expression.
     def visitExpression(self, ctx:RustParser.ExpressionContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by RustParser#basicTypeCastExpr.
-    def visitBasicTypeCastExpr(self, ctx:RustParser.BasicTypeCastExprContext):
         return self.visitChildren(ctx)
 
 

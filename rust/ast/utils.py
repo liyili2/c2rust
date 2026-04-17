@@ -74,7 +74,7 @@ def _handleChainedMethodCall(self, ctx):
 
 def get_literal_type(self, value):
     if isinstance(value, IntLiteral):
-        return IntType()
+        return SignedIntType()
     elif isinstance(value, StrLiteral):
         return StringType()
     elif isinstance(value, BooleanLiteral):

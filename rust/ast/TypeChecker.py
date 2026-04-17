@@ -63,7 +63,7 @@ class TypeChecker:
 
         fn_name = node.identifier
         param_types = [param.declarationInfo.dtype for param in node.params]
-        return_type = node.return_type or VoidType()
+        return_type = node.return_type or UnitType()
 
         if self.env.top().get(fn_name) is None:
             self.env.top()[fn_name] = {
@@ -82,7 +82,7 @@ class TypeChecker:
             self.visit(param)
 
             if i == 0 and param_name == "self":
-                if not isinstance(param_type, RefType) and param_type is not None:
+                if not isinstance(param_type, ReferenceType) and param_type is not None:
                     self.error(param, f"`self` must be a reference type, found: {param_type}")
 
                 if is_mut and not getattr(param_type, "mutable", False):
@@ -133,7 +133,7 @@ class TypeChecker:
 
     def get_literal_type(self, value):
         if isinstance(value, int):
-            return IntType()
+            return SignedIntType()
         elif isinstance(value, str):
             return StringType()
         elif isinstance(value, bool):
@@ -147,7 +147,7 @@ class TypeChecker:
         else:
             type_str = ctx
         if type_str == "i32":
-            return IntType()
+            return SignedIntType()
         elif type_str == "bool":
             return BoolType()
         elif type_str == "String":
@@ -184,7 +184,7 @@ class TypeChecker:
         if expr_type == target_type:
             return target_type
 
-        valid_numeric_types = (IntType, FloatType)
+        valid_numeric_types = (SignedIntType, FloatingPointType)
         if isinstance(expr_type, valid_numeric_types) and isinstance(target_type, valid_numeric_types):
             return target_type
 
@@ -353,11 +353,11 @@ class TypeChecker:
             return
 
         if op in ['+', '-', '*', '/', '>>', '<<']:
-            if isinstance(left, IntType) and isinstance(right, IntType):
-                return IntType()
+            if isinstance(left, SignedIntType) and isinstance(right, SignedIntType):
+                return SignedIntType()
             else:
                 # self.error(node, f"binary expression target and value type mismatch #1: {left} {op} {right}")
-                return IntType()
+                return SignedIntType()
 
         elif op in ['==', '!=', '<', '>', '<=', '>=']:
             if type(left) == type(right) or isinstance(right, NoneType) or isinstance(left, NoneType):
@@ -374,14 +374,14 @@ class TypeChecker:
                 return BoolType()
             
         elif op in ['&']:
-            if isinstance(left, IntType) and isinstance(right, IntType):
-                return IntType()
+            if isinstance(left, SignedIntType) and isinstance(right, SignedIntType):
+                return SignedIntType()
             else:
                 # self.error(node, "binary expression target and value type mismatch #3")
-                return IntType()
+                return SignedIntType()
         else:
             self.error(node, f"Unknown binary operator: {op}")
-            return IntType()
+            return SignedIntType()
 
     def visit_Block(self, node):
         result_stmts = []
@@ -426,7 +426,7 @@ class TypeChecker:
 
         # Type compatibility check for compound ops
         if node.op in ['+=', '-=', '*=', '/=']:
-            if (not isinstance(target_type, IntType)) or (not isinstance(value_type, IntType)):
+            if (not isinstance(target_type, SignedIntType)) or (not isinstance(value_type, SignedIntType)):
                 pass
                 # self.error(node, "ops not compatible in compound assignment")
         else:
@@ -505,7 +505,7 @@ class TypeChecker:
                 value_info = None
 
             #TODO: Check it better
-            if (value_type is IntType) or (value_type is BoolType) or (value_type is CharType):
+            if (value_type is SignedIntType) or (value_type is BoolType) or (value_type is CharType):
                 if value_info:
                     if not value_info["owned"]:
                         self.error(node, f"assigning a not-owned variable to target : {self.get_expr_identifier(node.target)} = {self.get_expr_identifier(node.value)}", 2)
@@ -602,7 +602,7 @@ class TypeChecker:
 
     def visit_VarDef(self, ctx):
         name = ctx.name
-        typ = self.visit(ctx.var_type)
+        typ = self.visit(ctx.dtype)
         return (name, typ)
 
     def visit_ParamNode(self, node):
@@ -621,18 +621,18 @@ class TypeChecker:
         return params
 
     def visit_IntType(self, node):
-        return IntType()
+        return SignedIntType()
 
     def visit_BoolType(self, node):
         return BoolType()
 
     def visit_ArrayType(self, node: ArrayType):
-        elem_type = self.visit(node.var_type)
+        elem_type = self.visit(node.dtype)
 
         if node.size is not None:
             size_type = self.visit(node.size)
 
-            if (not self.is_compile_time_constant(node.size)) and (not isinstance(size_type, IntType)):
+            if (not self.is_compile_time_constant(node.size)) and (not isinstance(size_type, SignedIntType)):
                 self.error(node.size, "array size must be an integer")
 
         return ArrayType(elem_type, size=node.size)
@@ -653,7 +653,7 @@ class TypeChecker:
 
     def visit_LiteralExpr(self, node):
         if isinstance(node.expression, int):
-            return IntType()
+            return SignedIntType()
         if isinstance(node.expression, str):
             return StringType()
         if isinstance(node.expression, bool):
@@ -704,7 +704,7 @@ class TypeChecker:
 
         if not isinstance(node, FieldAccessExpr):
             info["borrowed"] = True
-        return RefType(info["type"])
+        return ReferenceType(info["type"])
 
     def visit_PatternExpr(self, node):
         pass
@@ -822,7 +822,7 @@ class TypeChecker:
         if isinstance(node.last_type, SafeNonNullWrapper):
             return self.visit(node.dtype)
         if str.__contains__(node.last_type, "int"):
-            return IntType()
+            return SignedIntType()
         if str.__contains__(node.last_type, "str"):
             return StringType()
         if str.__contains__(node.last_type, "char"):
@@ -835,7 +835,7 @@ class TypeChecker:
         return BoolType()
 
     def visit_IntLiteral(self, node):
-        return IntType()
+        return SignedIntType()
 
     def visit_StrLiteral(self, node):
         return StringType()

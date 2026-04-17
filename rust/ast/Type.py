@@ -1,148 +1,182 @@
-from rust.ast.ASTNode import ASTNode
+import abc
+from typing import List
+from rust.ast.ASTNode import ASTNode, CloneableASTNode
+from rust.ast.Expression import TypePath
+from rust.ast.RustASTVisitor import RustASTVisitor
 
-class Type(ASTNode):
+
+class Type(CloneableASTNode, abc.ABC):
     pass
 
-class VoidType:
-    def __init__(self):
-        self.name = "void"
 
-    def __repr__(self):
-        return "Void"
+class SignedIntType(Type):
 
-    def __eq__(self, other):
-        return isinstance(other, VoidType)
+    def __init__(self, ptype: str):
+        super().__init__()
+        self.ptype = ptype
 
-    def __hash__(self):
-        return hash("void")
+    def accept(self, visitor: RustASTVisitor):
+        return visitor.visitSignedIntType(self)
 
-    def accept(self, visitor):
-        return super().accept(visitor)
+
+class UnsignedIntType(Type):
+
+    def __init__(self, ptype: str):
+        super().__init__()
+        self.ptype = ptype
+
+    def accept(self, visitor: RustASTVisitor):
+        return visitor.visitUnsignedIntType(self)
+
+
+class FloatingPointType(Type):
+
+    def __init__(self, ptype: str):
+        super().__init__()
+        self.ptype = ptype
+
+    def accept(self, visitor: RustASTVisitor):
+        return visitor.visitFloatingPointType(self)
+
 
 class BoolType(Type):
+
     def __init__(self):
         super().__init__()
 
-    def __repr__(self):
-        return "Bool"
+    def accept(self, visitor: RustASTVisitor):
+        return visitor.visitBoolType(self)
 
-    def __eq__(self, other):
-        return isinstance(other, BoolType)
-    
-    def accept(self, visitor):
-        return super().accept(visitor)
 
-class IntType(Type):
+class CharType(Type):
+
     def __init__(self):
         super().__init__()
 
-    def __repr__(self):
-        return "i32"
+    def accept(self, visitor: RustASTVisitor):
+        return visitor.visitCharType(self)
 
-    def accept(self, visitor):
-        return visitor.visit_IntType(self)
 
 class StringType(Type):
+
     def __init__(self):
         super().__init__()
 
-    def __repr__(self):
-        return "String"
+    def accept(self, visitor: RustASTVisitor):
+        return visitor.visitStringType(self)
 
-    def accept(self, visitor):
+
+class SafeNonNullWrapper(Type):
+
+    def __init__(self, dtype: Type):
+        super().__init__()
+        self.dtype = dtype
+
+    def accept(self, visitor: RustASTVisitor):
+        return visitor.visitSafeNonNullWrapper(self)
+
+
+class ArrayType(Type):
+
+    def __init__(self, dtype: Type, size: int = None):
+        super().__init__()
+        self.dtype = dtype
+        self.size = size
+
+    def accept(self, visitor: RustASTVisitor):
+        return visitor.visitArrayType(self)
+
+
+class PathType(Type):
+
+    def __init__(self, type_path: TypePath, dtype: Type):
+        super().__init__()
+        self.type_path = type_path
+        self.dtype = dtype
+
+    def accept(self, visitor: RustASTVisitor):
+        return visitor.visitPathType(self)
+
+
+class GenericType(Type):
+
+    def __init__(self, generic_dtypes: List[Type], type_path: TypePath = None):
+        super().__init__()
+        self.generic_dtypes = generic_dtypes
+        self.type_path = type_path
+
+    def accept(self, visitor: RustASTVisitor):
+        return visitor.visitGenericType(self)
+
+
+class ReferenceType(Type):
+
+    def __init__(self, dtype: Type):
+        super().__init__()
+        self.dtype = dtype
+
+    def accept(self, visitor: RustASTVisitor):
+        return visitor.visitReferenceType(self)
+
+
+class SliceType(Type):
+
+    def __init__(self, dtype: Type):
+        super().__init__()
+        self.dtype = dtype
+
+    def accept(self, visitor: RustASTVisitor):
+        return visitor.visitSliceType(self)
+
+
+class UnitType(Type):
+
+    def __init__(self):
+        super().__init__()
+
+    def accept(self, visitor: RustASTVisitor):
         return super().accept(visitor)
+
+
+class PointerType(Type):
+
+    def __init__(self, mutable: bool, dtype: Type):
+        super().__init__()
+        self.mutable = mutable
+        self.dtype = dtype
     
-class CharType(Type):
+    def accept(self, visitor: RustASTVisitor):
+        return visitor.visitPointerType(self)
+
+
+class UnknownType(Type):
+
+    def __init__(self, ptype: str):
+        super().__init__()
+        self.ptype = ptype
+
+    def accept(self, visitor: RustASTVisitor):
+        return visitor.visitUnknownType(self)
+
+
+## TODO: Type Checker used Types which should be eliminated later
+
+class NoneType(Type):
+
     def __init__(self):
         super().__init__()
 
-    def __repr__(self):
-        return "char"
-
     def accept(self, visitor):
-        return super().accept(visitor)
+        return None
 
-class FloatType(Type):
-    def __init__(self):
-        super().__init__()
-
-    def __repr__(self):
-        return "float"
-    
-    def accept(self, visitor):
-        return super().accept(visitor)
 
 class StructType(Type):
+
     def __init__(self, name, fields, isUnion=False):
         super().__init__()
         self.name = name
         self.fields = fields
         self.isUnion = isUnion
 
-    def __repr__(self):
-        return f"Struct<{self.name}>"
-    
     def accept(self, visitor):
         return super().accept(visitor)
-
-class RefType(Type):
-    def __init__(self, inner):
-        super().__init__()
-        self.inner = inner
-
-    def __repr__(self):
-        return f"&{self.inner}"
-    
-    def accept(self, visitor):
-        return super().accept(visitor)
-
-class ArrayType(Type):
-    def __init__(self, var_type, size=None):
-        super().__init__()
-        self.var_type = var_type
-        self.size = size
-
-    def __repr__(self):
-        return f"[{self.var_type}; {self.size}]" if self.size else f"[{self.var_type}]"
-    
-    def accept(self, visitor):
-        return visitor.visit_ArrayType(self)
-
-class PointerType(Type):
-    def __init__(self, isMutable: str, pointee_type):
-        super().__init__()
-        self.isMutable = isMutable
-        self.pointee_type = pointee_type
-
-    def __repr__(self):
-        isMutable = "mut" if self.isMutable else "const"
-        pointee = repr(self.pointee_type) if self.pointee_type else "?"
-        return f"*{isMutable} {pointee}"
-    
-    def accept(self, visitor):
-        return visitor.visit_PointerType(self)
-
-    def to_dict(self):
-        return {
-            "type": self.__class__.__name__,
-            "pointee": self.pointee_type.to_dict() if isinstance(self.pointee_type, ASTNode) else self.pointee_type
-        }
-
-class PathType:
-    def __init__(self, segments):
-        super().__init__()
-        self.segments = segments
-
-class SafeNonNullWrapper(Type):
-    def __init__(self, typeExpr):
-        super().__init__()
-        self.type = typeExpr
-
-    def accept(self, visitor):
-        return visitor.visit_SafeNonNullWrapper(self)
-
-class NoneType(Type):
-    def __init__(self):
-        super().__init__()
-    def accept(self, visitor):
-        return None

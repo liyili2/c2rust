@@ -1,3 +1,4 @@
+from external.examples.libxml2.repo.doc.apibuild import identifier
 from rust.ast.ASTNode import *
 from rust.ast.TopLevel import *
 from rust.ast.Struct import *
@@ -254,7 +255,7 @@ class RustASTTransformer(RustVisitor):
         if str.__contains__(txt, 'mut'):
             mutable = True
             name_index += 1
-        
+
         name = tokens[name_index]
 
         if tokens[0] == 'mut':
@@ -453,6 +454,10 @@ class RustASTTransformer(RustVisitor):
             left = self.visitExpression(ctx.expression(0))
             right = self.visitExpression(ctx.expression(1))
             return BinaryExpression(op = op, left = left, right = right)
+        elif ctx.castExpressionPostFix():
+            expr = self.visitExpression(ctx.expression(0))
+            cast = self.visitCastExpressionPostFix(ctx.castExpressionPostFix())
+            return CastExpression(expression=expr, dtype=cast)
         elif ctx.compoundOps():
             return self.visitCompoundAssignment(ctx.compoundOps())
 
@@ -464,7 +469,7 @@ class RustASTTransformer(RustVisitor):
         elif ctx.MUT():
             expr = self.visit(ctx.expression(0))
             return Expression(expression=expr)
-        
+
         elif ctx.unaryOpes():
             op = ctx.unaryOpes().getText()
             expr = self.visit(ctx.expression(0))
@@ -477,18 +482,6 @@ class RustASTTransformer(RustVisitor):
             op = ctx.rangeSymbol().getText()
             right = self.visit(ctx.expression(1))
             return RangeExpression(left, right)
-
-
-
-        elif ctx.basicTypeCastExpr():
-            basicType = self.visit(ctx.basicTypeCastExpr().typeExpr())
-            typePath = self.visit(ctx.basicTypeCastExpr().typePath())
-            return CastExpression(dtype=basicType, typePath=typePath)
-
-        elif ctx.castExpressionPostFix():
-            expr = self.visit(ctx.expression(0))
-            cast = self.visit(ctx.castExpressionPostFix())
-            return CastExpression(expression=expr, dtype=cast)
 
         # Add caller and callee
         elif ctx.callExpressionPostFix():
@@ -541,7 +534,7 @@ class RustASTTransformer(RustVisitor):
 
         elif ctx.safeWrapper():
             return self.visit(ctx.safeWrapper())
-        
+
         elif ctx.arrayAccess():
             return self.visit(ctx.arrayAccess())
 
@@ -574,9 +567,9 @@ class RustASTTransformer(RustVisitor):
         expr = self.visit(ctx.expression())
         return SafeWrapper(expression=expr)
 
-    def visitSafeNonNullWrapper(self, ctx):
-        typeExpr = self.visit(ctx.typeExpr())
-        return SafeNonNullWrapper(typeExpr=typeExpr)
+    def visitSafeNonNullWrapper(self, ctx: RustParser.SafeNonNullWrapperContext):
+        dtype = self.visitTypeExpression(ctx.typeExpression())
+        return SafeNonNullWrapper(dtype= dtype)
 
     def visitArrayDeclaration(self, ctx):
         identifier = ctx.Identifier().getText()
@@ -600,6 +593,26 @@ class RustASTTransformer(RustVisitor):
 
         return args
 
+    def visitCastExpressionPostFix(self, ctx: RustParser.CastExpressionPostFixContext):
+        i = 0
+        types = []
+        while ctx.typeExpression(i) is not None:
+            types.append(self.visitTypeExpression(ctx.typeExpression(i)))
+
+            i += 1
+
+        return types
+
+    def visitTypePath(self, ctx: RustParser.TypePathContext):
+        i = 0
+        types = []
+        while ctx.Identifier(i) is not None:
+            types.append(ctx.Identifier().getText())
+
+            i += 1
+
+        return TypePath(types=types)
+
     # TODO: Problematic
     def visitTypePathExpression(self, ctx):
         type_str = ctx.getText()
@@ -620,63 +633,111 @@ class RustASTTransformer(RustVisitor):
         expr = self.visit(ctx.getChild(expr_index))
         return BorrowExpression(expression=expr, is_mutable=mutable)
 
-    def visitCastExpr(self, node):
-        expr = self.visit(node.expression)
-        target_type = self.visit(node.dtype)
-        return CastExpression(expression=expr, dtype=target_type)
-
-    def visitTypeExpr(self, ctx):
-        type_str = ctx.getText()
+    def visitTypeExpression(self, ctx: RustParser.TypeExpressionContext):
         if ctx.basicType():
-            return self.visit(ctx.basicType())
-
-        elif type_str.startswith('[') and ';' in type_str and type_str.endswith(']'):
-            inner_type_str, size_str = type_str[1:-1].split(';')
-            inner_type = self._basic_type_from_str(inner_type_str.strip())
-            size = int(size_str.strip())
-            return ArrayType(inner_type, size)
-
-        elif type_str.startswith('[') and type_str.endswith(']'):
-            inner_type_str = type_str[1:-1]
-            inner_type = self._basic_type_from_str(inner_type_str.strip())
-            return ArrayType(inner_type, None)
-
+            return self.visitBasicType(ctx.basicType())
         elif ctx.pointerType():
-            return self.visit(ctx.pointerType())
-        elif str.__eq__(type_str,"i32"):
-            return IntType()
-        elif str.__eq__(type_str,"String"):
-            return StringType()
+            return self.visitPointerType(ctx.pointerType())
         else:
-            return type_str
+            return UnknownType(ctx.getText())
 
-    def visitBasicType(self, ctx):
-        type_str = ctx.getText()
-        if ctx.safeNonNullWrapper():
-            return self.visit(ctx.safeNonNullWrapper())
-        elif ctx.typePath():
-            type_str = ctx.typePath().getText()
-            return TypePathExpression(type_path=type_str.split("::") , last_type=type_str.split("::")[-1])
+    def visitBasicType(self, ctx: RustParser.BasicTypeContext):
+        if ctx.scalarType():
+            return self.visitScalarType(ctx.scalarType())
+        elif ctx.stdLibraryType():
+            return self.visitStdLibraryType(ctx.stdLibraryType())
+        elif ctx.safeNonNullWrapper():
+            return self.visitSafeNonNullWrapper(ctx.safeNonNullWrapper())
+        elif ctx.arrayType():
+            return self.visitArrayType(ctx.arrayType())
+        elif ctx.pathType():
+            return self.visitPathType(ctx.pathType())
+        elif ctx.genericType():
+            return self.visitGenericType(ctx.genericType())
+        elif ctx.referenceType():
+            return self.visitReferenceType(ctx.referenceType())
+        elif ctx.sliceType():
+            return self.visitSliceType(ctx.sliceType())
         else:
-            return type_str
+            return UnknownType(ctx.getText())
 
-    def visitPointerType(self, ctx):
-        mut_token = ctx.getChild(1).getText()
-        mutable = (mut_token == "mut")
-        pointee_type_ctxs = ctx.typeExpr()
-        if isinstance(pointee_type_ctxs, list) :
-            pointee_type = self.visit(pointee_type_ctxs[0]) if pointee_type_ctxs else None
+    def visitPointerType(self, ctx: RustParser.PointerTypeContext):
+        mutable = ctx.MUT()
+        dtype = self.visitTypeExpression(ctx.typeExpression())
+        return PointerType(mutable, dtype)
+
+    def visitScalarType(self, ctx: RustParser.ScalarTypeContext):
+        if ctx.intType():
+            return self.visitIntType(ctx.intType())
+        elif ctx.floatingPointType():
+            return self.visitFloatingPointType(ctx.floatingPointType())
+        elif ctx.boolType():
+            return self.visitBoolType(ctx.boolType())
+        elif ctx.charType():
+            return self.visitCharType(ctx.charType())
         else:
-            pointee_type = self.visit(pointee_type_ctxs) if pointee_type_ctxs else None
+            return UnknownType(ctx.getText())
 
-        return PointerType(mutable, pointee_type)
+    def visitIntType(self, ctx: RustParser.IntTypeContext):
+        if ctx.signedIntType():
+            return self.visitSignedIntType(ctx.signedIntType())
+        elif ctx.unsignedIntType():
+            return self.visitUnsignedIntType(ctx.unsignedIntType())
+        else:
+            return UnknownType(ctx.getText())
 
-    def visitPathType(self, ctx):
-        return self.visit(ctx.path())
+    def visitSignedIntType(self, ctx: RustParser.SignedIntTypeContext):
+        return SignedIntType(ctx.getText())
 
-    def visitPath(self, ctx):
-        segments = [seg.getText() for seg in ctx.pathSegment()]
-        return PathType(segments=segments)
+    def visitUnsignedIntType(self, ctx: RustParser.UnsignedIntTypeContext):
+        return UnsignedIntType(ctx.getText())
+
+    def visitFloatingPointType(self, ctx: RustParser.FloatingPointTypeContext):
+        return FloatingPointType(ctx.getText())
+
+    def visitBoolType(self, ctx: RustParser.BoolTypeContext):
+        return BoolType()
+
+    def visitCharType(self, ctx: RustParser.CharTypeContext):
+        return CharType()
+
+    def visitStdLibraryType(self, ctx: RustParser.StdLibraryTypeContext):
+        if ctx.stringType():
+            return self.visitStringType(ctx.stringType())
+        else:
+            return UnknownType(ctx.getText())
+
+    def visitStringType(self, ctx: RustParser.StringTypeContext):
+        return StringType()
+
+    def visitArrayType(self, ctx: RustParser.ArrayTypeContext):
+        dtype = self.visitBasicType(ctx.basicType())
+        size = int(ctx.Number())
+        return ArrayType(dtype=dtype, size=size)
+
+    def visitPathType(self, ctx: RustParser.PathTypeContext):
+        type_path = self.visitTypePath(ctx.typePath())
+        dtype = self.visitBasicType(ctx.basicType())
+        return PathType(type_path, dtype)
+
+    def visitGenericType(self, ctx: RustParser.GenericTypeContext):
+        i = 0
+        generic_dtypes = []
+        while ctx.typeExpression(i) is not None:
+            generic_dtypes.append(self.visitTypeExpression(ctx.typeExpression(i)))
+
+            i += 1
+
+        type_path = self.visitTypePath(ctx.typePath()) if ctx.typePath() else None
+        return GenericType(generic_dtypes=generic_dtypes, type_path=type_path)
+
+    def visitReferenceType(self, ctx: RustParser.ReferenceTypeContext):
+        dtype = self.visitTypeExpression(ctx.typeExpression())
+        return ReferenceType(dtype = dtype)
+
+    def visitSliceType(self, ctx: RustParser.SliceTypeContext):
+        dtype = self.visitTypeExpression(ctx.typeExpression())
+        return SliceType(dtype = dtype)
 
     def visitLiteral(self, ctx):
         if ctx.arrayLiteral():
@@ -721,7 +782,7 @@ class RustASTTransformer(RustVisitor):
                 return ArrayLiteral(
                     name=IdentifierExpression(name=name),
                     elements=index_exprs)
-        
+
         element_exprs = [self.visit(expr) for expr in ctx.expression()]
         return ArrayLiteral(name=name, elements=element_exprs)
 
@@ -771,7 +832,7 @@ class RustASTTransformer(RustVisitor):
             aliases.append(None)
 
         return UseDecl(paths, aliases)
-    
+
     def visitArrayAccess(self, ctx):
         index = self.visit(ctx.expression())
         name_token = ctx.Identifier()  # This returns a list of terminal nodes

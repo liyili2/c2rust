@@ -12,22 +12,22 @@ topLevelItem
 
 useDecl: 'use' typePath ('{' (typePath? (Identifier | '{' (Identifier ','?)* '}') ','? )* '}' ',' )* ';';
 topLevelDef: functionDef | structDef | interfaceDef | topLevelVarDef;
-topLevelVarDef: visibility? defKind? Identifier  ((':' typeExpr '=' expression ';') | '{' varDefField* '}');
-staticVarDecl: visibility? 'static'? 'mut'? Identifier ':' (typeExpr | Identifier) '=' initializer ';';
+topLevelVarDef: visibility? defKind? Identifier  ((':' typeExpression '=' expression ';') | '{' varDefField* '}');
+staticVarDecl: visibility? 'static'? 'mut'? Identifier ':' (typeExpression | Identifier) '=' initializer ';';
 defKind: 'const' | 'union' | 'unsafe';
-varDefField: visibility? Identifier ':' typeExpr ','?;
+varDefField: visibility? Identifier ':' typeExpression ','?;
 
-typeAlias: visibility? 'type' Identifier '=' typeExpr ';';
+typeAlias: visibility? 'type' Identifier '=' typeExpression ';';
 interfaceDef: 'impl' Identifier '{' functionDef+ '}' ;
 
 externBlock: 'extern' STRING_LITERAL '{' externItem* '}';
 externItem
     : visibility? 'type' Identifier ';'
-    | visibility? 'static' 'mut'? Identifier ':' typeExpr ';'
+    | visibility? 'static' 'mut'? Identifier ':' typeExpression ';'
     | visibility? 'fn' Identifier '(' externParams? ')' 
-        ('->' typeExpr)? ';';
+        ('->' typeExpression)? ';';
 externParams: externParam (',' externParam)* (',' '...')? | '...';
-externParam: (UNDERSCORE | Identifier)? ':' (typeExpr | ELLIPSIS);
+externParam: (UNDERSCORE | Identifier)? ':' (typeExpression | ELLIPSIS);
 
 visibility: 'pub';
 unsafeModifier: 'unsafe';
@@ -44,34 +44,45 @@ attrArg: Identifier ('=' attrValue)?;
 attrValue: STRING_LITERAL | Number | Identifier;
 
 structDef: visibility? 'struct' Identifier '{' structField* '}';
-structField: visibility? Identifier ':' typeExpr ','?;
+structField: visibility? Identifier ':' typeExpression ','?;
 structLiteral: Identifier '{' structLiteralField* '}' ;
 structLiteralField: Identifier (':' expression)? ','? ;
 
-functionDef: visibility? unsafeModifier? externAbi? 'fn' Identifier ('()' | '(' paramList? ')') '->'? typeExpr? block;
+functionDef: visibility? unsafeModifier? externAbi? 'fn' Identifier ('()' | '(' paramList? ')') '->'? typeExpression? block;
 paramList: param (',' param)* (',')?;
-param: '&'? 'mut'? Identifier (':' typeExpr)?;
+param: '&'? 'mut'? Identifier (':' typeExpression)?;
 
-typeExpr: basicType | pointerType;
-pointerType: '*' ('mut' | 'const') (typeExpr)?;
+typePath: Identifier (DOUBLE_COLON Identifier)* ;
+
+typeExpression: basicType | pointerType;
 basicType
-    : 'i32'
+    : scalarType
+    | stdLibraryType
     | safeNonNullWrapper
-    | 'String'
-    | 'bool'
-    | 'u8'
     | arrayType
-    | typePath basicType
-    | ( DOUBLE_COLON? '<' typeExpr (',' typeExpr)* '>' '()'? )
-    | Identifier ('<' typeExpr (',' typeExpr)* '>')?
-    | Identifier '<' typeExpr '>'
-    | '&' typeExpr
-    | '[' typeExpr ']'
+    | pathType
+    | genericType
+    | referenceType
+    | sliceType
+    | unitType
     | Identifier;
-
-safeNonNullWrapper: 'Option<NonNull<' typeExpr ('>>' | '>' '>') ;
-typePath: Identifier DOUBLE_COLON | DOUBLE_COLON? Identifier (DOUBLE_COLON Identifier)* ;
+pointerType: '*' (MUT | CONST) (typeExpression)?;
+scalarType: intType | floatingPointType | boolType | charType;
+intType: signedIntType | unsignedIntType;
+signedIntType: 'i8' | 'i16' | 'i32' | 'i64' | 'i128';
+unsignedIntType: 'u8' | 'u16' | 'u32' | 'u64' | 'u128';
+floatingPointType: 'f32' | 'f64';
+boolType: 'bool';
+charType: 'char';
+stdLibraryType: stringType;
+stringType: 'String';
+safeNonNullWrapper: 'Option<NonNull<' typeExpression ('>>' | '>' '>') ;
 arrayType: '[' basicType ';' Number ']' ;
+pathType: typePath basicType;
+genericType: typePath? '<' typeExpression (',' typeExpression)* '>';
+referenceType: '&' typeExpression;
+sliceType: '[' typeExpression ']';
+unitType: '()';
 
 block: unsafeModifier? '{' statement* returnStmt? '}';
 statement
@@ -97,9 +108,9 @@ statement
     ;
 
 conditionalAssignmentStmt: 'let'? (safeWrapper | expression) '=' expression 'else' block ';';
-functionCall: expression ('.' expression) callExpressionPostFix ';' | expression callExpressionPostFix ';' ;
+functionCall: expression ('.' expression)? callExpressionPostFix ';';
 letStmt: 'let' varDef '=' expression ';' | 'let' varDef initBlock | 'let' '(' (varDef ','?)* ')' '=' '(' (expression ','?)* ')' ';';
-varDef: 'ref'? 'mut'? Identifier (':' typeExpr)?;
+varDef: 'ref'? 'mut'? Identifier (':' typeExpression)?;
 compoundOp: '+=' | '-=' | '*=' | '/=' | '%=' | '&=' | '|=' | '^=' ;
 compoundAssignment: expression compoundOp expression ';' ;
 matchStmt: 'match' expression '{' matchArm+ '}' ;
@@ -134,8 +145,7 @@ expression
     | unaryOpes expression
     | borrowExpression
     | unsafeModifier parenExpression
-    | expression typeExpr
-    | basicTypeCastExpr
+    | expression typeExpression
     | expression rangeSymbol expression
     | dereferenceExpression
     | expression compoundOps expression
@@ -145,7 +155,6 @@ expression
     | arrayDeclaration
     ;
 
-basicTypeCastExpr: typeExpr typePath;
 unsafeExpression: 'unsafe' '{' expression '}' ;
 qualifiedExpression: '<' expression '>';
 structDefInit: Identifier '=' '{' expression '}' ';' ;
@@ -153,13 +162,12 @@ arrayDeclaration: Identifier '!'? '[' Number ';' expression ']' ;
 typePathExpression: (Identifier DOUBLE_COLON)+ ;
 patternPrefix: 'let'? pattern '=' ;
 pattern: safeWrapper | 'ref'? 'mut'? Identifier;
-castExpressionPostFix: 'as' typeExpr ('as' typeExpr)*;
+castExpressionPostFix: 'as' typeExpression ('as' typeExpression)*;
 compoundOps: '+=' | '-=' | '*=' | '/=' | '%=' | '&=' | '|=' | '^=';
 rangeSymbol: '..';
 
 binaryOps: '*' | '/' | '%' | '+' | '-' | '==' | '!=' | '>' | '<' | '||' | '&&' | '>>' | '&' | '>=' | '<=';
 structFieldDec: Identifier '{' structLiteralField (',' structLiteralField)* ','? '}' ;
-MUT: 'mut';
 unaryOpes: '!' | '+' | '-';
 parenExpression: '(' expression ')' | '{' expression '}';
 dereferenceExpression: '*' expression;
@@ -177,6 +185,9 @@ NONE: 'None';
 literal: arrayLiteral | HexNumber | Number | SignedNumber | BYTE_STRING_LITERAL | 
          Binary | STRING_LITERAL | booleanLiteral | CHAR_LITERAL | byteLiteral |  NONE;
 byteLiteral: 'b\'.\'' | 'b\'|\'' | 'b\'*\'' | 'b\'' LPAREN '\'' | 'b\'' RPAREN '\'' | 'b\'+\'' | 'b\'?\'';
+
+MUT: 'mut';
+CONST: 'const';
 
 booleanLiteral: TRUE | FALSE;
 Binary: '0b' [0-1]+;

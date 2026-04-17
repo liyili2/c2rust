@@ -422,6 +422,7 @@ class Simulator(RustProgramVisitor):
         identifier_val = self.stack.get(node.name())
         return identifier_val
 
+    # TODO: Completely ignore this as these does not affect the answer.
     def visit_CastExpr(self, node: CastExpression):
         # print(node.expr)
         cast_result = node.expr.accept(self)

@@ -247,7 +247,7 @@ class LibFuncMalloc(LibFunction):
 
         print("argument")
         print(args[0].expr)
-        print(args[0].type)
+        print(args[0].dtype)
         print("result from visitor")
         print(args[0].accept(visitor))
         # visitor.stack.update({caller.name: val + to_be_added})

@@ -278,21 +278,21 @@ class RustListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by RustParser#typeExpr.
-    def enterTypeExpr(self, ctx:RustParser.TypeExprContext):
+    # Enter a parse tree produced by RustParser#typePath.
+    def enterTypePath(self, ctx:RustParser.TypePathContext):
         pass
 
-    # Exit a parse tree produced by RustParser#typeExpr.
-    def exitTypeExpr(self, ctx:RustParser.TypeExprContext):
+    # Exit a parse tree produced by RustParser#typePath.
+    def exitTypePath(self, ctx:RustParser.TypePathContext):
         pass
 
 
-    # Enter a parse tree produced by RustParser#pointerType.
-    def enterPointerType(self, ctx:RustParser.PointerTypeContext):
+    # Enter a parse tree produced by RustParser#typeExpression.
+    def enterTypeExpression(self, ctx:RustParser.TypeExpressionContext):
         pass
 
-    # Exit a parse tree produced by RustParser#pointerType.
-    def exitPointerType(self, ctx:RustParser.PointerTypeContext):
+    # Exit a parse tree produced by RustParser#typeExpression.
+    def exitTypeExpression(self, ctx:RustParser.TypeExpressionContext):
         pass
 
 
@@ -305,6 +305,96 @@ class RustListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by RustParser#pointerType.
+    def enterPointerType(self, ctx:RustParser.PointerTypeContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#pointerType.
+    def exitPointerType(self, ctx:RustParser.PointerTypeContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#scalarType.
+    def enterScalarType(self, ctx:RustParser.ScalarTypeContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#scalarType.
+    def exitScalarType(self, ctx:RustParser.ScalarTypeContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#intType.
+    def enterIntType(self, ctx:RustParser.IntTypeContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#intType.
+    def exitIntType(self, ctx:RustParser.IntTypeContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#signedIntType.
+    def enterSignedIntType(self, ctx:RustParser.SignedIntTypeContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#signedIntType.
+    def exitSignedIntType(self, ctx:RustParser.SignedIntTypeContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#unsignedIntType.
+    def enterUnsignedIntType(self, ctx:RustParser.UnsignedIntTypeContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#unsignedIntType.
+    def exitUnsignedIntType(self, ctx:RustParser.UnsignedIntTypeContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#floatingPointType.
+    def enterFloatingPointType(self, ctx:RustParser.FloatingPointTypeContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#floatingPointType.
+    def exitFloatingPointType(self, ctx:RustParser.FloatingPointTypeContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#boolType.
+    def enterBoolType(self, ctx:RustParser.BoolTypeContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#boolType.
+    def exitBoolType(self, ctx:RustParser.BoolTypeContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#charType.
+    def enterCharType(self, ctx:RustParser.CharTypeContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#charType.
+    def exitCharType(self, ctx:RustParser.CharTypeContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#stdLibraryType.
+    def enterStdLibraryType(self, ctx:RustParser.StdLibraryTypeContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#stdLibraryType.
+    def exitStdLibraryType(self, ctx:RustParser.StdLibraryTypeContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#stringType.
+    def enterStringType(self, ctx:RustParser.StringTypeContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#stringType.
+    def exitStringType(self, ctx:RustParser.StringTypeContext):
+        pass
+
+
     # Enter a parse tree produced by RustParser#safeNonNullWrapper.
     def enterSafeNonNullWrapper(self, ctx:RustParser.SafeNonNullWrapperContext):
         pass
@@ -314,21 +404,57 @@ class RustListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by RustParser#typePath.
-    def enterTypePath(self, ctx:RustParser.TypePathContext):
-        pass
-
-    # Exit a parse tree produced by RustParser#typePath.
-    def exitTypePath(self, ctx:RustParser.TypePathContext):
-        pass
-
-
     # Enter a parse tree produced by RustParser#arrayType.
     def enterArrayType(self, ctx:RustParser.ArrayTypeContext):
         pass
 
     # Exit a parse tree produced by RustParser#arrayType.
     def exitArrayType(self, ctx:RustParser.ArrayTypeContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#pathType.
+    def enterPathType(self, ctx:RustParser.PathTypeContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#pathType.
+    def exitPathType(self, ctx:RustParser.PathTypeContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#genericType.
+    def enterGenericType(self, ctx:RustParser.GenericTypeContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#genericType.
+    def exitGenericType(self, ctx:RustParser.GenericTypeContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#referenceType.
+    def enterReferenceType(self, ctx:RustParser.ReferenceTypeContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#referenceType.
+    def exitReferenceType(self, ctx:RustParser.ReferenceTypeContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#sliceType.
+    def enterSliceType(self, ctx:RustParser.SliceTypeContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#sliceType.
+    def exitSliceType(self, ctx:RustParser.SliceTypeContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#unitType.
+    def enterUnitType(self, ctx:RustParser.UnitTypeContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#unitType.
+    def exitUnitType(self, ctx:RustParser.UnitTypeContext):
         pass
 
 
@@ -527,15 +653,6 @@ class RustListener(ParseTreeListener):
 
     # Exit a parse tree produced by RustParser#expression.
     def exitExpression(self, ctx:RustParser.ExpressionContext):
-        pass
-
-
-    # Enter a parse tree produced by RustParser#basicTypeCastExpr.
-    def enterBasicTypeCastExpr(self, ctx:RustParser.BasicTypeCastExprContext):
-        pass
-
-    # Exit a parse tree produced by RustParser#basicTypeCastExpr.
-    def exitBasicTypeCastExpr(self, ctx:RustParser.BasicTypeCastExprContext):
         pass
 
 

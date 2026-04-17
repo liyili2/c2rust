@@ -114,7 +114,7 @@ class RustASTPrinter(RustASTVisitor):
     def visitBoolType(self, node):
         return "bool"
 
-    def visitIntType(self, node):
+    def visitSignedIntType(self, node):
         return "i32"
 
     def visitStringType(self, node):
