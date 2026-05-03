@@ -1,5 +1,5 @@
 from rust.ast.ASTNode import ASTNode
-from rust.ast.RustASTVisitor import RustASTVisitor
+# from rust.ast.RustASTVisitor import RustASTVisitor
 from rust.ast.common import DeclarationInfo
 
 
@@ -11,7 +11,7 @@ class Param(ASTNode):
         self.isMutable = isMutable
         self.parent = None
 
-    def accept(self, visitor: RustASTVisitor):
+    def accept(self, visitor):
         return visitor.visitParam(self)
 
 
@@ -21,5 +21,5 @@ class FunctionParamList(ASTNode):
         super().__init__()
         self.params = params
 
-    def accept(self, visitor: RustASTVisitor):
+    def accept(self, visitor):
         return visitor.visitFunctionParamList(self)
