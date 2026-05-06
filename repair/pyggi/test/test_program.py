@@ -1,9 +1,9 @@
 import pytest
 import os
 import random
-from pyggi.base import Patch
-from pyggi.line import LineProgram, LineInsertion, LineEngine
-from pyggi.tree import TreeProgram, StmtInsertion, AstorEngine
+from repair.pyggi.base import Patch
+from repair.pyggi.line import LineProgram, LineInsertion, LineEngine
+from repair.pyggi.tree import TreeProgram, StmtInsertion, AstorEngine
 
 class MyLineProgram(LineProgram):
     def compute_fitness(self, result, return_code, stdout, stderr, elapsed_time):

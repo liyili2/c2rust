@@ -1,7 +1,7 @@
 import pytest
-from pyggi.base import Patch
-from pyggi.line import LineProgram
-from pyggi.line import LineDeletion, LineMoving, LineInsertion
+from repair.pyggi.base import Patch
+from repair.pyggi.line import LineProgram
+from repair.pyggi.line import LineDeletion, LineMoving, LineInsertion
 
 @pytest.fixture(scope='session')
 def setup():

@@ -3,7 +3,7 @@ import random
 import sys
 
 import pytest
-from pyggi.mutation.visitor import MutationVisitor
+from repair.pyggi.mutation.visitor import MutationVisitor
 from rust.ast import TypeChecker
 from rust.ast import Program
 

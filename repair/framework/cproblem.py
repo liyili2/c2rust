@@ -1,4 +1,4 @@
-from pyggi.base.edit import AbstractEdit
+from repair.pyggi.base.edit import AbstractEdit
 from jmetal.core.problem import Problem
 from .cpatch import CPatch
 from .cprogram import CProgram

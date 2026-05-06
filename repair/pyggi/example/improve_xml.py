@@ -5,8 +5,8 @@ import sys
 import random
 import argparse
 import re
-from pyggi.tree import TreeProgram, StmtReplacement, StmtInsertion, StmtDeletion
-from pyggi.algorithms import LocalSearch
+from repair.pyggi.tree import TreeProgram, StmtReplacement, StmtInsertion, StmtDeletion
+from repair.pyggi.algorithms import LocalSearch
 from improve_java import MyProgram
 
 class MyXMLProgram(TreeProgram, MyProgram):

@@ -4,11 +4,11 @@ Automated program repair ::
 import argparse
 import logging
 # For pyggi default program + repair
-from pyggi.tree import XmlEngine
-from pyggi.tree import StmtReplacement, StmtInsertion, StmtDeletion  # Default Python program support
+from repair.pyggi.tree.xml_engine import XmlEngine
+from repair.pyggi.tree.tree import StmtReplacement, StmtInsertion, StmtDeletion  # Default Python program support
 # From jMetalpy
 from jmetal.algorithm.singleobjective import GeneticAlgorithm
-from jmetal.operator import BinaryTournamentSelection
+from jmetal.operator.selection import BinaryTournamentSelection
 from jmetal.util.termination_criterion import StoppingByEvaluations
 # For modified program + repair
 from repair.framework.cprogram import CProgram
@@ -61,7 +61,7 @@ class StoppingByEvaluationORFitness(StoppingByEvaluations):
 
 def parser_generator():
     parser = argparse.ArgumentParser(description='PYGGI Bug Repair Example')
-    parser.add_argument('--project_path', type=str,   default='Benchmarks/Aggregate/rust2xml')
+    parser.add_argument('--project_path', type=str,   default='Benchmarks/aggregate/')
     #parser.add_argument('--project_path', type=str,   default='Benchmark/vqo_small_circuit_ex')
     parser.add_argument('--algorithm',    type=str,   default='ga')
     parser.add_argument('--epoch',        type=int,   default=1,            help='total epoch(default: 1)')

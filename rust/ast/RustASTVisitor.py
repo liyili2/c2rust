@@ -7,7 +7,7 @@ from rust.ast.Statement import LetStmt, ForStmt, IfStmt, AssignStmt, ReturnStmt,
     MatchPattern, CompoundAssignment, LoopStmt, BreakStmt, ContinueStmt, TypeWrapper
 from rust.ast.Struct import StructField
 from rust.ast.TopLevel import *
-from rust.ast.Block import *
+from rust.ast.Block import Block
 from rust.ast.ASTNode import ASTNode
 from rust.ast.Type import SafeNonNullWrapper, SignedIntType, StringType, BoolType, ArrayType, \
     PathType, \

@@ -1,5 +1,5 @@
 from rust.ast.ASTNode import ASTNode
-from rust.ast.RustASTVisitor import RustASTVisitor
+# from rust.ast.RustASTVisitor import RustASTVisitor
 
 
 class Statement(ASTNode):
@@ -168,7 +168,7 @@ class StructDef(Statement):
         self.name = name
         self.fields = fields
 
-    def accept(self, visitor: RustASTVisitor):
+    def accept(self, visitor):
         return visitor.visitStructDef(self)
 
 

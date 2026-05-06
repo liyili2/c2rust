@@ -5,7 +5,7 @@ from framework.mutation import QMutation
 from framework.cpatch import QPatch
 from Source.repairCode.program import QProblem
 
-from pyggi.base import AbstractProgram
+from repair.pyggi.base import AbstractProgram
 
 import unittest
 #from antlr4 import *

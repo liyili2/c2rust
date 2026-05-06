@@ -1,4 +1,4 @@
-from rust.ast.common import DeclarationInfo
+from rust.commons.DeclarationInfo import DeclarationInfo
 
 class VarDef:
     def __init__(self, name, isMutable=False, by_ref=False, var_type=None):

@@ -1,6 +1,6 @@
 import pytest
 import shutil
-from pyggi.utils import get_file_extension
+from repair.pyggi.utils import get_file_extension
 
 class TestUtils(object):
 

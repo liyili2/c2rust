@@ -1,7 +1,6 @@
 from rust.ast.ASTNode import ASTNode
-from rust.ast.RustASTVisitor import RustASTVisitor
-# from rust.ast.common import DeclarationInfo
-
+# from rust.ast.RustASTVisitor import RustASTVisitor
+from rust.commons.DeclarationInfo import DeclarationInfo
 
 class TopLevel(ASTNode):
 
@@ -22,7 +21,7 @@ class FunctionDef(TopLevel):
         self.body = body
         self.isUnsafe = isUnsafe
 
-    def accept(self, visitor: RustASTVisitor):
+    def accept(self, visitor):
         return visitor.visitFunctionDef(self)
     
     def getChildren(self):

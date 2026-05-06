@@ -4,8 +4,8 @@ Automated Chemical Reaction Network repair tool::
 from datetime import datetime
 import random, time, os, sys, re
 from argparse import ArgumentParser
-from pyggi.base import AbstractProgram, Patch
-from pyggi.tree import XmlEngine, StmtReplacement, StmtDeletion, NewReaction, StmtInsertion
+from repair.pyggi.base import AbstractProgram, Patch
+from repair.pyggi.tree import XmlEngine, StmtReplacement, StmtDeletion, NewReaction, StmtInsertion
 from pyggi import INF
 from copy import deepcopy
 # jmetal

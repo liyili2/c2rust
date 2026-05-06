@@ -3,7 +3,7 @@ import os
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
-from pyggi.genprog import GenProg
+from repair.pyggi.genprog import GenProg
 from antlr4 import CommonTokenStream, InputStream
 from rust.parser.RustLexer import RustLexer
 from rust.parser import RustParser

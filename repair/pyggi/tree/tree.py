@@ -3,7 +3,7 @@ import ast
 import astor
 import random
 from abc import abstractmethod
-from pyggi.tree.rust_engine import RustEngine
+from repair.pyggi.tree.rust_engine import RustEngine
 from . import AbstractTreeEngine, AstorEngine, XmlEngine
 from ..base import AbstractProgram, AbstractEdit
 from ..utils import get_file_extension
