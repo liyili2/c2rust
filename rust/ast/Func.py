@@ -1,6 +1,6 @@
 from rust.ast.ASTNode import ASTNode
 # from rust.ast.RustASTVisitor import RustASTVisitor
-from rust.ast.common import DeclarationInfo
+from rust.commons.DeclarationInfo import DeclarationInfo
 
 
 class Param(ASTNode):

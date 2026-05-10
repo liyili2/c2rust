@@ -1,11 +1,16 @@
 import os
 from antlr4 import CommonTokenStream, InputStream
 from rust.parser.RustLexer import RustLexer
-from rust.parser import RustParser
-from rust.ast.Transformer import ParseTreeASTTransformer, setParents
-from pyggi.mutation.replacement import ReplacementOperator
-from pyggi.tree.abstract_engine import AbstractTreeEngine
+from rust.parser.RustParser import RustParser
+from rust.commons.RustASTTransformer import setParents
+from rust.commons.RustASTTransformer import RustASTTransformer
+from repair.pyggi.mutation.replacement import ReplacementOperator
+from repair.pyggi.tree.abstract_engine import AbstractTreeEngine
 from typing import List, Tuple
+from rust.ast.TopLevel import *
+from rust.ast.Statement import *
+from rust.ast.Expression import *
+from rust.ast.Func import *
 
 def pretty_print_ast(node, indent=0, visited=None):
     if visited is None:
@@ -59,7 +64,7 @@ class RustEngine(AbstractTreeEngine):
         token_stream = CommonTokenStream(lexer)
         parser = RustParser(token_stream)
         tree = parser.program()
-        builder = ParseTreeASTTransformer()
+        builder = RustASTTransformer()
         ast=builder.visit(tree)
         setParents(ast)
         cls.ast = ast
@@ -267,7 +272,7 @@ def collect_expressions(node, path="./", index_map=None) -> List[Tuple[str, obje
     if isinstance(node, Statement):
         if isinstance(node, LetStmt):
             for var_def, value in zip(node.var_defs, node.values):
-                is_cast_expr = isinstance(value, CastExpr)
+                is_cast_expr = isinstance(value, CastExpression)
                 has_type_path = False
                 if var_def.dtype is not None:
                     if  isinstance(var_def.dtype, TypePathExpression):

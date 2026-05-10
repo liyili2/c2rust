@@ -136,7 +136,7 @@ class CharLiteral(Expression):
 class IntLiteral(Expression):
     def __init__(self, value: int):
         super().__init__()
-        self.type = SignedIntType()
+        self.type = SignedIntType("int")
         self.value = value
 
     def accept(self, visitor):
@@ -262,7 +262,6 @@ class TypePath(Expression):
 
     def accept(self, visitor):
         return visitor.visitTypePath(self)
-
 
 class TypePathExpression(Expression):
     def __init__(self, type_path, last_type):

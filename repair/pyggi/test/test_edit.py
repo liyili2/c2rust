@@ -1,9 +1,9 @@
 import pytest
 import copy
-from pyggi.line import LineProgram
-from pyggi.line import LineReplacement, LineInsertion, LineDeletion
-from pyggi.tree import TreeProgram
-from pyggi.tree import StmtReplacement, StmtInsertion, StmtDeletion
+from repair.pyggi.line import LineProgram
+from repair.pyggi.line import LineReplacement, LineInsertion, LineDeletion
+from repair.pyggi.tree import TreeProgram
+from repair.pyggi.tree import StmtReplacement, StmtInsertion, StmtDeletion
 
 @pytest.fixture(scope='session')
 def setup_line_replacement():

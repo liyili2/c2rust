@@ -1,4 +1,4 @@
-from external.examples.libxml2.repo.doc.apibuild import identifier
+# from external.examples.libxml2.repo.doc.apibuild import identifier
 from rust.ast.ASTNode import *
 from rust.ast.TopLevel import *
 from rust.ast.Struct import *
@@ -107,7 +107,7 @@ class RustASTTransformer(RustVisitor):
     def visitFunctionDef(self, ctx):
         name = ctx.Identifier().getText()
         params = self.visit(ctx.paramList()) if ctx.paramList() else []
-        return_type = self.visit(ctx.typeExpr()) if ctx.typeExpr() else None
+        return_type = self.visit(ctx.typeExpression()) if ctx.typeExpression() else None
         body = self.visit(ctx.block())
         unsafe = False
         if ctx.unsafeModifier():
@@ -117,7 +117,7 @@ class RustASTTransformer(RustVisitor):
     def visitParam(self, ctx):
         is_mut = ctx.getChild(0).getText() == "mut"
         identifier = ctx.Identifier().getText()
-        type_ctx = ctx.typeExpr()
+        type_ctx = ctx.typeExpression()
         typ = self.visit(type_ctx) if type_ctx else None
         return Param(name=identifier, typ=typ, isMutable=is_mut)
 
@@ -125,7 +125,8 @@ class RustASTTransformer(RustVisitor):
         param_list = FunctionParamList([])
         for param_ctx in ctx.param():
             param = self.visit(param_ctx)
-            param.set_parent(param_list)
+            # Temporary change:
+            # param.set_parent(param_list)
             param_list.params.append(param)
         return param_list
 
@@ -265,7 +266,7 @@ class RustASTTransformer(RustVisitor):
             name = tokens[0]
 
         if ':' in tokens:
-            var_type = self.visit(ctx.typeExpr())
+            var_type = self.visit(ctx.typeExpression())
 
         return VarDef(name=name, isMutable=mutable, by_ref=by_ref, var_type=var_type)
 
@@ -318,7 +319,7 @@ class RustASTTransformer(RustVisitor):
         for stmt_ctx in ctx.statement():
             result = self.visit(stmt_ctx)
             stmts.append(result)
-        return Block(stmts=stmts, is_unsafe=isUnsafe)
+        return Block(stmts=stmts, isUnsafe=isUnsafe)
 
     def visitExprStmt(self, ctx):
         expr = self.visit(ctx.primaryExpression())
@@ -523,7 +524,7 @@ class RustASTTransformer(RustVisitor):
 
 
 
-        elif ctx.typeExpr():
+        elif ctx.typeExpression():
             expr = self.visit(ctx.expression(0))
             typeAccess = self.visit(ctx.typeExpr())
             return Expression(expression=expr, dtype=typeAccess)
@@ -607,7 +608,7 @@ class RustASTTransformer(RustVisitor):
         i = 0
         types = []
         while ctx.Identifier(i) is not None:
-            types.append(ctx.Identifier().getText())
+            types.append(ctx.Identifier(i).getText())
 
             i += 1
 
@@ -712,7 +713,7 @@ class RustASTTransformer(RustVisitor):
 
     def visitArrayType(self, ctx: RustParser.ArrayTypeContext):
         dtype = self.visitBasicType(ctx.basicType())
-        size = int(ctx.Number())
+        size = int(ctx.Number().getText())
         return ArrayType(dtype=dtype, size=size)
 
     def visitPathType(self, ctx: RustParser.PathTypeContext):

@@ -1,8 +1,8 @@
 import pytest
 import random
-from pyggi.base import Algorithm, Patch
-from pyggi.tree import TreeProgram, StmtReplacement, StmtInsertion, StmtDeletion, StmtMoving
-from pyggi.algorithms import LocalSearch
+from repair.pyggi.base import Algorithm, Patch
+from repair.pyggi.tree import TreeProgram, StmtReplacement, StmtInsertion, StmtDeletion, StmtMoving
+from repair.pyggi.algorithms import LocalSearch
 
 @pytest.fixture(scope='session')
 def setup_program():

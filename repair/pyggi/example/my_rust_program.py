@@ -1,9 +1,9 @@
 from copy import deepcopy
 import os
 from types import SimpleNamespace as Result
-from pyggi.tree.rust_engine import RustEngine
-from pyggi.base.patch import Patch
-from pyggi.tree.tree import TreeProgram
+from repair.pyggi.tree.rust_engine import RustEngine
+from repair.pyggi.base.patch import Patch
+from repair.pyggi.tree.tree import TreeProgram
 from rust.ast import TypeChecker
 import builtins
 import pytest

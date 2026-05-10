@@ -1,6 +1,6 @@
 from typing import List
 from rust.ast.ASTNode import CloneableASTNode
-from rust.ast.RustASTVisitor import RustASTVisitor
+# from rust.ast.RustASTVisitor import RustASTVisitor
 from rust.ast.Statement import Statement
 
 
@@ -12,7 +12,7 @@ class Block(CloneableASTNode):
         self.stmts = stmts
         self.is_unsafe = is_unsafe
 
-    def accept(self, visitor: RustASTVisitor):
+    def accept(self, visitor):
         return visitor.visitBlock(self)
 
     def statements(self):

@@ -3,16 +3,16 @@ Possible Edit Operators
 """
 import random
 from xml.dom import minidom
-#from pyggi.base import BaseOperator
+#from repair.pyggi.base import BaseOperator
 from lxml import etree
 import copy
 
 from RustCode.AST_Scripts.typechecker import TypeInfer
 from framework.configs.type_env import type_envs
-#from pyggi.tree import AbstractTreeEngine
+#from repair.pyggi.tree import AbstractTreeEngine
 # from Source.quantumCode.AST_Scripts import XMLExpPrinter
-from pyggi.tree.xml_engine import XmlEngine
-from pyggi.tree import StmtReplacement, StmtInsertion, StmtDeletion
+from repair.pyggi.tree.xml_engine import XmlEngine
+from repair.pyggi.tree import StmtReplacement, StmtInsertion, StmtDeletion
 import xml.etree.ElementTree as ET
 
 ## Implement new operators here
