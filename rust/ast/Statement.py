@@ -189,7 +189,7 @@ class Block(Statement):
         self.isUnsafe = isUnsafe
 
     def accept(self, visitor):
-        return visitor.visit_Block(self)
+        return visitor.visitBlock(self)
     
     def getChildren(self):
         return self.stmts

@@ -8,7 +8,7 @@ from rust.ast.Block import *
 from rust.ast.utils import *
 from rust.parser.RustParser import RustParser
 from rust.parser.RustVisitor import RustVisitor
-
+from rust.ast.MarkedASTNode import MarkedASTNode
 
 class RustASTTransformer(RustVisitor):
 
@@ -344,7 +344,7 @@ class RustASTTransformer(RustVisitor):
         if ctx.block():
             return self.visit(ctx.block())
         if ctx.letStmt():
-            return self.visit(ctx.letStmt())
+            return MarkedASTNode(self.visit(ctx.letStmt()))
         elif ctx.ifStmt():
             return self.visit(ctx.ifStmt())
         elif ctx.functionCall():
@@ -461,23 +461,17 @@ class RustASTTransformer(RustVisitor):
             return CastExpression(expression=expr, dtype=cast)
         elif ctx.compoundOps():
             return self.visitCompoundAssignment(ctx.compoundOps())
-
         elif ctx.fieldAccessPostFix():
             base = self.visit(ctx.getChild(0))
             postfix = self.visitPrimaryExpression(ctx.fieldAccessPostFix().primaryExpression())
             return FieldAccessExpr(base, postfix)
-
         elif ctx.MUT():
             expr = self.visit(ctx.expression(0))
             return Expression(expression=expr)
-
         elif ctx.unaryOpes():
             op = ctx.unaryOpes().getText()
             expr = self.visit(ctx.expression(0))
             return UnaryExpr(op, expr)
-
-
-
         elif ctx.rangeSymbol():
             left = self.visit(ctx.expression(0))
             op = ctx.rangeSymbol().getText()
@@ -521,8 +515,6 @@ class RustASTTransformer(RustVisitor):
 
         elif ctx.structLiteral():
             return self.visit(ctx.structLiteral())
-
-
 
         elif ctx.typeExpression():
             expr = self.visit(ctx.expression(0))
