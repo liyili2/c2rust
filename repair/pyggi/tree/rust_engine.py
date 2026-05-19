@@ -11,7 +11,7 @@ from rust.ast.TopLevel import *
 from rust.ast.Statement import *
 from rust.ast.Expression import *
 from rust.ast.Func import *
-from rust.ast.registry import ASTNodeRegistry
+from rust.ast.MarkingVisitor import MarkingVisitor
 
 def pretty_print_ast(node, indent=0, visited=None):
     if visited is None:
@@ -67,8 +67,12 @@ class RustEngine(AbstractTreeEngine):
         tree = parser.program()
         builder = RustASTTransformer()
         ast=builder.visit(tree)
-        setParents(ast)
-        cls.ast = ast
+
+        marker = MarkingVisitor(ast)
+        marked_ast = marker.run()
+
+        setParents(marked_ast)
+        cls.ast = marked_ast
         cls.get_modification_points()
         return ast
 
@@ -83,7 +87,7 @@ class RustEngine(AbstractTreeEngine):
 
     @classmethod
     def get_modification_point(cls):
-        return ASTNodeRegistry.get_random_marked_node()
+        return cls.ast.get_random_marked()
 
     @classmethod
     def do_replace(cls, program, op, trees, modification_points):

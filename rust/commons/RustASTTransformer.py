@@ -8,7 +8,6 @@ from rust.ast.Block import *
 from rust.ast.utils import *
 from rust.parser.RustParser import RustParser
 from rust.parser.RustVisitor import RustVisitor
-from rust.ast.MarkedASTNode import MarkedASTNode
 
 class RustASTTransformer(RustVisitor):
 
@@ -344,7 +343,7 @@ class RustASTTransformer(RustVisitor):
         if ctx.block():
             return self.visit(ctx.block())
         if ctx.letStmt():
-            return MarkedASTNode(self.visit(ctx.letStmt()))
+            return self.visit(ctx.letStmt())
         elif ctx.ifStmt():
             return self.visit(ctx.ifStmt())
         elif ctx.functionCall():
