@@ -5,6 +5,7 @@ from rust.ast.Func import FunctionParamList, Param
 from rust.ast.Program import Program
 from rust.ast.Statement import LetStmt, ForStmt, IfStmt, AssignStmt, ReturnStmt, WhileStmt, MatchStmt, MatchArm, \
     MatchPattern, CompoundAssignment, LoopStmt, BreakStmt, ContinueStmt, TypeWrapper
+from rust.ast.VarDef import VarDef
 from rust.ast.Struct import StructField
 from rust.ast.TopLevel import *
 from rust.ast.Block import Block
@@ -110,6 +111,8 @@ class RustASTVisitor:
                 return self.visitRangeExpression(node)
             case SafeWrapper():
                 return self.visitSafeWrapper(node)
+            case VarDef():
+                return self.visitVarDef(node)
             case _:
                 raise NotImplementedError(f"No visit method defined for {type(node)}")
 
@@ -204,9 +207,9 @@ class RustASTVisitor:
 
     def visitFunctionCallExpression(self, node: FunctionCallExpression):
         retval = True
-        for arg in node.args():
-            retval = arg.accept(self) and retval
-
+        if node.args():
+            for arg in node.args():
+                retval = arg.accept(self) and retval
         return retval
 
     def visitBlock(self, node: Block):

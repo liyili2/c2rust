@@ -2,7 +2,7 @@ from rust.ast.Func import FunctionParamList, Param
 from rust.ast.Program import Program
 from rust.ast.RustASTVisitor import RustASTVisitor
 from rust.ast.TopLevel import FunctionDef
-
+from rust.commons.DeclarationInfo import DeclarationInfo
 
 class RustASTPrinter(RustASTVisitor):
 
@@ -53,7 +53,7 @@ class RustASTPrinter(RustASTVisitor):
     
     def visitVarDef(self, node):
         mut = "mut " if getattr(node, "is_mut", False) else ""
-        return f"{mut}{node.name}: {self.visit(node.dtype)}"  # or just node.name if no type
+        return f"{mut}{node.declarationInfo.name}: {self.visit(node.declarationInfo.type)}"  # or just node.name if no type
 
     def visitLiteral(self, node):
         return str(node.value)

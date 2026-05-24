@@ -1,8 +1,7 @@
-from rust.ast.ASTNode import ASTNode
 # from rust.ast.RustASTVisitor import RustASTVisitor
+from rust.ast.ASTNode import ASTNode, CloneableASTNode
 
-
-class Statement(ASTNode):
+class Statement(CloneableASTNode):
 
     def __init__(self, body=None):
         super().__init__()

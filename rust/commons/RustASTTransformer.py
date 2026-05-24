@@ -9,7 +9,6 @@ from rust.ast.utils import *
 from rust.parser.RustParser import RustParser
 from rust.parser.RustVisitor import RustVisitor
 
-
 class RustASTTransformer(RustVisitor):
 
     def __init__(self):
@@ -461,23 +460,17 @@ class RustASTTransformer(RustVisitor):
             return CastExpression(expression=expr, dtype=cast)
         elif ctx.compoundOps():
             return self.visitCompoundAssignment(ctx.compoundOps())
-
         elif ctx.fieldAccessPostFix():
             base = self.visit(ctx.getChild(0))
             postfix = self.visitPrimaryExpression(ctx.fieldAccessPostFix().primaryExpression())
             return FieldAccessExpr(base, postfix)
-
         elif ctx.MUT():
             expr = self.visit(ctx.expression(0))
             return Expression(expression=expr)
-
         elif ctx.unaryOpes():
             op = ctx.unaryOpes().getText()
             expr = self.visit(ctx.expression(0))
             return UnaryExpr(op, expr)
-
-
-
         elif ctx.rangeSymbol():
             left = self.visit(ctx.expression(0))
             op = ctx.rangeSymbol().getText()
@@ -521,8 +514,6 @@ class RustASTTransformer(RustVisitor):
 
         elif ctx.structLiteral():
             return self.visit(ctx.structLiteral())
-
-
 
         elif ctx.typeExpression():
             expr = self.visit(ctx.expression(0))

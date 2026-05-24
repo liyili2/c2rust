@@ -11,6 +11,7 @@ from rust.ast.TopLevel import *
 from rust.ast.Statement import *
 from rust.ast.Expression import *
 from rust.ast.Func import *
+from rust.ast.MarkingVisitor import MarkingVisitor
 
 def pretty_print_ast(node, indent=0, visited=None):
     if visited is None:
@@ -44,12 +45,12 @@ def pretty_print_ast(node, indent=0, visited=None):
     return '\n'.join(lines)
 
 class RustEngine(AbstractTreeEngine):
-    def parse(self, src_code):
-        lexer = RustLexer(InputStream(src_code))
-        tokens = CommonTokenStream(lexer)
-        parser = RustParser(tokens)
-        tree = parser.program()
-        return tree
+    # def parse(self, src_code):
+    #     lexer = RustLexer(InputStream(src_code))
+    #     tokens = CommonTokenStream(lexer)
+    #     parser = RustParser(tokens)
+    #     tree = parser.program()
+    #     return tree
 
     @classmethod
     def to_source_code(self, tree):
@@ -66,8 +67,13 @@ class RustEngine(AbstractTreeEngine):
         tree = parser.program()
         builder = RustASTTransformer()
         ast=builder.visit(tree)
-        setParents(ast)
-        cls.ast = ast
+
+        marker = MarkingVisitor(ast)
+        marked_ast = marker.run()
+
+        setParents(marked_ast)
+        cls.ast = marked_ast
+        cls.get_modification_points()
         return ast
 
     @classmethod
@@ -75,164 +81,28 @@ class RustEngine(AbstractTreeEngine):
         pass
 
     @classmethod
-    def get_modification_points(cls, ast_root):
-        points = cls._collect_nodes(ast_root)
-        return [(p, p) for p in points]
+    def get_modification_points(cls):
+        p = cls.get_modification_point()
+        print("point is ", p)
 
     @classmethod
-    def _collect_nodes(cls, node, visited=None):
-        if visited is None:
-            visited = set()
-
-        results = []
-        if id(node) in visited:
-            return results
-        visited.add(id(node))
-
-        if isinstance(node, StaticVarDecl):
-            results.append(node)
-
-        if isinstance(node, FunctionParamList):
-            results.append(node)
-
-        if isinstance(node, Statement):
-            results.append(node)
-            if isinstance(node, IfStmt):
-                if node.then_branch:
-                    results.extend(cls._collect_nodes(node.then_branch, visited))
-                if node.else_branch:
-                    results.extend(cls._collect_nodes(node.else_branch, visited))
-
-        if isinstance(node, Block):
-            for child in node.stmts:
-                results.extend(cls._collect_nodes(child, visited))
-
-        if isinstance(node, list):
-            for child in node:
-                results.extend(cls._collect_nodes(child, visited))
-
-        if hasattr(node, "__body__"):
-            for val in vars(node).values():
-                results.extend(cls._collect_nodes(val, visited))
-
-        elif hasattr(node, "__dict__"):
-            for val in vars(node).values():
-                results.extend(cls._collect_nodes(val, visited))
-
-        return results
+    def get_modification_point(cls):
+        return cls.ast.get_random_marked()
 
     @classmethod
     def do_replace(cls, program, op, trees, modification_points):
-        file_name, target_node = op.target
-        if isinstance(target_node, tuple):
-            _, target_node = target_node
-        replacementOperator = ReplacementOperator(trees[file_name], target_node)
-        trees[file_name] = replacementOperator.get_new_ast()
-        program.trees[file_name] = trees[file_name] 
-        return trees
-
-    @classmethod
-    def do_insert(cls, program, op, trees, modification_points):
-        file_name, target_node = op.target
-        if isinstance(target_node, tuple):
-            _, target_node = target_node
-        replacementOperator = ReplacementOperator(trees[file_name], target_node)
-        trees[file_name] = replacementOperator.get_new_ast()
-        program.trees[file_name] = trees[file_name] 
-        return trees
+        # TODO
+        pass
 
     @classmethod
     def do_delete(cls, program, op, trees, modification_points):
-        file_name, target_node = op.target
-        if isinstance(target_node, tuple):
-            _, target_node = target_node
-        replacementOperator = ReplacementOperator(trees[file_name], target_node)
-        trees[file_name] = replacementOperator.get_new_ast()
-        program.trees[file_name] = trees[file_name] 
-        return trees
+        # TODO
+        pass
 
     @classmethod
-    def _get_root_node(cls, node):
-        while hasattr(node, 'parent') and node.parent is not None:
-            node = node.parent
-        return node
-
-    @staticmethod
-    def _replace_node(target_node, new_node):
-        parent = getattr(target_node, 'parent', None)
-        if not parent:
-            return
-        for attr, val in vars(parent).items():
-            if val == target_node:
-                setattr(parent, attr, new_node)
-                return
-            elif isinstance(val, list):
-                for i in range(len(val)):
-                    if val[i] == target_node:
-                        val[i] = new_node
-                        return
-
-    @classmethod
-    def _extract_points_from_top_level(cls, item):
-        points = []
-
-        print("point class ", item.__class__)
-        if isinstance(item, TopLevelVarDef):
-            if str.startswith(item.def_kind, "unsafe"):
-                print("item1 is ", item)
-                points.append(item)
-        if isinstance(item, FunctionDef):
-            if item.unsafe:
-                points.extend(item)
-            print("1")
-            for stmt in item.body.stmts:
-                points.extend(collect_expressions(stmt, path=[item]))
-
-        elif isinstance(item, TopLevelVarDef):
-            print("2")
-            fields = getattr(item, 'fields', None)
-            if isinstance(fields, list):
-                for field in fields:
-                    points.extend(collect_expressions(field, path=[item]))
-            elif fields is not None:
-                print(f"⚠️ Warning: 'fields' on {item} is not a list: {type(fields).__name__}")
-                # for field in item.fields:
-                #     points.extend(collect_expressions(field, path=[item]))
-            if hasattr(item, 'type_'):
-                points.extend(collect_expressions(item.type_, path=[item]))
-
-        elif isinstance(item, StructDef):
-            print("3")
-            if hasattr(item, 'fields'):
-                for field in item.fields:
-                    points.extend(collect_expressions(field, path=[item]))
-
-        elif isinstance(item, ExternBlock):
-            for extern_item in item.items:
-                points.extend(collect_expressions(extern_item, path=[item]))
-
-        elif isinstance(item, Attribute):
-            for arg in item.args:
-                points.extend(collect_expressions(arg, path=[item]))
-
-        elif isinstance(item, TypeAliasDecl):
-            points.extend(collect_expressions(item.dtype, path=[item]))
-
-        elif isinstance(item, InterfaceDef):
-            print("54")
-            for func in item.functions:
-                print("function in interfaceDef")
-                points.extend(collect_expressions(func, path=[item]))
-
-        elif isinstance(item, ExternFunctionDecl):
-            if item.return_type:
-                points.extend(collect_expressions(node=item.return_type, path=[item]))
-            for param in item.params:
-                points.extend(collect_expressions(param, path=[item]))
-
-        # print("points are ", len(points))
-
-        return points
+    def do_insert(cls, program, op, trees, modification_points):
+        # TODO
+        pass
 
     @classmethod
     def get_source(cls, program, file_name, index):
@@ -244,69 +114,7 @@ class RustEngine(AbstractTreeEngine):
 
     @classmethod
     def dump(cls, contents_of_file, file_name):
-        program_ctx = contents_of_file
-        # unparser = RustUnparser()
-        return program_ctx
-        # return unparser.visitProgram(program_ctx)
-
-def collect_expressions(node, path="./", index_map=None) -> List[Tuple[str, object]]:
-
-    if index_map is None:
-        index_map = {}
-    results = []
-
-    if isinstance(node, FunctionDef):
-        if node.unsafe:
-            results.append(node)
-        collect_expressions(node.body, "./", index_map)
-
-    if isinstance(node, Block):
-        if node.is_unsafe:
-            results.append(node)
-        for stmt in node.stmts:
-            collect_expressions(stmt)
-
-    if isinstance(node, Expression):
-        results.append((path.rstrip("/"), node))
-
-    if isinstance(node, Statement):
-        if isinstance(node, LetStmt):
-            for var_def, value in zip(node.var_defs, node.values):
-                is_cast_expr = isinstance(value, CastExpression)
-                has_type_path = False
-                if var_def.dtype is not None:
-                    if  isinstance(var_def.dtype, TypePathExpression):
-                        has_type_path = True
-                        results.append(node)
-                if is_cast_expr or has_type_path or var_def.dtype==None:
-                    results.append(node)
-
-    if not hasattr(node, "__dict__"):
-        return results
-
-    node_type = type(node).__name__
-    index_map.setdefault(node_type, 0)
-    current_index = index_map[node_type]
-    index_map[node_type] += 1
-
-    for field_name, field_value in vars(node).items():
-        full_path = f"{path}{node_type}[{current_index}]/{field_name}"
-        if isinstance(node, Expression):
-            if node.isUnsafe:
-                results.append((full_path, field_value))
-
-        if isinstance(node, Statement):
-            results.append((full_path, field_value))
-
-        elif isinstance(node, list):
-            for i, item in enumerate(field_value):
-                if isinstance(item, (Expression, Statement)):
-                    results += collect_expressions(item, f"{full_path}[{i}]/", index_map)
-
-        elif hasattr(node, "__dict__"):
-            results += collect_expressions(field_value, f"{full_path}/", index_map)
-
-    return results
+        pass
 
 def get_file_extension(file_path):
     """
