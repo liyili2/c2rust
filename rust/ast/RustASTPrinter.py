@@ -32,7 +32,7 @@ class RustASTPrinter(RustASTVisitor):
 
     def visitParam(self, ctx: Param):
         mut = "mut " if ctx.isMutable else ""
-        return f"{mut}{ctx.declarationInfo.name}: {ctx.declarationInfo.dtype}"
+        return f"{mut}{ctx.declarationInfo.name}: {ctx.declarationInfo.type}"
 
     def visitTypeName(self, node):
         return node.name  # assuming TypeName just wraps a string type name

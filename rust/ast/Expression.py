@@ -87,13 +87,13 @@ class FunctionCallExpression(Expression):
         return visitor.visitFunctionCallExpression(self)
 
     def callee(self):
-        return self.expression()[0]
+        return self.expression[0]
 
     def args(self):
-        return self.expression()[1]
+        return self.expression[1]
 
     def caller(self):
-        return self.expression()[2]
+        return self.expression[2]
 
 
 class CastExpression(Expression):
