@@ -14,7 +14,6 @@ from rust.ast.Type import SafeNonNullWrapper, SignedIntType, StringType, BoolTyp
     PathType, \
     GenericType, ReferenceType, SliceType, CharType, UnknownType, UnsignedIntType, FloatingPointType, PointerType
 
-
 class RustASTVisitor:
 
     def visit(self, node: ASTNode):

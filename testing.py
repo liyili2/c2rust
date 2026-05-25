@@ -38,9 +38,9 @@ for uid, node in marked_with_ids:
 
 print("marked ast has ", marked_nodes_count, " marked nodes")
 
-# node = marked_ast.get_random_marked()
-# print("marked node: ", node)
-engine = RustEngine()
-engine.get_contents(file_path)
+node = marked_ast.get_random_marked()
+print("marked node: ", node)
+# engine = RustEngine()
+# engine.get_contents(file_path)
 # printer = RustASTPrinter()
 # reassmbled_source = printer.visit(ast)
