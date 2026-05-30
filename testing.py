@@ -67,22 +67,22 @@ print(pretty)
 test_printer = RustASTPrinter()
 testing = test_printer.visitProgram(ast)
 
-marker = MarkingVisitor(ast)
-marked_ast = marker.run()
-
-all_marked = marked_ast.list_marked_nodes()
-
-marked_with_ids = marked_ast.list_marked_nodes_with_ids()
-marked_nodes_count = 0
-for uid, node in marked_with_ids:
-    print(f"{uid}: {type(node).__name__}")
-    marked_nodes_count += 1
-
-print("marked ast has ", marked_nodes_count, " marked nodes")
-
-# node = marked_ast.get_random_marked()
-# print("marked node: ", node)
-engine = RustEngine()
-engine.get_contents(file_path)
-# printer = RustASTPrinter()
-# reassmbled_source = printer.visit(ast)
+# marker = MarkingVisitor(ast)
+# marked_ast = marker.run()
+#
+# all_marked = marked_ast.list_marked_nodes()
+#
+# marked_with_ids = marked_ast.list_marked_nodes_with_ids()
+# marked_nodes_count = 0
+# for uid, node in marked_with_ids:
+#     print(f"{uid}: {type(node).__name__}")
+#     marked_nodes_count += 1
+#
+# print("marked ast has ", marked_nodes_count, " marked nodes")
+#
+# # node = marked_ast.get_random_marked()
+# # print("marked node: ", node)
+# engine = RustEngine()
+# engine.get_contents(file_path)
+# # printer = RustASTPrinter()
+# # reassmbled_source = printer.visit(ast)
