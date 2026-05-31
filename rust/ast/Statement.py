@@ -1,8 +1,7 @@
-from rust.ast.ASTNode import ASTNode
 # from rust.ast.RustASTVisitor import RustASTVisitor
+from rust.ast.ASTNode import ASTNode, CloneableASTNode
 
-
-class Statement(ASTNode):
+class Statement(CloneableASTNode):
 
     def __init__(self, body=None):
         super().__init__()
@@ -66,7 +65,7 @@ class AssignStmt(Statement):
         return f"{self.target} = {self.value}"
 
     def accept(self, visitor):
-        return visitor.visit_Assignment(self)
+        return visitor.visitAssignStmt(self) # visitAssignment
 
 class ConditionalAssignmentStmt(Statement):
     def __init__(self, cond, body):
@@ -122,7 +121,7 @@ class CompoundAssignment(Statement):
         self.value = value
 
     def accept(self, visitor):
-        return visitor.visit_CompoundAssignment(self)
+        return visitor.visitCompoundAssignment(self)
 
 class ReturnStmt(Statement):
     def __init__(self, value=None):
@@ -189,7 +188,7 @@ class Block(Statement):
         self.isUnsafe = isUnsafe
 
     def accept(self, visitor):
-        return visitor.visit_Block(self)
+        return visitor.visitBlock(self)
     
     def getChildren(self):
         return self.stmts

@@ -3,7 +3,6 @@ from rust.ast.ASTNode import CloneableASTNode
 # from rust.ast.RustASTVisitor import RustASTVisitor
 from rust.ast.Statement import Statement
 
-
 class Block(CloneableASTNode):
 
     def __init__(self, stmts: List[Statement], is_unsafe: bool):

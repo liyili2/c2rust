@@ -2,7 +2,8 @@ from rust.ast.Func import FunctionParamList, Param
 from rust.ast.Program import Program
 from rust.ast.RustASTVisitor import RustASTVisitor
 from rust.ast.TopLevel import FunctionDef
-
+from rust.ast.Expression import Expression
+# from rust.commons.DeclarationInfo import DeclarationInfo
 
 class RustASTPrinter(RustASTVisitor):
 
@@ -32,7 +33,7 @@ class RustASTPrinter(RustASTVisitor):
 
     def visitParam(self, ctx: Param):
         mut = "mut " if ctx.isMutable else ""
-        return f"{mut}{ctx.declarationInfo.name}: {ctx.declarationInfo.dtype}"
+        return f"{mut}{ctx.name}: {ctx.type}"
 
     def visitTypeName(self, node):
         return node.name  # assuming TypeName just wraps a string type name
@@ -53,7 +54,10 @@ class RustASTPrinter(RustASTVisitor):
     
     def visitVarDef(self, node):
         mut = "mut " if getattr(node, "is_mut", False) else ""
-        return f"{mut}{node.name}: {self.visit(node.dtype)}"  # or just node.name if no type
+        if node.vardef_type is None:
+            return f"{mut}{node.name}"
+        else:
+            return f"{mut}{node.name}: {self.visit(node.vardef_type)}"  # or just node.name if no type
 
     def visitLiteral(self, node):
         return str(node.value)
@@ -62,6 +66,7 @@ class RustASTPrinter(RustASTVisitor):
         return node.name
 
     def visitAssignStmt(self, node):
+        # print(node.target.accept(self))
         target = self.visit(node.target)
         value = self.visit(node.value)
         return f"{target} = {value};"
@@ -83,8 +88,16 @@ class RustASTPrinter(RustASTVisitor):
         return result
 
     def visitBinaryExpression(self, node):
-        left = self.visit(node.left)
-        right = self.visit(node.right)
+        # print(node.left())
+        left = node.left()
+        if isinstance(left, Expression):
+            left = self.visit(left)
+        # print(node.right())
+        right = node.right()
+        # print(isinstance(right, Expression))
+        if isinstance(right, Expression):
+            right = self.visit(right)
+        # print(right)
         return f"({left} {node.op} {right})"
 
     def visitStructLiteral(self, node):
