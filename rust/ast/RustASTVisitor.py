@@ -77,6 +77,8 @@ class RustASTVisitor:
                 return self.visitBinaryExpression(node)
             case FunctionCallExpression():
                 return self.visitFunctionCallExpression(node)
+            case ArrayAccess():
+                return self.visitArrayAccess(node)
             # case UnsafeExpression():
             #     return self.visitUnsafeExpression(ctx)
             # case BasicTypeCastExpr():
@@ -313,8 +315,9 @@ class RustASTVisitor:
     def visitArrayType(self, node: ArrayType):
         return node.dtype.accept(self)
 
-    def visitArrayAccess(self, node: ArrayType):
-        return node.expression.accept(self)
+    def visitArrayAccess(self, node: ArrayAccess):
+        print(node.name)
+        return node.name.accept(self)
 
     def visitPathType(self, node: PathType):
         retval = node.type_path.accept(self)

@@ -66,8 +66,8 @@ class RustASTPrinter(RustASTVisitor):
         return node.name
 
     def visitAssignStmt(self, node):
-        print(node.target.accept(self))
-        target = self.visit(node.target.accept(self))
+        # print(node.target.accept(self))
+        target = self.visit(node.target)
         value = self.visit(node.value)
         return f"{target} = {value};"
 
