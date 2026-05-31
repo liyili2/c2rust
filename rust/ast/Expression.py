@@ -60,13 +60,13 @@ class BinaryExpression(Expression):
         return visitor.visitBinaryExpression(self)
 
     def left(self):
-        return self.expression()[0]
+        return self.expression[0]
 
     def op(self):
-        return self.expression()[1]
+        return self.expression[1]
 
     def right(self):
-        return self.expression()[2]
+        return self.expression[2]
 
 
 class ByteLiteralExpression(Expression):
@@ -140,7 +140,7 @@ class IntLiteral(Expression):
         self.value = value
 
     def accept(self, visitor):
-        return visitor.visit_IntLiteral(self)
+        return visitor.visitLiteral(self)
 
 class StrLiteral(Expression):
     def __init__(self, value: str):
@@ -149,7 +149,7 @@ class StrLiteral(Expression):
         self.type = StringType()
 
     def accept(self, visitor):
-        return visitor.visit_StrLiteral(self)
+        return visitor.visitLiteral(self)
     
 class ArrayDeclaration(Expression):
     def __init__(self, identifier, size, force, value):
@@ -197,7 +197,7 @@ class ArrayAccess(Expression):
         self.name = name
 
     def accept(self, visitor):
-        return visitor.visit_ArrayAccess(self)
+        return visitor.visitArrayAccess(self) # visitArrayAccess
 
 class UnaryExpr(Expression):
     def __init__(self, op, expression):
@@ -279,7 +279,7 @@ class RangeExpression(Expression):
         self.last = last
 
     def accept(self, visitor):
-        return visitor.visit_RangeExpression(self)
+        return visitor.visitRangeExpression(self)
 
 class SafeWrapper(Expression):
     def __init__(self, expression):

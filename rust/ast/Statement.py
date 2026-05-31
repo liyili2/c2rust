@@ -65,7 +65,7 @@ class AssignStmt(Statement):
         return f"{self.target} = {self.value}"
 
     def accept(self, visitor):
-        return visitor.visit_Assignment(self)
+        return visitor.visitAssignStmt(self) # visitAssignment
 
 class ConditionalAssignmentStmt(Statement):
     def __init__(self, cond, body):
@@ -121,7 +121,7 @@ class CompoundAssignment(Statement):
         self.value = value
 
     def accept(self, visitor):
-        return visitor.visit_CompoundAssignment(self)
+        return visitor.visitCompoundAssignment(self)
 
 class ReturnStmt(Statement):
     def __init__(self, value=None):
