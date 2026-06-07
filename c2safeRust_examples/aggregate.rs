@@ -1,6 +1,4 @@
-// use ::libc;
-
-unsafe fn aggregate(list: &[i32]) -> Vec<i32> {
+fn aggregate(list: &[i32]) -> Vec<i32> {
     let len = list.len();
     // the size of the result array is not known until runtime
     // using vec is unavoidable
@@ -16,14 +14,6 @@ unsafe fn aggregate(list: &[i32]) -> Vec<i32> {
 }
 
 fn printall(list: &[i32]) {
-    print!("[");
-    for i in 0..list.len() {
-        print!("{}, ", list[i]);
-    }
-    println!("]");
-}
-
-unsafe fn printall(list: &[i32]) {
     print!("[");
     for i in 0..list.len() {
         print!("{}, ", list[i]);

@@ -1,6 +1,6 @@
 from typing import Any, List, Tuple
 from rust.ast.ASTNode import ASTNode, CloneableASTNode
-from rust.ast.RustASTVisitor import RustASTVisitor
+# from rust.ast.RustASTVisitor import RustASTVisitor
 from rust.ast.Type import BoolType, SignedIntType, StringType, FloatingPointType, Type
 
 
@@ -14,7 +14,7 @@ class Expression(CloneableASTNode):
         self.is_mutable = is_mutable
         self.is_unsafe = is_unsafe
 
-    def accept(self, visitor: RustASTVisitor):
+    def accept(self, visitor):
         return visitor.visit(self)
 
     def expression(self):
@@ -35,7 +35,7 @@ class QualifiedExpression(Expression):
     def __init__(self, expression: Expression):
         super().__init__(expression = expression)
 
-    def accept(self, visitor: RustASTVisitor):
+    def accept(self, visitor):
         return visitor.visitQualifiedExpression(self)
 
 
@@ -44,7 +44,7 @@ class IdentifierExpression(Expression):
     def __init__(self, name: str, dtype: Type = None):
         super().__init__(expression = name, dtype = dtype)
 
-    def accept(self, visitor: RustASTVisitor):
+    def accept(self, visitor):
         return visitor.visitIdentifierExpression(self)
 
     def name(self):
@@ -56,17 +56,17 @@ class BinaryExpression(Expression):
     def __init__(self, left: Expression, op: str, right: Expression):
         super().__init__(expression = (left, op, right))
 
-    def accept(self, visitor: RustASTVisitor):
+    def accept(self, visitor):
         return visitor.visitBinaryExpression(self)
 
     def left(self):
-        return self.expression()[0]
+        return self.expression[0]
 
     def op(self):
-        return self.expression()[1]
+        return self.expression[1]
 
     def right(self):
-        return self.expression()[2]
+        return self.expression[2]
 
 
 class ByteLiteralExpression(Expression):
@@ -74,7 +74,7 @@ class ByteLiteralExpression(Expression):
     def __init__(self, expression: str):
         super().__init__(expression = expression)
 
-    def accept(self, visitor: RustASTVisitor):
+    def accept(self, visitor):
         return visitor.visitByteLiteralExpression(self)
 
 
@@ -83,17 +83,17 @@ class FunctionCallExpression(Expression):
     def __init__(self, callee: Expression, args: List[Expression], caller: Expression = None):
         super().__init__(expression = (callee, args, caller))
 
-    def accept(self, visitor: RustASTVisitor):
+    def accept(self, visitor):
         return visitor.visitFunctionCallExpression(self)
 
     def callee(self):
-        return self.expression()[0]
+        return self.expression[0]
 
     def args(self):
-        return self.expression()[1]
+        return self.expression[1]
 
     def caller(self):
-        return self.expression()[2]
+        return self.expression[2]
 
 
 class CastExpression(Expression):
@@ -102,7 +102,7 @@ class CastExpression(Expression):
         super().__init__(expression = expression)
         self.type_expressions = type_expressions
 
-    def accept(self, visitor: RustASTVisitor):
+    def accept(self, visitor):
         return visitor.visitCastExpression(self)
 
 
@@ -111,7 +111,7 @@ class BorrowExpression(Expression):
     def __init__(self, expression: Any, is_mutable : bool = False):
         super().__init__(expression = expression, is_mutable = is_mutable)
 
-    def accept(self, visitor: RustASTVisitor):
+    def accept(self, visitor):
         return visitor.visitBorrowExpression(self)
 
 
@@ -136,11 +136,11 @@ class CharLiteral(Expression):
 class IntLiteral(Expression):
     def __init__(self, value: int):
         super().__init__()
-        self.type = SignedIntType()
+        self.type = SignedIntType("int")
         self.value = value
 
     def accept(self, visitor):
-        return visitor.visit_IntLiteral(self)
+        return visitor.visitLiteral(self)
 
 class StrLiteral(Expression):
     def __init__(self, value: str):
@@ -149,7 +149,7 @@ class StrLiteral(Expression):
         self.type = StringType()
 
     def accept(self, visitor):
-        return visitor.visit_StrLiteral(self)
+        return visitor.visitLiteral(self)
     
 class ArrayDeclaration(Expression):
     def __init__(self, identifier, size, force, value):
@@ -182,7 +182,7 @@ class ArrayLiteral(Expression):
         self.elements = elements
 
     def accept(self, visitor):
-        return visitor.visit_ArrayLiteral(self)
+        return visitor.visitArrayLiteral(self)
 
     def __repr__(self):
         return f"ArrayLiteral({self.elements})"
@@ -197,7 +197,7 @@ class ArrayAccess(Expression):
         self.name = name
 
     def accept(self, visitor):
-        return visitor.visit_ArrayAccess(self)
+        return visitor.visitArrayAccess(self) # visitArrayAccess
 
 class UnaryExpr(Expression):
     def __init__(self, op, expression):
@@ -239,7 +239,7 @@ class ParenExpr(Expression):
 class StructLiteralField(Expression):
     def __init__(self, name, value, field_type=None):
         super().__init__()
-        self.declarationInfo = DeclarationInfo(name=name, type=field_type)
+        # self.declarationInfo = DeclarationInfo(name=name, type=field_type)
         self.value = value
 
     def accept(self, visitor):
@@ -260,9 +260,8 @@ class TypePath(Expression):
     def __init__(self, types: List[str]):
         super().__init__(expression = types)
 
-    def accept(self, visitor: RustASTVisitor):
+    def accept(self, visitor):
         return visitor.visitTypePath(self)
-
 
 class TypePathExpression(Expression):
     def __init__(self, type_path, last_type):
@@ -280,7 +279,7 @@ class RangeExpression(Expression):
         self.last = last
 
     def accept(self, visitor):
-        return visitor.visit_RangeExpression(self)
+        return visitor.visitRangeExpression(self)
 
 class SafeWrapper(Expression):
     def __init__(self, expression):

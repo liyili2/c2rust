@@ -1,4 +1,4 @@
-from pyggi.base.program import RunResult
+from repair.pyggi.base.program import RunResult
 
 
 class CResult(RunResult):

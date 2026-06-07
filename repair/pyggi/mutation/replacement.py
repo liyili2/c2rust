@@ -1,7 +1,7 @@
 
 import copy
-from rust.ast.Transformer import setParents
-from pyggi.mutation.utils import MutationUtils
+from rust.commons.RustASTTransformer import setParents
+from repair.pyggi.mutation.utils import MutationUtils
 import random
 
 class ReplacementOperator:

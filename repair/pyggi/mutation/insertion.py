@@ -1,5 +1,5 @@
 import random
-from pyggi.mutation.utils import MutationUtils
+from repair.pyggi.mutation.utils import MutationUtils
 
 
 class InsertionOperator:

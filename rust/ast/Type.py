@@ -1,8 +1,8 @@
 import abc
 from typing import List
 from rust.ast.ASTNode import ASTNode, CloneableASTNode
-from rust.ast.Expression import TypePath
-from rust.ast.RustASTVisitor import RustASTVisitor
+# from rust.ast.Expression import TypePath
+# from rust.ast.RustASTVisitor import RustASTVisitor
 
 
 class Type(CloneableASTNode, abc.ABC):
@@ -15,7 +15,7 @@ class SignedIntType(Type):
         super().__init__()
         self.ptype = ptype
 
-    def accept(self, visitor: RustASTVisitor):
+    def accept(self, visitor):
         return visitor.visitSignedIntType(self)
 
 
@@ -25,7 +25,7 @@ class UnsignedIntType(Type):
         super().__init__()
         self.ptype = ptype
 
-    def accept(self, visitor: RustASTVisitor):
+    def accept(self, visitor):
         return visitor.visitUnsignedIntType(self)
 
 
@@ -35,7 +35,7 @@ class FloatingPointType(Type):
         super().__init__()
         self.ptype = ptype
 
-    def accept(self, visitor: RustASTVisitor):
+    def accept(self, visitor):
         return visitor.visitFloatingPointType(self)
 
 
@@ -44,7 +44,7 @@ class BoolType(Type):
     def __init__(self):
         super().__init__()
 
-    def accept(self, visitor: RustASTVisitor):
+    def accept(self, visitor):
         return visitor.visitBoolType(self)
 
 
@@ -53,7 +53,7 @@ class CharType(Type):
     def __init__(self):
         super().__init__()
 
-    def accept(self, visitor: RustASTVisitor):
+    def accept(self, visitor):
         return visitor.visitCharType(self)
 
 
@@ -62,7 +62,7 @@ class StringType(Type):
     def __init__(self):
         super().__init__()
 
-    def accept(self, visitor: RustASTVisitor):
+    def accept(self, visitor):
         return visitor.visitStringType(self)
 
 
@@ -72,7 +72,7 @@ class SafeNonNullWrapper(Type):
         super().__init__()
         self.dtype = dtype
 
-    def accept(self, visitor: RustASTVisitor):
+    def accept(self, visitor):
         return visitor.visitSafeNonNullWrapper(self)
 
 
@@ -83,29 +83,29 @@ class ArrayType(Type):
         self.dtype = dtype
         self.size = size
 
-    def accept(self, visitor: RustASTVisitor):
+    def accept(self, visitor):
         return visitor.visitArrayType(self)
 
 
 class PathType(Type):
 
-    def __init__(self, type_path: TypePath, dtype: Type):
+    def __init__(self, type_path, dtype: Type):
         super().__init__()
         self.type_path = type_path
         self.dtype = dtype
 
-    def accept(self, visitor: RustASTVisitor):
+    def accept(self, visitor):
         return visitor.visitPathType(self)
 
 
 class GenericType(Type):
 
-    def __init__(self, generic_dtypes: List[Type], type_path: TypePath = None):
+    def __init__(self, generic_dtypes: List[Type], type_path = None):
         super().__init__()
         self.generic_dtypes = generic_dtypes
         self.type_path = type_path
 
-    def accept(self, visitor: RustASTVisitor):
+    def accept(self, visitor):
         return visitor.visitGenericType(self)
 
 
@@ -115,7 +115,7 @@ class ReferenceType(Type):
         super().__init__()
         self.dtype = dtype
 
-    def accept(self, visitor: RustASTVisitor):
+    def accept(self, visitor):
         return visitor.visitReferenceType(self)
 
 
@@ -125,7 +125,7 @@ class SliceType(Type):
         super().__init__()
         self.dtype = dtype
 
-    def accept(self, visitor: RustASTVisitor):
+    def accept(self, visitor):
         return visitor.visitSliceType(self)
 
 
@@ -134,7 +134,7 @@ class UnitType(Type):
     def __init__(self):
         super().__init__()
 
-    def accept(self, visitor: RustASTVisitor):
+    def accept(self, visitor):
         return super().accept(visitor)
 
 
@@ -145,7 +145,7 @@ class PointerType(Type):
         self.mutable = mutable
         self.dtype = dtype
     
-    def accept(self, visitor: RustASTVisitor):
+    def accept(self, visitor):
         return visitor.visitPointerType(self)
 
 
@@ -155,7 +155,7 @@ class UnknownType(Type):
         super().__init__()
         self.ptype = ptype
 
-    def accept(self, visitor: RustASTVisitor):
+    def accept(self, visitor):
         return visitor.visitUnknownType(self)
 
 

@@ -1,5 +1,5 @@
 import random
-from pyggi.tree import TreeProgram
+from repair.pyggi.tree import TreeProgram
 from .cresult import CResult
 import xml.etree.ElementTree as ET
 import re

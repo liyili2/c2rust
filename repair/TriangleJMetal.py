@@ -6,10 +6,10 @@ import random
 import argparse
 
 # For pyggi default program + repair
-from pyggi.line import LineReplacement, LineInsertion, LineDeletion
-from pyggi.tree import XmlEngine
-from pyggi.tree import StmtReplacement, StmtInsertion, StmtDeletion
-from pyggi.algorithms import LocalSearch
+from repair.pyggi.line import LineReplacement, LineInsertion, LineDeletion
+from repair.pyggi.tree import XmlEngine
+from repair.pyggi.tree import StmtReplacement, StmtInsertion, StmtDeletion
+from repair.pyggi.algorithms import LocalSearch
 # For modified program + repair
 from framework.crossover import PyggiCrossover
 from framework.mutation import NullMutation

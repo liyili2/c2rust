@@ -5,12 +5,12 @@ import sys
 import random
 import argparse
 import os
-from pyggi.base import Patch, AbstractProgram
-from pyggi.line import LineProgram
-from pyggi.line import LineReplacement, LineInsertion, LineDeletion
-from pyggi.tree import TreeProgram, XmlEngine
-from pyggi.tree import StmtReplacement, StmtInsertion, StmtDeletion
-from pyggi.algorithms import LocalSearch
+from repair.pyggi.base import Patch, AbstractProgram
+from repair.pyggi.line import LineProgram
+from repair.pyggi.line import LineReplacement, LineInsertion, LineDeletion
+from repair.pyggi.tree import TreeProgram, XmlEngine
+from repair.pyggi.tree import StmtReplacement, StmtInsertion, StmtDeletion
+from repair.pyggi.algorithms import LocalSearch
 
 class MyProgram(AbstractProgram):
     def compute_fitness(self, result, return_code, stdout, stderr, elapsed_time):
