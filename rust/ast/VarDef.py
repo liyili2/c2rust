@@ -10,4 +10,4 @@ class VarDef(ASTNode):
         self.by_ref = by_ref
 
     def accept(self, visitor):
-        return visitor.visit_VarDef(self)
+        return visitor.visitVarDef(self)

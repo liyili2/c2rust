@@ -18,6 +18,7 @@ from rust.ast.Type import SafeNonNullWrapper, SignedIntType, StringType, BoolTyp
 class RustASTVisitor:
 
     def visit(self, node: ASTNode):
+        print("class is ", node.__class__)
         match node:
             case Program():
                 return self.visitProgram(node)
@@ -123,7 +124,8 @@ class RustASTVisitor:
                 raise NotImplementedError(f"No visit method defined for {type(node)}")
 
     def visitProgram(self, ctx: Program):
-        ret = False
+        print("visitProgram\n")
+        ret = True
         for exp in ctx.getChildren():
             ret = ret and exp.accept(self)
 
@@ -212,6 +214,7 @@ class RustASTVisitor:
         # node.value.accept(self)
 
     def visitFunctionCallExpression(self, node: FunctionCallExpression):
+        print("visitFunctionCallExpression")
         retval = True
         if node.args():
             for arg in node.args():
@@ -220,6 +223,7 @@ class RustASTVisitor:
 
     def visitBlock(self, node: Block):
         for i in node.stmts:
+            print("stmt is ", i, i.__class__)
             i.accept(self)
 
     # def visitInitBlock(self, node: InitBlock):
@@ -232,6 +236,7 @@ class RustASTVisitor:
         return True
 
     def visitBinaryExpression(self, node: BinaryExpression):
+        print("visitBinaryExpression")
         retval = node.left().accept(self)
         retval = node.right().accept(self) and retval
         return retval
@@ -342,3 +347,6 @@ class RustASTVisitor:
 
     def visitPointerType(self, node: PointerType):
         return node.dtype.accept(self)
+
+    def visitVarDef(self, node: VarDef):
+        return True

@@ -182,7 +182,7 @@ class ArrayLiteral(Expression):
         self.elements = elements
 
     def accept(self, visitor):
-        return visitor.visit_ArrayLiteral(self)
+        return visitor.visitArrayLiteral(self)
 
     def __repr__(self):
         return f"ArrayLiteral({self.elements})"

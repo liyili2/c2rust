@@ -10,7 +10,7 @@ from rust.commons.RustASTTransformer import RustASTTransformer
 from rust.ast.RustASTPrinter import RustASTPrinter
 from rust.ast.MarkingVisitor import MarkingVisitor
 from repair.pyggi.tree.rust_engine import RustEngine
-
+from rust.ast.MarkingVisitor import MarkingVisitor
 
 def pretty_print_ast(node, indent=0, visited=None):
     if visited is None:
@@ -59,13 +59,16 @@ transformer = RustASTTransformer()
 ast = transformer.visit(tree)
 # Use transformer, then use rust ast printer afterwards
 
-print("Pretty AST:")
+marker = MarkingVisitor(ast)
+marker.visit(ast)
 
-pretty = pretty_print_ast(ast)
-print(pretty)
+# print("Pretty AST:")
 
-test_printer = RustASTPrinter()
-testing = test_printer.visitProgram(ast)
+# pretty = pretty_print_ast(ast)
+# print(pretty)
+
+# test_printer = RustASTPrinter()
+# testing = test_printer.visitProgram(ast)
 
 # marker = MarkingVisitor(ast)
 # marked_ast = marker.run()
