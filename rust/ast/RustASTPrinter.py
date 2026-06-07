@@ -1,3 +1,4 @@
+from rust.ast.Expression import BinaryExpression
 from rust.ast.Func import FunctionParamList, Param
 from rust.ast.Program import Program
 from rust.ast.RustASTVisitor import RustASTVisitor
@@ -82,10 +83,11 @@ class RustASTPrinter(RustASTVisitor):
             result += f" else {self.visit(node.else_branch)}"
         return result
 
-    def visitBinaryExpression(self, node):
-        left = self.visit(node.left)
-        right = self.visit(node.right)
-        return f"({left} {node.op} {right})"
+    def visitBinaryExpression(self, node: BinaryExpression):
+        op = node.op()
+        left = self.visit(node.left())
+        right = self.visit(node.right())
+        return f"({left} {op} {right})"
 
     def visitStructLiteral(self, node):
         fields = ", ".join(f"{f.name}: {self.visit(f.value)}" for f in node.fields)
