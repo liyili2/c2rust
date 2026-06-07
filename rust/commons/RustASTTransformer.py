@@ -300,8 +300,8 @@ class RustASTTransformer(RustVisitor):
         return IfStmt(condition=condition, then_branch=then_branch, else_branch=else_branch)
 
     def visitAssignStmt(self, ctx):
-        value_expr = self.visit(ctx.expression(1))
         target_expr = self.visit(ctx.expression(0))
+        value_expr = self.visit(ctx.expression(1))
         return AssignStmt(target=target_expr, value=value_expr)
 
     def visitForStmt(self, ctx):
