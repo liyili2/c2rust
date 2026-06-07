@@ -25,16 +25,16 @@ class LetStmt(Statement):
 
     def __repr__(self):
         if self.is_destructuring():
-            vars_str = ", ".join(v.declarationInfo.name for v in self.var_defs)
+            vars_str = ", ".join(v.name for v in self.var_defs)
             vals_str = ", ".join(str(v) for v in self.values)
             return f"LetStmt(({vars_str}) = ({vals_str}))"
         else:
             var = self.var_defs[0]
             val = self.values[0]
-            return f"LetStmt({var.declarationInfo.name} = {val})"
+            return f"LetStmt({var.name} = {val})"
 
     def accept(self, visitor):
-        return visitor.visit_LetStmt(self)
+        return visitor.visitLetStmt(self)
 
 class ForStmt(Statement):
     def __init__(self, var, iterable, body):
@@ -44,7 +44,7 @@ class ForStmt(Statement):
         self.body = body
 
     def accept(self, visitor):
-        return visitor.visit_ForStmt(self)
+        return visitor.visitForStmt(self)
 
 class IfStmt(Statement):
     def __init__(self, condition, then_branch, else_branch=None):
@@ -53,7 +53,8 @@ class IfStmt(Statement):
         self.then_branch = then_branch
         self.else_branch = else_branch
     def accept(self, visitor):
-        return visitor.visit_IfStmt(self)
+        return visitor.visitIfStmt(self)
+        # return visitor.visit_IfStmt(self)
 
 class AssignStmt(Statement):
     def __init__(self, target, value):
