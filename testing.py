@@ -61,7 +61,8 @@ ast = transformer.visit(tree)
 # Use transformer, then use rust ast printer afterwards
 
 marker = MarkingVisitor(ast)
-marker.visit(ast)
+# marker.visit(ast)
+ast.accept(marker)
 
 counter = Counter()
 
