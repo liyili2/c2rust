@@ -10,7 +10,6 @@ fn aggregate(list: &[i32]) -> Vec<i32> {
             ret[i / 2] = list[i];
         }
     }
-    ret
 }
 
 fn printall(list: &[i32]) {
