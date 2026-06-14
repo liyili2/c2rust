@@ -1,4 +1,4 @@
-from rust.ast.Expression import BinaryExpression
+from rust.ast.Expression import BinaryExpression, Expression
 from rust.ast.Func import FunctionParamList, Param
 from rust.ast.Program import Program
 from rust.ast.RustASTVisitor import RustASTVisitor
@@ -22,7 +22,13 @@ class RustASTPrinter(RustASTVisitor):
     def visitFunctionDef(self, ctx: FunctionDef):
         header = "unsafe " if ctx.isUnsafe else ""
         header += f"fn {ctx.identifier}("
-        header += ctx.params.accept(self) + ")"
+        # Concatenate the items of the param to the string
+        if isinstance(ctx.params, FunctionParamList):
+            params_list = ctx.params.accept(self)
+        else:
+            params_list = ctx.params
+        param_str = ','.join(str(param) for param in params_list)
+        header += param_str + ")" # .accept(self)
         if ctx.return_type:
             header += f" -> {ctx.return_type.accept(self)}"
         body = ctx.body.accept(self)
@@ -33,13 +39,13 @@ class RustASTPrinter(RustASTVisitor):
 
     def visitParam(self, ctx: Param):
         mut = "mut " if ctx.isMutable else ""
-        return f"{mut}{ctx.declarationInfo.name}: {ctx.declarationInfo.dtype}"
+        return f"{mut}{ctx.name}: {ctx.type}"
 
     def visitTypeName(self, node):
         return node.name  # assuming TypeName just wraps a string type name
 
     def visitBlock(self, node):
-        stmts = "\n".join("    " + self.visit(stmt) for stmt in node.stmts)
+        stmts = "\n".join("    " + str(self.visit(stmt)) for stmt in node.stmts)
         return "{\n" + stmts + "\n}"
 
     def visitLetStmt(self, node):
@@ -54,7 +60,10 @@ class RustASTPrinter(RustASTVisitor):
     
     def visitVarDef(self, node):
         mut = "mut " if getattr(node, "is_mut", False) else ""
-        return f"{mut}{node.name}: {self.visit(node.dtype)}"  # or just node.name if no type
+        if node.vardef_type is not None:
+            return f"{mut}{node.name}: {self.visit(node.vardef_type)}"  # or just node.name if no type
+        else:
+            return f"{mut}{node.name}: None" # {self.visit(node.vardef_type)}
 
     def visitLiteral(self, node):
         return str(node.value)
@@ -85,8 +94,14 @@ class RustASTPrinter(RustASTVisitor):
 
     def visitBinaryExpression(self, node: BinaryExpression):
         op = node.op()
-        left = self.visit(node.left())
-        right = self.visit(node.right())
+        # left = self.visit(node.left())
+        # right = self.visit(node.right())
+        left = node.left()
+        if isinstance(left, Expression):
+            left = self.visit(left)
+        right = node.right()
+        if isinstance(right, Expression):
+            right = self.visit(right)
         return f"({left} {op} {right})"
 
     def visitStructLiteral(self, node):

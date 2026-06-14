@@ -120,6 +120,8 @@ class RustASTVisitor:
                 return self.visitBlockStmt(node)
             case VarDef():
                 return self.visitVarDef(node)
+            case ArrayType():
+                return self.visitArrayType(node)
             case _:
                 raise NotImplementedError(f"No visit method defined for {type(node)}")
 

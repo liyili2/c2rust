@@ -60,21 +60,21 @@ transformer = RustASTTransformer()
 ast = transformer.visit(tree)
 # Use transformer, then use rust ast printer afterwards
 
-marker = MarkingVisitor(ast)
-# marker.visit(ast)
-ast.accept(marker)
-
-counter = Counter()
-
-for marked in ast.marked_nodes:
-    counter[type(marked.node).__name__] += 1
-
-print("\n===== MARKED NODE TYPES =====")
-
-for node_type, count in sorted(counter.items()):
-    print(f"{node_type:30} {count}")
-
-print(f"\nTotal marked nodes: {sum(counter.values())}")
+# marker = MarkingVisitor(ast)
+# # marker.visit(ast)
+# ast.accept(marker)
+#
+# counter = Counter()
+#
+# for marked in ast.marked_nodes:
+#     counter[type(marked.node).__name__] += 1
+#
+# print("\n===== MARKED NODE TYPES =====")
+#
+# for node_type, count in sorted(counter.items()):
+#     print(f"{node_type:30} {count}")
+#
+# print(f"\nTotal marked nodes: {sum(counter.values())}")
 
 # print("Pretty AST:")
 
@@ -107,5 +107,5 @@ print(f"\nTotal marked nodes: {sum(counter.values())}")
 # print("marked node: ", node)
 # engine = RustEngine()
 # engine.get_contents(file_path)
-# printer = RustASTPrinter()
-# reassmbled_source = printer.visit(ast)
+printer = RustASTPrinter()
+reassmbled_source = printer.visit(ast)
