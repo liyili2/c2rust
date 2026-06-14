@@ -1,4 +1,5 @@
-from rust.ast.Expression import BinaryExpression, Expression
+from rust.ast.ASTNode import CloneableASTNode
+from rust.ast.Expression import BinaryExpression, Expression, FieldAccessExpr
 from rust.ast.Func import FunctionParamList, Param
 from rust.ast.Program import Program
 from rust.ast.RustASTVisitor import RustASTVisitor
@@ -23,11 +24,8 @@ class RustASTPrinter(RustASTVisitor):
         header = "unsafe " if ctx.isUnsafe else ""
         header += f"fn {ctx.identifier}("
         # Concatenate the items of the param to the string
-        if isinstance(ctx.params, FunctionParamList):
-            params_list = ctx.params.accept(self)
-        else:
-            params_list = ctx.params
-        param_str = ','.join(str(param) for param in params_list)
+        params_list = ctx.params
+        param_str = ','.join(str(param.accept(self)) for param in params_list)
         header += param_str + ")" # .accept(self)
         if ctx.return_type:
             header += f" -> {ctx.return_type.accept(self)}"
@@ -39,7 +37,8 @@ class RustASTPrinter(RustASTVisitor):
 
     def visitParam(self, ctx: Param):
         mut = "mut " if ctx.isMutable else ""
-        return f"{mut}{ctx.name}: {ctx.type}"
+        type = ctx.type.accept(self)
+        return f"{mut}{ctx.name}: {type}"
 
     def visitTypeName(self, node):
         return node.name  # assuming TypeName just wraps a string type name
@@ -91,6 +90,11 @@ class RustASTPrinter(RustASTVisitor):
         if node.else_branch:
             result += f" else {self.visit(node.else_branch)}"
         return result
+
+    def visitFieldAccessExpr(self, node: FieldAccessExpr):
+        re = ".".join(self.visit(nv) for nv in node.receiver)
+        re += "."+self.visit(node.next)
+        return f"#[{re}]"
 
     def visitBinaryExpression(self, node: BinaryExpression):
         op = node.op()

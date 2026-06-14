@@ -50,7 +50,7 @@ structLiteralField: Identifier (':' expression)? ','? ;
 
 functionDef: visibility? unsafeModifier? externAbi? 'fn' Identifier ('()' | '(' paramList? ')') '->'? typeExpression? block;
 paramList: param (',' param)* (',')?;
-param: '&'? 'mut'? Identifier (':' typeExpression)?;
+param: 'mut'? Identifier (':' typeExpression)?;
 
 typePath: Identifier (DOUBLE_COLON Identifier)* ;
 
@@ -77,7 +77,7 @@ charType: 'char';
 stdLibraryType: stringType;
 stringType: 'String';
 safeNonNullWrapper: 'Option<NonNull<' typeExpression ('>>' | '>' '>') ;
-arrayType: '[' basicType ';' Number ']' ;
+arrayType: '[' basicType ';' Number ']' | '[' basicType ']';
 pathType: typePath basicType;
 genericType: typePath? '<' typeExpression (',' typeExpression)* '>';
 referenceType: '&' typeExpression;

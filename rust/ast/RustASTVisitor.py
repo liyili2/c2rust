@@ -1,6 +1,6 @@
 from rust.ast.Expression import QualifiedExpression, IdentifierExpression, BinaryExpression, FunctionCallExpression, \
     BorrowExpression, ArrayLiteral, CastExpression, UnaryExpr, DereferenceExpr, ParenExpr, RangeExpression, SafeWrapper, \
-    ByteLiteralExpression, TypePath, IntLiteral, ArrayAccess
+    ByteLiteralExpression, TypePath, IntLiteral, ArrayAccess, FieldAccessExpr
 from rust.ast.Func import FunctionParamList, Param
 from rust.ast.Program import Program
 from rust.ast.Statement import LetStmt, ForStmt, IfStmt, AssignStmt, ReturnStmt, WhileStmt, MatchStmt, MatchArm, \
@@ -158,6 +158,10 @@ class RustASTVisitor:
     def visitStructField(self, node: StructField):
         # mut = "mut " if node.mutable else ""
         self.visit(node.dtype)
+
+    def visitFieldAccessExpr(self, node: FieldAccessExpr):
+        [self.visit(param) for param in node.receiver]
+        self.visit(node.next)
 
     def visitLetStmt(self, node: LetStmt):
         for i in node.var_defs:

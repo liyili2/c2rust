@@ -121,12 +121,12 @@ class RustASTTransformer(RustVisitor):
         return Param(name=identifier, typ=typ, isMutable=is_mut)
 
     def visitParamList(self, ctx):
-        param_list = FunctionParamList([])
+        param_list = []
         for param_ctx in ctx.param():
             param = self.visit(param_ctx)
             # Temporary change:
             # param.set_parent(param_list)
-            param_list.params.append(param)
+            param_list.append(param)
         return param_list
 
     def visitStructDef(self, ctx):
@@ -461,9 +461,14 @@ class RustASTTransformer(RustVisitor):
         elif ctx.compoundOps():
             return self.visitCompoundAssignment(ctx.compoundOps())
         elif ctx.fieldAccessPostFix():
-            base = self.visit(ctx.getChild(0))
-            postfix = self.visitPrimaryExpression(ctx.fieldAccessPostFix().primaryExpression())
-            return FieldAccessExpr(base, postfix)
+            base = [self.visit(ctx.expression(0))]
+            i=0
+            while ctx.fieldAccessPostFix().primaryExpression(i) is not None:
+                base.append(self.visit(ctx = ctx.fieldAccessPostFix().primaryExpression(i)))
+                i += 1
+            res = base[:-1]
+            postfix = base[-1]
+            return FieldAccessExpr(res, postfix)
         elif ctx.MUT():
             expr = self.visit(ctx.expression(0))
             return Expression(expression=expr)
@@ -541,7 +546,7 @@ class RustASTTransformer(RustVisitor):
         if ctx.literal():
             return self.visit(ctx.literal())
         elif ctx.Identifier():
-            return IdentifierExpression(ctx.Identifier().getText())
+            return VarDef(name=ctx.Identifier().getText())
         else:
             raise Exception(f"Unknown primary expression: {ctx.getText()}")
 
@@ -704,7 +709,7 @@ class RustASTTransformer(RustVisitor):
 
     def visitArrayType(self, ctx: RustParser.ArrayTypeContext):
         dtype = self.visitBasicType(ctx.basicType())
-        size = int(ctx.Number().getText())
+        size = int(ctx.Number().getText()) if ctx.Number() else None
         return ArrayType(dtype=dtype, size=size)
 
     def visitPathType(self, ctx: RustParser.PathTypeContext):
@@ -772,7 +777,7 @@ class RustASTTransformer(RustVisitor):
                 if ctx.expression(1):
                     index_exprs += [self.visit(expr) for expr in ctx.expression()[1:]]
                 return ArrayLiteral(
-                    name=IdentifierExpression(name=name),
+                    name=VarDef(name=name),
                     elements=index_exprs)
 
         element_exprs = [self.visit(expr) for expr in ctx.expression()]
@@ -800,7 +805,7 @@ class RustASTTransformer(RustVisitor):
         elif ctx.UNDERSCORE():
             return MatchPattern('_')
         elif ctx.Identifier():
-            return MatchPattern(IdentifierExpression(name=ctx.Identifier().getText()))
+            return MatchPattern(VarDef(name=ctx.Identifier().getText()))
         elif ctx.byteLiteral():
             return ByteLiteralExpression(expression=ctx.getText()[2:-1])
         else:
@@ -830,7 +835,7 @@ class RustASTTransformer(RustVisitor):
         name_token = ctx.Identifier()  # This returns a list of terminal nodes
         if isinstance(name_token, list):
             name_token = name_token[0]
-        name = IdentifierExpression(name=name_token.getText()) # get the string name
+        name = VarDef(name=name_token.getText()) # get the string name
         return ArrayAccess(name=name, expression=index)
 
 def setParents(node, parent=None, top_level_prog=None):

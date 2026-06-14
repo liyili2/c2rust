@@ -1,4 +1,4 @@
-# Generated from /Users/chandeepadissanayake/Desktop/Dev/LiGroup/c2rust/rust/parser/Rust.g4 by ANTLR 4.13.1
+# Generated from /home/liyili2/project/compiler_sem_projects/c2rust/rust/parser/Rust.g4 by ANTLR 4.13.2
 from antlr4 import *
 if "." in __name__:
     from .RustParser import RustParser

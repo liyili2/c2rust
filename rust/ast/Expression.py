@@ -217,13 +217,13 @@ class DereferenceExpr(Expression):
         return visitor.visit_DereferenceExpr(self)
 
 class FieldAccessExpr(Expression):
-    def __init__(self, receiver, field_name):
+    def __init__(self, receiver, next):
         super().__init__()
         self.receiver = receiver
-        self.name = field_name
+        self.next = next
 
     def accept(self, visitor):
-        return visitor.visit_FieldAccessExpr(self)
+        return visitor.visitFieldAccessExpr(self)
 
 class ParenExpr(Expression): 
     def __init__(self, expression):
