@@ -223,7 +223,7 @@ class RustASTVisitor:
 
     def visitBlock(self, node: Block):
         for i in node.stmts:
-            print("stmt is ", i, i.__class__)
+            # print("stmt is ", i, i.__class__)
             i.accept(self)
 
     # def visitInitBlock(self, node: InitBlock):

@@ -29,7 +29,7 @@ class MarkingVisitor(RustASTVisitor):
 
     def _mark_and_wrap(self, node: Expression) -> ASTNode:
         """Helper to avoid duplicating the wrapping logic in every visit method."""
-        print("marking\n")
+        # print("marking\n")
         marked = MarkedASTNode(node)
         self.program.add_marked(marked)
         return marked

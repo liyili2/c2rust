@@ -11,6 +11,7 @@ from rust.ast.RustASTPrinter import RustASTPrinter
 from rust.ast.MarkingVisitor import MarkingVisitor
 from repair.pyggi.tree.rust_engine import RustEngine
 from rust.ast.MarkingVisitor import MarkingVisitor
+from collections import Counter
 
 def pretty_print_ast(node, indent=0, visited=None):
     if visited is None:
@@ -60,7 +61,20 @@ ast = transformer.visit(tree)
 # Use transformer, then use rust ast printer afterwards
 
 marker = MarkingVisitor(ast)
-marker.visit(ast)
+# marker.visit(ast)
+ast.accept(marker)
+
+counter = Counter()
+
+for marked in ast.marked_nodes:
+    counter[type(marked.node).__name__] += 1
+
+print("\n===== MARKED NODE TYPES =====")
+
+for node_type, count in sorted(counter.items()):
+    print(f"{node_type:30} {count}")
+
+print(f"\nTotal marked nodes: {sum(counter.values())}")
 
 # print("Pretty AST:")
 
