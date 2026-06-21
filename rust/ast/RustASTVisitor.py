@@ -1,3 +1,7 @@
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
 from rust.ast.Expression import QualifiedExpression, IdentifierExpression, BinaryExpression, FunctionCallExpression, \
     BorrowExpression, ArrayLiteral, CastExpression, UnaryExpr, DereferenceExpr, ParenExpr, RangeExpression, SafeWrapper, \
     ByteLiteralExpression, TypePath, IntLiteral, ArrayAccess
@@ -124,26 +128,22 @@ class RustASTVisitor:
                 raise NotImplementedError(f"No visit method defined for {type(node)}")
 
     def visitProgram(self, ctx: Program):
-        print("visitProgram\n")
-        ret = True
-        for exp in ctx.getChildren():
-            ret = ret and exp.accept(self)
-
-        return ret
+        ctx.children = [exp.accept(self) for exp in ctx.getChildren()]
+        return ctx
 
     def visitFunctionDef(self, ctx: FunctionDef):
-        ret = ctx.params.accept(self)
-        ret = ret and ctx.body.accept(self)
-        ret = ret and ctx.return_type.accept(self)
-
-        return ret
+        if isinstance(ctx.params, list):
+            ctx.params = [p.accept(self) for p in ctx.params]
+        else:
+            ctx.params = ctx.params.accept(self)
+        ctx.body = ctx.body.accept(self)
+        if (ctx.return_type):
+            ctx.return_type = ctx.return_type.accept(self)
+        return ctx
 
     def visitFunctionParamList(self, ctx: FunctionParamList):
-        ret = True
-        for param in ctx.params:
-            ret = ret and param.accept(self)
-
-        return ret
+        ctx.params = [p.accept(self) for p in ctx.params]
+        return ctx
 
     def visitParam(self, ctx: Param):
         return True
@@ -158,63 +158,69 @@ class RustASTVisitor:
         self.visit(node.dtype)
 
     def visitLetStmt(self, node: LetStmt):
-        for i in node.var_defs:
-            i.accept(self)
-        for i in node.values:
-            i.accept(self)
+        node.var_defs = [i.accept(self) for i in node.var_defs]
+        node.values = [i.accept(self) for i in node.values]
+        return node
 
     def visitForStmt(self, node: ForStmt):
-        node.iterable.accept(self)
-        node.body.accept(self)
+        node.iterable = node.iterable.accept(self)
+        node.body = node.body.accept(self)
+        return node
 
     def visitIfStmt(self, node: IfStmt):
-        node.condition.accept(self)
-        node.then_branch.accept(self)
+        node.condition = node.condition.accept(self)
+        node.then_branch = node.then_branch.accept(self)
         if node.else_branch is not None:
-            node.else_branch.accept(self)
+            node.else_branch = node.else_branch.accept(self)
+        return node
 
     def visitAssignStmt(self, node: AssignStmt):
-        node.target.accept(self)
-        node.value.accept(self)
+        node.target = node.target.accept(self)
+        node.value = node.value.accept(self)
+        return node
 
     def visitReturnStmt(self, node: ReturnStmt):
-        node.value.accept(self)
+        node.value = node.value.accept(self)
+        return node
 
     def visitWhileStmt(self, node: WhileStmt):
-        node.condition.accept(self)
-        node.body.accept(self)
+        node.condition = node.condition.accept(self)
+        node.body = node.body.accept(self)
+        return node
 
     def visitMatchStmt(self, node: MatchStmt):
-        node.expr.accept(self)
-        for i in node.arms:
-            i.accept(self)
+        node.expr = node.expr.accept(self)
+        node.arms = [i.accept(self) for i in node.arms]
+        return node
 
     def visitMatchArm(self, node: MatchArm):
-        for i in node.patterns:
-            i.accept(self)
-        node.body.accept(self)
+        node.patterns = [i.accept(self) for i in node.patterns]
+        node.body = node.body.accept(self)
+        return node
 
     def visitMatchPattern(self, node: MatchPattern):
-        node.value.accept(self)
+        node.value = node.value.accept(self)
+        return node
 
     def visitCompoundAssignment(self, node: CompoundAssignment):
-        node.target.accept(self)
-        node.value.accept(self)
+        node.target = node.target.accept(self)
+        node.value = node.value.accept(self)
+        return node
 
     def visitLoopStmt(self, node: LoopStmt):
-        node.body.accept(self)
-        # node.value.accept(self)
+        node.body = node.body.accept(self)
+        return node
 
     def visitBreakStmt(self, node: BreakStmt):
-        pass
-        # node.value.accept(self)
+        node.stmts = [i.accept(self) for i in node.stmts]
+        return node
 
     def visitContinueStmt(self, node: ContinueStmt):
         pass
         # node.value.accept(self)
 
     def visitFunctionCallExpression(self, node: FunctionCallExpression):
-        print("visitFunctionCallExpression")
+        print("visitFunctionCallExpression0")
         retval = True
         if node.args():
             for arg in node.args():
@@ -222,10 +228,9 @@ class RustASTVisitor:
         return retval
 
     def visitBlock(self, node: Block):
-        for i in node.stmts:
-            # print("stmt is ", i, i.__class__)
-            i.accept(self)
-
+            node.stmts = [stmt.accept(self) for stmt in node.stmts]
+            return node
+            
     # def visitInitBlock(self, node: InitBlock):
     #     node.returnExpr.accept(self)
 
@@ -233,7 +238,7 @@ class RustASTVisitor:
         return node.expression().accept(self)
 
     def visitIdentifierExpression(self, node: IdentifierExpression):
-        return True
+        return node
 
     def visitBinaryExpression(self, node: BinaryExpression):
         print("visitBinaryExpression")
@@ -262,8 +267,8 @@ class RustASTVisitor:
             i.accept(self)
 
     def visitIntLiteral(self, node: IntLiteral):
-        node.accept(self)
-        # return node
+        # node.accept(self)
+        return node
 
     def visitCastExpression(self, ctx: CastExpression):
         ctx.expr.accept(self)
