@@ -11,6 +11,7 @@ from rust.ast.RustASTPrinter import RustASTPrinter
 from rust.ast.MarkingVisitor import MarkingVisitor
 from repair.pyggi.tree.rust_engine import RustEngine
 from rust.ast.MarkingVisitor import MarkingVisitor
+from rust.ast.ASTEditor import ASTEditor
 from collections import Counter
 from rust.ast.MarkedASTNode import MarkedASTNode
 
@@ -35,6 +36,35 @@ def count_marked(node, visited=None):
             count += count_marked(value, visited)
 
     return count
+
+def print_marked_statistics(ast):
+    counter = Counter()
+
+    def walk(node, visited=None):
+        if visited is None:
+            visited = set()
+
+        if id(node) in visited:
+            return
+        visited.add(id(node))
+
+        if isinstance(node, MarkedASTNode):
+            counter[type(node.node).__name__] += 1
+
+        if isinstance(node, list):
+            for child in node:
+                walk(child, visited)
+
+        elif hasattr(node, "__dict__"):
+            for attr, value in vars(node).items():
+                if attr != "parent":
+                    walk(value, visited)
+
+    walk(ast)
+
+    print("Total marked:", sum(counter.values()))
+    for name, cnt in counter.items():
+        print(f"{name}: {cnt}")
 
 def pretty_print_ast(node, indent=0, visited=None):
     if visited is None:
@@ -67,6 +97,38 @@ def pretty_print_ast(node, indent=0, visited=None):
 
     return '\n'.join(lines)
 
+from rust.ast.TopLevel import FunctionDef
+
+def print_unsafe_functions(ast):
+    visited = set()
+
+    def walk(node):
+        if node is None:
+            return
+
+        if id(node) in visited:
+            return
+        visited.add(id(node))
+
+        if isinstance(node, list):
+            for child in node:
+                walk(child)
+            return
+
+        if not hasattr(node, "__dict__"):
+            return
+
+        if isinstance(node, FunctionDef) and node.isUnsafe:
+            print("=" * 70)
+            print(f"Unsafe function: {node.identifier}")
+            print(pretty_print_ast(node.body))
+            print("=" * 70)
+
+        for value in vars(node).values():
+            walk(value)
+
+    walk(ast)
+
 file_path = "./c2safeRust_examples/aggregate.rs"
 # file_path = "C:\\Users\\aqwan\\Documents\\GitHub\\c2rust\\c2safeRust_examples\\aggregate.rs"
 with open(file_path, "r", encoding="utf-8") as f:
@@ -79,13 +141,38 @@ print("Parsing:")
 parser = RustParser(tokens)
 # print(parser)
 tree = parser.program()
-transformer = RustASTTransformer()
-ast = transformer.visit(tree)
+# transformer = RustASTTransformer()
+# ast = transformer.visit(tree)
 # Use transformer, then use rust ast printer afterwards
 
-marker = MarkingVisitor()
+# marker = MarkingVisitor()
 # marker.visit(ast)
+# ast.accept(marker)
+transformer = RustASTTransformer()
+ast = transformer.visit(tree)
+
+marker = MarkingVisitor()
 ast.accept(marker)
+
+print("Before editing:")
+print("Marked nodes:", count_marked(ast))
+
+print("===== BEFORE =====")
+print_marked_statistics(ast)
+
+print("\n===== BEFORE EDIT =====")
+print_unsafe_functions(ast)
+
+editor = ASTEditor()
+editor.edit(ast)
+
+print("\n===== AFTER EDIT =====")
+print_unsafe_functions(ast)
+
+print("===== AFTER =====")
+print_marked_statistics(ast)
+
+print("After editing:")
 print("Marked nodes:", count_marked(ast))
 counter = Counter()
 
