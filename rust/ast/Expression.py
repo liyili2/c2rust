@@ -140,7 +140,7 @@ class IntLiteral(Expression):
         self.value = value
 
     def accept(self, visitor):
-        return visitor.visitLiteral(self)
+        return visitor.visitIntLiteral(self)
 
 class StrLiteral(Expression):
     def __init__(self, value: str):
@@ -149,7 +149,7 @@ class StrLiteral(Expression):
         self.type = StringType()
 
     def accept(self, visitor):
-        return visitor.visitLiteral(self)
+        return visitor.visitStrLiteral(self)
     
 class ArrayDeclaration(Expression):
     def __init__(self, identifier, size, force, value):

@@ -11,7 +11,7 @@ from rust.ast.RustASTPrinter import RustASTPrinter
 from rust.ast.MarkingVisitor import MarkingVisitor
 from repair.pyggi.tree.rust_engine import RustEngine
 from rust.ast.MarkingVisitor import MarkingVisitor
-from rust.ast.ASTEditor import ASTEditor
+from rust.modification.ASTEditor import ASTEditor
 from collections import Counter
 from rust.ast.MarkedASTNode import MarkedASTNode
 
@@ -141,38 +141,23 @@ print("Parsing:")
 parser = RustParser(tokens)
 # print(parser)
 tree = parser.program()
-# transformer = RustASTTransformer()
-# ast = transformer.visit(tree)
-# Use transformer, then use rust ast printer afterwards
-
-# marker = MarkingVisitor()
-# marker.visit(ast)
-# ast.accept(marker)
 transformer = RustASTTransformer()
 ast = transformer.visit(tree)
 
 marker = MarkingVisitor()
 ast.accept(marker)
 
-print("Before editing:")
-print("Marked nodes:", count_marked(ast))
-
 print("===== BEFORE =====")
+print("Marked nodes:", count_marked(ast))
 print_marked_statistics(ast)
-
-print("\n===== BEFORE EDIT =====")
 print_unsafe_functions(ast)
 
-editor = ASTEditor()
+editor = ASTEditor() 
 editor.edit(ast)
 
 print("\n===== AFTER EDIT =====")
 print_unsafe_functions(ast)
-
-print("===== AFTER =====")
 print_marked_statistics(ast)
-
-print("After editing:")
 print("Marked nodes:", count_marked(ast))
 counter = Counter()
 

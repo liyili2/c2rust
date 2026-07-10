@@ -146,7 +146,7 @@ class RustASTVisitor:
         return ctx
 
     def visitParam(self, ctx: Param):
-        return True
+        return ctx
 
     def visitStructDef(self, ctx: StructDef):
         ret = True
@@ -247,7 +247,7 @@ class RustASTVisitor:
         return retval
 
     def visitByteLiteralExpression(self, node: ByteLiteralExpression):
-        return True
+        return node
 
     def visitTypeWrapper(self, node: TypeWrapper):
         node.expr.accept(self)
@@ -299,25 +299,25 @@ class RustASTVisitor:
         node.accept(self)
 
     def visitTypePath(self, node: TypePath):
-        return True
+        return node
 
     def visitSignedIntType(self, node: SignedIntType):
-        return True
+        return node
 
     def visitUnsignedIntType(self, node: UnsignedIntType):
-        return True
+        return node
 
     def visitFloatingPointType(self, node: FloatingPointType):
-        return True
+        return node
 
     def visitBoolType(self, node: BoolType):
-        return True
+        return node
 
     def visitCharType(self, node: CharType):
-        return True
+        return node
 
     def visitStringType(self, node: StringType):
-        return True
+        return node
 
     def visitSafeNonNullWrapper(self, node: SafeNonNullWrapper):
         return node.dtype.accept(self)
@@ -348,10 +348,11 @@ class RustASTVisitor:
         return node.dtype.accept(self)
 
     def visitUnknownType(self, node: UnknownType):
-        return True
+        return node
 
     def visitPointerType(self, node: PointerType):
         return node.dtype.accept(self)
 
     def visitVarDef(self, node: VarDef):
-        return True
+        return node
+    
