@@ -223,7 +223,7 @@ class FieldAccessExpr(Expression):
         self.name = field_name
 
     def accept(self, visitor):
-        return visitor.visit_FieldAccessExpr(self)
+        return visitor.visitFieldAccessExpr(self)
 
 class ParenExpr(Expression): 
     def __init__(self, expression):
