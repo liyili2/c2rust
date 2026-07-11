@@ -149,7 +149,7 @@ ast.accept(marker)
 
 print("===== BEFORE =====")
 print("Marked nodes:", count_marked(ast))
-print_marked_statistics(ast)
+# print_marked_statistics(ast)
 print_unsafe_functions(ast)
 
 editor = ASTEditor() 
@@ -157,8 +157,8 @@ editor.edit(ast)
 
 print("\n===== AFTER EDIT =====")
 print_unsafe_functions(ast)
-print_marked_statistics(ast)
-print("Marked nodes:", count_marked(ast))
+# print_marked_statistics(ast)
+# print("Marked nodes:", count_marked(ast))
 counter = Counter()
 
 for marked in ast.marked_nodes:
