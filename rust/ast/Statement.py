@@ -182,17 +182,23 @@ class FunctionCall(Statement):
     def accept(self, visitor):
         return visitor.visitFunctionCall(self)
 
+
 class Block(Statement):
-    def __init__(self, stmts, isUnsafe=False):
+
+    def __init__(self, stmts: list[Statement], is_unsafe: bool):
         super().__init__()
-        self.stmts = stmts
-        self.isUnsafe = isUnsafe
+        self._stmts = stmts
+        self._is_unsafe = is_unsafe
 
     def accept(self, visitor):
         return visitor.visitBlock(self)
-    
-    def getChildren(self):
-        return self.stmts
+
+    def statements(self):
+        return self._stmts
+
+    def is_unsafe(self):
+        return self._is_unsafe
+
 
 class TypeWrapper(Statement):
     def __init__(self, expr):
