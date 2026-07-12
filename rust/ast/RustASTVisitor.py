@@ -220,12 +220,7 @@ class RustASTVisitor:
         # node.value.accept(self)
 
     def visitFunctionCallExpression(self, node: FunctionCallExpression):
-        print("visitFunctionCallExpression")
-        retval = True
-        if node.args():
-            for arg in node.args():
-                retval = arg.accept(self) and retval
-        return retval
+        pass
 
     def visitBlock(self, node: Block):
         for i in node.stmts:

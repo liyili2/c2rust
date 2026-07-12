@@ -80,20 +80,22 @@ class ByteLiteralExpression(Expression):
 
 class FunctionCallExpression(Expression):
 
-    def __init__(self, callee: Expression, args: List[Expression], caller: Expression = None):
-        super().__init__(expression = (callee, args, caller))
+    def __init__(self, caller: Expression,  args: List[Expression], callee: Expression = None):
+        self._caller = caller
+        self._callee = callee
+        self._args = args
 
     def accept(self, visitor):
         return visitor.visitFunctionCallExpression(self)
 
     def callee(self):
-        return self.expression[0]
+        return self._callee
 
     def args(self):
-        return self.expression[1]
+        return self._args
 
     def caller(self):
-        return self.expression[2]
+        return self._caller
 
 
 class CastExpression(Expression):

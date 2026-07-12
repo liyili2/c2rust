@@ -1,5 +1,5 @@
 from rust.ast.ASTNode import CloneableASTNode
-from rust.ast.Expression import BinaryExpression, Expression, FieldAccessExpr
+from rust.ast.Expression import BinaryExpression, Expression, FieldAccessExpr, FunctionCallExpression
 from rust.ast.Func import FunctionParamList, Param
 from rust.ast.Program import Program
 from rust.ast.RustASTVisitor import RustASTVisitor
@@ -31,6 +31,19 @@ class RustASTPrinter(RustASTVisitor):
             header += f" -> {ctx.return_type.accept(self)}"
         body = ctx.body.accept(self)
         return f"{header} {body}"
+
+    def visitFunctionCallExpression(self, node: FunctionCallExpression):
+        result = self.visit(node.caller())
+        if node.callee() is not None:
+            result += "." + self.visit(node.callee())
+
+        result += "("
+        for i in range(len(node.args())):
+            result += self.visit(node.args().get(i))
+            if i < len(node.args()) - 1:
+                result += ","
+        result += ")"
+        return f"{result}"
 
     def visitFunctionParamList(self, ctx: FunctionParamList):
         return ", ".join(self.visit(param) for param in ctx.params)

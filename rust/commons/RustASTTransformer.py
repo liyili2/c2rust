@@ -318,6 +318,9 @@ class RustASTTransformer(RustVisitor):
         for stmt_ctx in ctx.statement():
             result = self.visit(stmt_ctx)
             stmts.append(result)
+        if ctx.returnStmt() is not None:
+            final = self.visit(ctx.returnStmt())
+            stmts.append(final)
         return Block(stmts=stmts, isUnsafe=isUnsafe)
 
     def visitExprStmt(self, ctx):
@@ -325,19 +328,14 @@ class RustASTTransformer(RustVisitor):
         return Statement(body=expr)
 
     def visitFunctionCall(self, ctx: RustParser.FunctionCallContext):
-        if isinstance(ctx.expression(), list) and len(ctx.expression()) > 1:
-            callee = self.visitExpression(ctx.expression(len(ctx.expression()) - 1))
-            caller = self.visitExpression(ctx.expression(0))
+
+        caller  = self.visit(ctx.expression(0))
+        if ctx.expression(1) is not None:
+            callee = self.visit(ctx.expression(1))
         else:
-            callee = self.visitExpression(ctx.expression(0))
-            caller = None
-        postfix = ctx.callExpressionPostFix()
-        if postfix.functionCallArgs():
-            args_ctx = postfix.functionCallArgs().expression()
-            args = [self.visit(arg) for arg in args_ctx]
-        else:
-            args = []
-        return FunctionCallExpression(caller=caller, callee=callee, args=args)
+            callee = None
+        postfix = self.visit(ctx.callExpressionPostFix())
+        return FunctionCallExpression(caller=caller, callee=callee, args=postfix)
 
     def visitStatement(self, ctx):
         if ctx.block():
@@ -413,7 +411,7 @@ class RustASTTransformer(RustVisitor):
             return ReturnStmt()
         elif ctx.Identifier():
             label_name = ctx.Identifier().getText()
-            return label_name
+            return VarDef(label_name)
         else:
             raise Exception("Unrecognized return statement")
 
@@ -461,14 +459,15 @@ class RustASTTransformer(RustVisitor):
         elif ctx.compoundOps():
             return self.visitCompoundAssignment(ctx.compoundOps())
         elif ctx.fieldAccessPostFix():
-            base = [self.visit(ctx.expression(0))]
-            i=0
-            while ctx.fieldAccessPostFix().primaryExpression(i) is not None:
-                base.append(self.visit(ctx = ctx.fieldAccessPostFix().primaryExpression(i)))
-                i += 1
-            res = base[:-1]
-            postfix = base[-1]
-            return FieldAccessExpr(res, postfix)
+            base = self.visit(ctx.expression(0))
+            post = self.visit(ctx.fieldAccessPostFix())
+            return FieldAccessExpr(base, post)
+            #while ctx.fieldAccessPostFix().primaryExpression(i) is not None:
+            #    base.append(self.visit(ctx = ctx.fieldAccessPostFix().primaryExpression(i)))
+            #    i += 1
+            #res = base[:-1]
+            #postfix = base[-1]
+            #return FieldAccessExpr(res, postfix)
         elif ctx.MUT():
             expr = self.visit(ctx.expression(0))
             return Expression(expression=expr)
@@ -536,6 +535,27 @@ class RustASTTransformer(RustVisitor):
             return self.visit(ctx.arrayAccess())
 
         raise Exception(f"Unrecognized expression structure: {ctx.getText()}")
+
+    def visitFieldAccessPostFix(self, ctx: RustParser.FieldAccessPostFixContext):
+        acc = []
+        acc.append(self.visit(ctx.primaryExpression(0)))
+        i = 1
+        while ctx.primaryExpression(i) is not None:
+            acc.append(self.visit(ctx.primaryExpression(i)))
+            i += 1
+
+        #tmp = acc.reverse()
+        e = acc[-1]
+        tmp = acc[:-1]
+
+        while len(tmp) != 0:
+            tmpa = FieldAccessExpr(tmp[-1],e)
+            e = tmpa
+            tmp = tmp[:-1]
+
+        return e
+
+
 
     def visitPrimaryExpression(self, ctx: RustParser.PrimaryExpressionContext):
         if isinstance(ctx, list):
