@@ -78,7 +78,7 @@ class RustASTPrinter(RustASTVisitor):
             return f"{mut}{node.name()}: None" # {self.visit(node.vardef_type)}
 
     def visitLiteral(self, node):
-        return str(node.value)
+        return str(node.value())
 
     def visitAssignStmt(self, node):
         target = self.visit(node.target)

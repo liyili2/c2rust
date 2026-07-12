@@ -1,6 +1,4 @@
-from rust.ast.Expression import QualifiedExpression, IdentifierExpression, BinaryExpression, FunctionCallExpression, \
-    BorrowExpression, ArrayLiteral, CastExpression, UnaryExpr, DereferenceExpr, ParenExpr, RangeExpression, SafeWrapper, \
-    ByteLiteralExpression, TypePath, IntLiteral, ArrayAccess, FieldAccessExpr, VarDef, StructLiteralField
+from rust.ast.Expression import *
 from rust.ast.Func import FunctionParamList, Param
 from rust.ast.Program import Program
 from rust.ast.Statement import LetStmt, ForStmt, IfStmt, AssignStmt, ReturnStmt, WhileStmt, MatchStmt, MatchArm, \
@@ -96,10 +94,6 @@ class RustASTVisitor:
             #     return self.visitVariableRef(ctx)
             # case ReferenceExpr():
             #     return self.visitReferenceExpr(ctx)
-            case ArrayLiteral():
-                return self.visitArrayLiteral(node)
-            case IntLiteral():
-                return self.visitIntLiteral(node)
             case CastExpression():
                 return self.visitCastExpression(node)
             case UnaryExpr():
@@ -122,6 +116,8 @@ class RustASTVisitor:
                 return self.visitVarDef(node)
             case ArrayType():
                 return self.visitArrayType(node)
+            case Literal():
+                return self.visitLiteral(node)
             case _:
                 raise NotImplementedError(f"No visit method defined for {type(node)}")
 
@@ -259,10 +255,10 @@ class RustASTVisitor:
     #     node.expr.accept(self)
 
     def visitArrayLiteral(self, node: ArrayLiteral):
-        for i in node.elements():
+        for i in node.value():
             i.accept(self)
 
-    def visitIntLiteral(self, node: IntLiteral):
+    def visitLiteral(self, node):
         node.accept(self)
         # return node
 
