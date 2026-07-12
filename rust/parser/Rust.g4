@@ -166,7 +166,7 @@ castExpressionPostFix: 'as' typeExpression ('as' typeExpression)*;
 compoundOps: '+=' | '-=' | '*=' | '/=' | '%=' | '&=' | '|=' | '^=';
 rangeSymbol: '..';
 
-binaryOps: '*' | '/' | '%' | '+' | '-' | '==' | '!=' | '>' | '<' | '||' | '&&' | '>>' | '&' | '>=' | '<=';
+binaryOps: '*' | '/' | '%' | '+' | '-' | '==' | '!=' | '>' | '<' | '||' | '&&' | '>>' | '>=' | '<=';
 structFieldDec: Identifier '{' structLiteralField (',' structLiteralField)* ','? '}' ;
 unaryOpes: '!' | '+' | '-';
 parenExpression: '(' expression ')' | '{' expression '}';
