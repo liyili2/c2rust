@@ -57,7 +57,7 @@ class RustASTPrinter(RustASTVisitor):
         return node.name  # assuming TypeName just wraps a string type name
 
     def visitBlock(self, node):
-        stmts = "\n".join("    " + str(self.visit(stmt)) for stmt in node.stmts)
+        stmts = "\n".join("    " + str(self.visit(stmt)) for stmt in node.statements())
         return "{\n" + stmts + "\n}"
 
     def visitLetStmt(self, node):
@@ -72,16 +72,13 @@ class RustASTPrinter(RustASTVisitor):
     
     def visitVarDef(self, node):
         mut = "mut " if getattr(node, "is_mut", False) else ""
-        if node.vardef_type is not None:
-            return f"{mut}{node.name}: {self.visit(node.vardef_type)}"  # or just node.name if no type
+        if node.type() is not None:
+            return f"{mut}{node.name()}: {self.visit(node.type())}"  # or just node.name if no type
         else:
-            return f"{mut}{node.name}: None" # {self.visit(node.vardef_type)}
+            return f"{mut}{node.name()}: None" # {self.visit(node.vardef_type)}
 
     def visitLiteral(self, node):
         return str(node.value)
-
-    def visitIdentifier(self, node):
-        return node.name
 
     def visitAssignStmt(self, node):
         target = self.visit(node.target)
@@ -126,11 +123,7 @@ class RustASTPrinter(RustASTVisitor):
         return f"{node.type_name} {{ {fields} }}"
 
     def visitUnaryExpr(self, node):
-        return f"{node.op}{self.visit(node.expr)}"
-
-    def visitCallExpr(self, node):
-        args = ", ".join(self.visit(arg) for arg in node.args)
-        return f"{self.visit(node.func)}({args})"
+        return f"{node.op()}{self.visit(node.expression())}"
 
     def visitAttribute(self, node):
         if node.args:
@@ -139,8 +132,8 @@ class RustASTPrinter(RustASTVisitor):
         return f"#[{node.name}]"
 
     def visitFieldAccessExpr(self, node):
-        receiver = self.visit(node.receiver)
-        return f"{receiver}.{node.name}"
+        receiver = self.visit(node.receiver())
+        return f"{receiver}.{node.next()}"
     
     def visitType(self, node):
         print("********")

@@ -2,9 +2,7 @@
 from rust.ast.ASTNode import *
 from rust.ast.TopLevel import *
 from rust.ast.Struct import *
-from rust.ast.VarDef import *
 from rust.ast.Func import *
-from rust.ast.Block import *
 from rust.ast.utils import *
 from rust.parser.RustParser import RustParser
 from rust.parser.RustVisitor import RustVisitor
@@ -321,7 +319,7 @@ class RustASTTransformer(RustVisitor):
         if ctx.returnStmt() is not None:
             final = self.visit(ctx.returnStmt())
             stmts.append(final)
-        return Block(stmts=stmts, isUnsafe=isUnsafe)
+        return Block(stmts, isUnsafe)
 
     def visitExprStmt(self, ctx):
         expr = self.visit(ctx.primaryExpression())
