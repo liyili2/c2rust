@@ -1,6 +1,6 @@
 from rust.ast.Expression import QualifiedExpression, IdentifierExpression, BinaryExpression, FunctionCallExpression, \
     BorrowExpression, ArrayLiteral, CastExpression, UnaryExpr, DereferenceExpr, ParenExpr, RangeExpression, SafeWrapper, \
-    ByteLiteralExpression, TypePath, IntLiteral, ArrayAccess, FieldAccessExpr
+    ByteLiteralExpression, TypePath, IntLiteral, ArrayAccess, FieldAccessExpr, StrLiteral
 from rust.ast.Func import FunctionParamList, Param
 from rust.ast.Program import Program
 from rust.ast.Statement import LetStmt, ForStmt, IfStmt, AssignStmt, ReturnStmt, WhileStmt, MatchStmt, MatchArm, \
@@ -14,11 +14,13 @@ from rust.ast.ASTNode import ASTNode
 from rust.ast.Type import SafeNonNullWrapper, SignedIntType, StringType, BoolType, ArrayType, \
     PathType, \
     GenericType, ReferenceType, SliceType, CharType, UnknownType, UnsignedIntType, FloatingPointType, PointerType
+import types
 
 class RustASTVisitor:
 
     def visit(self, node: ASTNode):
         print("class is ", node.__class__)
+        # print(node)
         match node:
             case Program():
                 return self.visitProgram(node)
@@ -32,6 +34,8 @@ class RustASTVisitor:
                 return self.visitStructDef(node)
             case StructField():
                 return self.visitStructField(node)
+            case FieldAccessExpr():
+                return self.visitFieldAccessExpr(node)
             case LetStmt():
                 return self.visitLetStmt(node)
             case ForStmt():
@@ -100,6 +104,8 @@ class RustASTVisitor:
                 return self.visitArrayLiteral(node)
             case IntLiteral():
                 return self.visitIntLiteral(node)
+            case StrLiteral():
+                return self.visitStrLiteral(node)
             case CastExpression():
                 return self.visitCastExpression(node)
             case UnaryExpr():
@@ -122,6 +128,8 @@ class RustASTVisitor:
                 return self.visitVarDef(node)
             case ArrayType():
                 return self.visitArrayType(node)
+            case types.BuiltinFunctionType() | types.BuiltinMethodType():
+                return node.__name__
             case _:
                 raise NotImplementedError(f"No visit method defined for {type(node)}")
 
@@ -221,6 +229,7 @@ class RustASTVisitor:
 
     def visitFunctionCallExpression(self, node: FunctionCallExpression):
         pass
+        # node.accept(self)
 
     def visitBlock(self, node: Block):
         for i in node.stmts:
@@ -245,6 +254,9 @@ class RustASTVisitor:
     def visitByteLiteralExpression(self, node: ByteLiteralExpression):
         return True
 
+    def visitStrLiteral(self, node: StrLiteral):
+        return node.value # Should this be changed to a generic visitLiteral?
+
     def visitTypeWrapper(self, node: TypeWrapper):
         node.expr.accept(self)
 
@@ -253,6 +265,8 @@ class RustASTVisitor:
     #     node.path.accept(self)
 
     def visitBorrowExpression(self, ctx: BorrowExpression):
+        # print(ctx.expression())
+        # Why would the borrow expression be None?
         ctx.expression().accept(self)
 
     # def visitReferenceExpr(self, node: Ref):

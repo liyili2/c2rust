@@ -33,15 +33,18 @@ class RustASTPrinter(RustASTVisitor):
         return f"{header} {body}"
 
     def visitFunctionCallExpression(self, node: FunctionCallExpression):
+        # print(node.caller())
+        # print("callee" + node.callee())
         result = self.visit(node.caller())
         if node.callee() is not None:
             result += "." + self.visit(node.callee())
 
         result += "("
-        for i in range(len(node.args())):
-            result += self.visit(node.args().get(i))
-            if i < len(node.args()) - 1:
-                result += ","
+        if node.args() is not None:
+            for i in range(len(node.args())):
+                result += self.visit(node.args()[i])
+                if i < len(node.args()) - 1:
+                    result += ","
         result += ")"
         return f"{result}"
 
@@ -140,7 +143,7 @@ class RustASTPrinter(RustASTVisitor):
 
     def visitFieldAccessExpr(self, node):
         receiver = self.visit(node.receiver)
-        return f"{receiver}.{node.name}"
+        return f"{receiver}.{node.next}"
     
     def visitType(self, node):
         print("********")
