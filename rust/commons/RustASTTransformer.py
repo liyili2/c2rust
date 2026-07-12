@@ -442,7 +442,7 @@ class RustASTTransformer(RustVisitor):
 
     def visitExpression(self, ctx: RustParser.ExpressionContext):
         if ctx.primaryExpression() is not None:
-            return self.visitPrimaryExpression(ctx.primaryExpression())
+            return self.visit(ctx.primaryExpression())
         elif ctx.qualifiedExpression() is not None:
             return self.visitQualifiedExpression(ctx.qualifiedExpression())
         elif ctx.binaryOps():
@@ -482,8 +482,8 @@ class RustASTTransformer(RustVisitor):
         # Add caller and callee
         elif ctx.callExpressionPostFix():
             func = self.visit(ctx.expression(0))
-            args = self.visit(ctx.callExpressionPostFix().functionCallArgs())
-            return FunctionCallExpression(callee=func, args=args, caller=id)
+            args = self.visit(ctx.callExpressionPostFix())
+            return FunctionCallExpression(caller=func, args=args, callee=None)
 
         elif ctx.parenExpression():
             return self.visit(ctx.parenExpression().expression())
@@ -564,7 +564,7 @@ class RustASTTransformer(RustVisitor):
         if ctx.literal():
             return self.visit(ctx.literal())
         elif ctx.Identifier():
-            return VarDef(name=ctx.Identifier().getText())
+            return VarDef(ctx.Identifier().getText())
         else:
             raise Exception(f"Unknown primary expression: {ctx.getText()}")
 

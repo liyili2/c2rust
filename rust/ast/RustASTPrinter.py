@@ -39,7 +39,7 @@ class RustASTPrinter(RustASTVisitor):
 
         result += "("
         for i in range(len(node.args())):
-            result += self.visit(node.args().get(i))
+            result += self.visit(node.args()[i])
             if i < len(node.args()) - 1:
                 result += ","
         result += ")"
