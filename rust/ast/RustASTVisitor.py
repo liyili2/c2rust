@@ -22,7 +22,7 @@ from rust.ast.Type import SafeNonNullWrapper, SignedIntType, StringType, BoolTyp
 class RustASTVisitor:
 
     def visit(self, node: ASTNode):
-        print("class is ", node.__class__)
+        # print("class is ", node.__class__)
         match node:
             case Program():
                 return self.visitProgram(node)
@@ -232,7 +232,7 @@ class RustASTVisitor:
     #     return retval
     def visitFunctionCallExpression(self, node):
         """Safely traverse function call arguments and preserve the AST node."""
-        print("visitFunctionCallExpression0")
+        # print("visitFunctionCallExpression0")
         
         callee = node.callee() if callable(getattr(node, "callee", None)) else getattr(node, "callee", None)
         if callee is not None:
@@ -265,7 +265,7 @@ class RustASTVisitor:
     #     retval = node.right().accept(self) and retval
     #     return retval
     def visitBinaryExpression(self, node: BinaryExpression):
-        print("visitBinaryExpression")
+        # print("visitBinaryExpression")
         
         left_child = node.left()
         if hasattr(left_child, "accept"):
