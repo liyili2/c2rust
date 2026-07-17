@@ -1,5 +1,6 @@
 from rust.ast.ASTNode import CloneableASTNode
-from rust.ast.Expression import BinaryExpression, Expression, FieldAccessExpr, FunctionCallExpression
+from rust.ast.Expression import BinaryExpression, Expression, FieldAccessExpr, FunctionCallExpression, ArrayLiteral, \
+    BorrowExpression
 from rust.ast.Func import FunctionParamList, Param
 from rust.ast.Program import Program
 from rust.ast.RustASTVisitor import RustASTVisitor
@@ -40,11 +41,10 @@ class RustASTPrinter(RustASTVisitor):
             result += "." + self.visit(node.callee())
 
         result += "("
-        if node.args() is not None:
-            for i in range(len(node.args())):
-                result += self.visit(node.args()[i])
-                if i < len(node.args()) - 1:
-                    result += ","
+        for i in range(len(node.args())):
+            result += self.visit(node.args()[i])
+            if i < len(node.args()) - 1:
+                result += ","
         result += ")"
         return f"{result}"
 
@@ -81,7 +81,16 @@ class RustASTPrinter(RustASTVisitor):
             return f"{mut}{node.name()}: None" # {self.visit(node.vardef_type)}
 
     def visitLiteral(self, node):
-        return str(node.value)
+        if isinstance(node, ArrayLiteral):
+            re = "["
+            for i in range(len(node.value())):
+                re += self.visit(node.value()[i])
+                if i < len(node.value()) - 1:
+                    re += ","
+            re += "]"
+        else:
+            re = str(node.value())
+        return f"{re}"
 
     def visitAssignStmt(self, node):
         target = self.visit(node.target)
@@ -108,6 +117,14 @@ class RustASTPrinter(RustASTVisitor):
         re = ".".join(self.visit(nv) for nv in node.receiver)
         re += "."+self.visit(node.next)
         return f"#[{re}]"
+
+    def visitBorrowExpression(self, node: BorrowExpression):
+        if node.is_mutable():
+            re = "mut "
+        else:
+            re = ""
+        v = self.visit(node.expression())
+        return f"{re+"&"+v}"
 
     def visitBinaryExpression(self, node: BinaryExpression):
         op = node.op()

@@ -10,10 +10,8 @@ from rust.ast.Func import FunctionParamList, Param
 from rust.ast.Program import Program
 from rust.ast.Statement import LetStmt, ForStmt, IfStmt, AssignStmt, ReturnStmt, WhileStmt, MatchStmt, MatchArm, \
     MatchPattern, CompoundAssignment, LoopStmt, BreakStmt, ContinueStmt, TypeWrapper
-from rust.ast.VarDef import VarDef
 from rust.ast.Struct import StructField
 from rust.ast.TopLevel import *
-from rust.ast.Block import Block
 from rust.ast.ASTNode import ASTNode
 from rust.ast.Type import SafeNonNullWrapper, SignedIntType, StringType, BoolType, ArrayType, \
     PathType, \

@@ -1,7 +1,7 @@
 from typing import Any, List, Tuple
 from rust.ast.ASTNode import ASTNode, CloneableASTNode
 # from rust.ast.RustASTVisitor import RustASTVisitor
-from rust.ast.Type import BoolType, SignedIntType, StringType, FloatingPointType, Type
+from rust.ast.Type import *
 
 
 class Expression(CloneableASTNode):
@@ -152,45 +152,48 @@ class BorrowExpression(Expression):
     def expression(self):
         return self._expression
 
-class BooleanLiteral(Expression):
 
-    def __init__(self, value: bool):
-        super().__init__(dtype = BoolType())
-        self.value = value
+class Literal(Expression):
+    def __init__(self, value, dtype):
+        super().__init__(dtype = dtype)
+        self._value = value
+
+    def value(self):
+        return self._value
 
     def accept(self, visitor):
-        return visitor.visit_BoolLiteral(self)
+        return visitor.visitLiteral(self)
 
-class CharLiteral(Expression):
-    def __init__(self, value: bool):
-        super().__init__()
-        self.value = value
+class BooleanLiteral(Literal):
+
+    def __init__(self, value):
+        super().__init__(value = value, dtype = BoolType())
+
+
+class CharLiteral(Literal):
+    def __init__(self, value):
+        super().__init__(value = value, dtype = CharType())
         # self.type = CharLiteral(value=value)
 
-    def accept(self, visitor):
-        return visitor.visit_CharLiteral(self)
+class IntLiteral(Literal):
+    def __init__(self, value):
+        super().__init__(value = value, dtype = SignedIntType("int"))
 
-class IntLiteral(Expression):
-    def __init__(self, value: int):
-        super().__init__(dtype = SignedIntType("int"))
-        self._value = value
+class StrLiteral(Literal):
+    def __init__(self, value):
+        super().__init__(value = value, dtype = StringType())
 
-    def accept(self, visitor):
-        return visitor.visitLiteral(self)
 
-    def value(self):
-        return self._value
+class ArrayLiteral(Literal):
+    def __init__(self, elements,name=None, count=None):
+        super().__init__(value = elements, dtype = ArrayType(name, count))
 
-class StrLiteral(Expression):
-    def __init__(self, value: str):
-        super().__init__(dtype = StringType())
-        self._value = value
-
-    def accept(self, visitor):
-        return visitor.visitLiteral(self)
-
-    def value(self):
-        return self._value
+    def __repr__(self):
+        return f"ArrayLiteral({self.value()})"
+    def len(self):
+        return len(self.value())
+    def __len__(self):
+        return len(self.value())
 
 class ArrayDeclaration(Expression):
     def __init__(self, identifier, size, force, value):
@@ -218,31 +221,6 @@ class ArrayDeclaration(Expression):
     def force(self):
         return self._force
 
-class ArrayLiteral(Expression):
-    def __init__(self, elements,name=None, count=None):
-        super().__init__()
-        self._count = count
-        self._name = name
-        self._elements = elements
-
-    def accept(self, visitor):
-        return visitor.visitArrayLiteral(self)
-
-    def __repr__(self):
-        return f"ArrayLiteral({self._elements})"
-    def len(self):
-        return len(self._elements)
-    def __len__(self):
-        return len(self._elements)
-
-    def elements(self):
-        return self._elements
-
-    def name(self):
-        return self._name
-
-    def count(self):
-        return self._count
     
 class ArrayAccess(Expression):
     def __init__(self, name, expression, dtype=None, is_mutable=False, is_unsafe=False):

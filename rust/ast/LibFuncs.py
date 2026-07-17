@@ -1,5 +1,5 @@
 
-from rust.ast.common import *
+#from rust.ast.common import *
 from rust.ast.Expression import *
 
 class LibFunction:

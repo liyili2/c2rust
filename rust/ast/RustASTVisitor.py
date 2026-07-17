@@ -1,6 +1,4 @@
-from rust.ast.Expression import QualifiedExpression, IdentifierExpression, BinaryExpression, FunctionCallExpression, \
-    BorrowExpression, ArrayLiteral, CastExpression, UnaryExpr, DereferenceExpr, ParenExpr, RangeExpression, SafeWrapper, \
-    ByteLiteralExpression, TypePath, IntLiteral, ArrayAccess, FieldAccessExpr, StrLiteral, VarDef, StructLiteralField
+from rust.ast.Expression import *
 from rust.ast.Func import FunctionParamList, Param
 from rust.ast.Program import Program
 from rust.ast.Statement import LetStmt, ForStmt, IfStmt, AssignStmt, ReturnStmt, WhileStmt, MatchStmt, MatchArm, \
@@ -17,8 +15,7 @@ import types
 class RustASTVisitor:
 
     def visit(self, node: ASTNode):
-        print("class is ", node.__class__)
-        # print(node)
+        #print("class is ", node.__class__)
         match node:
             case Program():
                 return self.visitProgram(node)
@@ -100,12 +97,6 @@ class RustASTVisitor:
             #     return self.visitVariableRef(ctx)
             # case ReferenceExpr():
             #     return self.visitReferenceExpr(ctx)
-            case ArrayLiteral():
-                return self.visitArrayLiteral(node)
-            case IntLiteral():
-                return self.visitIntLiteral(node)
-            case StrLiteral():
-                return self.visitStrLiteral(node)
             case CastExpression():
                 return self.visitCastExpression(node)
             case UnaryExpr():
@@ -128,13 +119,13 @@ class RustASTVisitor:
                 return self.visitVarDef(node)
             case ArrayType():
                 return self.visitArrayType(node)
-            # case types.BuiltinFunctionType() | types.BuiltinMethodType():
-            #     return node.__name__
+            case Literal():
+                return self.visitLiteral(node)
             case _:
                 raise NotImplementedError(f"No visit method defined for {type(node)}")
 
     def visitProgram(self, ctx: Program):
-        print("visitProgram\n")
+        #print("visitProgram\n")
         ret = True
         for exp in ctx.getChildren():
             ret = ret and exp.accept(self)
@@ -246,7 +237,7 @@ class RustASTVisitor:
         return node.expression().accept(self)
 
     def visitBinaryExpression(self, node: BinaryExpression):
-        print("visitBinaryExpression")
+        #print("visitBinaryExpression")
         retval = node.left().accept(self)
         retval = node.right().accept(self) and retval
         return retval
@@ -273,10 +264,10 @@ class RustASTVisitor:
     #     node.expr.accept(self)
 
     def visitArrayLiteral(self, node: ArrayLiteral):
-        for i in node.elements():
+        for i in node.value():
             i.accept(self)
 
-    def visitIntLiteral(self, node: IntLiteral):
+    def visitLiteral(self, node):
         node.accept(self)
         # return node
 

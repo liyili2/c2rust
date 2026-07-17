@@ -166,7 +166,7 @@ castExpressionPostFix: 'as' typeExpression ('as' typeExpression)*;
 compoundOps: '+=' | '-=' | '*=' | '/=' | '%=' | '&=' | '|=' | '^=';
 rangeSymbol: '..';
 
-binaryOps: '*' | '/' | '%' | '+' | '-' | '==' | '!=' | '>' | '<' | '||' | '&&' | '>>' | '&' | '>=' | '<=';
+binaryOps: '*' | '/' | '%' | '+' | '-' | '==' | '!=' | '>' | '<' | '||' | '&&' | '>>' | '>=' | '<=';
 structFieldDec: Identifier '{' structLiteralField (',' structLiteralField)* ','? '}' ;
 unaryOpes: '!' | '+' | '-';
 parenExpression: '(' expression ')' | '{' expression '}';
@@ -194,7 +194,6 @@ Binary: '0b' [0-1]+;
 arrayAccess: Identifier '[' expression ']';
 arrayLiteral: Identifier? '!'? '[' expression (',' expression)+ ']' | Identifier? '!'? '[' expression ';' expression ']' | Identifier? '!'? '[' ']';
 STRING_LITERAL: '"' (~["\\] | '\\' .)* '"';
-stringLiteral: '"' .*? '"';
 Identifier: [a-zA-Z_][a-zA-Z0-9_]*;
 Number: [0-9]+;
 SignedNumber: ('-' | '+') Number;

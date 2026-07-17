@@ -240,31 +240,8 @@ class RustASTTransformer(RustVisitor):
     def visitVarDef(self, ctx):
         by_ref = False
         mutable = False
-        name = None
+        name = ctx.Identifier().getText()
         var_type = None
-        name_index = 0
-
-        txt = ctx.getText()
-        tokens = [ctx.getChild(i).getText() for i in range(ctx.getChildCount())]
-
-        if str.__contains__(txt, 'ref'):
-            by_ref = True
-            name_index += 1
-        if str.__contains__(txt, 'mut'):
-            mutable = True
-            name_index += 1
-
-        name = tokens[name_index]
-
-        if tokens[0] == 'mut':
-            mutable = True
-            name = tokens[1]
-        else:
-            name = tokens[0]
-
-        if ':' in tokens:
-            var_type = self.visit(ctx.typeExpression())
-
         return VarDef(name=name, isMutable=mutable, by_ref=by_ref, var_type=var_type)
 
     def visitStaticItem(self, ctx):
@@ -442,7 +419,7 @@ class RustASTTransformer(RustVisitor):
 
     def visitExpression(self, ctx: RustParser.ExpressionContext):
         if ctx.primaryExpression() is not None:
-            return self.visitPrimaryExpression(ctx.primaryExpression())
+            return self.visit(ctx.primaryExpression())
         elif ctx.qualifiedExpression() is not None:
             return self.visitQualifiedExpression(ctx.qualifiedExpression())
         elif ctx.binaryOps():
@@ -482,8 +459,8 @@ class RustASTTransformer(RustVisitor):
         # Add caller and callee
         elif ctx.callExpressionPostFix():
             func = self.visit(ctx.expression(0))
-            args = self.visit(ctx.callExpressionPostFix().functionCallArgs())
-            return FunctionCallExpression(callee=func, args=args, caller=id)
+            args = self.visit(ctx.callExpressionPostFix())
+            return FunctionCallExpression(caller=func, args=args, callee=None)
 
         elif ctx.parenExpression():
             return self.visit(ctx.parenExpression().expression())
@@ -564,7 +541,7 @@ class RustASTTransformer(RustVisitor):
         if ctx.literal():
             return self.visit(ctx.literal())
         elif ctx.Identifier():
-            return VarDef(name=ctx.Identifier().getText())
+            return VarDef(ctx.Identifier().getText())
         else:
             raise Exception(f"Unknown primary expression: {ctx.getText()}")
 
@@ -644,8 +621,7 @@ class RustASTTransformer(RustVisitor):
     def visitBorrowExpression(self, ctx):
         txt = ctx.getText()
         mutable = str.__contains__(txt, "mut")
-        expr_index = 1 if mutable else 0
-        expr = self.visit(ctx.getChild(expr_index))
+        expr = self.visit(ctx.expression())
         return BorrowExpression(expression=expr, is_mutable=mutable)
 
     def visitTypeExpression(self, ctx: RustParser.TypeExpressionContext):
@@ -760,7 +736,7 @@ class RustASTTransformer(RustVisitor):
         elif ctx.booleanLiteral():
             return BooleanLiteral(value=self.visit(ctx.booleanLiteral()))
         elif ctx.HexNumber():
-            return int(ctx.HexNumber().getText(), 16)
+            return IntLiteral(value = int(ctx.HexNumber().getText(), 16))
         elif ctx.Number():
             return IntLiteral(value=int(ctx.Number().getText()))
         elif ctx.SignedNumber():
