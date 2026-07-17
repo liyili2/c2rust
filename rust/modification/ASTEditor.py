@@ -2,6 +2,7 @@ import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
+import random
 from contextlib import contextmanager
 from rust.ast.RustASTVisitor import RustASTVisitor
 from rust.ast.MarkedASTNode import MarkedASTNode
@@ -10,12 +11,19 @@ from rust.modification.Constraint import IsInUnsafeContext
 
 class ASTEditor(RustASTVisitor):
 
-    def __init__(self, constraints=None):
+    def __init__(self, constraints=None, rng=None):
         super().__init__()
         self.edited = []
         self.in_unsafe = False
         self.constraints = constraints if constraints is not None else [IsInUnsafeContext()]
         self.unsafe_marked_nodes = []
+        self.rng = rng if rng is not None else random.Random()
+
+    def swap_marked_nodes(self, marked_nodes):
+        if len(marked_nodes) < 2:
+            return
+        node_a, node_b = self.rng.sample(marked_nodes, 2)
+        node_a.node, node_b.node = node_b.node, node_a.node
 
     @contextmanager
     def _scope_ctx(self, is_unsafe: bool):
@@ -111,9 +119,18 @@ class ASTEditor(RustASTVisitor):
         """Override base visitor returning True; must return the node itself."""
         return ctx
     
-    def swap_marked_nodes(self, marked_nodes):
-        """Swaps the internal expressions of the collected MarkedASTNodes via circular rotation."""
-        first_content = marked_nodes[0].node
-        for i in range(len(marked_nodes) - 1):
-            marked_nodes[i].node = marked_nodes[i + 1].node
-        marked_nodes[-1].node = first_content
+    # deterministic version
+    # def swap_marked_nodes(self, marked_nodes):
+    #     """Swaps the internal expressions of the collected MarkedASTNodes via circular rotation."""
+    #     first_content = marked_nodes[0].node
+    #     for i in range(len(marked_nodes) - 1):
+    #         marked_nodes[i].node = marked_nodes[i + 1].node
+    #     marked_nodes[-1].node = first_content
+
+    # def swap_marked_nodes(self, marked_nodes):
+    #     """Randomly picks two distinct marked nodes and swaps their contents."""
+    #     if len(marked_nodes) < 2:
+    #         return  # nothing to swap
+
+    #     node_a, node_b = random.sample(marked_nodes, 2)
+    #     node_a.node, node_b.node = node_b.node, node_a.node
