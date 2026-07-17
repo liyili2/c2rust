@@ -17,6 +17,22 @@ class ASTEditor(RustASTVisitor):
         self.constraints = constraints if constraints is not None else [IsInUnsafeContext()]
         self.unsafe_marked_nodes = []
 
+    @contextmanager
+    def _scope_ctx(self, is_unsafe: bool):
+        """Manages per-function scope: tracks unsafe context and gives each
+        function its own private buffer of constraint-matched nodes."""
+        old_unsafe = self.in_unsafe
+        old_marked_nodes = self.unsafe_marked_nodes
+
+        self.in_unsafe = is_unsafe
+        self.unsafe_marked_nodes = []   # fresh buffer for every function, not just unsafe ones
+
+        try:
+            yield
+        finally:
+            self.in_unsafe = old_unsafe
+            self.unsafe_marked_nodes = old_marked_nodes
+
     def visit(self, node):
         if node is None:
             return None
@@ -27,9 +43,8 @@ class ASTEditor(RustASTVisitor):
         return super().visit(node)
 
     def visitMarkedASTNode(self, node: MarkedASTNode):
-        if self._should_edit(node):
-            if self.in_unsafe:
-                self.unsafe_marked_nodes.append(node)
+        if self._should_edit(node):             # constraint pipeline is now the ONLY gate
+            self.unsafe_marked_nodes.append(node)
 
             if hasattr(node.node, "accept"):
                 node.node = node.node.accept(self)
@@ -46,44 +61,6 @@ class ASTEditor(RustASTVisitor):
             else:
                 node.node = self.visit(inner)
             return node
-
-    def edit(self, root):
-        self.edited = []
-        self.in_unsafe = False
-        self.unsafe_marked_nodes = []
-        
-        if hasattr(root, "accept"):
-            root.accept(self)
-        else:
-            self.visit(root)
-        return root
-
-    @contextmanager
-    def _scope_ctx(self, is_unsafe: bool):
-        """Safely manages scope entry and exit states."""
-        old_unsafe = self.in_unsafe
-        old_marked_nodes = self.unsafe_marked_nodes
-
-        self.in_unsafe = is_unsafe          # always set explicitly (was: only set when True)
-        if is_unsafe:
-            self.unsafe_marked_nodes = []   # fresh buffer, scoped to *this* unsafe fn only
-
-        try:
-            yield
-        finally:
-            self.in_unsafe = old_unsafe
-            self.unsafe_marked_nodes = old_marked_nodes   # restore caller's buffer
-
-    def _should_edit(self, node) -> bool:
-        """Evaluates the pipeline of constraints."""
-        return all(constraint.matches(node, self) for constraint in self.constraints)
-
-    def apply_edit(self, marked_node):
-        return marked_node
-
-    #####################################################
-    # Traversal Modifications
-    #####################################################
 
     def visitFunctionDef(self, ctx: FunctionDef):
         is_fn_unsafe = getattr(ctx, "isUnsafe", getattr(ctx, "is_unsafe", False))
@@ -102,10 +79,33 @@ class ASTEditor(RustASTVisitor):
             if ctx.return_type:
                 ctx.return_type = ctx.return_type.accept(self) if hasattr(ctx.return_type, "accept") else self.visit(ctx.return_type)
 
-            if self.in_unsafe and len(self.unsafe_marked_nodes) > 1:
+            # Swap is now purely a function of what the constraints actually matched
+            if len(self.unsafe_marked_nodes) > 1:
                 self.swap_marked_nodes(self.unsafe_marked_nodes)
 
         return ctx
+
+    def edit(self, root):
+        self.edited = []
+        self.in_unsafe = False
+        self.unsafe_marked_nodes = []
+        
+        if hasattr(root, "accept"):
+            root.accept(self)
+        else:
+            self.visit(root)
+        return root
+
+    def _should_edit(self, node) -> bool:
+        """Evaluates the pipeline of constraints."""
+        return all(constraint.matches(node, self) for constraint in self.constraints)
+
+    def apply_edit(self, marked_node):
+        return marked_node
+
+    #####################################################
+    # Traversal Modifications
+    #####################################################
 
     def visitParam(self, ctx):
         """Override base visitor returning True; must return the node itself."""
