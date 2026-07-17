@@ -128,8 +128,8 @@ class RustASTVisitor:
                 return self.visitVarDef(node)
             case ArrayType():
                 return self.visitArrayType(node)
-            case types.BuiltinFunctionType() | types.BuiltinMethodType():
-                return node.__name__
+            # case types.BuiltinFunctionType() | types.BuiltinMethodType():
+            #     return node.__name__
             case _:
                 raise NotImplementedError(f"No visit method defined for {type(node)}")
 
