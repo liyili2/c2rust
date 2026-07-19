@@ -1,4 +1,4 @@
-// use ::libc;
+use ::libc;
 
 unsafe fn aggregate(list: &[i32]) -> Vec<i32> {
     let len = list.len();

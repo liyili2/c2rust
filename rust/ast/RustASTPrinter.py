@@ -124,7 +124,7 @@ class RustASTPrinter(RustASTVisitor):
         else:
             re = ""
         v = self.visit(node.expression())
-        return f"{re+"&"+v}"
+        return f"{re}" + "&" + f"{v}"
 
     def visitBinaryExpression(self, node: BinaryExpression):
         op = node.op()
