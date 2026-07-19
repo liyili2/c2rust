@@ -10,6 +10,7 @@ from rust.ast.ASTNode import ASTNode
 from rust.ast.Type import SafeNonNullWrapper, SignedIntType, StringType, BoolType, ArrayType, \
     PathType, \
     GenericType, ReferenceType, SliceType, CharType, UnknownType, UnsignedIntType, FloatingPointType, PointerType
+import types
 
 class RustASTVisitor:
 
@@ -28,6 +29,8 @@ class RustASTVisitor:
                 return self.visitStructDef(node)
             case StructField():
                 return self.visitStructField(node)
+            case FieldAccessExpr():
+                return self.visitFieldAccessExpr(node)
             case LetStmt():
                 return self.visitLetStmt(node)
             case ForStmt():
@@ -220,6 +223,7 @@ class RustASTVisitor:
 
     def visitFunctionCallExpression(self, node: FunctionCallExpression):
         pass
+        # node.accept(self)
 
     def visitBlock(self, node: Block):
         for i in node.statements():
@@ -241,6 +245,9 @@ class RustASTVisitor:
     def visitByteLiteralExpression(self, node: ByteLiteralExpression):
         return True
 
+    def visitStrLiteral(self, node: StrLiteral):
+        return node.value # Should this be changed to a generic visitLiteral?
+
     def visitTypeWrapper(self, node: TypeWrapper):
         node.expr.accept(self)
 
@@ -249,6 +256,8 @@ class RustASTVisitor:
     #     node.path.accept(self)
 
     def visitBorrowExpression(self, ctx: BorrowExpression):
+        # print(ctx.expression())
+        # Why would the borrow expression be None?
         ctx.expression().accept(self)
 
     # def visitReferenceExpr(self, node: Ref):

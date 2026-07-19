@@ -34,6 +34,8 @@ class RustASTPrinter(RustASTVisitor):
         return f"{header} {body}"
 
     def visitFunctionCallExpression(self, node: FunctionCallExpression):
+        # print(node.caller())
+        # print("callee" + node.callee())
         result = self.visit(node.caller())
         if node.callee() is not None:
             result += "." + self.visit(node.callee())
@@ -122,7 +124,7 @@ class RustASTPrinter(RustASTVisitor):
         else:
             re = ""
         v = self.visit(node.expression())
-        return f"{re+"&"+v}"
+        return f"{re}" + "&" + f"{v}"
 
     def visitBinaryExpression(self, node: BinaryExpression):
         op = node.op()
