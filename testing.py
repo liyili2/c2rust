@@ -153,7 +153,7 @@ print("Marked nodes:", count_marked(ast))
 print_unsafe_functions(ast)
 
 editor = ASTEditor() 
-editor.edit(ast)
+ast.accept(editor)
 
 print("\n===== AFTER EDIT =====")
 print_unsafe_functions(ast)
