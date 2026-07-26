@@ -12,5 +12,11 @@ class MarkedASTNode(CloneableASTNode):
     def __getattr__(self, name):
         return getattr(self.node, name)
 
+    # def accept(self, visitor):
+    #     return self.node.accept(visitor)
     def accept(self, visitor):
+        handler = getattr(visitor, "visitMarkedASTNode", None)
+        if callable(handler):
+            return handler(self)
         return self.node.accept(visitor)
+

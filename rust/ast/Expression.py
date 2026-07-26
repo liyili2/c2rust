@@ -183,6 +183,8 @@ class StrLiteral(Literal):
     def __init__(self, value):
         super().__init__(value = value, dtype = StringType())
 
+    def accept(self, visitor):
+        return visitor.visitIntLiteral(self)
 
 class ArrayLiteral(Literal):
     def __init__(self, elements,name=None, count=None):
@@ -195,6 +197,9 @@ class ArrayLiteral(Literal):
     def __len__(self):
         return len(self.value())
 
+    def accept(self, visitor):
+        return visitor.visitStrLiteral(self)
+    
 class ArrayDeclaration(Expression):
     def __init__(self, identifier, size, force, value):
         super().__init__()

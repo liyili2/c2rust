@@ -22,21 +22,29 @@ from rust.ast.Expression import Expression
 from rust.ast.MarkedASTNode import MarkedASTNode
 
 class MarkingVisitor(RustASTVisitor):
-    def __init__(self, program):
-        self.program = program
+    def __init__(self):
+        pass
+
+    # def visit(self, node):
+    #     if node is None:
+    #         return None
+
+    #     # Fix: Intercept raw python primitive types to prevent base match-case crashes
+    #     if isinstance(node, (int, str, bool, float)):
+    #         return node
+
+    #     return super().visit(node)
 
     def _mark_and_wrap(self, node: Expression) -> ASTNode:
         """Helper to avoid duplicating the wrapping logic in every visit method."""
-        # print("marking\n")
         marked = MarkedASTNode(node)
-        self.program.add_marked(marked)
         return marked
 
     def visitQualifiedExpression(self, node: QualifiedExpression):
         return self._mark_and_wrap(node)
 
     def visitIdentifierExpression(self, node: IdentifierExpression):
-        return self._mark_and_wrap(node)
+        return MarkedASTNode(node)
 
     def visitBinaryExpression(self, node: BinaryExpression):
         return self._mark_and_wrap(node)
