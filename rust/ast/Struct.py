@@ -6,7 +6,7 @@ class StructField(DeclarationASTNode):
 
     def __init__(self, args, kwargs):
         super().__init__()
-        self._args = args
+        self._args = args # This should be the individual field names inside the struct
         self._kwargs = kwargs
 
     def accept(self, visitor):

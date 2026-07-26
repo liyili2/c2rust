@@ -135,9 +135,9 @@ class RustASTTransformer(RustVisitor):
     def visitStructField(self, ctx):
         name_token = ctx.Identifier()
         name = name_token.getText() if name_token else "<missing>"
-        dtype = self.visit(ctx.typeExpr())
+        dtype = self.visit(ctx.typeExpression())
         visibility = self.visit(ctx.visibility()) if ctx.visibility() else None
-        return StructField(name, dtype=dtype, visibility=visibility)
+        return StructField(name, dtype=dtype, visibility=visibility) # This needs to be rewritten
 
     def visitStructLiteral(self, ctx):
         type_name = ctx.Identifier().getText()

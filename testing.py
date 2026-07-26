@@ -44,8 +44,10 @@ def pretty_print_ast(node, indent=0, visited=None):
 
     return '\n'.join(lines)
 
-file_path = "./c2safeRust_examples/aggregate.rs"
-# file_path = "C:\\Users\\aqwan\\Documents\\GitHub\\c2rust\\c2safeRust_examples\\aggregate.rs"
+# file_path = "./c2safeRust_examples/aggregate.rs"
+
+file_path = "./c2safeRust_examples/bst.rs"
+
 with open(file_path, "r", encoding="utf-8") as f:
     rust_code = f.read()
 print("Tokenizing:")
@@ -109,3 +111,5 @@ ast = transformer.visit(tree)
 # engine.get_contents(file_path)
 printer = RustASTPrinter()
 reassmbled_source = printer.visit(ast)
+
+print(reassmbled_source) # List types will need more fixing
