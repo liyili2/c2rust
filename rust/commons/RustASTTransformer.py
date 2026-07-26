@@ -135,9 +135,9 @@ class RustASTTransformer(RustVisitor):
     def visitStructField(self, ctx):
         name_token = ctx.Identifier()
         name = name_token.getText() if name_token else "<missing>"
-        dtype = self.visit(ctx.typeExpr())
+        dtype = self.visit(ctx.typeExpression())
         visibility = self.visit(ctx.visibility()) if ctx.visibility() else None
-        return StructField(name, dtype=dtype, visibility=visibility)
+        return StructField(name, dtype=dtype, visibility=visibility) # This needs to be rewritten
 
     def visitStructLiteral(self, ctx):
         type_name = ctx.Identifier().getText()
@@ -743,9 +743,11 @@ class RustASTTransformer(RustVisitor):
             return IntLiteral(int(ctx.SignedNumber().getText()))
         elif ctx.BYTE_STRING_LITERAL():
             text = ctx.BYTE_STRING_LITERAL().getText()
-            return bytes(text[2:-1], "utf-8")
+            raw_bytes = bytes(text[2:-1], "utf-8")
+            return ByteLiteralExpression(expression=raw_bytes)
         elif ctx.Binary():
-            return int(ctx.Binary().getText(), 2)
+            val = int(ctx.Binary().getText(), 2)
+            return IntLiteral(value=val)
         elif ctx.STRING_LITERAL():
             return StrLiteral(ctx.STRING_LITERAL().getText()[1:-1])
         elif ctx.CHAR_LITERAL():

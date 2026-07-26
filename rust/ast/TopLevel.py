@@ -38,7 +38,7 @@ class StructDef(TopLevel):
     def __init__(self, name, fields):
         super().__init__()
         self.name = name
-        self.fields = fields
+        self.fields = fields # Just leave the struct def and remove the struct field, move it into here instead
 
     def accept(self, visitor):
         return visitor.visit_Struct(self)
