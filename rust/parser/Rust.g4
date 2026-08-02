@@ -58,7 +58,6 @@ typeExpression: basicType | pointerType;
 basicType
     : scalarType
     | stdLibraryType
-    | safeNonNullWrapper
     | arrayType
     | pathType
     | genericType
@@ -76,10 +75,9 @@ boolType: 'bool';
 charType: 'char';
 stdLibraryType: stringType;
 stringType: 'String';
-safeNonNullWrapper: 'Option<NonNull<' typeExpression ('>>' | '>' '>') ;
-arrayType: '[' basicType ';' Number ']' | '[' basicType ']';
+arrayType: '[' basicType ';' Number ']' | '[' basicType ']'; // keep this
 pathType: typePath basicType;
-genericType: typePath? '<' typeExpression (',' typeExpression)* '>';
+genericType: typePath? '<' typeExpression (',' typeExpression)* '>'; // modify generic type to work with generic type
 referenceType: '&' typeExpression;
 sliceType: '[' typeExpression ']';
 unitType: '()';
