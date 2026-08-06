@@ -132,7 +132,10 @@ def print_unsafe_functions(ast):
 
 # file_path = "./c2safeRust_examples/aggregate.rs"
 
-file_path = "./c2safeRust_examples/bst.rs"
+# file_path = "./c2safeRust_examples/bst.rs"
+
+file_path = "./Benchmarks/avl/avl.rs"
+
 with open(file_path, "r", encoding="utf-8") as f:
     rust_code = f.read()
 print("Tokenizing:")
@@ -143,6 +146,16 @@ print("Parsing:")
 parser = RustParser(tokens)
 # print(parser)
 tree = parser.program()
+print("Transforming:")
+# notes:
+# | safeNonNullWrapper
+# line 61
+# remove line 79
+# safeNonNullWrapper
+# genericTypecontext
+# typePath
+# Option
+# Box
 transformer = RustASTTransformer()
 ast = transformer.visit(tree)
 

@@ -4,7 +4,7 @@ import os
 
 #import rust.parser.RustParser
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from antlr4 import CommonTokenStream, InputStream
 from rust.parser.RustLexer import RustLexer
@@ -14,7 +14,9 @@ from rust.commons.RustASTTransformer import RustASTTransformer
 from rust.ast.RustASTPrinter import RustASTPrinter
 
 
-file_path = "/home/liyili2/project/compiler_sem_projects/c2rust/Benchmarks/aggregate/aggregate.rs"
+# file_path = "/home/liyili2/project/compiler_sem_projects/c2rust/Benchmarks/aggregate/aggregate.rs"
+file_path = "./Benchmarks/aggregate/aggregate.rs"
+
 with open(file_path, "r", encoding="utf-8") as f:
     rust_code = f.read()
 print("Tokenizing:")
@@ -23,6 +25,7 @@ abc = CommonTokenStream(lexer)
 print("Parsing:")
 parser = RustParser(abc)
 tree = parser.program()
+print("Transforming:")
 transformer = RustASTTransformer()
 ast = transformer.visit(tree)
 printer = RustASTPrinter()
