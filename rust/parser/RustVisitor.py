@@ -69,16 +69,6 @@ class RustVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by RustParser#externParams.
-    def visitExternParams(self, ctx:RustParser.ExternParamsContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by RustParser#externParam.
-    def visitExternParam(self, ctx:RustParser.ExternParamContext):
-        return self.visitChildren(ctx)
-
-
     # Visit a parse tree produced by RustParser#visibility.
     def visitVisibility(self, ctx:RustParser.VisibilityContext):
         return self.visitChildren(ctx)
@@ -221,11 +211,6 @@ class RustVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by RustParser#stringType.
     def visitStringType(self, ctx:RustParser.StringTypeContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by RustParser#safeNonNullWrapper.
-    def visitSafeNonNullWrapper(self, ctx:RustParser.SafeNonNullWrapperContext):
         return self.visitChildren(ctx)
 
 
@@ -496,11 +481,6 @@ class RustVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by RustParser#arrayLiteral.
     def visitArrayLiteral(self, ctx:RustParser.ArrayLiteralContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by RustParser#stringLiteral.
-    def visitStringLiteral(self, ctx:RustParser.StringLiteralContext):
         return self.visitChildren(ctx)
 
 

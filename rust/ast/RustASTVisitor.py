@@ -29,7 +29,7 @@ class RustASTVisitor:
                 return self.visitFunctionParamList(node)
             case Param():
                 return self.visitParam(node)
-            case StructDef():
+            case StructADef():
                 return self.visitStructDef(node)
             case StructField():
                 return self.visitStructField(node)
@@ -129,6 +129,22 @@ class RustASTVisitor:
                 return self.visitVarDef(node)
             case FieldAccessExpr():
                 return self.visitFieldAccessExpr(node)
+            case UseDecl():
+                return self.visitUseDecl(node)
+            case TypePath():
+                return self.visitTypePath(node)
+            case Literal():
+                return self.visitLiteral(node)
+            case Type():
+                return self.visitType(node)
+            case ExternBlock():
+                return self.visitExternBlock(node)
+            case ExternFunctionDecl():
+                return self.visitExternFunctionDecl(node)
+            case Attribute():
+                return self.visitAttribute(node)
+            case TypedName():
+                return self.visitTypedName(node)
             case _:
                 raise NotImplementedError(f"No visit method defined for {type(node)}")
 
@@ -146,6 +162,9 @@ class RustASTVisitor:
             ctx.return_type = ctx.return_type.accept(self)
         return ctx
 
+    def visitAttribute(self, node: Attribute):
+        pass
+
     def visitFunctionParamList(self, ctx: FunctionParamList):
         ctx.params = [p.accept(self) for p in ctx.params]
         return ctx
@@ -153,14 +172,28 @@ class RustASTVisitor:
     def visitParam(self, ctx: Param):
         return ctx
 
-    def visitStructDef(self, ctx: StructDef):
-        ret = True
-        for child in ctx.getChildren():
-            self.visit(child)
+    def visitUseDecl(self, ctx: UseDecl):
+        for v in ctx.paths:
+            self.visit(v)
+
+    def visitExternBlock(self, ctx: ExternBlock):
+        pass
+
+    def visitExternFunctionDecl(self, ctx: ExternFunctionDecl):
+        pass
+
+    def visitFunctionCallExpression(self, ctx : FunctionCallExpression):
+        pass
+
+    def visitStructDef(self, ctx: StructADef):
+        pass
 
     def visitStructField(self, node: StructField):
         # mut = "mut " if node.mutable else ""
         self.visit(node.type())
+
+    def visitStructLiternal(self, node: StrLiteral):
+        pass
 
     def visitStructLiteralField(self, node: StructLiteralField):
         self.visit(node.value())
@@ -370,7 +403,6 @@ class RustASTVisitor:
 
     def visitCastExpression(self, ctx: CastExpression):
         ctx.expression().accept(self)
-        ctx.type().accept(self)
 
     def visitUnaryExpr(self, node: UnaryExpr):
         node.expression().accept(self)
@@ -421,7 +453,13 @@ class RustASTVisitor:
         node.accept(self)
 
     def visitTypePath(self, node: TypePath):
-        return node
+        pass
+
+    def visitTypedName(self, node: TypedName):
+        pass
+
+    def visitType(self, node: Type):
+        pass
 
     def visitSignedIntType(self, node: SignedIntType):
         return node
@@ -471,6 +509,9 @@ class RustASTVisitor:
 
     def visitUnknownType(self, node: UnknownType):
         return node
+
+    def visitExternalType(self, node: ExternalType):
+        pass
 
     def visitPointerType(self, node: PointerType):
         return node.dtype.accept(self)

@@ -1,10 +1,12 @@
 from rust.ast.ASTNode import CloneableASTNode
 from rust.ast.Expression import BinaryExpression, Expression, FieldAccessExpr, FunctionCallExpression, ArrayLiteral, \
-    BorrowExpression
+    BorrowExpression, TypePath, RangeExpression, StructLiteral, CastExpression, TypedName
 from rust.ast.Func import FunctionParamList, Param
 from rust.ast.Program import Program
 from rust.ast.RustASTVisitor import RustASTVisitor
-from rust.ast.TopLevel import FunctionDef
+from rust.ast.Struct import StructField
+from rust.ast.TopLevel import *
+from rust.ast.Type import ExternalType, UnknownType
 
 
 class RustASTPrinter(RustASTVisitor):
@@ -19,7 +21,27 @@ class RustASTPrinter(RustASTVisitor):
     #     return f"<Unknown:{type(node).__name__}>"
     
     def visitProgram(self, ctx: Program):
-        return "\n\n".join(child.accept(self) for child in ctx.getChildren())
+        return "\n\n".join(self.visit(child) for child in ctx.getChildren())
+
+    def visitExternBlock(self, ctx: ExternBlock):
+        re = "extern \"" + f"{ctx.name()}"
+        re = re.join(str(child.accept(self)) + " ;" for child in ctx.items())
+        return f"{re}"
+
+    def visitExternFunctionDecl(self, ctx: ExternFunctionDecl):
+        re = "fn "
+        if ctx.visibility is not None:
+            re += "pub "
+        re += f"{ctx.name}" +"("
+
+        for i in range(len(ctx.params)):
+            re += f"{ctx.params[i].accept(self)}"
+            if i < len(ctx.params) - 1:
+                re += ","
+        re += ")"
+        if ctx.return_type is not None:
+            re += f" -> {ctx.return_type.accept(self)}" +" ;"
+        return f"{re}"
 
     def visitFunctionDef(self, ctx: FunctionDef):
         header = "unsafe " if ctx.isUnsafe else ""
@@ -39,7 +61,6 @@ class RustASTPrinter(RustASTVisitor):
         result = self.visit(node.caller())
         if node.callee() is not None:
             result += "." + self.visit(node.callee())
-
         result += "("
         for i in range(len(node.args())):
             result += self.visit(node.args()[i])
@@ -118,6 +139,13 @@ class RustASTPrinter(RustASTVisitor):
         re += "."+self.visit(node.next)
         return f"#[{re}]"
 
+    def visitRangeExpression(self, node: RangeExpression):
+        re = ""
+        re += self.visit(node.initial())
+        re += ".."
+        re += self.visit(node.last())
+        return f"{re}"
+
     def visitBorrowExpression(self, node: BorrowExpression):
         if node.is_mutable():
             re = "mut "
@@ -125,6 +153,36 @@ class RustASTPrinter(RustASTVisitor):
             re = ""
         v = self.visit(node.expression())
         return f"{re}" + "&" + f"{v}"
+
+    def visitUseDecl(self, ctx: UseDecl):
+        re = ""
+        for v in ctx.paths:
+            re += self.visit(v)
+        return f"{re}" + ";"
+
+    def visitTypePath(self, node: TypePath):
+        re = ""
+        if node.hasColumn():
+            re += "::"
+
+        for v in node.types():
+            re += f"{v}"
+
+        return f"{re}"
+
+    def visitTypedName(self, node: TypedName):
+        re = f"{self.visit(node.types())}"
+        re += f"{self.visit(node.name())}"
+        return f"{re}"
+
+
+    def visitCastExpression(self, ctx: CastExpression):
+        re = f"{ctx.expression().accept(self)}"
+        for child in ctx.type():
+            re = f"{child.accept(self)}"
+            re += ","
+        return f"{re}"
+
 
     def visitBinaryExpression(self, node: BinaryExpression):
         op = node.op()
@@ -138,7 +196,30 @@ class RustASTPrinter(RustASTVisitor):
             right = self.visit(right)
         return f"({left} {op} {right})"
 
-    def visitStructLiteral(self, node):
+    def visitStructDef(self, node : StructADef):
+        if node.visibility is not None:
+            re = "pub "
+        else:
+            re = ""
+
+        re += "struct " + f"{node.name}" + " {"
+        for f in node.fields:
+            re += f"{self.visit(f)}"
+            re += ", "
+        re += " }"
+        return f"{re}"
+
+    def visitStructField(self, node: StructField):
+        if node.visibility is not None:
+            re = "pub "
+        else:
+            re = ""
+
+        re += f"{node.name}"
+        re += node.dtype.accept(self)
+        return f"{re}"
+
+    def visitStructLiteral(self, node : StructLiteral):
         fields = ", ".join(f"{f.name}: {self.visit(f.value)}" for f in node.fields)
         return f"{node.type_name} {{ {fields} }}"
 
@@ -146,17 +227,14 @@ class RustASTPrinter(RustASTVisitor):
         return f"{node.op()}{self.visit(node.expression())}"
 
     def visitAttribute(self, node):
-        if node.args:
-            args_str = ", ".join(self.visit(arg) for arg in node.args)
-            return f"#[{node.name}({args_str})]"
+        #if node.args:
+        #    args_str = ", ".join(self.visit(arg) for arg in node.args)
+        #    return f"#[{node.name}({args_str})]"
         return f"#[{node.name}]"
 
     def visitFieldAccessExpr(self, node):
         receiver = self.visit(node.receiver())
         return f"{receiver}.{node.next()}"
-    
-    def visitType(self, node):
-        print("********")
 
     def visitBoolType(self, node):
         return "bool"
@@ -169,6 +247,14 @@ class RustASTPrinter(RustASTVisitor):
 
     def visitFloatType(self, node):
         return "f32"
+
+    def visitExternalType(self, node: ExternalType):
+        left = node.ctype()
+        right = node.ptype()
+        return f"{left} + :: + {right}"
+
+    def visitUnknownType(self, node: UnknownType):
+        return f"{node.ptype()}"
 
     def visitStr(self, node):
         return node

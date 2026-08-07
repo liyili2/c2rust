@@ -34,14 +34,16 @@ class FunctionDef(TopLevel):
         self.params = paramList
 
 
-class StructDef(TopLevel):
-    def __init__(self, name, fields):
+class StructADef(TopLevel):
+
+    def __init__(self, name, fields, vis=None):
         super().__init__()
         self.name = name
-        self.fields = fields # Just leave the struct def and remove the struct field, move it into here instead
+        self.fields = fields
+        self.visibility = vis# Just leave the struct def and remove the struct field, move it into here instead
 
     def accept(self, visitor):
-        return visitor.visit_Struct(self)
+        return visitor.visitStruct(self)
 
     def getChildren(self):
         return self.fields
@@ -51,13 +53,6 @@ class StructDef(TopLevel):
 
     def getChild(self, key):
         return self.fields[key]
-
-    def __setitem__(self, key, value):
-        for field in self.fields:
-            # if field.declarationInfo.name == key:
-            field.value = value
-            return
-        raise KeyError(f"No field named {key} in struct {self.name}")
 
 class Attribute(TopLevel):
     def __init__(self, name, args=None):
@@ -72,14 +67,17 @@ class Attribute(TopLevel):
 class ExternBlock(TopLevel):
     def __init__(self, abi: str, items: list):
         super().__init__()
-        self.abi = abi
-        self.items = items
+        self._abi = abi
+        self._items = items
 
     def __repr__(self):
         return f"<ExternBlock abi={self.abi}, items={self.items}>"
-    
-    def getChildren(self):
-        return self.items
+
+    def name(self):
+        return self._abi
+
+    def items(self):
+        return self._items
 
 class ExternItem(ASTNode):
     pass

@@ -148,16 +148,32 @@ class PointerType(Type):
     def accept(self, visitor):
         return visitor.visitPointerType(self)
 
+class ExternalType(Type):
+    def __init__(self, ctype: str, ptype: str):
+        super().__init__()
+        self._ctype = ctype
+        self._ptype = ptype
+
+    def ctype(self):
+        return self._ctype
+
+    def ptype(self):
+        return self._ptype
+
+    def accept(self, visitor):
+        return visitor.visitExternalType(self)
 
 class UnknownType(Type):
 
     def __init__(self, ptype: str):
         super().__init__()
-        self.ptype = ptype
+        self._ptype = ptype
 
     def accept(self, visitor):
         return visitor.visitUnknownType(self)
 
+    def ptype(self):
+        return self._ptype
 
 ## TODO: Type Checker used Types which should be eliminated later
 

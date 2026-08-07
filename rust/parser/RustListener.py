@@ -1,4 +1,4 @@
-# Generated from /home/liyili2/project/compiler_sem_projects/c2rust/rust/parser/Rust.g4 by ANTLR 4.13.2
+# Generated from Rust.g4 by ANTLR 4.13.2
 from antlr4 import *
 if "." in __name__:
     from .RustParser import RustParser
@@ -113,24 +113,6 @@ class RustListener(ParseTreeListener):
 
     # Exit a parse tree produced by RustParser#externItem.
     def exitExternItem(self, ctx:RustParser.ExternItemContext):
-        pass
-
-
-    # Enter a parse tree produced by RustParser#externParams.
-    def enterExternParams(self, ctx:RustParser.ExternParamsContext):
-        pass
-
-    # Exit a parse tree produced by RustParser#externParams.
-    def exitExternParams(self, ctx:RustParser.ExternParamsContext):
-        pass
-
-
-    # Enter a parse tree produced by RustParser#externParam.
-    def enterExternParam(self, ctx:RustParser.ExternParamContext):
-        pass
-
-    # Exit a parse tree produced by RustParser#externParam.
-    def exitExternParam(self, ctx:RustParser.ExternParamContext):
         pass
 
 
@@ -395,15 +377,6 @@ class RustListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by RustParser#safeNonNullWrapper.
-    def enterSafeNonNullWrapper(self, ctx:RustParser.SafeNonNullWrapperContext):
-        pass
-
-    # Exit a parse tree produced by RustParser#safeNonNullWrapper.
-    def exitSafeNonNullWrapper(self, ctx:RustParser.SafeNonNullWrapperContext):
-        pass
-
-
     # Enter a parse tree produced by RustParser#arrayType.
     def enterArrayType(self, ctx:RustParser.ArrayTypeContext):
         pass
@@ -455,6 +428,15 @@ class RustListener(ParseTreeListener):
 
     # Exit a parse tree produced by RustParser#unitType.
     def exitUnitType(self, ctx:RustParser.UnitTypeContext):
+        pass
+
+
+    # Enter a parse tree produced by RustParser#externalType.
+    def enterExternalType(self, ctx:RustParser.ExternalTypeContext):
+        pass
+
+    # Exit a parse tree produced by RustParser#externalType.
+    def exitExternalType(self, ctx:RustParser.ExternalTypeContext):
         pass
 
 
@@ -887,15 +869,6 @@ class RustListener(ParseTreeListener):
 
     # Exit a parse tree produced by RustParser#arrayLiteral.
     def exitArrayLiteral(self, ctx:RustParser.ArrayLiteralContext):
-        pass
-
-
-    # Enter a parse tree produced by RustParser#stringLiteral.
-    def enterStringLiteral(self, ctx:RustParser.StringLiteralContext):
-        pass
-
-    # Exit a parse tree produced by RustParser#stringLiteral.
-    def exitStringLiteral(self, ctx:RustParser.StringLiteralContext):
         pass
 
 

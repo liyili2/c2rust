@@ -249,7 +249,7 @@ class UnaryExpr(Expression):
         self._expr = expression
 
     def accept(self, visitor):
-        return visitor.visit_UnaryExpr(self)
+        return visitor.visitUnaryExpr(self)
 
     def op(self):
         return self._op
@@ -297,6 +297,15 @@ class ParenExpr(Expression):
     def expression(self):
         return self._expr
 
+class StructLiteral(Literal):
+    def __init__(self, name, fields, visibility=None):
+        super().__init__()
+        self.name = name
+        self.fields = fields
+
+    def accept(self, visitor):
+        return visitor.visit_StructLiteral(self)
+
 class StructLiteralField(Expression):
     def __init__(self, name, value, field_type=None):
         super().__init__(dtype = field_type)
@@ -332,26 +341,34 @@ class PatternExpr(Expression):
 
 class TypePath(Expression):
 
-    def __init__(self, types: List[str]):
+    def __init__(self, a : bool, types: List[str]):
         super().__init__()
+        self._typeBool = a
         self._types = types
 
     def accept(self, visitor):
         return visitor.visitTypePath(self)
 
+    def hasColumn(self):
+        return self._typeBool
+
     def types(self):
         return self._types
 
-class TypePathExpression(Expression):
-    def __init__(self, type_path, last_type):
-        super().__init__(dtype = last_type)
-        self._type_path = type_path
+class TypedName(Expression):
+    def __init__(self, name, types):
+        super().__init__()
+        self._name = name
+        self._types = types
 
     def accept(self, visitor):
-        return visitor.visit_TypePathExpression(self)
+        return visitor.visitTypedName(self)
 
-    def type_path(self):
-        return self._type_path
+    def name(self):
+        return self._name
+
+    def types(self):
+        return self._types
 
 class RangeExpression(Expression):
     def __init__(self, initial, last):

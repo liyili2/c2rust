@@ -4,14 +4,14 @@ from rust.ast.MarkedASTNode import MarkedASTNode
 class Program(ASTNode):
     def __init__(self, items):
         super().__init__()
-        self.items = items
+        self._items = items
         self.marked_nodes = []
 
     def accept(self, visitor):
         return visitor.visitProgram(self)
 
     def getChildren(self):
-        return self.items
+        return self._items
 
     def add_marked(self, node: MarkedASTNode):
         self.marked_nodes.append(node)

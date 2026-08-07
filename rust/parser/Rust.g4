@@ -24,10 +24,8 @@ externBlock: 'extern' STRING_LITERAL '{' externItem* '}';
 externItem
     : visibility? 'type' Identifier ';'
     | visibility? 'static' 'mut'? Identifier ':' typeExpression ';'
-    | visibility? 'fn' Identifier '(' externParams? ')' 
+    | visibility? 'fn' Identifier '(' structField* ')'
         ('->' typeExpression)? ';';
-externParams: externParam (',' externParam)* (',' '...')? | '...';
-externParam: (UNDERSCORE | Identifier)? ':' (typeExpression | ELLIPSIS);
 
 visibility: 'pub';
 unsafeModifier: 'unsafe';
@@ -52,7 +50,7 @@ functionDef: visibility? unsafeModifier? externAbi? 'fn' Identifier ('()' | '(' 
 paramList: param (',' param)* (',')?;
 param: 'mut'? Identifier (':' typeExpression)?;
 
-typePath: Identifier (DOUBLE_COLON Identifier)* ;
+typePath: Identifier (DOUBLE_COLON Identifier)* | (DOUBLE_COLON Identifier)+ ;
 
 typeExpression: basicType | pointerType;
 basicType
@@ -64,7 +62,9 @@ basicType
     | referenceType
     | sliceType
     | unitType
-    | Identifier;
+    | externalType
+    | Identifier
+    | '...';
 pointerType: '*' (MUT | CONST) (typeExpression)?;
 scalarType: intType | floatingPointType | boolType | charType;
 intType: signedIntType | unsignedIntType;
@@ -81,6 +81,7 @@ genericType: typePath? '<' typeExpression (',' typeExpression)* '>'; // modify g
 referenceType: '&' typeExpression;
 sliceType: '[' typeExpression ']';
 unitType: '()';
+externalType :Identifier '::' Identifier;
 
 block: unsafeModifier? '{' statement* returnStmt? '}';
 statement
@@ -164,7 +165,7 @@ castExpressionPostFix: 'as' typeExpression ('as' typeExpression)*;
 compoundOps: '+=' | '-=' | '*=' | '/=' | '%=' | '&=' | '|=' | '^=';
 rangeSymbol: '..';
 
-binaryOps: '*' | '/' | '%' | '+' | '-' | '==' | '!=' | '>' | '<' | '||' | '&&' | '>>' | '>=' | '<=';
+binaryOps: '*' | '/' | '%' | '+' | '-' | '==' | '!=' | '>' | '<' | '||' | '&&' | '>>' | '>=' | '<=' | '&';
 structFieldDec: Identifier '{' structLiteralField (',' structLiteralField)* ','? '}' ;
 unaryOpes: '!' | '+' | '-';
 parenExpression: '(' expression ')' | '{' expression '}';

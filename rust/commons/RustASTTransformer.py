@@ -39,7 +39,10 @@ class RustASTTransformer(RustVisitor):
         items = []
         for item_ctx in ctx.topLevelItem():
             result = self.visit(item_ctx)
-            items.append(result)
+            if isinstance(result, list):
+                items += result
+            else:
+                items.append(result)
         return Program(items)
 
     def visitTopLevelDef(self, ctx):
@@ -130,19 +133,20 @@ class RustASTTransformer(RustVisitor):
     def visitStructDef(self, ctx):
         name = ctx.Identifier().getText()
         fields = [self.visit(f) for f in ctx.structField()]
-        return StructDef(name=name, fields=fields)
+        v = self.visit(ctx.visibility()) if ctx.visibility() else None
+        return StructADef(name=name, fields=fields, vis=v)
 
     def visitStructField(self, ctx):
         name_token = ctx.Identifier()
         name = name_token.getText() if name_token else "<missing>"
         dtype = self.visit(ctx.typeExpression())
-        visibility = self.visit(ctx.visibility()) if ctx.visibility() else None
-        return StructField(name, dtype=dtype, visibility=visibility) # This needs to be rewritten
+        v = self.visit(ctx.visibility()) if ctx.visibility() else None
+        return StructField(name, dtype=dtype, visibility=v) # This needs to be rewritten
 
     def visitStructLiteral(self, ctx):
         type_name = ctx.Identifier().getText()
         fields = [self.visit(field_ctx) for field_ctx in ctx.structLiteralField()]
-        return StructDef(name=type_name, fields=fields)
+        return StructLiteral(name=type_name, fields=fields)
 
     def visitStructLiteralField(self, ctx):
         field_name = ctx.Identifier().getText()
@@ -200,21 +204,15 @@ class RustASTTransformer(RustVisitor):
             visibility = ctx.visibility().getText() if ctx.visibility() else None
             mutable = ctx.getChild(1).getText() == "mut"
             name = ctx.Identifier().getText()
-            var_type = self.visit(ctx.typeExpr())
+            var_type = self.visit(ctx.typeExpression())
             return StaticVarDecl(name=name, var_type=var_type, initial_value= None, isMutable=mutable, visibility=visibility, isExtern=True)
 
-        elif ctx.LPAREN() and ctx.RPAREN() and ctx.externParams():
+        elif ctx.LPAREN() and ctx.RPAREN():
             visibility = ctx.visibility().getText() if ctx.visibility() else None
             name = ctx.Identifier().getText()
-            params = []
-
-            for param_ctx in ctx.externParams().externParam():
-                if param_ctx.typeExpr():
-                    type_node = self.visit(param_ctx.typeExpr())
-                    params.append(type_node)
-
-            return_type = self.visit(ctx.typeExpr()) if ctx.typeExpr() else None
-            return ExternFunctionDecl(name=name, params=params, return_type=return_type, visibility=visibility)
+            fields = [self.visit(f) for f in ctx.structField()]
+            return_type = self.visit(ctx.typeExpression()) if ctx.typeExpression() else None
+            return ExternFunctionDecl(name=name, params=fields, return_type=return_type, visibility=visibility)
 
         raise Exception("Unsupported externItem structure")
 
@@ -430,7 +428,7 @@ class RustASTTransformer(RustVisitor):
         elif ctx.castExpressionPostFix():
             expr = self.visitExpression(ctx.expression(0))
             cast = self.visitCastExpressionPostFix(ctx.castExpressionPostFix())
-            return CastExpression(expression=expr, dtype=cast)
+            return CastExpression(expression=expr, type_expressions=cast)
         elif ctx.compoundOps():
             return self.visitCompoundAssignment(ctx.compoundOps())
         elif ctx.fieldAccessPostFix():
@@ -480,7 +478,7 @@ class RustASTTransformer(RustVisitor):
         elif ctx.typePathExpression():
             typePath = self.visit(ctx.typePathExpression())
             identifier = self.visit(ctx.expression(0))
-            return TypePathExpression(type_path=typePath, last_type=identifier)
+            return TypedName(types=typePath, name=identifier)
 
         elif ctx.patternPrefix():
             value_expr = self.visit(ctx.expression(0))
@@ -559,9 +557,6 @@ class RustASTTransformer(RustVisitor):
         expr = self.visit(ctx.expression())
         return SafeWrapper(expression=expr)
 
-    def visitSafeNonNullWrapper(self, ctx: RustParser.SafeNonNullWrapperContext):
-        dtype = self.visitTypeExpression(ctx.typeExpression())
-        return SafeNonNullWrapper(dtype= dtype)
 
     def visitArrayDeclaration(self, ctx):
         identifier = ctx.Identifier().getText()
@@ -600,15 +595,27 @@ class RustASTTransformer(RustVisitor):
         types = []
         while ctx.Identifier(i) is not None:
             types.append(ctx.Identifier(i).getText())
-
             i += 1
 
-        return TypePath(types=types)
+        j = 0
+
+        while ctx.DOUBLE_COLON(i) is not None:
+            j += 1
+
+        if i == j:
+            return TypePath(False, types)
+        else:
+            return TypePath(True, types)
 
     # TODO: Problematic
-    def visitTypePathExpression(self, ctx):
-        type_str = ctx.getText()
-        return TypePathExpression(type_path=type_str.split("::") , last_type=type_str.split("::")[-1])
+    def visitTypePathExpression(self, ctx : RustParser.TypePathExpressionContext):
+        i = 0
+        types = []
+        while ctx.Identifier(i) is not None:
+            types.append(ctx.Identifier(i).getText())
+            i += 1
+        return TypePath(False, types)
+
 
     def visitGenericArgs(self, ctx):
         print("generic arg call")
@@ -637,8 +644,6 @@ class RustASTTransformer(RustVisitor):
             return self.visitScalarType(ctx.scalarType())
         elif ctx.stdLibraryType():
             return self.visitStdLibraryType(ctx.stdLibraryType())
-        elif ctx.safeNonNullWrapper():
-            return self.visitSafeNonNullWrapper(ctx.safeNonNullWrapper())
         elif ctx.arrayType():
             return self.visitArrayType(ctx.arrayType())
         elif ctx.pathType():
@@ -649,6 +654,8 @@ class RustASTTransformer(RustVisitor):
             return self.visitReferenceType(ctx.referenceType())
         elif ctx.sliceType():
             return self.visitSliceType(ctx.sliceType())
+        elif ctx.externalType():
+            return self.visitExternalType(ctx.externalType())
         else:
             return UnknownType(ctx.getText())
 
@@ -725,6 +732,9 @@ class RustASTTransformer(RustVisitor):
     def visitReferenceType(self, ctx: RustParser.ReferenceTypeContext):
         dtype = self.visitTypeExpression(ctx.typeExpression())
         return ReferenceType(dtype = dtype)
+
+    def visitExternalType(self, ctx: RustParser.ExternalTypeContext):
+        return ExternalType(ctx.Identifier(0).getText(), ctx.Identifier(1).getText())
 
     def visitSliceType(self, ctx: RustParser.SliceTypeContext):
         dtype = self.visitTypeExpression(ctx.typeExpression())
