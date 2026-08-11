@@ -7,6 +7,7 @@ from rust.ast.RustASTVisitor import RustASTVisitor
 from rust.ast.Struct import StructField
 from rust.ast.TopLevel import *
 from rust.ast.Type import ExternalType, UnknownType
+from rust.ast.Statement import WhileStmt
 
 
 class RustASTPrinter(RustASTVisitor):
@@ -56,14 +57,13 @@ class RustASTPrinter(RustASTVisitor):
         return f"{header} {body}"
 
     def visitFunctionCallExpression(self, node: FunctionCallExpression):
-        # print(node.caller())
         # print("callee" + node.callee())
-        result = self.visit(node.caller())
+        result = self.visit(node.caller()) # This part
         if node.callee() is not None:
             result += "." + self.visit(node.callee())
         result += "("
         for i in range(len(node.args())):
-            result += self.visit(node.args()[i])
+            result += self.visit(node.args()[i]) # This part
             if i < len(node.args()) - 1:
                 result += ","
         result += ")"
@@ -93,7 +93,11 @@ class RustASTPrinter(RustASTVisitor):
         vars_str = ", ".join(self.visit(v) for v in node.var_defs)
         vals_str = ", ".join(self.visit(v) for v in node.values)
         return f"let ({vars_str}) = ({vals_str});"
-    
+
+    def visitWhileStmt(self, node: WhileStmt):
+
+        return "while() { statement }"
+
     def visitVarDef(self, node):
         mut = "mut " if getattr(node, "is_mut", False) else ""
         if node.type() is not None:
@@ -134,10 +138,10 @@ class RustASTPrinter(RustASTVisitor):
             result += f" else {self.visit(node.else_branch)}"
         return result
 
-    def visitFieldAccessExpr(self, node: FieldAccessExpr):
-        re = ".".join(self.visit(nv) for nv in node.receiver)
-        re += "."+self.visit(node.next)
-        return f"#[{re}]"
+    # def visitFieldAccessExpr(self, node: FieldAccessExpr):
+    #     re = "."+self.visit(node.receiver()) #.join(self.visit(nv) for nv in node.receiver())
+    #     re += "."+self.visit(node.next())
+    #     return f"#[{re}]"
 
     def visitRangeExpression(self, node: RangeExpression):
         re = ""
@@ -234,7 +238,7 @@ class RustASTPrinter(RustASTVisitor):
 
     def visitFieldAccessExpr(self, node):
         receiver = self.visit(node.receiver())
-        return f"{receiver}.{node.next()}"
+        return f"{receiver}.{self.visit(node.next())}"
 
     def visitBoolType(self, node):
         return "bool"

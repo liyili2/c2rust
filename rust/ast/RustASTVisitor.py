@@ -81,8 +81,8 @@ class RustASTVisitor:
                 return self.visitFunctionCallExpression(node)
             case ArrayAccess():
                 return self.visitArrayAccess(node)
-            case FieldAccessExpr():
-                return self.visitFieldAccessExpr(node)
+            # case FieldAccessExpr():
+            #     return self.visitFieldAccessExpr(node)
             case StructLiteralField():
                 return self.visitStructLiternalField(node)
             # case UnsafeExpression():
@@ -127,8 +127,8 @@ class RustASTVisitor:
                 return self.visitBlockStmt(node)
             case VarDef():
                 return self.visitVarDef(node)
-            case FieldAccessExpr():
-                return self.visitFieldAccessExpr(node)
+            # case FieldAccessExpr():
+            #     return self.visitFieldAccessExpr(node)
             case UseDecl():
                 return self.visitUseDecl(node)
             case TypePath():
@@ -199,8 +199,15 @@ class RustASTVisitor:
         self.visit(node.value())
 
     def visitFieldAccessExpr(self, node: FieldAccessExpr):
+        # print("hi?")
+        # print(node.receiver())
         self.visit(node.receiver())
+        # print(node.next())
         self.visit(node.next())
+
+        # return node
+
+        # pass
 
     def visitLetStmt(self, node: LetStmt):
         node.var_defs = [i.accept(self) for i in node.var_defs]
@@ -449,8 +456,10 @@ class RustASTVisitor:
         for i in node.stmts:
             i.accept(self)
 
-    def visitVarDef(self, node: VarDef):
-        node.accept(self)
+    # def visitVarDef(self, node: VarDef):
+    #     node.accept(self)
+    #     # print('hi?')
+    #     # return "hi"
 
     def visitTypePath(self, node: TypePath):
         pass

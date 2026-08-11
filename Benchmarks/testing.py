@@ -15,7 +15,8 @@ from rust.ast.RustASTPrinter import RustASTPrinter
 
 
 # file_path = "/home/liyili2/project/compiler_sem_projects/c2rust/Benchmarks/aggregate/aggregate.rs"
-file_path = "/home/liyili2/project/compiler_sem_projects/c2rust/Benchmarks/avl/avl.rs"
+# file_path = "/home/liyili2/project/compiler_sem_projects/c2rust/Benchmarks/avl/avl.rs"
+file_path = "./avl/avl.rs"
 
 with open(file_path, "r", encoding="utf-8") as f:
     rust_code = f.read()
