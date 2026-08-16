@@ -8,6 +8,9 @@ from rust.nodes.TopLevel import *
 from rust.nodes.Type import ExternalType, UnknownType
 from rust.nodes.Statement import WhileStmt
 
+# Fix this:
+# Original Program: pub unsafe extern "C" fn preOrder(mut root: *mut Node)
+# Output Program: unsafe fn preOrder(mut root: Node)
 
 class RustASTPrinter(RustASTVisitor):
 
