@@ -2,7 +2,7 @@ from antlr4 import CommonTokenStream, InputStream
 from rust.parser.RustLexer import RustLexer
 from rust.parser.RustParser import RustParser
 from rust.commons.RustASTTransformer import RustASTTransformer
-from rust.visitors.RustASTPrinter import RustASTPrinter
+from rust.visitors.Printers import RustASTPrinter
 
 
 file_path = "./avl/avl.rs"
