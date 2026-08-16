@@ -1,7 +1,7 @@
 
-from rust.ast import Program
-from rust.ast import FunctionDef
-from rust.ast import Block
+from rust.nodes import Program
+from rust.nodes import FunctionDef
+from rust.nodes import Block
 from repair.pyggi.mutation.utils import MutationUtils
 
 class DeletionOperator:

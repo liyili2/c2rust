@@ -6,8 +6,9 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '.
 from antlr4 import CommonTokenStream, InputStream
 from rust.parser.RustLexer import RustLexer
 from rust.parser import RustParser
-from rust.ast.Transformer import ParseTreeASTTransformer, setParents
-from rust.ast import TypeChecker
+from rust.nodes.Transformer import ParseTreeASTTransformer, setParents
+from rust.visitors import TypeChecker
+
 
 def pretty_print_ast(node, indent=0, visited=None):
     if visited is None:

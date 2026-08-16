@@ -1,5 +1,5 @@
-from rust.ast.ASTNode import ASTNode
-from rust.ast.MarkedASTNode import MarkedASTNode
+from rust.nodes.ASTNode import ASTNode
+from rust.nodes.MarkedASTNode import MarkedASTNode
 
 class Program(ASTNode):
     def __init__(self, items):

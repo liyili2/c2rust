@@ -1,9 +1,9 @@
 # from external.examples.libxml2.repo.doc.apibuild import identifier
-from rust.ast.ASTNode import *
-from rust.ast.TopLevel import *
-from rust.ast.Struct import *
-from rust.ast.Func import *
-from rust.ast.utils import *
+from rust.nodes.ASTNode import *
+from rust.nodes.TopLevel import *
+from rust.nodes.Struct import *
+from rust.nodes.Func import *
+from rust.nodes.utils import *
 from rust.parser.RustParser import RustParser
 from rust.parser.RustVisitor import RustVisitor
 

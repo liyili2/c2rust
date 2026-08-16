@@ -1,13 +1,13 @@
 import sys
 import os
 
-from rust.ast.AstPrinter import AstPrinter
+from rust.nodes.AstPrinter import AstPrinter
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
 from antlr4 import CommonTokenStream, InputStream
 from rust.parser.RustLexer import RustLexer
 from rust.parser import RustParser
-from rust.ast.Transformer import ParseTreeASTTransformer
+from rust.nodes.Transformer import ParseTreeASTTransformer
 
 file_path = os.path.join(os.path.dirname(__file__), "bst.rs")
 with open(file_path, "r", encoding="utf-8") as f:

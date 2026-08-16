@@ -1,6 +1,6 @@
 import pytest
 import builtins
-from rust.ast.Simulator import Simulator
+from rust.visitors.Simulator import Simulator
 
 @pytest.fixture
 def simulator():

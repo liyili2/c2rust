@@ -1,7 +1,7 @@
 from typing import Any, List, Tuple
-from rust.ast.ASTNode import ASTNode, CloneableASTNode
+from rust.nodes.ASTNode import ASTNode, CloneableASTNode
 # from rust.ast.RustASTVisitor import RustASTVisitor
-from rust.ast.Type import *
+from rust.nodes.Type import *
 
 
 class Expression(CloneableASTNode):

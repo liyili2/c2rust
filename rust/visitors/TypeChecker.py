@@ -1,8 +1,8 @@
 from types import NoneType
-from rust.ast.Block import *
-from rust.ast.Expression import FunctionCallExpression
-from rust.ast.TopLevel import *
-from rust.ast.utils import *
+from rust.nodes.Block import *
+from rust.nodes.Expression import FunctionCallExpression
+from rust.nodes.TopLevel import *
+from rust.nodes.utils import *
 
 class TypeChecker:
     def __init__(self):

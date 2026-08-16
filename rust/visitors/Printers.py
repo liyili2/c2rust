@@ -1,5 +1,4 @@
-from rust.ast.ASTNode import CloneableASTNode
-from rust.ast.Expression import BinaryExpression, Expression, FieldAccessExpr, FunctionCallExpression, ArrayLiteral, \
+from rust.nodes.Expression import BinaryExpression, Expression, FieldAccessExpr, FunctionCallExpression, ArrayLiteral, \
     BorrowExpression, TypePath, RangeExpression, StructLiteral, CastExpression, TypedName
 from rust.ast.Func import FunctionParamList, Param
 from rust.ast.Program import Program

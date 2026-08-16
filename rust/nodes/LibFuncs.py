@@ -1,6 +1,6 @@
 
 #from rust.ast.common import *
-from rust.ast.Expression import *
+from rust.nodes.Expression import *
 
 class LibFunction:
     def __init__(self, name: str):

@@ -3,9 +3,9 @@ import random
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
-from rust.ast.RustASTVisitor import RustASTVisitor
-from rust.ast.TopLevel import FunctionDef
-from rust.ast.MarkedASTNode import MarkedASTNode
+from rust.visitors.RustASTVisitor import RustASTVisitor
+from rust.nodes.TopLevel import FunctionDef
+from rust.nodes.MarkedASTNode import MarkedASTNode
 
 
 class ASTEditor(RustASTVisitor):

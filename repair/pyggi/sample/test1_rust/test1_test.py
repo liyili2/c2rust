@@ -1,6 +1,6 @@
 import pytest
 import builtins
-from rust.ast.Simulator import Simulator
+from rust.visitors.Simulator import Simulator
 
 def test_list_len_after_insertion():
     memory = dict()

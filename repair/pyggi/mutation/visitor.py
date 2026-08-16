@@ -1,5 +1,5 @@
 import copy, random
-from rust.ast import FunctionCall as FunctionCallExpr
+from rust.nodes import FunctionCall as FunctionCallExpr
 
 
 class MutationVisitor():

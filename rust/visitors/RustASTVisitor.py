@@ -2,16 +2,16 @@ import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-from rust.ast.Expression import *
-from rust.ast.Func import FunctionParamList, Param
-from rust.ast.Program import Program
-from rust.ast.Statement import LetStmt, ForStmt, IfStmt, AssignStmt, ReturnStmt, WhileStmt, MatchStmt, MatchArm, \
+from rust.nodes.Expression import *
+from rust.nodes.Func import FunctionParamList, Param
+from rust.nodes.Program import Program
+from rust.nodes.Statement import LetStmt, ForStmt, IfStmt, AssignStmt, ReturnStmt, WhileStmt, MatchStmt, MatchArm, \
     MatchPattern, CompoundAssignment, LoopStmt, BreakStmt, ContinueStmt, TypeWrapper, Block
-from rust.ast.Statement import Block as BlockStmt
-from rust.ast.Struct import StructField
-from rust.ast.TopLevel import *
-from rust.ast.ASTNode import ASTNode
-from rust.ast.Type import SafeNonNullWrapper, SignedIntType, StringType, BoolType, ArrayType, \
+from rust.nodes.Statement import Block as BlockStmt
+from rust.nodes.Struct import StructField
+from rust.nodes.TopLevel import *
+from rust.nodes.ASTNode import ASTNode
+from rust.nodes.Type import SafeNonNullWrapper, SignedIntType, StringType, BoolType, ArrayType, \
     PathType, \
     GenericType, ReferenceType, SliceType, CharType, UnknownType, UnsignedIntType, FloatingPointType, PointerType
 import types

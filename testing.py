@@ -7,13 +7,9 @@ from antlr4 import CommonTokenStream, InputStream
 from rust.parser.RustLexer import RustLexer
 from rust.parser.RustParser import RustParser
 from rust.commons.RustASTTransformer import RustASTTransformer
-from rust.ast.RustASTPrinter import RustASTPrinter
-from rust.ast.MarkingVisitor import MarkingVisitor
-from repair.pyggi.tree.rust_engine import RustEngine
-from rust.ast.MarkingVisitor import MarkingVisitor
-from rust.modification.ASTEditor import ASTEditor
+from rust.visitors.RustASTPrinter import RustASTPrinter
 from collections import Counter
-from rust.ast.MarkedASTNode import MarkedASTNode
+from rust.nodes.MarkedASTNode import MarkedASTNode
 
 def count_marked(node, visited=None):
     if visited is None:
@@ -97,7 +93,7 @@ def pretty_print_ast(node, indent=0, visited=None):
 
     return '\n'.join(lines)
 
-from rust.ast.TopLevel import FunctionDef
+from rust.nodes.TopLevel import FunctionDef
 
 def print_unsafe_functions(ast):
     visited = set()
