@@ -95,8 +95,10 @@ class RustASTPrinter(RustASTVisitor):
         return f"let ({vars_str}) = ({vals_str});"
 
     def visitWhileStmt(self, node: WhileStmt):
-
-        return "while() { statement }"
+        condition = self.visit(node.condition)
+        # print(node.body)
+        body = self.visit(node.body)
+        return f"while ({condition}) {body}"
 
     def visitVarDef(self, node):
         mut = "mut " if getattr(node, "is_mut", False) else ""
