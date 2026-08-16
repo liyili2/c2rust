@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Any
-from rust.ast.ASTNode import CloneableASTNode
+from rust.nodes.ASTNode import CloneableASTNode
 
 @dataclass
 class MarkedASTNode(CloneableASTNode):

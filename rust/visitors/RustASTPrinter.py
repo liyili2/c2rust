@@ -1,12 +1,11 @@
-from rust.ast.ASTNode import CloneableASTNode
-from rust.ast.Expression import BinaryExpression, Expression, FieldAccessExpr, FunctionCallExpression, ArrayLiteral, \
+from rust.nodes.Expression import BinaryExpression, Expression, FieldAccessExpr, FunctionCallExpression, ArrayLiteral, \
     BorrowExpression, TypePath, RangeExpression, StructLiteral, CastExpression, TypedName
-from rust.ast.Func import FunctionParamList, Param
-from rust.ast.Program import Program
-from rust.ast.RustASTVisitor import RustASTVisitor
-from rust.ast.Struct import StructField
-from rust.ast.TopLevel import *
-from rust.ast.Type import ExternalType, UnknownType
+from rust.nodes.Func import FunctionParamList, Param
+from rust.nodes.Program import Program
+from rust.visitors.RustASTVisitor import RustASTVisitor
+from rust.nodes.Struct import StructField
+from rust.nodes.TopLevel import *
+from rust.nodes.Type import ExternalType, UnknownType
 
 
 class RustASTPrinter(RustASTVisitor):

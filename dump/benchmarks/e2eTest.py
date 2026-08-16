@@ -4,7 +4,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '.
 from antlr4 import FileStream, CommonTokenStream, InputStream
 from rust.parser.RustLexer import RustLexer
 from rust.parser import RustParser
-from rust.ast.Transformer import ParseTreeASTTransformer
+from rust.nodes.Transformer import ParseTreeASTTransformer
 
 
 def parse_rust_code():

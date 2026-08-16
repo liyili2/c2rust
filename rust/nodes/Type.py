@@ -1,6 +1,6 @@
 import abc
 from typing import List
-from rust.ast.ASTNode import ASTNode, CloneableASTNode
+from rust.nodes.ASTNode import ASTNode, CloneableASTNode
 # from rust.ast.Expression import TypePath
 # from rust.ast.RustASTVisitor import RustASTVisitor
 

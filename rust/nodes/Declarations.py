@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from rust.ast.ASTNode import CloneableASTNode
+from rust.nodes.ASTNode import CloneableASTNode
 
 
 class DeclarationASTNode(CloneableASTNode):

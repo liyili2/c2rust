@@ -4,14 +4,8 @@ from rust.parser.RustLexer import RustLexer
 from rust.parser.RustParser import RustParser
 from rust.commons.RustASTTransformer import setParents
 from rust.commons.RustASTTransformer import RustASTTransformer
-from repair.pyggi.mutation.replacement import ReplacementOperator
 from repair.pyggi.tree.abstract_engine import AbstractTreeEngine
-from typing import List, Tuple
-from rust.ast.TopLevel import *
-from rust.ast.Statement import *
-from rust.ast.Expression import *
-from rust.ast.Func import *
-from rust.ast.MarkingVisitor import MarkingVisitor
+from rust.visitors.MarkingVisitor import MarkingVisitor
 
 def pretty_print_ast(node, indent=0, visited=None):
     if visited is None:

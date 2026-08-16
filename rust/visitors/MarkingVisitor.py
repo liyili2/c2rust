@@ -2,24 +2,13 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
-from rust.ast.RustASTVisitor  import RustASTVisitor
-from rust.ast.Expression import QualifiedExpression, IdentifierExpression, BinaryExpression, FunctionCallExpression, \
-    BorrowExpression, ArrayLiteral, CastExpression, UnaryExpr, DereferenceExpr, ParenExpr, RangeExpression, SafeWrapper, \
-    ByteLiteralExpression, TypePath
-from rust.ast.Func import FunctionParamList, Param
-from rust.ast.Program import Program
-from rust.ast.Statement import LetStmt, ForStmt, IfStmt, AssignStmt, ReturnStmt, WhileStmt, MatchStmt, MatchArm, \
-    MatchPattern, CompoundAssignment, LoopStmt, BreakStmt, ContinueStmt, TypeWrapper
-from rust.ast.Struct import StructField
-from rust.ast.TopLevel import *
-from rust.ast.ASTNode import ASTNode
-from rust.ast.Type import SafeNonNullWrapper, SignedIntType, StringType, BoolType, ArrayType, \
-    PathType, \
-    GenericType, ReferenceType, SliceType, CharType, UnknownType, UnsignedIntType, FloatingPointType, PointerType
+from rust.visitors.RustASTVisitor import RustASTVisitor
+from rust.nodes.Expression import QualifiedExpression, IdentifierExpression, BinaryExpression, FunctionCallExpression, \
+    BorrowExpression, ArrayLiteral, CastExpression, UnaryExpr, DereferenceExpr, ParenExpr, RangeExpression
 
-from rust.ast.ASTNode import ASTNode, CloneableASTNode
-from rust.ast.Expression import Expression
-from rust.ast.MarkedASTNode import MarkedASTNode
+from rust.nodes.ASTNode import ASTNode
+from rust.nodes.Expression import Expression
+from rust.nodes.MarkedASTNode import MarkedASTNode
 
 class MarkingVisitor(RustASTVisitor):
     def __init__(self):

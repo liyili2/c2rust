@@ -1,4 +1,4 @@
-from rust.ast.ASTNode import ASTNode
+from rust.nodes.ASTNode import ASTNode
 # from rust.ast.RustASTVisitor import RustASTVisitor
 from rust.commons.DeclarationInfo import DeclarationInfo
 

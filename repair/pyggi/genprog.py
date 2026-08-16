@@ -4,8 +4,8 @@ import sys
 
 import pytest
 from repair.pyggi.mutation.visitor import MutationVisitor
-from rust.ast import TypeChecker
-from rust.ast import Program
+from rust.visitors import TypeChecker
+from rust.nodes import Program
 
 
 class ResultCapture:
