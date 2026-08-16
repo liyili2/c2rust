@@ -3,7 +3,10 @@ from rust.nodes.ASTNode import *
 from rust.nodes.TopLevel import *
 from rust.nodes.Struct import *
 from rust.nodes.Func import *
-from rust.nodes.utils import *
+from rust.nodes.Expression import *
+from rust.nodes.Statement import *
+from rust.nodes.Program import Program
+# from rust.nodes.utils import *
 from rust.parser.RustParser import RustParser
 from rust.parser.RustVisitor import RustVisitor
 

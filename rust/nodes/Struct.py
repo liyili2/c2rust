@@ -1,8 +1,8 @@
-from rust.nodes.RustASTNodes import DeclarationASTNode
+from rust.nodes.ASTNode import CloneableASTNode
 # from rust.ast.RustASTVisitor import RustASTVisitor
 
 
-class StructField(DeclarationASTNode):
+class StructField(CloneableASTNode):
 
     def __init__(self, name, dtype, visibility):
         super().__init__()
