@@ -280,9 +280,11 @@ class FieldAccessExpr(Expression):
         return visitor.visitFieldAccessExpr(self)
 
     def receiver(self):
+        # print(self._receiver)
         return self._receiver
 
     def next(self):
+        # print(self._next)
         return self._next
 
 

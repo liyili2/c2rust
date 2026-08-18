@@ -1,4 +1,6 @@
 use ::libc;
+
+
 extern "C" {
     fn printf(_: *const libc::c_char, _: ...) -> libc::c_int;
     fn malloc(_: libc::c_ulong) -> *mut libc::c_void;
@@ -163,6 +165,7 @@ pub unsafe extern "C" fn minValueNode(mut node: *mut Node) -> *mut Node {
 //     }
 //     return root;
 // }
+
 #[no_mangle]
 pub unsafe extern "C" fn preOrder(mut root: *mut Node) {
     if !root.is_null() {
@@ -171,6 +174,7 @@ pub unsafe extern "C" fn preOrder(mut root: *mut Node) {
         preOrder((*root).right);
     }
 }
+
 // unsafe fn main_0() -> libc::c_int {
 //     let mut root = 0 as *mut Node;
 //     root = insert(root, 9 as libc::c_int);
@@ -198,5 +202,6 @@ pub unsafe extern "C" fn preOrder(mut root: *mut Node) {
 // pub fn main() {
 //     unsafe { ::std::process::exit(main_0() as i32) }
 // }
+
 
 
