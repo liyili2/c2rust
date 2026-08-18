@@ -1,5 +1,3 @@
-
-#from rust.ast.common import *
 from rust.nodes.Expression import *
 
 class LibFunction:
@@ -114,7 +112,7 @@ class LibFuncFetchAdd(LibFunction):
         if val is None:
             raise ReturnSignal(value=Exception("called push() with more than one argument"))
         to_be_added = args[0].accept(visitor)
-        visitor.stack.update({caller.name: val + to_be_added})
+        visitor.stack.update({caller._name: val + to_be_added})
         return val
 
 class LibFuncPush(LibFunction):
@@ -209,7 +207,7 @@ class LibFuncFetchAdd(LibFunction):
             raise ReturnSignal(value=Exception("called fetch_add() without an argument"))
         to_be_added = args[0].accept(visitor)
         new_val = val + to_be_added
-        visitor.stack[caller.name] = new_val
+        visitor.stack[caller._name] = new_val
         return val
 
 class LibFuncByRef(LibFunction):
@@ -247,7 +245,7 @@ class LibFuncMalloc(LibFunction):
 
         print("argument")
         print(args[0].expr)
-        print(args[0].dtype)
+        print(args[0]._dtype)
         print("result from visitor")
         print(args[0].accept(visitor))
         # visitor.stack.update({caller.name: val + to_be_added})

@@ -71,7 +71,7 @@ class Simulator(RustProgramVisitor):
 
     def visit_LetStmt(self, node: LetStmt):
         for i in range(0, len(node.var_defs)):
-            arVar = node.var_defs[i].declarationInfo.name
+            arVar = node.var_defs[i].declarationInfo._name()
             value = node.values[i]
             if value is not None:
                 value = node.values[i].accept(self)
@@ -81,31 +81,31 @@ class Simulator(RustProgramVisitor):
     def find_stack_key(self, target):
         if isinstance(target, IdentifierExpression):
             return target.name()
-        if isinstance(target.expression, IdentifierExpression):
-            return target.expression.name()
+        if isinstance(target.expression(), IdentifierExpression):
+            return target.expression()._name()
         if isinstance(target, FieldAccessExpr):
-            return self.find_stack_key(target.receiver)
+            return self.find_stack_key(target.receiver())
         if isinstance(target, DereferenceExpr):
-            return self.find_stack_key(target=target.expr)
+            return self.find_stack_key(target=target.expression())
         if isinstance(target, BorrowExpression):
-            return self.find_stack_key(target=target.expr)
+            return self.find_stack_key(target=target.expression())
         if isinstance(target, FunctionCallExpression):
             return self.find_stack_key(target.caller())
 
     def visit_Assignment(self, node: AssignStmt):
         newStack = copy.deepcopy(self.stack)
-        value = node.value.accept(self)
+        value = node._value.accept(self)
 
-        if isinstance(node.target, FieldAccessExpr):
-            target = self.find_stack_key(node.target)
+        if isinstance(node._target, FieldAccessExpr):
+            target = self.find_stack_key(node._target)
             target_original_val = newStack.get(target)
             if isinstance(target_original_val, StructDef):
-                for field in target_original_val.fields:
-                    if str.__eq__(field.declarationInfo.name, node.target.name.name):
-                        field.value = value
+                for field in target_original_val._fields:
+                    if str.__eq__(field.declarationInfo._name, node._target.name._name):
+                        field._value = value
             newStack.update({target : target_original_val})
         else:
-            target = self.find_stack_key(node.target)
+            target = self.find_stack_key(node._target)
             newStack.update({target : value})
 
         self.stack = newStack
@@ -115,12 +115,12 @@ class Simulator(RustProgramVisitor):
         init_val = None
         if node.initial_value is not None:
             init_val = node.initial_value.accept(self)
-        self.stack.update({node.declarationInfo.name : init_val})
+        self.stack.update({node.declarationInfo._name : init_val})
 
-    def visit_FunctionDef(self, node: FunctionDef):
-        self.funMap.update({node.identifier : node})
-        if str.__eq__(node.identifier, "main"):
-            node.body.accept(self)
+    def visit_FunctionDef(self, node: FunctionDefinition):
+        self.funMap.update({node._identifier : node})
+        if str.__eq__(node._identifier, "main"):
+            node._body.accept(self)
         # return_value = node.body.accept(self)
         # if return_value is not None: 
         #     return return_value
@@ -150,7 +150,7 @@ class Simulator(RustProgramVisitor):
         if isinstance(callee, IdentifierExpression):
             callee = callee.name()
         elif isinstance(callee, FieldAccessExpr):
-            callee = callee.name.name
+            callee = callee.name._name
 
         if callee in self.lib_funcs:
             func = self.libMap.get(callee)
@@ -164,7 +164,7 @@ class Simulator(RustProgramVisitor):
         # self.stack.update({"self": node.caller})
         newStack = copy.deepcopy(self.stack)
         for i in range(0, len(newNode.params)):
-            arVar = newNode.params.params[i].declarationInfo.name
+            arVar = newNode.params._params[i].declarationInfo._name
             value = args[i].accept(self)
             newStack.update({arVar : value})
         oldStack = self.stack
@@ -173,22 +173,22 @@ class Simulator(RustProgramVisitor):
             newNode.body.accept(self)
         except ReturnSignal as ret:
             self.stack = oldStack
-            if isinstance(ret.value, IdentifierExpression):
-                ret.value = self.stack.get(ret.value.name())
-                self.stack.update({ret.value.name(): ret.value})
-            return ret.value
+            if isinstance(ret._value, IdentifierExpression):
+                ret._value = self.stack.get(ret._value.name())
+                self.stack.update({ret._value.name(): ret._value})
+            return ret._value
 
         self.stack = oldStack
         return None
 
     def visit_IfStmt(self, node: IfStmt):
-        if_result = node.condition.accept(self)
+        if_result = node._condition.accept(self)
 
         if if_result:
-            return node.then_branch.accept(self)
+            return node._then_branch.accept(self)
         else:
-            if node.else_branch is not None:
-                return node.else_branch.accept(self)
+            if node._else_branch is not None:
+                return node._else_branch.accept(self)
 
     def visit_MatchStmt(self, node: MatchStmt):
         match_expr = node.expr.accept(self)
@@ -201,7 +201,7 @@ class Simulator(RustProgramVisitor):
                 if val == '_' or val == None:
                     wildcard_arm = arm   # save for later
                 elif match_expr == val:
-                    return arm.body.accept(self)
+                    return arm._body.accept(self)
 
         if wildcard_arm:
             return wildcard_arm.body.accept(self)
@@ -222,15 +222,15 @@ class Simulator(RustProgramVisitor):
     def visit_ReturnStmt(self, node: ReturnStmt):
         val = None
         if hasattr(node, "accept") and callable(node.accept):
-            if node.value is not None:
-                val = node.value.accept(self)
+            if node._value is not None:
+                val = node._value.accept(self)
         raise ReturnSignal(val)
     
     def visit_TopLevelVarDef(self, node: TopLevelVarDef):
         value = None
         if node.initial_val is not None:
             value = node.initial_val.accept(self)
-        self.stack.update({ node.declarationInfo.name : value})
+        self.stack.update({node.declarationInfo._name : value})
 
     def visit_LoopStmt(self, ctx: LoopStmt):
         # This is the loop keyword. For this type of loop, break statement can return a value
@@ -293,11 +293,11 @@ class Simulator(RustProgramVisitor):
         struct_value = node.receiver.accept(self)
 
         if isinstance(struct_value, StructDef):
-            for field in struct_value.fields:
-                if node.name.name == field.declarationInfo.name:
-                    if hasattr(field.value, "accept") and callable(field.value.accept):
-                        return field.value.accept(self)
-                    return field.value
+            for field in struct_value._fields:
+                if node.name._name == field.declarationInfo._name:
+                    if hasattr(field._value, "accept") and callable(field._value.accept):
+                        return field._value.accept(self)
+                    return field._value
 
         return
 
@@ -353,7 +353,7 @@ class Simulator(RustProgramVisitor):
         for field in newNode.fields:
             if isinstance(field, StructLiteralField):
                 if hasattr(field.value, "accept") and callable(field.value.accept):
-                    newNode[field.declarationInfo.name] = field.value.accept(self)
+                    newNode[field.declarationInfo._name] = field.value.accept(self)
 
         self.stack
         return newNode

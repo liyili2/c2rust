@@ -1,8 +1,6 @@
 import abc
 from typing import List
 from rust.nodes.ASTNode import ASTNode, CloneableASTNode
-# from rust.ast.Expression import TypePath
-# from rust.ast.RustASTVisitor import RustASTVisitor
 
 
 class Type(CloneableASTNode, abc.ABC):
@@ -13,10 +11,13 @@ class SignedIntType(Type):
 
     def __init__(self, ptype: str):
         super().__init__()
-        self.ptype = ptype
+        self._ptype = ptype
 
     def accept(self, visitor):
         return visitor.visitSignedIntType(self)
+
+    def ptype(self):
+        return self._ptype
 
 
 class UnsignedIntType(Type):
@@ -33,10 +34,13 @@ class FloatingPointType(Type):
 
     def __init__(self, ptype: str):
         super().__init__()
-        self.ptype = ptype
+        self._ptype = ptype
 
     def accept(self, visitor):
         return visitor.visitFloatingPointType(self)
+
+    def ptype(self):
+        return self._ptype
 
 
 class BoolType(Type):
@@ -148,11 +152,16 @@ class PointerType(Type):
     def accept(self, visitor):
         return visitor.visitPointerType(self)
 
+
 class ExternalType(Type):
+
     def __init__(self, ctype: str, ptype: str):
         super().__init__()
         self._ctype = ctype
         self._ptype = ptype
+
+    def accept(self, visitor):
+        return visitor.visitExternalType(self)
 
     def ctype(self):
         return self._ctype
@@ -160,8 +169,6 @@ class ExternalType(Type):
     def ptype(self):
         return self._ptype
 
-    def accept(self, visitor):
-        return visitor.visitExternalType(self)
 
 class UnknownType(Type):
 

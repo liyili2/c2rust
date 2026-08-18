@@ -332,9 +332,9 @@ class XMLVisitor(ExpVisitor):
 
     def visitTerminal(self, node):
         # For leaf nodes
-        if node.getSymbol().dtype == ExpParser.Identifier:
+        if node.getSymbol()._dtype == ExpParser.Identifier:
             self.xml_output += ""f'{node.getText()}\n'""
-        if node.getSymbol().dtype == ExpParser.Number:
+        if node.getSymbol()._dtype == ExpParser.Number:
             self.xml_output += ""f'{node.getText()}\n'""
         self.xml_output += ""
 

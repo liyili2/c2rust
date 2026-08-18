@@ -141,8 +141,8 @@ class CGateInsertion(StmtInsertion):
             return parsed.toprettyxml(indent="  ")
 
         # get elements
-        target = new_contents[op.target[0]].find(modification_points[op.target[0]][op.target[1]])
-        parent = new_contents[op.target[0]].find(modification_points[op.target[0]][op.target[1]]+'..')
+        target = new_contents[op._target[0]].find(modification_points[op._target[0]][op._target[1]])
+        parent = new_contents[op._target[0]].find(modification_points[op._target[0]][op._target[1]] + '..')
         ingredient = program.contents[op.ingredient[0]].find(program.modification_points[op.ingredient[0]][op.ingredient[1]])
 
         if target is None or ingredient is None:
@@ -151,7 +151,7 @@ class CGateInsertion(StmtInsertion):
         initial_type_env = type_envs[self.ingredient[0]]
         print("Initial tenv",initial_type_env)
         type_infer = TypeInfer(initial_type_env)
-        root = new_contents[op.target[0]].find('.')
+        root = new_contents[op._target[0]].find('.')
         # TODO
         # figure this out
         # type_infer.visitRoot(root)
@@ -174,9 +174,9 @@ class CGateInsertion(StmtInsertion):
         print("parent after insert matched",pretty_print_element(parent))
 
         # update modification points
-        head, tag, pos, _ = engine.split_xpath(modification_points[op.target[0]][op.target[1]])
-        for i, xpath in enumerate(modification_points[op.target[0]]):
-            if i < op.target[1]:
+        head, tag, pos, _ = engine.split_xpath(modification_points[op._target[0]][op._target[1]])
+        for i, xpath in enumerate(modification_points[op._target[0]]):
+            if i < op._target[1]:
                 continue
             h, t, p, s = engine.split_xpath (xpath, head)
             if h != head and xpath != 'deleted':
@@ -188,7 +188,7 @@ class CGateInsertion(StmtInsertion):
                     new_pos = '{}/{}[{}]/{}'.format(h, t, p+1, s)
                 else:
                     new_pos = '{}/{}[{}]'.format(h, t, p+1)
-                modification_points[op.target[0]][i] = new_pos
+                modification_points[op._target[0]][i] = new_pos
         return True
 
 

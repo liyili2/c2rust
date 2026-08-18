@@ -3,10 +3,12 @@ import time
 from abc import ABC, abstractmethod
 from antlr4.tree.Tree import TerminalNodeImpl
 
+
 class ASTNode(ABC):
     @abstractmethod
     def accept(self, visitor):
         pass
+
 
 class CloneableASTNode(ASTNode):
 

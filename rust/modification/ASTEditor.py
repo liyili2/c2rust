@@ -4,7 +4,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 from rust.visitors.RustASTVisitor import RustASTVisitor
-from rust.nodes.TopLevel import FunctionDef
+from rust.nodes.TopLevel import FunctionDefinition
 from rust.nodes.MarkedASTNode import MarkedASTNode
 
 
@@ -12,7 +12,7 @@ class ASTEditor(RustASTVisitor):
     def __init__(self):
         pass
 
-    def _is_unsafe(self, ctx: FunctionDef) -> bool:
+    def _is_unsafe(self, ctx: FunctionDefinition) -> bool:
         """Best-effort check across the possible attribute names for unsafe fns."""
         for attr in ("isUnsafe", "is_unsafe", "unsafe", "is_unsafe_fn"):
             if getattr(ctx, attr, False):
@@ -38,20 +38,20 @@ class ASTEditor(RustASTVisitor):
         for marked, new_inner in zip(marked_nodes, shuffled):
             marked.node = new_inner
 
-    def visitFunctionDef(self, ctx: FunctionDef):
-        if isinstance(ctx.params, list):
-            ctx.params = [p.accept(self) for p in ctx.params]
+    def visitFunctionDef(self, ctx: FunctionDefinition):
+        if isinstance(ctx._params, list):
+            ctx._params = [p.accept(self) for p in ctx._params]
         else:
-            ctx.params = ctx.params.accept(self)
+            ctx._params = ctx._params.accept(self)
 
         if self._is_unsafe(ctx):
-            marked_nodes = self._collect_marked(ctx.body)
+            marked_nodes = self._collect_marked(ctx._body)
             self._shuffle_marked_positions(marked_nodes)
         else:
-            ctx.body = ctx.body.accept(self)
+            ctx._body = ctx._body.accept(self)
 
-        if ctx.return_type:
-            ctx.return_type = ctx.return_type.accept(self)
+        if ctx._return_type:
+            ctx._return_type = ctx._return_type.accept(self)
         return ctx
 
     def visitMarkedASTNode(self, node: MarkedASTNode):

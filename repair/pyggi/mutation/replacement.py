@@ -91,7 +91,7 @@ class ReplacementOperator:
             # block = top_children.body if isinstance(top_children, FunctionDef) else top_children
             # block = target_node
             if isinstance(target_node, FunctionDef):
-                for stmt in target_node.body.stmts:
+                for stmt in target_node.body().stmts:
                     self.a(stmt)
             if isinstance(target_node, Block):
                 for stmt in target_node.stmts:
@@ -101,42 +101,42 @@ class ReplacementOperator:
 
     def a(self, stmt):
         if isinstance(stmt, IfStmt):
-            if isinstance(stmt.condition, BinaryExpr):
-                if isinstance(stmt.condition.left, DereferenceExpr):
+            if isinstance(stmt._condition, BinaryExpr):
+                if isinstance(stmt._condition.left, DereferenceExpr):
                     stmt.replace_dereference_with_ref_unwrap_call()
-                if isinstance(stmt.condition.right, DereferenceExpr):
+                if isinstance(stmt._condition.right, DereferenceExpr):
                     stmt.replace_dereference_with_ref_unwrap_call()
-                if isinstance(stmt.condition.left, FieldAccessExpr):
-                    if isinstance(stmt.condition.left.receiver, DereferenceExpr):
-                        stmt.condition.left=FieldAccessExpr(receiver=FunctionCallExpr(
+                if isinstance(stmt._condition.left, FieldAccessExpr):
+                    if isinstance(stmt._condition.left.receiver, DereferenceExpr):
+                        stmt._condition.left=FieldAccessExpr(receiver=FunctionCallExpr(
                             caller=FunctionCallExpr(
-                                caller=stmt.condition.left,
+                                caller=stmt._condition.left(),
                                 callee="as_ref",
                                 args=[]
                             ),
                             callee="unwrap",
                             args=[]
                         ),
-                        field_name= stmt.condition.left.name)
+                        field_name= stmt._condition.left._name())
 
-                if isinstance(stmt.condition.right, FieldAccessExpr):
-                    if isinstance(stmt.condition.right.receiver, DereferenceExpr):
-                        stmt.condition.right=FieldAccessExpr(receiver=FunctionCallExpr(
+                if isinstance(stmt._condition.right(), FieldAccessExpr):
+                    if isinstance(stmt._condition.right.receiver, DereferenceExpr):
+                        stmt._condition.right=FieldAccessExpr(receiver=FunctionCallExpr(
                             caller=FunctionCallExpr(
-                                caller=stmt.condition.right,
+                                caller=stmt._condition.right,
                                 callee="as_ref",
                                 args=[]
                             ),
                             callee="unwrap",
                             args=[]
                         ),
-                        field_name= stmt.condition.right.name)
+                        field_name= stmt._condition.right._name())
         if isinstance(stmt, AssignStmt):
-            if isinstance(stmt.target, DereferenceExpr):
-                stmt.target = Expression(
+            if isinstance(stmt._target, DereferenceExpr):
+                stmt._target = Expression(
                     expr=FunctionCallExpr(
                         caller=FunctionCallExpr(
-                            caller=stmt.value,
+                            caller=stmt._value,
                             callee="as_ref",
                             args=[]
                         ),
@@ -144,11 +144,11 @@ class ReplacementOperator:
                         args=[]
                     )
                 )
-            if isinstance(stmt.value, DereferenceExpr):
-                stmt.value = Expression(
+            if isinstance(stmt._value, DereferenceExpr):
+                stmt._value = Expression(
                     expr=FunctionCallExpr(
                         caller=FunctionCallExpr(
-                            caller=stmt.value,
+                            caller=stmt._value,
                             callee="as_ref",
                             args=[]
                         ),
@@ -162,7 +162,7 @@ class ReplacementOperator:
             if isinstance(val, DereferenceExpr):
                 stmt = LetStmt(
                     var_defs=VarDef(
-                        name=stmt.var_defs[0].declarationInfo.name,
+                        name=stmt.var_defs[0].declarationInfo._name,
                         mutable=stmt.var_defs[0].mutable,
                         by_ref=stmt.var_defs[0].by_ref,
                         type=RefType("T")
@@ -174,10 +174,10 @@ class ReplacementOperator:
             if isinstance(stmt, LetStmt) and len(stmt.var_defs) == 1:
                 return LetStmt(
                     var_defs=VarDef(
-                        name=stmt.var_defs[0].declarationInfo.name,
-                        isMutable=not stmt.var_defs[0].is_mutable,
+                        name=stmt.var_defs[0].declarationInfo._name,
+                        isMutable=not stmt.var_defs[0]._is_mutable,
                         by_ref=stmt.var_defs[0].by_ref,
-                        var_type=stmt.var_defs[0].declarationInfo.dtype
+                        var_type=stmt.var_defs[0].declarationInfo._dtype
                     ),
                     values=stmt.values[0]
                 )
@@ -193,30 +193,30 @@ class ReplacementOperator:
             new_fields = []
             if isinstance(top, StructDef):
                 for field in top.getChildren():
-                    if isinstance(field.declarationInfo.dtype, PointerType) and field.declarationInfo.dtype.is_mutable:
-                        new_field = StructField(name=field.declarationInfo.name, typeExpr=SafeNonNullWrapper(
-                            typeExpr=field.declarationInfo.dtype), visibility=field.declarationInfo.visibility)
+                    if isinstance(field.declarationInfo._dtype, PointerType) and field.declarationInfo._dtype._is_mutable:
+                        new_field = StructField(name=field.declarationInfo._name, typeExpr=SafeNonNullWrapper(
+                            typeExpr=field.declarationInfo._dtype), visibility=field.declarationInfo._visibility)
                         new_fields.append(new_field)
                     else:
                         new_fields.append(field)
                 top.setChildren(new_fields)
 
-            elif isinstance(top, FunctionDef) and isinstance(top.body, Block):
+            elif isinstance(top, FunctionDef) and isinstance(top._body, Block):
                 new_Stmts = []
-                for stmt in top.body.getChildren():
+                for stmt in top._body.getChildren():
                     if isinstance(stmt, StructDef):
                         for field in stmt.getChildren():
-                            if isinstance(field.declarationInfo.dtype, PointerType) and field.dtype.mutability:
-                                new_field = StructField(name=field.declarationInfo.name, typeExpr=SafeNonNullWrapper(
-                                    typeExpr=field.declarationInfo.dtype), visibility=field.declarationInfo.visibility)
+                            if isinstance(field.declarationInfo._dtype, PointerType) and field._dtype.mutability:
+                                new_field = StructField(name=field.declarationInfo._name, typeExpr=SafeNonNullWrapper(
+                                    typeExpr=field.declarationInfo._dtype), visibility=field.declarationInfo._visibility)
                                 new_fields.append(new_field)
                             else:
                                 new_fields.append(field)
-                        new_struct_def = StructDef(name=stmt.name, fields=new_fields)
+                        new_struct_def = StructDef(name=stmt._name, fields=new_fields)
                         new_Stmts.append(new_struct_def)
                     else:
                         new_Stmts.append(stmt)
-                new_block = Block(stmts=new_Stmts, isUnsafe=top.body.is_unsafe)
+                new_block = Block(stmts=new_Stmts, isUnsafe=top._body.is_unsafe)
                 top.setBody(new_block)
             remaining_tops.append(top)
 
@@ -235,11 +235,11 @@ class ReplacementOperator:
         for stmt in block.getChildren():
             if isinstance(stmt, LetStmt):
                 if len(stmt.var_defs) == 1:
-                    if isinstance(stmt.var_defs[0].declarationInfo.dtype, PointerType) and stmt.var_defs[0].is_mutable:
+                    if isinstance(stmt.var_defs[0].declarationInfo._dtype, PointerType) and stmt.var_defs[0]._is_mutable:
                         new_stmt = LetStmt(values=stmt.values[0],
                             var_defs=[
-                                VarDef(var_type=SafeNonNullWrapper(typeExpr=stmt.var_defs[0].dtype),
-                                       name=stmt.var_defs[0].name, mutable=stmt.var_defs[0].is_mutable)
+                                VarDef(var_type=SafeNonNullWrapper(typeExpr=stmt.var_defs[0]._dtype),
+                                       name=stmt.var_defs[0]._name, mutable=stmt.var_defs[0]._is_mutable)
                             ]
                         )
                         new_stmts.append(new_stmt)
@@ -265,9 +265,9 @@ class ReplacementOperator:
 
         for top in ast_root.getChildren():
             if isinstance(top, StaticVarDecl):
-                if top.is_mutable:
-                    new_top_item = StaticVarDecl(var_type=top.declarationInfo.dtype, isMutable=False, name= top.declarationInfo.name,
-                                                 initial_value=top.initial_value, visibility=top.declarationInfo.visibility)
+                if top._is_mutable:
+                    new_top_item = StaticVarDecl(var_type=top.declarationInfo._dtype, isMutable=False, name= top.declarationInfo._name,
+                                                 initial_value=top.initial_value, visibility=top.declarationInfo._visibility)
                     top_items.append(new_top_item)
                 else:
                     top_items.append(top)
@@ -283,9 +283,9 @@ class ReplacementOperator:
             if isinstance(top, FunctionDef):
                 if top.is_unsafe:
                     top.is_unsafe = False
-                if top.body.is_unsafe:
-                    top.body.is_unsafe = False
-                for stmt in top.body.stmts:
+                if top._body.is_unsafe:
+                    top._body.is_unsafe = False
+                for stmt in top._body.stmts:
                     if isinstance(stmt, Block):
                         if stmt.is_unsafe:
                             stmt.is_unsafe = False
@@ -294,9 +294,9 @@ class ReplacementOperator:
                     if isinstance(top_child, FunctionDef):
                         if top_child.is_unsafe:
                             top_child.is_unsafe = False
-                        if top_child.body.is_unsafe:
-                            top_child.body.is_unsafe = False
-                        for stmt in top_child.body.stmts:
+                        if top_child._body.is_unsafe:
+                            top_child._body.is_unsafe = False
+                        for stmt in top_child._body.stmts:
                             if stmt.is_unsafe:
                                 stmt.is_unsafe = False
         return ast
@@ -320,25 +320,25 @@ class ReplacementOperator:
         for top in ast_root.getChildren():
             if isinstance(parent_1, type(top)) and isinstance(parent_1, FunctionDef):
                 if self.utils.function_def_eq(parent_1, top):
-                    if isinstance(parent_1.params, FunctionParamList):
-                        param_list = parent_1.params.params
+                    if isinstance(parent_1._params, FunctionParamList):
+                        param_list = parent_1._params._params
                     else:
-                        param_list = parent_1.params
+                        param_list = parent_1._params
 
                     new_params = []
                     for param in param_list:
-                        if isinstance(param.declarationInfo.dtype, PointerType) and param.is_mutable:
+                        if isinstance(param.declarationInfo._dtype, PointerType) and param._is_mutable:
                             new_param = Param(
-                                name=param.declarationInfo.name,
+                                name=param.declarationInfo._name,
                                 typ=RefType(inner=SafeNonNullWrapper(
-                                    typeExpr=param.declarationInfo.dtype)),
-                                isMutable=param.is_mutable
+                                    typeExpr=param.declarationInfo._dtype)),
+                                isMutable=param._is_mutable
                             )
                             new_params.append(new_param)
                         else:
                             new_params.append(param)
 
-                    if isinstance(parent_1.params, FunctionParamList):
+                    if isinstance(parent_1._params, FunctionParamList):
                         parent_1.setParamList(FunctionParamList(params=new_params))
                     else:
                         parent_1.setParamList(new_params)
@@ -359,7 +359,7 @@ class ReplacementOperator:
         remaining_tops = []
         for top in ast_root.getChildren():
             if isinstance(top, FunctionDef):
-                top_block = top.body
+                top_block = top._body
                 for stmt in top_block.getChildren():
                     remaining_block_stmts = []
                     if isinstance(stmt, Block) and stmt.is_unsafe:

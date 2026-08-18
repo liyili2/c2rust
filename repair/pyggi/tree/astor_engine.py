@@ -34,16 +34,16 @@ class AstorEngine(AbstractTreeEngine):
 
     @classmethod
     def do_replace(cls, program, op, new_contents, modification_points):
-        dst_root = new_contents[op.target[0]]
-        dst_pos = modification_points[op.target[0]][op.target[1]]
+        dst_root = new_contents[op._target[0]]
+        dst_pos = modification_points[op._target[0]][op._target[1]]
         ingr_root = program.contents[op.ingredient[0]]
         ingr_pos = program.modification_points[op.ingredient[0]][op.ingredient[1]]
         return cls.replace((dst_root, dst_pos), (ingr_root, ingr_pos))
 
     @classmethod
     def do_insert(cls, program, op, new_contents, modification_points):
-        dst_root = new_contents[op.target[0]]
-        dst_pos = modification_points[op.target[0]][op.target[1]]
+        dst_root = new_contents[op._target[0]]
+        dst_pos = modification_points[op._target[0]][op._target[1]]
         ingr_root = program.contents[op.ingredient[0]]
         ingr_pos = program.modification_points[op.ingredient[0]][op.ingredient[1]]
         if op.direction == 'before':
@@ -52,7 +52,7 @@ class AstorEngine(AbstractTreeEngine):
                 depth = len(dst_pos)
                 parent = dst_pos[:depth-1]
                 index = dst_pos[depth-1][1]
-                for pos in modification_points[op.target[0]]:
+                for pos in modification_points[op._target[0]]:
                     if parent == pos[:depth-1] and len(pos) >= depth and index <= pos[depth-1][1]:
                         a, i = pos[depth-1]
                         pos[depth-1] = (a, i + 1)
@@ -62,7 +62,7 @@ class AstorEngine(AbstractTreeEngine):
                 depth = len(dst_pos)
                 parent = dst_pos[:depth-1]
                 index = dst_pos[depth - 1][1]
-                for pos in modification_points[op.target[0]]:
+                for pos in modification_points[op._target[0]]:
                     if parent == pos[:depth-1] and len(pos) >= depth and index < pos[depth-1][1]:
                         a, i = pos[depth-1]
                         pos[depth-1] = (a, i + 1)
@@ -70,8 +70,8 @@ class AstorEngine(AbstractTreeEngine):
 
     @classmethod
     def do_delete(cls, program, op, new_contents, modification_points):
-        dst_root = new_contents[op.target[0]]
-        dst_pos = modification_points[op.target[0]][op.target[1]]
+        dst_root = new_contents[op._target[0]]
+        dst_pos = modification_points[op._target[0]][op._target[1]]
         return cls.replace((dst_root, dst_pos), None)
 
     @classmethod

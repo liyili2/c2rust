@@ -36,7 +36,7 @@ class DeletionOperator:
                             top_children_stmts = top_children.getChildren()
                             self.utils.remake_ast_after_removal(target_node, other_tops, top, top_children, top_children_stmts)
                         elif isinstance(top_children, FunctionDef):
-                            if isinstance(top_children.body, Block):
+                            if isinstance(top_children.body(), Block):
                                 top_children_stmts = top_children.getChildren()
                                 self.utils.remake_ast_after_removal(target_node, other_tops, top, top_children, top_children_stmts)
                 else:

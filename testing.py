@@ -93,7 +93,7 @@ def pretty_print_ast(node, indent=0, visited=None):
 
     return '\n'.join(lines)
 
-from rust.nodes.TopLevel import FunctionDef
+from rust.nodes.TopLevel import FunctionDefinition
 
 def print_unsafe_functions(ast):
     visited = set()
@@ -114,10 +114,10 @@ def print_unsafe_functions(ast):
         if not hasattr(node, "__dict__"):
             return
 
-        if isinstance(node, FunctionDef) and node.isUnsafe:
+        if isinstance(node, FunctionDefinition) and node._is_unsafe:
             print("=" * 70)
-            print(f"Unsafe function: {node.identifier}")
-            print(pretty_print_ast(node.body))
+            print(f"Unsafe function: {node._identifier}")
+            print(pretty_print_ast(node._body))
             print("=" * 70)
 
         for value in vars(node).values():

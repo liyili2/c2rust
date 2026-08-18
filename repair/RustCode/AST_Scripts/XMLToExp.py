@@ -84,8 +84,8 @@ class XMLToExp(XMLExpVisitor):
 
     # the only thing that matters will be 48 and 47
     def visitTerminal(self, node):
-        if node.getSymbol().dtype == XMLExpParser.Identifier:
+        if node.getSymbol()._dtype == XMLExpParser.Identifier:
             return node.getText()
-        if node.getSymbol().dtype == XMLExpParser.Number:
+        if node.getSymbol()._dtype == XMLExpParser.Number:
             return node.getText()
         return "None"

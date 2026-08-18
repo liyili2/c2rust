@@ -1,10 +1,5 @@
-from collections import ChainMap
-# from types import NoneType
-
-from antlr4 import ParserRuleContext
-
-from XMLExpParser import *
 from XMLExpVisitor import *
+
 
 NoneType = type(None)
 
@@ -304,8 +299,8 @@ class Simulator(XMLExpVisitor):
 
     # the only thing that matters will be 48 and 47
     def visitTerminal(self, node):
-        if node.getSymbol().dtype == XMLExpParser.Identifier:
+        if node.getSymbol()._type() == XMLExpParser.Identifier:
             return node.getText()
-        if node.getSymbol().dtype == XMLExpParser.Number:
+        if node.getSymbol()._type() == XMLExpParser.Number:
             return int(node.getText())
         return "None"

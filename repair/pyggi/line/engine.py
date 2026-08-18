@@ -37,7 +37,7 @@ class LineEngine(AbstractLineEngine):
 
     @classmethod
     def do_replace(cls, program, op, new_contents, modification_points):
-        l_f, l_n = op.target # line file and line number
+        l_f, l_n = op._target # line file and line number
         if op.ingredient:
             i_f, i_n = op.ingredient
             new_contents[l_f][modification_points[l_f][l_n]] = program.contents[i_f][i_n]
@@ -47,7 +47,7 @@ class LineEngine(AbstractLineEngine):
     
     @classmethod
     def do_insert(cls, program, op, new_contents, modification_points):
-        l_f, l_n = op.target
+        l_f, l_n = op._target
         i_f, i_n = op.ingredient
         if op.direction == 'before':
             new_contents[l_f].insert(
@@ -67,6 +67,6 @@ class LineEngine(AbstractLineEngine):
 
     @classmethod
     def do_delete(cls, program, op, new_contents, modification_points):
-        l_f, l_n = op.target # line file and line number
+        l_f, l_n = op._target # line file and line number
         new_contents[l_f][modification_points[l_f][l_n]] = ''
         return True

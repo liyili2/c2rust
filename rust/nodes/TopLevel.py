@@ -1,83 +1,100 @@
-from rust.nodes.ASTNode import ASTNode
-# from rust.ast.RustASTVisitor import RustASTVisitor
+from rust.nodes.ASTNode import ASTNode, CloneableASTNode
 from rust.commons.DeclarationInfo import DeclarationInfo
+from rust.nodes.Program import Program
 
-class TopLevel(ASTNode):
+
+class TopLevel(CloneableASTNode):
 
     def __init__(self):
-        pass
+        super(TopLevel, self).__init__()
 
     def accept(self, visitor):
         return visitor.visit(self)
 
 
-class FunctionDef(TopLevel):
+class FunctionDefinition(TopLevel):
 
-    def __init__(self, identifier, params, return_type, body, isUnsafe=False):
+    def __init__(self, identifier, params, return_type, body, is_unsafe=False):
         super().__init__()
-        self.identifier = identifier
-        self.params = params
-        self.return_type = return_type
-        self.body = body
-        self.isUnsafe = isUnsafe
+        self._identifier = identifier
+        self._params = params
+        self._return_type = return_type
+        self._body = body
+        self._is_unsafe = is_unsafe
 
     def accept(self, visitor):
-        return visitor.visitFunctionDef(self)
-    
-    def getChildren(self):
-        return self.body
+        return visitor.visitFunctionDefinition(self)
 
-    def setBody(self, body):
-        self.body = body
+    def identifier(self):
+        return self._identifier
 
-    def setParamList(self, paramList):
-        self.params = paramList
+    def params(self):
+        return self._params
+
+    def return_type(self):
+        return self._return_type
+
+    def body(self):
+        return self._body
+
+    def is_unsafe(self):
+        return self._is_unsafe
 
 
-class StructADef(TopLevel):
+class StructDef(TopLevel):
 
     def __init__(self, name, fields, vis=None):
         super().__init__()
-        self.name = name
-        self.fields = fields
-        self.visibility = vis# Just leave the struct def and remove the struct field, move it into here instead
+        self._name = name
+        self._fields = fields
+        self._visibility = vis # Just leave the struct def and remove the struct field, move it into here instead
 
     def accept(self, visitor):
         return visitor.visitStruct(self)
 
-    def getChildren(self):
-        return self.fields
+    def name(self):
+        return self._name
 
-    def setChildren(self, fields):
-        self.fields = fields
+    def fields(self):
+        return self._fields
 
-    def getChild(self, key):
-        return self.fields[key]
+    def visibility(self):
+        return self._visibility
+
 
 class Attribute(TopLevel):
+
     def __init__(self, name, args=None):
         super().__init__()
-        self.name = name
-        self.args = args or []
+        self._name = name
+        self._args = args or []
 
     def accept(self, visitor):
-        method_name = f'visit_{self.__class__.__name__}'
-        return getattr(visitor, method_name, visitor.generic_visit)(self)
-
-class ExternBlock(TopLevel):
-    def __init__(self, abi: str, items: list):
-        super().__init__()
-        self._abi = abi
-        self._items = items
-
-    def __repr__(self):
-        return f"<ExternBlock abi={self.abi}, items={self.items}>"
+        return visitor.visitAttribute(self)
 
     def name(self):
-        return self._abi
+        return self._name
 
-    def items(self):
-        return self._items
+    def args(self):
+        return self._args
+
+
+class ExternBlock(TopLevel):
+
+    def __init__(self, name: str, program: Program):
+        super().__init__()
+        self._name = name
+        self._program = program
+
+    def accept(self, visitor):
+        return visitor.visitExternBlock(self)
+
+    def name(self):
+        return self._name
+
+    def program(self):
+        return self._program
+
 
 class ExternItem(ASTNode):
     pass
@@ -113,18 +130,31 @@ class StaticVarDecl(TopLevel):
     def accept(self, visitor):
         return visitor.visit_StaticVarDecl(self)
 
-class ExternFunctionDecl(TopLevel):
-    def __init__(self, name, params, return_type=None, variadic=False, visibility=None):
-        self.name = name  # function name (string)
-        self.params = params  # list of parameter types (AST nodes or strings)
-        self.return_type = return_type  # return type (AST node or string), or None for `-> ()`
-        self.visibility = visibility  # e.g., 'pub', or None
 
-    def __repr__(self):
-        return ( # , variadic={self.variadic},
-            f"ExternFunctionDecl(name={self.name!r}, params={self.params}, "
-            f"return_type={self.return_type} "
-            f"visibility={self.visibility})")
+class ExternFunctionDeclaration(TopLevel):
+
+    def __init__(self, name, params, return_type=None, visibility=None):
+        super().__init__()
+        self._name = name  # function name (string)
+        self._params = params  # list of parameter types (AST nodes or strings)
+        self._return_type = return_type  # return type (AST node or string), or None for `-> ()`
+        self._visibility = visibility  # e.g., 'pub', or None
+
+    def accept(self, visitor):
+        return visitor.visitExternFunctionDeclaration(self)
+
+    def name(self):
+        return self._name
+
+    def params(self):
+        return self._params
+
+    def return_type(self):
+        return self._return_type
+
+    def visibility(self):
+        return self._visibility
+
 
 class TypeAliasDecl(TopLevel):
     def __init__(self, name, type, visibility=None):
@@ -169,19 +199,19 @@ class InterfaceDef(TopLevel):
     def accept(self, visitor):
         return visitor.visit_InterfaceDef(self)
 
-class UseDecl(TopLevel):
-    def __init__(self, paths, aliases=None):
-        self.paths = paths  # list of TypePath
-        self.aliases = aliases or [None] * len(paths)  # list of optional identifier strings
 
-    def __repr__(self):
-        parts = []
-        for path, alias in zip(self.paths, self.aliases):
-            if alias:
-                parts.append(f"{path} as {alias}")
-            else:
-                parts.append(str(path))
-        return f"UseDecl({', '.join(parts)})"
+class UseDecl(TopLevel):
+
+    def __init__(self, paths, aliases=None):
+        super().__init__()
+        self._paths = paths  # list of TypePath
+        self._aliases = aliases or [None] * len(paths)
 
     def accept(self, visitor):
         return super().accept(visitor)
+
+    def paths(self):
+        return self._paths
+
+    def aliases(self):
+        return self._aliases

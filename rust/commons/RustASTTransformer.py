@@ -1,9 +1,14 @@
-# from external.examples.libxml2.repo.doc.apibuild import identifier
-from rust.nodes.ASTNode import *
+from rust.nodes.Expression import StructLiteral, StructLiteralField, VarDef, FunctionCallExpression, BinaryExpression, \
+    CastExpression, FieldAccessExpr, Expression, UnaryExpr, RangeExpression, TypedName, PatternExpr, \
+    QualifiedExpression, SafeWrapper, ArrayDeclaration, TypePath, DereferenceExpr, BorrowExpression, BooleanLiteral, \
+    IntLiteral, ByteLiteralExpression, StrLiteral, CharLiteral, ArrayLiteral, ArrayAccess
+from rust.nodes.Statement import LetStmt, IfStmt, AssignStmt, ForStmt, Block, Statement, ConditionalAssignmentStmt, \
+    LoopStmt, ReturnStmt, BreakStmt, ContinueStmt, WhileStmt, MatchStmt, MatchArm, MatchPattern, CompoundAssignment
 from rust.nodes.TopLevel import *
 from rust.nodes.Struct import *
 from rust.nodes.Func import *
-from rust.nodes.utils import *
+from rust.nodes.Type import UnknownType, PointerType, SignedIntType, UnsignedIntType, FloatingPointType, BoolType, \
+    CharType, StringType, ArrayType, PathType, GenericType, ReferenceType, ExternalType, SliceType
 from rust.parser.RustParser import RustParser
 from rust.parser.RustVisitor import RustVisitor
 
@@ -34,7 +39,6 @@ class RustASTTransformer(RustVisitor):
         finally:
             self._depth -= 1
 
-    topNode = None
     def visitProgram(self, ctx):
         items = []
         for item_ctx in ctx.topLevelItem():
@@ -112,14 +116,14 @@ class RustASTTransformer(RustVisitor):
         unsafe = False
         if ctx.unsafeModifier():
             unsafe = True
-        return FunctionDef(identifier=name, params=params, return_type=return_type, body=body, isUnsafe=unsafe)
+        return FunctionDefinition(identifier=name, params=params, return_type=return_type, body=body, is_unsafe=unsafe)
 
     def visitParam(self, ctx):
         is_mut = ctx.getChild(0).getText() == "mut"
         identifier = ctx.Identifier().getText()
         type_ctx = ctx.typeExpression()
         typ = self.visit(type_ctx) if type_ctx else None
-        return Param(name=identifier, typ=typ, isMutable=is_mut)
+        return Param(name=identifier, typ=typ, is_mutable=is_mut)
 
     def visitParamList(self, ctx):
         param_list = []
@@ -134,7 +138,7 @@ class RustASTTransformer(RustVisitor):
         name = ctx.Identifier().getText()
         fields = [self.visit(f) for f in ctx.structField()]
         v = self.visit(ctx.visibility()) if ctx.visibility() else None
-        return StructADef(name=name, fields=fields, vis=v)
+        return StructDef(name=name, fields=fields, vis=v)
 
     def visitStructField(self, ctx):
         name_token = ctx.Identifier()
@@ -191,8 +195,9 @@ class RustASTTransformer(RustVisitor):
 
     def visitExternBlock(self, ctx):
         abi = ctx.STRING_LITERAL().getText().strip('"')
-        items = [self.visit(item) for item in ctx.externItem()]
-        return ExternBlock(abi, items)
+        exps = [self.visit(item) for item in ctx.externItem()]
+        program = Program(exps)
+        return ExternBlock(abi, program)
 
     def visitExternItem(self, ctx):
         if "type" in ctx.getChild(1).getText():
@@ -212,7 +217,7 @@ class RustASTTransformer(RustVisitor):
             name = ctx.Identifier().getText()
             fields = [self.visit(f) for f in ctx.structField()]
             return_type = self.visit(ctx.typeExpression()) if ctx.typeExpression() else None
-            return ExternFunctionDecl(name=name, params=fields, return_type=return_type, visibility=visibility)
+            return ExternFunctionDeclaration(name=name, params=fields, return_type=return_type, visibility=visibility)
 
         raise Exception("Unsupported externItem structure")
 
@@ -240,7 +245,7 @@ class RustASTTransformer(RustVisitor):
         mutable = False
         name = ctx.Identifier().getText()
         var_type = None
-        return VarDef(name=name, isMutable=mutable, by_ref=by_ref, var_type=var_type)
+        return VarDef(name=name, is_mutable=mutable, by_ref=by_ref, var_type=var_type)
 
     def visitStaticItem(self, ctx):
         visibility = ctx.visibility().getText() if ctx.visibility() else None
@@ -301,7 +306,6 @@ class RustASTTransformer(RustVisitor):
         return Statement(body=expr)
 
     def visitFunctionCall(self, ctx: RustParser.FunctionCallContext):
-
         caller  = self.visit(ctx.expression(0))
         if ctx.expression(1) is not None:
             callee = self.visit(ctx.expression(1))
@@ -528,8 +532,6 @@ class RustASTTransformer(RustVisitor):
 
         return e
 
-
-
     def visitPrimaryExpression(self, ctx: RustParser.PrimaryExpressionContext):
         if isinstance(ctx, list):
             if len(ctx) != 1:
@@ -616,10 +618,9 @@ class RustASTTransformer(RustVisitor):
             i += 1
         return TypePath(False, types)
 
-
     def visitGenericArgs(self, ctx):
         print("generic arg call")
-        return [self.visit(ty) for ty in ctx.dtype()]
+        return [self.visit(ty) for ty in ctx.type()]
 
     def visitDereferenceExpression(self, ctx):
         target_expr = self.visit(ctx.expression())
@@ -843,27 +844,3 @@ class RustASTTransformer(RustVisitor):
             name_token = name_token[0]
         name = VarDef(name=name_token.getText()) # get the string name
         return ArrayAccess(name=name, expression=index)
-
-def setParents(node, parent=None, top_level_prog=None):
-    if not isinstance(node, ASTNode):
-        return
-
-    if isinstance(node, Program):
-        top_level_prog = node
-
-    if isinstance(node, FunctionDef) and isinstance(parent, InterfaceDef):
-        node.parent = parent
-    elif isinstance(node, TopLevel) and top_level_prog:
-        node.parent = top_level_prog
-    elif parent is not None:
-        node.parent = parent
-
-    for attr, value in vars(node).items():
-        if attr == "parent":
-            continue
-
-        if isinstance(value, list):
-            for item in value:
-                setParents(item, node, top_level_prog)
-        elif isinstance(value, ASTNode):
-            setParents(value, node, top_level_prog)

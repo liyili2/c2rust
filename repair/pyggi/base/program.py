@@ -244,7 +244,7 @@ class AbstractProgram(ABC):
         new_contents = copy.deepcopy(self.contents)
         print("target_files_len:", len(target_files))
         for target_file in target_files:
-            edits = list(filter(lambda a: a.target[0] == target_file, patch.edit_list))
+            edits = list(filter(lambda a: a._target[0] == target_file, patch.edit_list))
             print("edits_len", len(edits))
             for edit in edits:
                 print("edit_class:", edit.__class__)

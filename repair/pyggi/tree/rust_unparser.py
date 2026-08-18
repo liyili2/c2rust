@@ -62,15 +62,15 @@ class RustUnparser(RustPTVisitor):
         return '{\n' + '\n'.join(self.visit(stmt) for stmt in ctx.statement()) + '\n}'
 
     def visit_FunctionDef(self, node):
-        param_list = node.params.params if hasattr(node.params, "params") else []
-        params = ', '.join(f"{param.name}: {param.typ}" for param in param_list)
-        return_type = f" -> {node.return_type}" if node.return_type else ""
-        body = self.visit(node.body) if hasattr(node.body, "accept") else str(node.body)
-        return f"fn {node.identifier}({params}){return_type} {body}"
+        param_list = node._params._params if hasattr(node._params, "params") else []
+        params = ', '.join(f"{param._name}: {param.typ}" for param in param_list)
+        return_type = f" -> {node._return_type}" if node._return_type else ""
+        body = self.visit(node._body) if hasattr(node._body, "accept") else str(node._body)
+        return f"fn {node._identifier}({params}){return_type} {body}"
 
     def visit_StructDef(self, node):
-        fields = '\n'.join(f"    {name}: {typ}," for name, typ in node.fields)
-        return f"struct {node.name} {{\n{fields}\n}}"
+        fields = '\n'.join(f"    {name}: {typ}," for name, typ in node._fields)
+        return f"struct {node._name} {{\n{fields}\n}}"
 
     def visit_Attribute(self, node):
         def format_arg(arg):
@@ -80,12 +80,12 @@ class RustUnparser(RustPTVisitor):
                 return str(arg[0])
             return str(arg)
 
-        args = ', '.join(format_arg(arg) for arg in node.args)
-        return f"#[{node.name}({args})]" if node.args else f"#[{node.name}]"
+        args = ', '.join(format_arg(arg) for arg in node._args)
+        return f"#[{node._name}({args})]" if node._args else f"#[{node._name}]"
 
     def visit_InterfaceDef(self, node):
         funcs = '\n'.join(self.visit(func) for func in node.functions if hasattr(func, 'accept'))
-        return f"interface {node.name} {{\n{funcs}\n}}"
+        return f"interface {node._name} {{\n{funcs}\n}}"
     
     def visit_Block(self, node):
         pass

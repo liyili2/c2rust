@@ -76,7 +76,7 @@ class TestEdit(object):
         def test_init(self, setup_line_replacement):
             line_replacement, target, ingredient = setup_line_replacement
 
-            assert line_replacement.target == target
+            assert line_replacement._target == target
             assert line_replacement.ingredient == ingredient
 
         def test_create(self):
@@ -105,7 +105,7 @@ class TestEdit(object):
         def test_init(self, setup_line_insertion):
             line_insertion, target, ingredient = setup_line_insertion
 
-            assert line_insertion.target == target
+            assert line_insertion._target == target
             assert line_insertion.ingredient == ingredient
 
         def test_create(self):
@@ -131,7 +131,7 @@ class TestEdit(object):
         def test_init(self, setup_line_deletion):
             line_insertion, target = setup_line_deletion
 
-            assert line_insertion.target == target
+            assert line_insertion._target == target
 
         def test_create(self):
             program = LineProgram('../sample/Triangle_bug_java')
@@ -155,7 +155,7 @@ class TestEdit(object):
         def test_init(self, setup_stmt_replacement):
             stmt_replacement, target, ingredient = setup_stmt_replacement
 
-            assert stmt_replacement.target == target
+            assert stmt_replacement._target == target
             assert stmt_replacement.ingredient == ingredient
 
         def test_create(self):
@@ -183,7 +183,7 @@ class TestEdit(object):
         def test_init(self, setup_stmt_insertion):
             stmt_insertion, target, ingredient = setup_stmt_insertion
 
-            assert stmt_insertion.target == target
+            assert stmt_insertion._target == target
             assert stmt_insertion.ingredient == ingredient
 
         def test_create(self):
@@ -208,7 +208,7 @@ class TestEdit(object):
         def test_init(self, setup_stmt_deletion):
             stmt_insertion, target = setup_stmt_deletion
 
-            assert stmt_insertion.target == target
+            assert stmt_insertion._target == target
 
         def test_create(self):
             program = TreeProgram('../sample/Triangle_bug_python')

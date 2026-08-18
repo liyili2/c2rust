@@ -52,9 +52,8 @@ class IdentifierExpression(Expression):
 
 
 class VarDef(Expression):
-    def __init__(self, name, isMutable=False, by_ref=False, var_type=None):
-        # self.declarationInfo = DeclarationInfo(name=name, type=var_type)
-        super().__init__(dtype=var_type, is_mutable=isMutable)
+    def __init__(self, name, is_mutable=False, by_ref=False, var_type=None):
+        super().__init__(dtype=var_type, is_mutable=is_mutable)
         self._name = name
         self._by_ref = by_ref
 
@@ -104,7 +103,7 @@ class ByteLiteralExpression(Expression):
 
 class FunctionCallExpression(Expression):
 
-    def __init__(self, caller: Expression,  args: List[Expression], callee: Expression = None):
+    def __init__(self, caller: Expression, args: List[Expression], callee: Expression = None):
         super().__init__()
         self._caller = caller
         self._callee = callee
@@ -126,18 +125,14 @@ class FunctionCallExpression(Expression):
 class CastExpression(Expression):
 
     def __init__(self, expression: Any = None, type_expressions: List[Expression] = None):
-        super().__init__()
+        super().__init__(dtype = type_expressions)
         self._expression = expression
-        self._type = type_expressions
 
     def accept(self, visitor):
         return visitor.visitCastExpression(self)
 
     def expression(self):
         return self._expression
-
-    def type(self):
-        return self._type
 
 
 class BorrowExpression(Expression):
@@ -154,15 +149,17 @@ class BorrowExpression(Expression):
 
 
 class Literal(Expression):
+
     def __init__(self, value, dtype):
         super().__init__(dtype = dtype)
         self._value = value
 
+    def accept(self, visitor):
+        return visitor.visitLiteral(self)
+
     def value(self):
         return self._value
 
-    def accept(self, visitor):
-        return visitor.visitLiteral(self)
 
 class BooleanLiteral(Literal):
 
@@ -242,7 +239,9 @@ class ArrayAccess(Expression):
     def expression(self):
         return self._expression
 
+
 class UnaryExpr(Expression):
+
     def __init__(self, op, expression):
         super().__init__()
         self._op = op
@@ -257,6 +256,7 @@ class UnaryExpr(Expression):
     def expression(self):
         return self._expr
 
+
 class DereferenceExpr(Expression):
     def __init__(self, expression):
         super().__init__()
@@ -268,11 +268,13 @@ class DereferenceExpr(Expression):
     def expression(self):
         return self._expr
 
+
 class FieldAccessExpr(Expression):
-    def __init__(self, receiver, next):
+
+    def __init__(self, receiver, nxt):
         super().__init__()
         self._receiver = receiver
-        self._next = next
+        self._next = nxt
 
     def accept(self, visitor):
         return visitor.visitFieldAccessExpr(self)
@@ -282,6 +284,7 @@ class FieldAccessExpr(Expression):
 
     def next(self):
         return self._next
+
 
 class ParenExpr(Expression): 
     def __init__(self, expression):
@@ -297,19 +300,27 @@ class ParenExpr(Expression):
     def expression(self):
         return self._expr
 
-class StructLiteral(Literal):
-    def __init__(self, name, fields, visibility=None):
+
+class StructLiteral(Expression):
+
+    def __init__(self, name, fields):
         super().__init__()
-        self.name = name
-        self.fields = fields
+        self._name = name
+        self._fields = fields
 
     def accept(self, visitor):
-        return visitor.visit_StructLiteral(self)
+        return visitor.visitStructLiteral(self)
+
+    def name(self):
+        return self._name
+
+    def fields(self):
+        return self._fields
+
 
 class StructLiteralField(Expression):
     def __init__(self, name, value, field_type=None):
         super().__init__(dtype = field_type)
-        # self.declarationInfo = DeclarationInfo(name=name, type=field_type)
         self._value = value
         self._name = name
 
@@ -341,25 +352,22 @@ class PatternExpr(Expression):
 
 class TypePath(Expression):
 
-    def __init__(self, a : bool, types: List[str]):
-        super().__init__()
-        self._typeBool = a
-        self._types = types
+    def __init__(self, has_column: bool, types: List[str]):
+        super().__init__(dtype = types)
+        self._has_column = has_column
 
     def accept(self, visitor):
         return visitor.visitTypePath(self)
 
-    def hasColumn(self):
-        return self._typeBool
+    def has_column(self):
+        return self._has_column
 
-    def types(self):
-        return self._types
 
 class TypedName(Expression):
+
     def __init__(self, name, types):
-        super().__init__()
+        super().__init__(dtype = types)
         self._name = name
-        self._types = types
 
     def accept(self, visitor):
         return visitor.visitTypedName(self)
@@ -367,10 +375,9 @@ class TypedName(Expression):
     def name(self):
         return self._name
 
-    def types(self):
-        return self._types
 
 class RangeExpression(Expression):
+
     def __init__(self, initial, last):
         super().__init__()
         self._initial = initial
@@ -384,6 +391,7 @@ class RangeExpression(Expression):
 
     def last(self):
         return self._last
+
 
 class SafeWrapper(Expression):
     def __init__(self, expression):

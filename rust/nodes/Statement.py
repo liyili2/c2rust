@@ -1,5 +1,6 @@
-# from rust.ast.RustASTVisitor import RustASTVisitor
+from typing import List
 from rust.nodes.ASTNode import ASTNode, CloneableASTNode
+
 
 class Statement(CloneableASTNode):
 
@@ -25,13 +26,13 @@ class LetStmt(Statement):
 
     def __repr__(self):
         if self.is_destructuring():
-            vars_str = ", ".join(v.name for v in self.var_defs)
+            vars_str = ", ".join(v._name() for v in self.var_defs)
             vals_str = ", ".join(str(v) for v in self.values)
             return f"LetStmt(({vars_str}) = ({vals_str}))"
         else:
             var = self.var_defs[0]
             val = self.values[0]
-            return f"LetStmt({var.name} = {val})"
+            return f"LetStmt({var._name()} = {val})"
 
     def accept(self, visitor):
         return visitor.visitLetStmt(self)
@@ -47,26 +48,42 @@ class ForStmt(Statement):
         return visitor.visitForStmt(self)
 
 class IfStmt(Statement):
+
     def __init__(self, condition, then_branch, else_branch=None):
         super().__init__()
-        self.condition = condition
-        self.then_branch = then_branch
-        self.else_branch = else_branch
+        self._condition = condition
+        self._then_branch = then_branch
+        self._else_branch = else_branch
+
     def accept(self, visitor):
         return visitor.visitIfStmt(self)
-        # return visitor.visit_IfStmt(self)
+
+    def condition(self):
+        return self._condition
+
+    def then_branch(self):
+        return self._then_branch
+
+    def else_branch(self):
+        return self._else_branch
+
 
 class AssignStmt(Statement):
+
     def __init__(self, target, value):
         super().__init__()
-        self.target = target
-        self.value = value
-
-    def __str__(self):
-        return f"{self.target} = {self.value}"
+        self._target = target
+        self._value = value
 
     def accept(self, visitor):
-        return visitor.visitAssignStmt(self) # visitAssignment
+        return visitor.visitAssignStmt(self)
+
+    def target(self):
+        return self._target
+
+    def value(self):
+        return self._value
+
 
 class ConditionalAssignmentStmt(Statement):
     def __init__(self, cond, body):
@@ -124,16 +141,19 @@ class CompoundAssignment(Statement):
     def accept(self, visitor):
         return visitor.visitCompoundAssignment(self)
 
+
 class ReturnStmt(Statement):
+
     def __init__(self, value=None):
         super().__init__()
-        self.value = value
+        self._value = value
 
     def accept(self, visitor):
         return visitor.visit_ReturnStmt(self)
-    
-    def __repr__(self):
-        return f"ReturnStmt(value={self.value})"
+
+    def value(self):
+        return self._value
+
 
 class LoopStmt(Statement):
     def __init__(self, body):
@@ -185,7 +205,7 @@ class FunctionCall(Statement):
 
 class Block(Statement):
 
-    def __init__(self, stmts: list[Statement], is_unsafe: bool):
+    def __init__(self, stmts: List[Statement], is_unsafe: bool):
         super().__init__()
         self._stmts = stmts
         self._is_unsafe = is_unsafe

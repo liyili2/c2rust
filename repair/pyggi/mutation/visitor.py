@@ -33,31 +33,31 @@ class MutationVisitor():
     def visitStaticVarDecl(self, node:StaticVarDecl):
         mutation_probability = random.random()
         if mutation_probability > self.mutation_const:
-            node.is_mutable = not node.is_mutable
+            node._is_mutable = not node._is_mutable
 
         mutation_probability = random.random()
         if mutation_probability > self.mutation_const:
-            if not isinstance(node.declarationInfo.dtype, SafeNonNullWrapper):
-                node.declarationInfo.dtype = SafeNonNullWrapper(typeExpr=node.declarationInfo.dtype)
+            if not isinstance(node.declarationInfo._dtype, SafeNonNullWrapper):
+                node.declarationInfo._dtype = SafeNonNullWrapper(typeExpr=node.declarationInfo._dtype)
 
     def visitFunctionDef(self, node:FunctionDef):
         mutation_probability = random.random()
         if mutation_probability > self.mutation_const:
             node.is_unsafe = False
 
-        self.visit(node.params)
-        self.visit(node.body)
-        self.visit(node.return_type)
+        self.visit(node._params)
+        self.visit(node._body)
+        self.visit(node._return_type)
 
     def visitFunctionParamList(self, node:FunctionParamList):
-        for param in node.params:
+        for param in node._params:
             self.visit(param)
 
     def visitParam(self, node:Param):
         mutation_probability = random.random()
         if mutation_probability > self.mutation_const:
-            if not isinstance(node.declarationInfo.dtype, SafeNonNullWrapper):
-                node.declarationInfo.dtype = SafeNonNullWrapper(typeExpr=node.declarationInfo.dtype)
+            if not isinstance(node.declarationInfo._dtype, SafeNonNullWrapper):
+                node.declarationInfo._dtype = SafeNonNullWrapper(typeExpr=node.declarationInfo._dtype)
 
     def visitBlock(self, node: Block):
         mutation_probability = random.random()
@@ -76,12 +76,12 @@ class MutationVisitor():
     def visitVarDef(self, node:VarDef):
         mutation_probability = random.random()
         if mutation_probability > self.mutation_const:
-            if not isinstance(node.declarationInfo.dtype, SafeNonNullWrapper):
-                node.declarationInfo.dtype = SafeNonNullWrapper(typeExpr=node.declarationInfo.dtype)
+            if not isinstance(node.declarationInfo._dtype, SafeNonNullWrapper):
+                node.declarationInfo._dtype = SafeNonNullWrapper(typeExpr=node.declarationInfo._dtype)
 
         mutation_probability = random.random()
         if mutation_probability > self.mutation_const:
-            node.is_mutable = not node.is_mutable
+            node._is_mutable = not node._is_mutable
 
     def visitStructDef(self, node:StructDef):
         for i in node.getChildren():
@@ -90,12 +90,12 @@ class MutationVisitor():
     def visitStructField(self, node:StructField):
         mutation_probability = random.random()
         if mutation_probability > self.mutation_const:
-            if not isinstance(node.declarationInfo.dtype, SafeNonNullWrapper):
-                node.declarationInfo.dtype = SafeNonNullWrapper(typeExpr=node.declarationInfo.dtype)
+            if not isinstance(node.declarationInfo._dtype, SafeNonNullWrapper):
+                node.declarationInfo._dtype = SafeNonNullWrapper(typeExpr=node.declarationInfo._dtype)
 
     def visitFieldAccessExpr(self, node:FieldAccessExpr):
         self.visit(node.receiver)
-        self.visit(node.name)
+        self.visit(node._name)
 
     def visitDereferenceExpr(self, node:DereferenceExpr):
         mutation_probability = random.random()
@@ -110,26 +110,26 @@ class MutationVisitor():
         self.visit(node.right)
 
     def visitForStmt(self, node:ForStmt):
-        self.visit(node.body)
+        self.visit(node._body)
         self.visit(node.iterable)
         self.visit(node.var)
 
     def visitIfStmt(self, node:IfStmt):
-        self.visit(node.condition)
-        self.visit(node.then_branch)
-        if node.else_branch is not None:
-            self.visit(node.else_branch)
+        self.visit(node._condition)
+        self.visit(node._then_branch)
+        if node._else_branch is not None:
+            self.visit(node._else_branch)
 
     def visitAssignStmt(self, node:AssignStmt):
-        self.visit(node.target)
-        self.visit(node.value)
+        self.visit(node._target)
+        self.visit(node._value)
 
     def visitReturnStmt(self, node:ReturnStmt):
-        self.visit(node.value)
+        self.visit(node._value)
     
     def visitWhileStmt(self, node:WhileStmt):
-        self.visit(node.condition)
-        self.visit(node.body)
+        self.visit(node._condition)
+        self.visit(node._body)
     
     def visitMatchStmt(self, node:MatchStmt):
         self.visit(node.expression)
@@ -139,22 +139,22 @@ class MutationVisitor():
     def visitMatchArm(self, node:MatchArm):
         for pattern in node.patterns:
             self.visit(pattern)
-        self.visit(node.body)
+        self.visit(node._body)
 
     def visitMatchPattern(self, node:MatchPattern):
-        self.visit(node.value)
+        self.visit(node._value)
 
     def visitCompoundAssignment(self, node:CompoundAssignment):
-        self.visit(node.target)
-        self.visit(node.value)
+        self.visit(node._target)
+        self.visit(node._value)
     
     def visitLoopStmt(self, node:LoopStmt):
-        self.visit(node.body)
+        self.visit(node._body)
 
     def visitBorrowExpr(self, node: BorrowExpr):
         mutation_probability = random.random()
         if mutation_probability > self.mutation_const:
-            node.is_mutable = not node.is_mutable
+            node._is_mutable = not node._is_mutable
         self.visit(node.expression)
 
     def visitUnaryExpr(self, node: UnaryExpr):
@@ -170,7 +170,7 @@ class MutationVisitor():
 
     def visitCastExpr(self, node: CastExpr):
         self.visit(node.expression)
-        self.visit(node.dtype)
+        self.visit(node._dtype)
         self.visit(node.typePath)
 
     def visitTypePathExpression(self, node:TypePathExpression):
@@ -182,4 +182,4 @@ class MutationVisitor():
     def visitIdentifierExpr(self, node:IdentifierExpr):
         mutation_probability = random.random()
         if mutation_probability > self.mutation_const:
-            node.is_mutable = not node.is_mutable
+            node._is_mutable = not node._is_mutable

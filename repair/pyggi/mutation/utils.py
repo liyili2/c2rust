@@ -52,8 +52,8 @@ class MutationUtils:
             elif isinstance(top_children, InterfaceDef):
                 matched_children = []
                 for item in top_children:
-                    if isinstance(parent_2, type(item)) and isinstance(item.body, Block):
-                        transform_fn(item, item.body)
+                    if isinstance(parent_2, type(item)) and isinstance(item._body, Block):
+                        transform_fn(item, item._body)
                         matched_children.append(item)
                     else:
                         matched_children.append(item)
@@ -70,32 +70,32 @@ class MutationUtils:
 
         if isinstance(stmt1, LetStmt):
             for i in range(len(stmt1.var_defs)):
-                if not (str.__eq__(stmt1.var_defs[i].declarationInfo.name, stmt2.var_defs[i].declarationInfo.name) and isinstance(stmt1.var_defs[i].declarationInfo.dtype, type(stmt2.var_defs[i].declarationInfo.dtype))):
-                    print(stmt1.var_defs[i].declarationInfo.name, stmt2.var_defs[i].declarationInfo.name, stmt1.var_defs[i].declarationInfo.dtype, stmt2.var_defs[i].declarationInfo.dtype)
+                if not (str.__eq__(stmt1.var_defs[i].declarationInfo._name, stmt2.var_defs[i].declarationInfo._name) and isinstance(stmt1.var_defs[i].declarationInfo._dtype, type(stmt2.var_defs[i].declarationInfo._dtype))):
+                    print(stmt1.var_defs[i].declarationInfo._name, stmt2.var_defs[i].declarationInfo._name, stmt1.var_defs[i].declarationInfo._dtype, stmt2.var_defs[i].declarationInfo._dtype)
                     return False
             return True
 
         if isinstance(stmt1, IfStmt):
-            print("ifstmts: ", stmt1.condition , stmt2.condition, stmt1.then_branch , stmt2.then_branch , stmt1.else_branch , stmt2.else_branch)
-            return (self.expr_eq(stmt1.condition, stmt2.condition) and
-                    self.statements_eq(stmt1.then_branch, stmt2.then_branch) and
-                    (stmt1.else_branch is None and stmt2.else_branch is None or
-                    stmt1.else_branch is not None and stmt2.else_branch is not None and
-                    self.statements_eq(stmt1.else_branch, stmt2.else_branch)))
+            print("ifstmts: ", stmt1._condition, stmt2._condition, stmt1._then_branch, stmt2._then_branch, stmt1._else_branch, stmt2._else_branch)
+            return (self.expr_eq(stmt1._condition, stmt2._condition) and
+                    self.statements_eq(stmt1._then_branch, stmt2._then_branch) and
+                    (stmt1._else_branch is None and stmt2._else_branch is None or
+                     stmt1._else_branch is not None and stmt2._else_branch is not None and
+                     self.statements_eq(stmt1._else_branch, stmt2._else_branch)))
 
         if isinstance(stmt1, ForStmt):
             print("forstmt eq case")
             return (
                 stmt1.var == stmt2.var and
                 self.expr_eq(stmt1.iterable, stmt2.iterable) and
-                self.statements_eq(stmt1.body, stmt2.body))
+                self.statements_eq(stmt1._body, stmt2._body))
 
         if isinstance(stmt1, FunctionCall):
             if not self.expr_eq(stmt1.callee, stmt2.callee):
                 return False
-            if len(stmt1.args) != len(stmt2.args):
+            if len(stmt1._args) != len(stmt2._args):
                 return False
-            for arg1, arg2 in zip(stmt1.args, stmt2.args):
+            for arg1, arg2 in zip(stmt1._args, stmt2._args):
                 if not self.expr_eq(arg1, arg2):
                     return False
             return True
@@ -103,14 +103,14 @@ class MutationUtils:
         if isinstance(stmt1, AssignStmt):
             print("assignstmt eq case")
             return (
-                self.expr_eq(stmt1.target, stmt2.target) and
-                self.expr_eq(stmt1.value, stmt2.value))
+                    self.expr_eq(stmt1._target, stmt2._target) and
+                    self.expr_eq(stmt1._value, stmt2._value))
         
         if isinstance(stmt1, WhileStmt):
             print("whilestmt eq case")
             return (
-                self.expr_eq(stmt1.condition, stmt2.condition) and
-                self.statements_eq(stmt1.body, stmt2.body))
+                    self.expr_eq(stmt1._condition, stmt2._condition) and
+                    self.statements_eq(stmt1._body, stmt2._body))
         
         if isinstance(stmt1, Block):
             for i in range(0, len(stmt1.stmts)):
@@ -124,41 +124,41 @@ class MutationUtils:
         if type(expr1) != type(expr2):
             return False
         if isinstance(expr1, IdentifierExpr):
-            return expr1.name == expr2.name
+            return expr1._name == expr2._name
         if isinstance(expr1, StrLiteral):
-            return expr1.value == expr2.value
+            return expr1._value == expr2._value
         if isinstance(expr1, IntLiteral):
-            return expr1.value == expr2.value
+            return expr1._value == expr2._value
         if isinstance(expr1, BoolLiteral):
-            return expr1.value == expr2.value
+            return expr1._value == expr2._value
         if isinstance(expr1, BinaryExpr):
             return (self.expr_eq(expr1.left, expr2.left) and
                     self.expr_eq(expr1.right, expr2.right) and
                     expr1.op == expr2.op)
         if isinstance(expr1, FunctionCall):
             return (
-                self.expr_eq(expr1.caller, expr2.caller) and
-                expr1.callee == expr2.callee and
-                len(expr1.args) == len(expr2.args) and
-                all(self.expr_eq(a1, a2) for a1, a2 in zip(expr1.args, expr2.args)))
+                    self.expr_eq(expr1.caller, expr2.caller) and
+                    expr1.callee == expr2.callee and
+                    len(expr1._args) == len(expr2._args) and
+                    all(self.expr_eq(a1, a2) for a1, a2 in zip(expr1._args, expr2._args)))
         if isinstance(expr1, FieldAccessExpr):
-            return (self.expr_eq(expr1.receiver, expr2.receiver) and self.expr_eq(expr1.name, expr2.name))
+            return (self.expr_eq(expr1.receiver, expr2.receiver) and self.expr_eq(expr1._name, expr2._name))
         if isinstance(expr1, DereferenceExpr):
             return (self.expr_eq(expr1.expression, expr2.expression))
         return False 
 
     def function_def_eq(self, func1, func2):
         def get_params(f):
-            if hasattr(f.params, "params"):
-                return f.params.params
-            elif isinstance(f.params, list):
-                return f.params
+            if hasattr(f._params, "params"):
+                return f._params._params
+            elif isinstance(f._params, list):
+                return f._params
             else:
                 return []
         params1 = get_params(func1)
         params2 = get_params(func2)
-        body1 = func1.body.getChildren() if hasattr(func1.body, "getChildren") else []
-        body2 = func2.body.getChildren() if hasattr(func2.body, "getChildren") else []
+        body1 = func1._body.getChildren() if hasattr(func1._body, "getChildren") else []
+        body2 = func2._body.getChildren() if hasattr(func2._body, "getChildren") else []
         return (
             getattr(func1, "identifier", None) == getattr(func2, "identifier", None)
             and len(params1) == len(params2) and len(body1) == len(body2))

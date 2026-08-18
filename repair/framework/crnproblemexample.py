@@ -135,7 +135,7 @@ def load_run_patch(prg, fname: str):
                 i_pos = int(m_arr[20])
                 patch.add(edit_opr.create2(t_file, t_pos, i_pos))
 
-        res = prg.evaluate_patch(patch, timeout=prg.args.timeout, partial=0)
+        res = prg.evaluate_patch(patch, timeout=prg.args().timeout, partial=0)
         patch.fitness = res.fitness
         i += 1
         print("\nAdded mutation {}: {}".format(str(i), str(patch)))
@@ -176,7 +176,7 @@ def run_main(args):
             algorithm = SimulatedAnnealing(
                 problem=problem,
                 mutation=CRNMutation(probability=1, prg=program),
-                termination_criterion=StoppingByEvaluationsOrFitness(args.iter, args.target, program.args.debug)
+                termination_criterion=StoppingByEvaluationsOrFitness(args.iter, args._target, program.args.debug)
             )
         # Genetic Algorithm
         elif program.args.algo == 'GA':
@@ -187,7 +187,7 @@ def run_main(args):
                 mutation=CRNMutation(probability=args.mutation, prg=program),
                 crossover=CRNCrossover(probability=args.crossover),
                 selection=BinaryTournamentSelection(),
-                termination_criterion=StoppingByEvaluationsOrFitness(args.iter, args.target, program.args.debug)
+                termination_criterion=StoppingByEvaluationsOrFitness(args.iter, args._target, program.args.debug)
             )
         # NSGAII
         elif program.args.algo == 'NSGAII':
@@ -197,13 +197,13 @@ def run_main(args):
                 offspring_population_size=args.pop,
                 mutation=CRNMutation(probability=args.mutation, prg=program),
                 crossover=CRNCrossover(probability=args.crossover),
-                termination_criterion=StoppingByEvaluationsOrFitness(args.iter, args.target, program.args.debug)
+                termination_criterion=StoppingByEvaluationsOrFitness(args.iter, args._target, program.args.debug)
             )
         # Random Search
         else:
             algorithm = RandomSearch(
                 problem=problem,
-                termination_criterion=StoppingByEvaluationsOrFitness(args.iter, args.target)
+                termination_criterion=StoppingByEvaluationsOrFitness(args.iter, args._target)
             )
 
         algorithm.run()

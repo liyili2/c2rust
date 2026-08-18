@@ -45,7 +45,7 @@ def setup_tree():
 
 def check_program_validity(program):
     assert not program.path.endswith('/')
-    assert program.name == os.path.basename(program.path)
+    assert program._name == os.path.basename(program.path)
     assert program.test_command is not None
     assert program.target_files is not None
     assert all([program.engines[target_file] is not None
@@ -91,7 +91,7 @@ class TestLineProgram(object):
 
     def test_tmp_path(self, setup_line):
         program = setup_line
-        assert program.tmp_path.startswith(os.path.join(program.TMP_DIR, program.name))
+        assert program.tmp_path.startswith(os.path.join(program.TMP_DIR, program._name))
 
     def test_create_tmp_variant(self, setup_line):
         program = setup_line
@@ -181,7 +181,7 @@ class TestTreeProgram(object):
     def test_tmp_path(self, setup_tree):
         program = setup_tree
 
-        assert program.tmp_path.startswith(os.path.join(program.TMP_DIR, program.name))
+        assert program.tmp_path.startswith(os.path.join(program.TMP_DIR, program._name))
 
     def test_create_tmp_variant(self, setup_tree):
         program = setup_tree

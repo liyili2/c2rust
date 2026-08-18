@@ -1,29 +1,21 @@
-from rust.nodes.ASTNode import ASTNode
-from rust.nodes.MarkedASTNode import MarkedASTNode
+from typing import List
+from rust.nodes.ASTNode import CloneableASTNode, ASTNode
 
-class Program(ASTNode):
-    def __init__(self, items):
+
+class Program(CloneableASTNode):
+
+    def __init__(self, exps: List[ASTNode]):
         super().__init__()
-        self._items = items
-        self.marked_nodes = []
+        self._items: List[ASTNode] = exps
 
     def accept(self, visitor):
         return visitor.visitProgram(self)
 
-    def getChildren(self):
-        return self._items
-
-    def add_marked(self, node: MarkedASTNode):
-        self.marked_nodes.append(node)
-
-    def get_random_marked(self):
-        import random
-        if not self.marked_nodes:
+    def exp(self, i: int) -> ASTNode | None:
+        if i < len(self._items):
+            return self._items[i]
+        else:
             return None
-        return random.choice(self.marked_nodes)
-    
-    def list_marked_nodes(self):
-        return [marked.node for marked in self.marked_nodes]
 
-    def list_marked_nodes_with_ids(self):
-        return [(marked.get_id(), marked.node) for marked in self.marked_nodes]
+    def length(self) -> int:
+        return len(self._items)
