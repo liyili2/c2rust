@@ -70,11 +70,11 @@ class Simulator(RustProgramVisitor):
             fn.accept(self)
 
     def visit_LetStmt(self, node: LetStmt):
-        for i in range(0, len(node.var_defs)):
-            arVar = node.var_defs[i].declarationInfo._name()
-            value = node.values[i]
+        for i in range(0, len(node._var_defs)):
+            arVar = node._var_defs[i].declarationInfo._name()
+            value = node._values[i]
             if value is not None:
-                value = node.values[i].accept(self)
+                value = node._values[i].accept(self)
             self.stack.update({arVar : value})
         return None
 

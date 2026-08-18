@@ -263,23 +263,23 @@ class TypeChecker:
 
     def visit_LetStmt(self, node):
         expr_types = []
-        for expr in node.values:
+        for expr in node._values:
             expr_types.append(self.visit(expr))
 
         if node.is_destructuring():
-            if len(node.var_defs) != len(expr_types):
+            if len(node._var_defs) != len(expr_types):
                 self.error(node, "number of group-let of values and targets do not match")
                 return
 
-            for var_def, expr_type in zip(node.var_defs, expr_types):
+            for var_def, expr_type in zip(node._var_defs, expr_types):
                 declared_type = self.visit(var_def.declarationInfo._dtype) if var_def.declarationInfo._dtype else expr_type
 
                 self.env.declare(var_def.declarationInfo._name, declared_type)
                 self.symbol_table[var_def.declarationInfo._name] = declared_type
-                self._handle_borrowing(var_def, node.values[0])
+                self._handle_borrowing(var_def, node._values[0])
 
         else:
-            var_def = node.var_defs[0]
+            var_def = node._var_defs[0]
             expr_type = self.visit(expr_types[0])
 
             if isinstance(var_def.declarationInfo._dtype, str):
@@ -298,16 +298,16 @@ class TypeChecker:
                 expr_type = var_def_type
 
             if (
-                node.values[0] is not None and
+                node._values[0] is not None and
                 not isinstance(expr_type, var_def_type.__class__) and
                 not isinstance(var_def_type, SafeNonNullWrapper) and
-                not node.values[0].is_unsafe == True
+                not node._values[0].is_unsafe == True
             ):
                 self.error(node, f"type of the value and target do not match: {(var_def_type.__class__)} and {(expr_type.__class__)}")
 
             self.env.declare(var_def.declarationInfo._name, var_def_type, mutable=var_def._is_mutable)
             self.symbol_table[var_def.declarationInfo._name] = var_def_type
-            self._handle_borrowing(var_def, node.values[0])
+            self._handle_borrowing(var_def, node._values[0])
 
     def detect_raw_pointer_definition(self, name, type, isMutable):
         if isinstance(type, PointerType) and isMutable:

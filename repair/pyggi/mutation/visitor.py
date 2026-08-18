@@ -68,9 +68,9 @@ class MutationVisitor():
             self.visit(stmt)
 
     def visitLetStmt(self, node: LetStmt):
-        for var_def in node.var_defs:
+        for var_def in node._var_defs:
             self.visit(var_def)
-        for value in node.values:
+        for value in node._values:
             self.visit(value)
 
     def visitVarDef(self, node:VarDef):

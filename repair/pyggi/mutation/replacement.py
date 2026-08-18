@@ -157,29 +157,29 @@ class ReplacementOperator:
                     )
                 )
 
-        if isinstance(stmt, LetStmt) and len(stmt.var_defs) == 1:
-            val = stmt.values[0]
+        if isinstance(stmt, LetStmt) and len(stmt._var_defs) == 1:
+            val = stmt._values[0]
             if isinstance(val, DereferenceExpr):
                 stmt = LetStmt(
                     var_defs=VarDef(
-                        name=stmt.var_defs[0].declarationInfo._name,
-                        mutable=stmt.var_defs[0].mutable,
-                        by_ref=stmt.var_defs[0].by_ref,
+                        name=stmt._var_defs[0].declarationInfo._name,
+                        mutable=stmt._var_defs[0].mutable,
+                        by_ref=stmt._var_defs[0].by_ref,
                         type=RefType("T")
                     ), values=Expression(expr=BorrowExpr(expr=val), isUnsafe=True))
 
     def flip_mutabilities(self, ast_root, target_node):
         print("OP: flip_mutabilities")
         def transform(stmt):
-            if isinstance(stmt, LetStmt) and len(stmt.var_defs) == 1:
+            if isinstance(stmt, LetStmt) and len(stmt._var_defs) == 1:
                 return LetStmt(
                     var_defs=VarDef(
-                        name=stmt.var_defs[0].declarationInfo._name,
-                        isMutable=not stmt.var_defs[0]._is_mutable,
-                        by_ref=stmt.var_defs[0].by_ref,
-                        var_type=stmt.var_defs[0].declarationInfo._dtype
+                        name=stmt._var_defs[0].declarationInfo._name,
+                        isMutable=not stmt._var_defs[0]._is_mutable,
+                        by_ref=stmt._var_defs[0].by_ref,
+                        var_type=stmt._var_defs[0].declarationInfo._dtype
                     ),
-                    values=stmt.values[0]
+                    values=stmt._values[0]
                 )
             return stmt
         return self.transform_let_stmt(ast_root, target_node, transform, label="flip_mutabilities")
@@ -234,14 +234,14 @@ class ReplacementOperator:
         new_stmts = []
         for stmt in block.getChildren():
             if isinstance(stmt, LetStmt):
-                if len(stmt.var_defs) == 1:
-                    if isinstance(stmt.var_defs[0].declarationInfo._dtype, PointerType) and stmt.var_defs[0]._is_mutable:
-                        new_stmt = LetStmt(values=stmt.values[0],
-                            var_defs=[
-                                VarDef(var_type=SafeNonNullWrapper(typeExpr=stmt.var_defs[0]._dtype),
-                                       name=stmt.var_defs[0]._name, mutable=stmt.var_defs[0]._is_mutable)
+                if len(stmt._var_defs) == 1:
+                    if isinstance(stmt._var_defs[0].declarationInfo._dtype, PointerType) and stmt._var_defs[0]._is_mutable:
+                        new_stmt = LetStmt(values=stmt._values[0],
+                                           var_defs=[
+                                VarDef(var_type=SafeNonNullWrapper(typeExpr=stmt._var_defs[0]._dtype),
+                                       name=stmt._var_defs[0]._name, mutable=stmt._var_defs[0]._is_mutable)
                             ]
-                        )
+                                           )
                         new_stmts.append(new_stmt)
             else:
                 new_stmts.append(stmt)

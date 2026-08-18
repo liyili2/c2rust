@@ -1,8 +1,3 @@
-import sys
-import os
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
 from antlr4 import CommonTokenStream, InputStream
 from rust.parser.RustLexer import RustLexer
 from rust.parser.RustParser import RustParser
@@ -10,7 +5,7 @@ from rust.commons.RustASTTransformer import RustASTTransformer
 from rust.visitors.Printers import RustASTPrinter
 
 
-file_path = "./avl/avl.rs"
+file_path = "Benchmarks/avl/avl.rs"
 
 
 with open(file_path, "r", encoding="utf-8") as f:

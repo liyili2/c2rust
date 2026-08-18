@@ -69,9 +69,9 @@ class MutationUtils:
             return False
 
         if isinstance(stmt1, LetStmt):
-            for i in range(len(stmt1.var_defs)):
-                if not (str.__eq__(stmt1.var_defs[i].declarationInfo._name, stmt2.var_defs[i].declarationInfo._name) and isinstance(stmt1.var_defs[i].declarationInfo._dtype, type(stmt2.var_defs[i].declarationInfo._dtype))):
-                    print(stmt1.var_defs[i].declarationInfo._name, stmt2.var_defs[i].declarationInfo._name, stmt1.var_defs[i].declarationInfo._dtype, stmt2.var_defs[i].declarationInfo._dtype)
+            for i in range(len(stmt1._var_defs)):
+                if not (str.__eq__(stmt1._var_defs[i].declarationInfo._name, stmt2._var_defs[i].declarationInfo._name) and isinstance(stmt1._var_defs[i].declarationInfo._dtype, type(stmt2._var_defs[i].declarationInfo._dtype))):
+                    print(stmt1._var_defs[i].declarationInfo._name, stmt2._var_defs[i].declarationInfo._name, stmt1._var_defs[i].declarationInfo._dtype, stmt2._var_defs[i].declarationInfo._dtype)
                     return False
             return True
 

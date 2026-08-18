@@ -3,13 +3,83 @@ from rust.nodes.Expression import FunctionCallExpression, TypedName, VarDef, Lit
     BorrowExpression, TypePath, CastExpression, BinaryExpression, StructLiteral, UnaryExpr
 from rust.nodes.Func import FunctionParamList, Param
 from rust.nodes.Program import Program
-from rust.nodes.Statement import Block, AssignStmt, ReturnStmt, IfStmt
+from rust.nodes.Statement import Block, AssignStmt, ReturnStmt, IfStmt, LetStmt
 from rust.nodes.Struct import StructField
 from rust.nodes.TopLevel import FunctionDefinition, ExternBlock, ExternFunctionDeclaration, UseDecl, StructDef, Attribute
 from rust.nodes.Type import BoolType, SignedIntType, StringType, FloatingPointType, ExternalType, UnknownType
 
 
 class AbstractASTVisitor(ABC):
+
+    def visit(self, node):
+        if isinstance(node, Program):
+            return self.visitProgram(node)
+        elif isinstance(node, ExternBlock):
+            return self.visitExternBlock(node)
+        elif isinstance(node, ExternFunctionDeclaration):
+            return self.visitExternFunctionDeclaration(node)
+        elif isinstance(node, FunctionDefinition):
+            return self.visitFunctionDefinition(node)
+        elif isinstance(node, FunctionCallExpression):
+            return self.visitFunctionCallExpression(node)
+        elif isinstance(node, FunctionParamList):
+            return self.visitFunctionParamList(node)
+        elif isinstance(node, Param):
+            return self.visitParam(node)
+        elif isinstance(node, TypedName):
+            return self.visitTypedName(node)
+        elif isinstance(node, Block):
+            return self.visitBlock(node)
+        elif isinstance(node, LetStmt):
+            return self.visitLetStmt(node)
+        elif isinstance(node, VarDef):
+            return self.visitVarDef(node)
+        elif isinstance(node, Literal):
+            return self.visitLiteral(node)
+        elif isinstance(node, AssignStmt):
+            return self.visitAssignStmt(node)
+        elif isinstance(node, ReturnStmt):
+            return self.visitReturnStmt(node)
+        elif isinstance(node, IfStmt):
+            return self.visitIfStmt(node)
+        elif isinstance(node, FieldAccessExpr):
+            return self.visitFieldAccessExpr(node)
+        elif isinstance(node, RangeExpression):
+            return self.visitRangeExpression(node)
+        elif isinstance(node, BorrowExpression):
+            return self.visitBorrowExpression(node)
+        elif isinstance(node, UseDecl):
+            return self.visitUseDecl(node)
+        elif isinstance(node, TypePath):
+            return self.visitTypePath(node)
+        elif isinstance(node, CastExpression):
+            return self.visitCastExpression(node)
+        elif isinstance(node, BinaryExpression):
+            return self.visitBinaryExpression(node)
+        elif isinstance(node, StructDef):
+            return self.visitStructDef(node)
+        elif isinstance(node, StructField):
+            return self.visitStructField(node)
+        elif isinstance(node, StructLiteral):
+            return self.visitStructLiteral(node)
+        elif isinstance(node, UnaryExpr):
+            return self.visitUnaryExpr(node)
+        elif isinstance(node, Attribute):
+            return self.visitAttribute(node)
+        elif isinstance(node, BoolType):
+            return self.visitBoolType(node)
+        elif isinstance(node, SignedIntType):
+            return self.visitSignedIntType(node)
+        elif isinstance(node, StringType):
+            return self.visitStringType(node)
+        elif isinstance(node, FloatingPointType):
+            return self.visitFloatType(node)
+        elif isinstance(node, ExternalType):
+            return self.visitExternalType(node)
+        elif isinstance(node, UnknownType):
+            return self.visitUnknownType(node)
+        else:
+            raise Exception(f"Unknown node type: {node}")
 
     @abstractmethod
     def visitProgram(self, node):
@@ -45,6 +115,10 @@ class AbstractASTVisitor(ABC):
 
     @abstractmethod
     def visitBlock(self, node):
+        pass
+
+    @abstractmethod
+    def visitLetStmt(self, node):
         pass
 
     @abstractmethod
@@ -195,6 +269,12 @@ class RustASTVisitor(AbstractASTVisitor):
     def visitVarDef(self, node: VarDef):
         return node.type().accept(self)
 
+    def visitLetStmt(self, node: LetStmt):
+        var_defs = all([var_def.accept(self) for var_def in node.var_defs()])
+        values = all([value.accept(self) for value in node.values()])
+
+        return var_defs and values
+
     def visitLiteral(self, node: Literal):
         ntype = node.type().accept(self)
         value = node.value().accept(self)
@@ -342,6 +422,12 @@ class RustASTGenerator(AbstractASTVisitor):
     def visitVarDef(self, node: VarDef):
         ntype = node.type().accept(self)
         return VarDef(node.name(), node.is_mutable(), node.by_ref(), ntype).set_id(node.get_id())
+
+    def visitLetStmt(self, node: LetStmt):
+        var_defs = [var_def.accept(self) for var_def in node.var_defs()]
+        values = [value.accept(self) for value in node.values()]
+
+        return LetStmt(var_defs, values).set_id(node.get_id())
 
     def visitLiteral(self, node: Literal):
         ntype = node.type().accept(self)

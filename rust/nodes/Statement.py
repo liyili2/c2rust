@@ -16,26 +16,21 @@ class Statement(CloneableASTNode):
 
 
 class LetStmt(Statement):
+
     def __init__(self, var_defs, values):
         super().__init__()
-        self.var_defs = var_defs if isinstance(var_defs, list) else [var_defs]
-        self.values = values if isinstance(values, list) else [values]
-
-    def is_destructuring(self):
-        return len(self.var_defs) > 1
-
-    def __repr__(self):
-        if self.is_destructuring():
-            vars_str = ", ".join(v._name() for v in self.var_defs)
-            vals_str = ", ".join(str(v) for v in self.values)
-            return f"LetStmt(({vars_str}) = ({vals_str}))"
-        else:
-            var = self.var_defs[0]
-            val = self.values[0]
-            return f"LetStmt({var._name()} = {val})"
+        self._var_defs = var_defs if isinstance(var_defs, list) else [var_defs]
+        self._values = values if isinstance(values, list) else [values]
 
     def accept(self, visitor):
         return visitor.visitLetStmt(self)
+
+    def var_defs(self):
+        return self._var_defs
+
+    def values(self):
+        return self._values
+
 
 class ForStmt(Statement):
     def __init__(self, var, iterable, body):
