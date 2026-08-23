@@ -6,13 +6,13 @@ class Statement(CloneableASTNode):
 
     def __init__(self, body=None):
         super().__init__()
-        self.body = body
+        self._body = body
 
     def accept(self, visitor):
         return visitor.visitStatement(self)
 
     def __body__(self):
-        return self.body
+        return self._body
 
 
 class LetStmt(Statement):
@@ -91,14 +91,23 @@ class ConditionalAssignmentStmt(Statement):
     def accept(self, visitor):
         return super().accept(visitor)
 
+
 class WhileStmt(Statement):
+
     def __init__(self, condition, body):
         super().__init__()
-        self.condition = condition
-        self.body = body
+        self._condition = condition
+        self._body = body
 
     def accept(self, visitor):
         return visitor.visit_WhileStmt(self)
+
+    def condition(self):
+        return self._condition
+
+    def body(self):
+        return self._body
+
 
 class MatchStmt(Statement):
     def __init__(self, expr, arms):
