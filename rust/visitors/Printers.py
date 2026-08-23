@@ -143,8 +143,9 @@ class RustASTPrinter(RustASTVisitor):
         return result
 
     def visitFieldAccessExpr(self, node: FieldAccessExpr):
-        # re = ".".join(nv.accept(self) for nv in node.receiver())
         re = ""
+        # TODO: Liyi, please fix
+        # re = ".".join(nv.accept(self) for nv in node.receiver())
         re += "." + node.next().accept(self)
         return f"#[{re}]"
 
