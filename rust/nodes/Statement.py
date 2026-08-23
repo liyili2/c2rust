@@ -100,7 +100,7 @@ class WhileStmt(Statement):
         self._body = body
 
     def accept(self, visitor):
-        return visitor.visit_WhileStmt(self)
+        return visitor.visitWhileStmt(self)
 
     def condition(self):
         return self._condition
