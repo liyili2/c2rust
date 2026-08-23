@@ -1,10 +1,12 @@
+from rust.nodes.ASTNode import MarkedASTNode
 from rust.nodes.Expression import BinaryExpression, Expression, FieldAccessExpr, FunctionCallExpression, ArrayLiteral, \
     BorrowExpression, TypePath, RangeExpression, StructLiteral, CastExpression, TypedName, VarDef, Literal, UnaryExpr
 from rust.nodes.Func import FunctionParamList, Param
 from rust.nodes.Statement import Block, LetStmt, AssignStmt, ReturnStmt, IfStmt
 from rust.nodes.Struct import StructField
 from rust.nodes.TopLevel import *
-from rust.nodes.Type import ExternalType, UnknownType, BoolType, SignedIntType, StringType, FloatingPointType
+from rust.nodes.Type import ExternalType, UnknownType, BoolType, SignedIntType, StringType, FloatingPointType, \
+    PointerType
 from rust.visitors.Base import RustASTVisitor
 
 
@@ -88,13 +90,13 @@ class RustASTPrinter(RustASTVisitor):
         return "{\n" + stmts + "\n}"
 
     def visitLetStmt(self, node: LetStmt):
-        if not node.is_destructuring():
-            var = node._var_defs[0].accept(self)
-            val = node._values[0].accept(self)
+        if len(node.var_defs()) != 0:
+            var = node.var_defs()[0].accept(self)
+            val = node.values()[0].accept(self)
             return f"let {var} = {val};"
 
-        vars_str = ", ".join(v.accept(self) for v in node._var_defs())
-        vals_str = ", ".join(v.accept(self) for v in node._values())
+        vars_str = ", ".join(v.accept(self) for v in node.var_defs())
+        vals_str = ", ".join(v.accept(self) for v in node.values())
         return f"let ({vars_str}) = ({vals_str});"
     
     def visitVarDef(self, node: VarDef):
@@ -235,3 +237,9 @@ class RustASTPrinter(RustASTVisitor):
 
     def visitUnknownType(self, node: UnknownType):
         return f"{node.ptype()}"
+
+    def visitMarkedASTNode(self, node: MarkedASTNode):
+        return f"<marked>{node.elem().accept(self)}</marked>"
+
+    def visitPointerType(self, node: PointerType):
+        return ""
