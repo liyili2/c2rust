@@ -146,11 +146,17 @@ class PointerType(Type):
 
     def __init__(self, mutable: bool, dtype: Type):
         super().__init__()
-        self.mutable = mutable
-        self.dtype = dtype
+        self._mutable = mutable
+        self._dtype = dtype
     
     def accept(self, visitor):
         return visitor.visitPointerType(self)
+
+    def mutable(self):
+        return self._mutable
+
+    def type(self):
+        return self._dtype
 
 
 class ExternalType(Type):

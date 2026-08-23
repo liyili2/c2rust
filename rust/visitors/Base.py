@@ -1,12 +1,15 @@
 from abc import ABC, abstractmethod
+from rust.nodes.ASTNode import MarkedASTNode
 from rust.nodes.Expression import FunctionCallExpression, TypedName, VarDef, Literal, FieldAccessExpr, RangeExpression, \
-    BorrowExpression, TypePath, CastExpression, BinaryExpression, StructLiteral, UnaryExpr
+    BorrowExpression, TypePath, CastExpression, BinaryExpression, StructLiteral, UnaryExpr, DereferenceExpr, \
+    ByteLiteralExpression
 from rust.nodes.Func import FunctionParamList, Param
 from rust.nodes.Program import Program
-from rust.nodes.Statement import Block, AssignStmt, ReturnStmt, IfStmt, LetStmt
+from rust.nodes.Statement import Block, AssignStmt, ReturnStmt, IfStmt, LetStmt, WhileStmt
 from rust.nodes.Struct import StructField
 from rust.nodes.TopLevel import FunctionDefinition, ExternBlock, ExternFunctionDeclaration, UseDecl, StructDef, Attribute
-from rust.nodes.Type import BoolType, SignedIntType, StringType, FloatingPointType, ExternalType, UnknownType
+from rust.nodes.Type import BoolType, SignedIntType, StringType, FloatingPointType, ExternalType, UnknownType, \
+    PointerType
 
 
 class AbstractASTVisitor(ABC):
@@ -32,6 +35,8 @@ class AbstractASTVisitor(ABC):
             return self.visitBlock(node)
         elif isinstance(node, LetStmt):
             return self.visitLetStmt(node)
+        elif isinstance(node, WhileStmt):
+            return self.visitWhileStmt(node)
         elif isinstance(node, VarDef):
             return self.visitVarDef(node)
         elif isinstance(node, Literal):
@@ -78,6 +83,12 @@ class AbstractASTVisitor(ABC):
             return self.visitExternalType(node)
         elif isinstance(node, UnknownType):
             return self.visitUnknownType(node)
+        elif isinstance(node, MarkedASTNode):
+            return self.visitMarkedASTNode(node)
+        elif isinstance(node, PointerType):
+            return self.visitPointerType(node)
+        elif isinstance(node, DereferenceExpr):
+            return self.visitDereferenceExpr(node)
         else:
             raise Exception(f"Unknown node type: {node}")
 
@@ -119,6 +130,10 @@ class AbstractASTVisitor(ABC):
 
     @abstractmethod
     def visitLetStmt(self, node):
+        pass
+
+    @abstractmethod
+    def visitWhileStmt(self, node):
         pass
 
     @abstractmethod
@@ -213,6 +228,22 @@ class AbstractASTVisitor(ABC):
     def visitUnknownType(self, node):
         pass
 
+    @abstractmethod
+    def visitMarkedASTNode(self, node):
+        pass
+
+    @abstractmethod
+    def visitPointerType(self, node):
+        pass
+
+    @abstractmethod
+    def visitDereferenceExpr(self, node):
+        pass
+
+    @abstractmethod
+    def visitByteLiteralExpression(self, node):
+        pass
+
 
 class RustASTVisitor(AbstractASTVisitor):
 
@@ -274,6 +305,12 @@ class RustASTVisitor(AbstractASTVisitor):
         values = all([value.accept(self) for value in node.values()])
 
         return var_defs and values
+
+    def visitWhileStmt(self, node: WhileStmt):
+        condition = node.condition().accept(self)
+        body = node.body().accept(self)
+
+        return condition and body
 
     def visitLiteral(self, node: Literal):
         ntype = node.type().accept(self)
@@ -372,6 +409,18 @@ class RustASTVisitor(AbstractASTVisitor):
     def visitUnknownType(self, node: UnknownType):
         return True
 
+    def visitMarkedASTNode(self, node: MarkedASTNode):
+        return node.elem().accept(self)
+
+    def visitPointerType(self, node: PointerType):
+        return node.type().accept(self)
+
+    def visitDereferenceExpr(self, node: DereferenceExpr):
+        return node.expression().accept(self)
+
+    def visitByteLiteralExpression(self, node: ByteLiteralExpression):
+        return True
+
 
 class RustASTGenerator(AbstractASTVisitor):
 
@@ -428,6 +477,12 @@ class RustASTGenerator(AbstractASTVisitor):
         values = [value.accept(self) for value in node.values()]
 
         return LetStmt(var_defs, values).set_id(node.get_id())
+
+    def visitWhileStmt(self, node: WhileStmt):
+        condition = self.visit(node.condition())
+        body = self.visit(node.body())
+
+        return WhileStmt(condition, body).set_id(node.get_id())
 
     def visitLiteral(self, node: Literal):
         ntype = node.type().accept(self)
@@ -530,3 +585,17 @@ class RustASTGenerator(AbstractASTVisitor):
 
     def visitUnknownType(self, node: UnknownType):
         return UnknownType(node.ptype()).set_id(node.get_id())
+
+    def visitMarkedASTNode(self, node: MarkedASTNode):
+        return MarkedASTNode(node.elem().accept(self)).set_id(node.get_id())
+
+    def visitPointerType(self, node: PointerType):
+        dtype = node.type().accept(self)
+        return PointerType(node.mutable(), dtype).set_id(node.get_id())
+
+    def visitDereferenceExpr(self, node: DereferenceExpr):
+        expression = node.expression().accept(self)
+        return DereferenceExpr(expression).set_id(node.get_id())
+
+    def visitByteLiteralExpression(self, node: ByteLiteralExpression):
+        return ByteLiteralExpression(node.value()).set_id(node.get_id())

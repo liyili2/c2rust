@@ -257,7 +257,9 @@ class UnaryExpr(Expression):
         return self._expr
 
 
+
 class DereferenceExpr(Expression):
+
     def __init__(self, expression):
         super().__init__()
         self._expr = expression
@@ -280,11 +282,9 @@ class FieldAccessExpr(Expression):
         return visitor.visitFieldAccessExpr(self)
 
     def receiver(self):
-        # print(self._receiver)
         return self._receiver
 
     def next(self):
-        # print(self._next)
         return self._next
 
 
