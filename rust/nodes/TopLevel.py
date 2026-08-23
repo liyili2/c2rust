@@ -50,7 +50,7 @@ class StructDef(TopLevel):
         self._visibility = vis # Just leave the struct def and remove the struct field, move it into here instead
 
     def accept(self, visitor):
-        return visitor.visitStruct(self)
+        return visitor.visitStructDef(self)
 
     def name(self):
         return self._name

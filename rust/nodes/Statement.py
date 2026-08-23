@@ -98,7 +98,7 @@ class WhileStmt(Statement):
         self.body = body
 
     def accept(self, visitor):
-        return visitor.visit_WhileStmt(self)
+        return visitor.visitWhileStmt(self)
 
 class MatchStmt(Statement):
     def __init__(self, expr, arms):
@@ -144,7 +144,7 @@ class ReturnStmt(Statement):
         self._value = value
 
     def accept(self, visitor):
-        return visitor.visit_ReturnStmt(self)
+        return visitor.visitReturnStmt(self)
 
     def value(self):
         return self._value

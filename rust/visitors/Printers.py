@@ -1,10 +1,12 @@
 from rust.nodes.Expression import BinaryExpression, Expression, FieldAccessExpr, FunctionCallExpression, ArrayLiteral, \
-    BorrowExpression, TypePath, RangeExpression, StructLiteral, CastExpression, TypedName, VarDef, Literal, UnaryExpr
+    BorrowExpression, TypePath, RangeExpression, StructLiteral, CastExpression, TypedName, VarDef, Literal, UnaryExpr, \
+    DereferenceExpr
 from rust.nodes.Func import FunctionParamList, Param
-from rust.nodes.Statement import Block, LetStmt, AssignStmt, ReturnStmt, IfStmt
+from rust.nodes.Statement import Block, LetStmt, AssignStmt, ReturnStmt, IfStmt, WhileStmt
 from rust.nodes.Struct import StructField
 from rust.nodes.TopLevel import *
-from rust.nodes.Type import ExternalType, UnknownType, BoolType, SignedIntType, StringType, FloatingPointType
+from rust.nodes.Type import ExternalType, UnknownType, BoolType, SignedIntType, StringType, FloatingPointType,\
+    PointerType
 from rust.visitors.Base import RustASTVisitor
 
 
@@ -73,6 +75,17 @@ class RustASTPrinter(RustASTVisitor):
     def visitFunctionParamList(self, node: FunctionParamList):
         return ", ".join(param.accept(self) for param in node.params())
 
+    def visitPointerType(self, node: PointerType):
+        mut = "mut " if node.mutable else ""
+        ptr_type = node.dtype.accept(self)
+        # print(ptr_type)
+
+        return f"*{mut}"
+
+    def visitDereferenceExpr(self, node: DereferenceExpr):
+
+        return "*"
+
     def visitParam(self, node: Param):
         mut = "mut " if node.is_mutable() else ""
         type = node.type().accept(self)
@@ -88,7 +101,7 @@ class RustASTPrinter(RustASTVisitor):
         return "{\n" + stmts + "\n}"
 
     def visitLetStmt(self, node: LetStmt):
-        if not node.is_destructuring():
+        if len(node._var_defs) != 0:
             var = node._var_defs[0].accept(self)
             val = node._values[0].accept(self)
             return f"let {var} = {val};"
@@ -96,7 +109,13 @@ class RustASTPrinter(RustASTVisitor):
         vars_str = ", ".join(v.accept(self) for v in node._var_defs())
         vals_str = ", ".join(v.accept(self) for v in node._values())
         return f"let ({vars_str}) = ({vals_str});"
-    
+
+    def visitWhileStmt(self, node: WhileStmt):
+        condition = self.visit(node.condition)
+        # print(node.body)
+        body = self.visit(node.body)
+        return f"while ({condition}) {body}"
+
     def visitVarDef(self, node: VarDef):
         mut = "mut " if getattr(node, "is_mut", False) else ""
         if node.type() is not None:
@@ -135,7 +154,11 @@ class RustASTPrinter(RustASTVisitor):
         return result
 
     def visitFieldAccessExpr(self, node: FieldAccessExpr):
-        re = ".".join(nv.accept(self) for nv in node.receiver())
+        try:
+            re = ".".join(nv.accept(self) for nv in node.receiver())
+        except TypeError:
+            re = node.receiver().accept(self)
+
         re += "." + node.next().accept(self)
         return f"#[{re}]"
 

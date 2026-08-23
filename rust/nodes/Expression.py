@@ -263,7 +263,7 @@ class DereferenceExpr(Expression):
         self._expr = expression
 
     def accept(self, visitor):
-        return visitor.visit_DereferenceExpr(self)
+        return visitor.visitDereferenceExpr(self)
 
     def expression(self):
         return self._expr
