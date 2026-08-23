@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
 from rust.nodes.ASTNode import MarkedASTNode
 from rust.nodes.Expression import FunctionCallExpression, TypedName, VarDef, Literal, FieldAccessExpr, RangeExpression, \
-    BorrowExpression, TypePath, CastExpression, BinaryExpression, StructLiteral, UnaryExpr
+    BorrowExpression, TypePath, CastExpression, BinaryExpression, StructLiteral, UnaryExpr, DereferenceExpr, \
+    ByteLiteralExpression
 from rust.nodes.Func import FunctionParamList, Param
 from rust.nodes.Program import Program
 from rust.nodes.Statement import Block, AssignStmt, ReturnStmt, IfStmt, LetStmt, WhileStmt
@@ -84,6 +85,10 @@ class AbstractASTVisitor(ABC):
             return self.visitUnknownType(node)
         elif isinstance(node, MarkedASTNode):
             return self.visitMarkedASTNode(node)
+        elif isinstance(node, PointerType):
+            return self.visitPointerType(node)
+        elif isinstance(node, DereferenceExpr):
+            return self.visitDereferenceExpr(node)
         else:
             raise Exception(f"Unknown node type: {node}")
 
@@ -229,6 +234,14 @@ class AbstractASTVisitor(ABC):
 
     @abstractmethod
     def visitPointerType(self, node):
+        pass
+
+    @abstractmethod
+    def visitDereferenceExpr(self, node):
+        pass
+
+    @abstractmethod
+    def visitByteLiteralExpression(self, node):
         pass
 
 
@@ -400,6 +413,12 @@ class RustASTVisitor(AbstractASTVisitor):
         return node.elem().accept(self)
 
     def visitPointerType(self, node: PointerType):
+        return node.type().accept(self)
+
+    def visitDereferenceExpr(self, node: DereferenceExpr):
+        return node.expression().accept(self)
+
+    def visitByteLiteralExpression(self, node: ByteLiteralExpression):
         return True
 
 
@@ -571,4 +590,12 @@ class RustASTGenerator(AbstractASTVisitor):
         return MarkedASTNode(node.elem().accept(self)).set_id(node.get_id())
 
     def visitPointerType(self, node: PointerType):
-        return PointerType(node.mutable(), node.type()).set_id(node.get_id())
+        dtype = node.type().accept(self)
+        return PointerType(node.mutable(), dtype).set_id(node.get_id())
+
+    def visitDereferenceExpr(self, node: DereferenceExpr):
+        expression = node.expression().accept(self)
+        return DereferenceExpr(expression).set_id(node.get_id())
+
+    def visitByteLiteralExpression(self, node: ByteLiteralExpression):
+        return ByteLiteralExpression(node.value()).set_id(node.get_id())

@@ -153,7 +153,7 @@ class ReturnStmt(Statement):
         self._value = value
 
     def accept(self, visitor):
-        return visitor.visit_ReturnStmt(self)
+        return visitor.visitReturnStmt(self)
 
     def value(self):
         return self._value
