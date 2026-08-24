@@ -163,7 +163,9 @@ class RustASTPrinter(RustASTVisitor):
     
     def visitFieldAccessExpr(self, node: FieldAccessExpr):
         receiver = node.receiver().accept(self)
-        return f"{receiver}.{node.next().accept(self)}"
+        for e in node.next():
+            receiver = f"{receiver}.{e.accept(self)}"
+        return f"{receiver}"
 
     def visitRangeExpression(self, node: RangeExpression):
         re = ""
