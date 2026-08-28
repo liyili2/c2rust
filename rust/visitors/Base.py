@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from rust.nodes.ASTNode import MarkedASTNode
+from rust.nodes.MarkedASTNode import MarkedASTNode
 from rust.nodes.Expression import FunctionCallExpression, TypedName, VarDef, Literal, FieldAccessExpr, RangeExpression, \
     BorrowExpression, TypePath, CastExpression, BinaryExpression, StructLiteral, UnaryExpr, DereferenceExpr, \
     ByteLiteralExpression
