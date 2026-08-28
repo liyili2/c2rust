@@ -21,23 +21,24 @@ node type shows up - only the (node_type, predicate) arguments change. The
 condition itself is supplied by the caller (see
 rust.constraints.Constraints) and is never known to this class; this class
 only knows how to intercept the one visitor method that handles `node_type`
-(looked up via rust.visitors.Base.NODE_VISIT_METHODS) and otherwise behaves
-exactly like RustASTVisitor's default traversal.
+- derived from its class name as "visit<ClassName>", the same convention
+every node's own accept() already follows - and otherwise behaves exactly
+like RustASTVisitor's default traversal.
 """
 
-from rust.visitors.Base import RustASTVisitor, NODE_VISIT_METHODS
+from rust.visitors.Base import RustASTVisitor
 
 
 class NodeCollector(RustASTVisitor):
 
     def __init__(self, node_type: type, predicate=lambda node: True):
-        if node_type not in NODE_VISIT_METHODS:
+        method_name = f"visit{node_type.__name__}"
+        if not hasattr(RustASTVisitor, method_name):
             raise ValueError(f"No visitor method registered for node type: {node_type}")
 
         self._predicate = predicate
         self._collected = []
 
-        method_name = NODE_VISIT_METHODS[node_type]
         default_visit = getattr(RustASTVisitor, method_name)
 
         def intercepted(node):
