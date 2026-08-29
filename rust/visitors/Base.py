@@ -4,7 +4,7 @@ from rust.nodes.Expression import FunctionCallExpression, TypedName, VarDef, Lit
     QualifiedExpression, IdentifierExpression, ByteLiteralExpression, ArrayDeclaration, ArrayAccess, \
     DereferenceExpr, ParenExpr, StructLiteralField, PatternExpr, SafeWrapper
 from rust.nodes.Func import FunctionParamList, Param
-from rust.nodes.MarkedASTNode import MarkedASTNode
+from rust.nodes.ASTNode import MarkedASTNode
 from rust.nodes.Program import Program
 from rust.nodes.Statement import Block, AssignStmt, ReturnStmt, IfStmt, LetStmt, \
     ForStmt, WhileStmt, MatchStmt, MatchArm, MatchPattern, CompoundAssignment, LoopStmt, BreakStmt, ContinueStmt, FunctionCall
