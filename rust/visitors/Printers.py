@@ -1,7 +1,7 @@
 from rust.nodes.MarkedASTNode import MarkedASTNode
 from rust.nodes.Expression import BinaryExpression, Expression, FieldAccessExpr, FunctionCallExpression, ArrayLiteral, \
     BorrowExpression, TypePath, RangeExpression, StructLiteral, CastExpression, TypedName, VarDef, Literal, UnaryExpr, \
-    DereferenceExpr, ByteLiteralExpression
+    DereferenceExpr, ByteLiteralExpression, ArrayAccess
 from rust.nodes.Func import FunctionParamList, Param
 from rust.nodes.Statement import Block, LetStmt, AssignStmt, ReturnStmt, IfStmt, WhileStmt
 from rust.nodes.Struct import StructField
@@ -265,6 +265,9 @@ class RustASTPrinter(RustASTVisitor):
 
     def visitMarkedASTNode(self, node: MarkedASTNode):
         return f"<marked>{node.elem().accept(self)}</marked>"
+
+    def visitArrayAccess(self, node: ArrayAccess):
+        return f"{node.name().accept(self)}+[{node.expression().accept(self)}]"
 
     def visitPointerType(self, node: PointerType):
         re = "* "

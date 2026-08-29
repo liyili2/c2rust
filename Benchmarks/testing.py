@@ -10,7 +10,7 @@ from rust.commons.RustASTTransformer import RustASTTransformer
 from rust.visitors.Printers import RustASTPrinter
 
 
-file_path = "./avl/avl.rs"
+file_path = "./aggregate/aggregate.rs"
 
 
 with open(file_path, "r", encoding="utf-8") as f:
