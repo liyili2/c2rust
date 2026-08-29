@@ -163,8 +163,7 @@ class RustASTPrinter(RustASTVisitor):
     
     def visitFieldAccessExpr(self, node: FieldAccessExpr):
         receiver = node.receiver().accept(self)
-        for e in node.next():
-            receiver = f"{receiver}.{e.accept(self)}"
+        receiver = f"{receiver}.{node.next().accept(self)}"
         return f"{receiver}"
 
     def visitRangeExpression(self, node: RangeExpression):
@@ -268,10 +267,14 @@ class RustASTPrinter(RustASTVisitor):
         return f"<marked>{node.elem().accept(self)}</marked>"
 
     def visitPointerType(self, node: PointerType):
-        return "TODO: Fix PointerType"
+        re = "* "
+        if node.mutable():
+            re += f"mut "
+        return f"{re}+{node.type().accept(self)}"
+
 
     def visitDereferenceExpr(self, node: DereferenceExpr):
-        return "TODO: Fix DereferenceExpr"
+        return f"* +{node.expression().accept(self)}"
 
     def visitByteLiteralExpression(self, node: ByteLiteralExpression):
-        return "TODO: Fix ByteLiteralExpression"
+        return f"b\"+{str(node.value())}+\""
