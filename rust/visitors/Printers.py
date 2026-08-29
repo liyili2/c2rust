@@ -1,4 +1,4 @@
-from rust.nodes.ASTNode import MarkedASTNode
+from rust.nodes.MarkedASTNode import MarkedASTNode
 from rust.nodes.Expression import BinaryExpression, Expression, FieldAccessExpr, FunctionCallExpression, ArrayLiteral, \
     BorrowExpression, TypePath, RangeExpression, StructLiteral, CastExpression, TypedName, VarDef, Literal, UnaryExpr, \
     DereferenceExpr, ByteLiteralExpression

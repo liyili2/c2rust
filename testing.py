@@ -7,9 +7,10 @@ from antlr4 import CommonTokenStream, InputStream
 from rust.parser.RustLexer import RustLexer
 from rust.parser.RustParser import RustParser
 from rust.commons.RustASTTransformer import RustASTTransformer
-from rust.visitors.RustASTPrinter import RustASTPrinter
+from rust.visitors.Printers import RustASTPrinter
 from collections import Counter
 from rust.nodes.MarkedASTNode import MarkedASTNode
+from rust.visitors.Base import RustASTVisitor
 
 def count_marked(node, visited=None):
     if visited is None:
@@ -124,7 +125,6 @@ def print_unsafe_functions(ast):
             walk(value)
 
     walk(ast)
-
 
 # file_path = "./c2safeRust_examples/aggregate.rs"
 

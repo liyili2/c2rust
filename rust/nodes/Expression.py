@@ -206,8 +206,7 @@ class ArrayDeclaration(Expression):
         self._value = value
 
     def accept(self, visitor):
-        pass
-        return visitor.visit_StrLiteral(self)
+        return visitor.visitArrayDeclaration(self)
 
 
     def value(self):
@@ -294,7 +293,7 @@ class ParenExpr(Expression):
         self._expr = expression
 
     def accept(self, visitor):
-        return visitor.visit_ParenExpr(self)
+        return visitor.visitParenExpr(self)
 
     def __repr__(self):
         return f"ParenExpr({self.expression()})"
@@ -327,7 +326,7 @@ class StructLiteralField(Expression):
         self._name = name
 
     def accept(self, visitor):
-        return visitor.visit_StructLiteralField(self)
+        return visitor.visitStructLiteralField(self)
 
     def name(self):
         return self._name
@@ -343,7 +342,7 @@ class PatternExpr(Expression):
         self._pattern = pattern
 
     def accept(self, visitor):
-        return visitor.visit_PatternExpr(self)
+        return visitor.visitPatternExpr(self)
 
     def expression(self):
         return self._expr
@@ -401,7 +400,7 @@ class SafeWrapper(Expression):
         self._expr = expression
 
     def accept(self, visitor):
-        return visitor.visit_SafeWrapper(self)
+        return visitor.visitSafeWrapper(self)
 
     def expression(self):
         return self._expr
