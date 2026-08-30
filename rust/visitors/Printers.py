@@ -3,7 +3,7 @@ from rust.nodes.Expression import BinaryExpression, Expression, FieldAccessExpr,
     BorrowExpression, TypePath, RangeExpression, StructLiteral, CastExpression, TypedName, VarDef, Literal, UnaryExpr, \
     DereferenceExpr, ByteLiteralExpression, ArrayAccess
 from rust.nodes.Func import FunctionParamList, Param
-from rust.nodes.Statement import Block, LetStmt, AssignStmt, ReturnStmt, IfStmt, WhileStmt
+from rust.nodes.Statement import Block, LetStmt, AssignStmt, ReturnStmt, IfStmt, WhileStmt, ForStmt
 from rust.nodes.Struct import StructField
 from rust.nodes.TopLevel import *
 from rust.nodes.Type import ExternalType, UnknownType, BoolType, SignedIntType, StringType, FloatingPointType, \
@@ -116,6 +116,12 @@ class RustASTPrinter(RustASTVisitor):
         # print(node.body)
         body = node.body().accept(self)
         return f"while ({condition}) {body}"
+
+    def visitForStmt(self, node: ForStmt):
+        for_var = node.var
+        for_iter = node.iterable.accept(self)
+        for_body = node.body.accept(self)
+        return f"for {for_var} in {for_iter} {for_body}"
 
     def visitVarDef(self, node: VarDef):
         mut = "mut " if getattr(node, "is_mut", False) else ""
