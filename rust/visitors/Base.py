@@ -4,7 +4,7 @@ from rust.nodes.Expression import FunctionCallExpression, TypedName, VarDef, Lit
     QualifiedExpression, IdentifierExpression, ByteLiteralExpression, ArrayDeclaration, ArrayAccess, \
     DereferenceExpr, ParenExpr, StructLiteralField, PatternExpr, SafeWrapper
 from rust.nodes.Func import FunctionParamList, Param
-from rust.nodes.ASTNode import MarkedASTNode
+from rust.nodes.MarkedASTNode import MarkedASTNode
 from rust.nodes.Program import Program
 from rust.nodes.Statement import Block, AssignStmt, ReturnStmt, IfStmt, LetStmt, \
     ForStmt, WhileStmt, MatchStmt, MatchArm, MatchPattern, CompoundAssignment, LoopStmt, BreakStmt, ContinueStmt, FunctionCall
@@ -519,13 +519,21 @@ class RustASTVisitor(AbstractASTVisitor):
         return True
 
     def visitTypedName(self, node: TypedName):
-        return all([ntype.accept(self) for ntype in node.type()])
+        types = node.type()
+        if types is None:
+            return True
+        if not isinstance(types, (list, tuple)):
+            types = [types]
+        return all([ntype.accept(self) for ntype in types])
 
     def visitCastExpression(self, node: CastExpression):
         expression = node.expression().accept(self) if node.expression() is not None else True
         btype = True
         if node.type() is not None:
-            btype = all([ntype.accept(self) for ntype in node.type()])
+            types = node.type()
+            if not isinstance(types, (list, tuple)):
+                types = [types]
+            btype = all([ntype.accept(self) for ntype in types])
 
         return expression and btype
 
@@ -569,7 +577,7 @@ class RustASTVisitor(AbstractASTVisitor):
         return True
 
     def visitPointerType(self, node: PointerType):
-        return node.dtype.accept(self)
+        return node.type().accept(self)
 
     def visitUnsignedIntType(self, node: UnsignedIntType):
         return True
@@ -643,8 +651,8 @@ class RustASTVisitor(AbstractASTVisitor):
         return iterable_ok and body_ok
 
     def visitWhileStmt(self, node: WhileStmt):
-        condition_ok = node.condition.accept(self) if hasattr(node.condition, "accept") else True
-        body_ok = node.body.accept(self) if hasattr(node.body, "accept") else True
+        condition_ok = node.condition().accept(self) if hasattr(node.condition(), "accept") else True
+        body_ok = node.body().accept(self) if hasattr(node.body(), "accept") else True
         return condition_ok and body_ok
 
     def visitMatchStmt(self, node: MatchStmt):
@@ -797,15 +805,24 @@ class RustASTGenerator(AbstractASTVisitor):
         return TypePath(node.has_column(), node.type()).instance(node.get_id())
 
     def visitTypedName(self, node: TypedName):
-        ntypes = [ntype.accept(self) for ntype in node.type()]
+        types = node.type()
+        if types is None:
+            ntypes = types
+        elif isinstance(types, (list, tuple)):
+            ntypes = [ntype.accept(self) for ntype in types]
+        else:
+            ntypes = types.accept(self)
         return TypedName(node.name(), ntypes).instance(node.get_id())
 
     def visitCastExpression(self, node: CastExpression):
         expression = node.expression().accept(self) if node.expression() is not None else None
-        if node.type() is not None:
-            type_expressions = [type_expression.accept(self) for type_expression in node.type()]
-        else:
+        types = node.type()
+        if types is None:
             type_expressions = None
+        elif isinstance(types, (list, tuple)):
+            type_expressions = [type_expression.accept(self) for type_expression in types]
+        else:
+            type_expressions = types.accept(self)
 
         return CastExpression(expression, type_expressions).instance(node.get_id())
 
@@ -853,8 +870,8 @@ class RustASTGenerator(AbstractASTVisitor):
         return UnknownType(node.ptype()).instance(node.get_id())
 
     def visitPointerType(self, node: PointerType):
-        dtype = node.dtype.accept(self)
-        return PointerType(node.mutable, dtype).instance(node.get_id())
+        inner = node.type().accept(self)
+        return PointerType(node.mutable(), inner).instance(node.get_id())
 
     def visitUnsignedIntType(self, node: UnsignedIntType):
         return UnsignedIntType(node.ptype).instance(node.get_id())
@@ -937,8 +954,8 @@ class RustASTGenerator(AbstractASTVisitor):
         return ForStmt(node.var, iterable, body).instance(node.get_id())
 
     def visitWhileStmt(self, node: WhileStmt):
-        condition = node.condition.accept(self) if hasattr(node.condition, "accept") else node.condition
-        body = node.body.accept(self) if hasattr(node.body, "accept") else node.body
+        condition = node.condition().accept(self) if hasattr(node.condition(), "accept") else node.condition()
+        body = node.body().accept(self) if hasattr(node.body(), "accept") else node.body()
         return WhileStmt(condition, body).instance(node.get_id())
 
     def visitMatchStmt(self, node: MatchStmt):

@@ -2,7 +2,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
-from rust.visitors.RustASTVisitor import RustASTVisitor
+from rust.visitors.Base import RustASTGenerator
 from rust.nodes.Expression import QualifiedExpression, IdentifierExpression, BinaryExpression, FunctionCallExpression, \
     BorrowExpression, ArrayLiteral, CastExpression, UnaryExpr, DereferenceExpr, ParenExpr, RangeExpression
 
@@ -10,7 +10,7 @@ from rust.nodes.ASTNode import ASTNode
 from rust.nodes.Expression import Expression
 from rust.nodes.MarkedASTNode import MarkedASTNode
 
-class MarkingVisitor(RustASTVisitor):
+class MarkingVisitor(RustASTGenerator):
     def __init__(self):
         pass
 

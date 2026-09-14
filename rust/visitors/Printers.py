@@ -1,4 +1,4 @@
-from rust.nodes.ASTNode import MarkedASTNode
+from rust.nodes.MarkedASTNode import MarkedASTNode
 from rust.nodes.Expression import BinaryExpression, Expression, FieldAccessExpr, FunctionCallExpression, ArrayLiteral, \
     BorrowExpression, TypePath, RangeExpression, StructLiteral, CastExpression, TypedName, VarDef, Literal, UnaryExpr, \
     DereferenceExpr, ByteLiteralExpression, ArrayAccess
@@ -270,7 +270,7 @@ class RustASTPrinter(RustASTVisitor):
         return f"{node.ptype()}"
 
     def visitMarkedASTNode(self, node: MarkedASTNode):
-        return f"<marked>{node.elem().accept(self)}</marked>"
+        return f"<marked>{node.node.accept(self)}</marked>"
 
     def visitArrayAccess(self, node: ArrayAccess):
         return f"{node.name().accept(self)}+[{node.expression().accept(self)}]"
