@@ -1,5 +1,6 @@
 from rust.nodes.MarkedASTNode import MarkedASTNode
-from rust.nodes.Expression import BinaryExpression, Expression, FieldAccessExpr, FunctionCallExpression, ArrayLiteral, \
+from rust.nodes.Expression import BinaryExpression, Expression, IdentifierExpression, ParenExpr, \
+    QualifiedExpression, FieldAccessExpr, FunctionCallExpression, ArrayLiteral, \
     BorrowExpression, TypePath, RangeExpression, StructLiteral, CastExpression, TypedName, VarDef, Literal, UnaryExpr, \
     DereferenceExpr, ByteLiteralExpression, ArrayAccess
 from rust.nodes.Func import FunctionParamList, Param
@@ -287,3 +288,12 @@ class RustASTPrinter(RustASTVisitor):
 
     def visitByteLiteralExpression(self, node: ByteLiteralExpression):
         return f"b\"+{str(node.value())}+\""
+
+    def visitIdentifierExpression(self, node: IdentifierExpression):
+        return f"{node.name()}"
+
+    def visitParenExpr(self, node: ParenExpr):
+        return f"({node.expression().accept(self)})"
+
+    def visitQualifiedExpression(self, node: QualifiedExpression):
+        return f"{node.expression().accept(self)}"

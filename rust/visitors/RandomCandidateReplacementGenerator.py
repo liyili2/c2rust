@@ -14,7 +14,8 @@ that interface is generate(node) with no context. Real scope-awareness
 (§18: "variables visible at the mutation location") requires state that
 only grows as the generator descends - params, then each `let` in
 sequence. That can only live on the traversing generator itself, so this
-class extends RustASTGenerator directly, exactly like ASTEditor does.
+class extends ScopeTrackingGenerator (a RustASTGenerator that owns the scope
+state), the same way ASTEditor extends RustASTGenerator.
 ASTEditor + CandidateGenerator are untouched; this is a second, richer
 option, not a replacement.
 
@@ -38,19 +39,16 @@ visitMarkedASTNode (rebuilt + re-marked), same as ASTEditor.
 
 import random
 
-from rust.visitors.Base import RustASTGenerator
+from rust.visitors.ScopeTrackingGenerator import ScopeTrackingGenerator
 from rust.nodes.MarkedASTNode import MarkedASTNode
-from rust.nodes.TopLevel import FunctionDefinition
-from rust.nodes.Statement import Block, LetStmt
 from rust.nodes.Expression import (
     IdentifierExpression, BinaryExpression, FunctionCallExpression,
     BorrowExpression, ArrayLiteral, CastExpression, UnaryExpr,
     DereferenceExpr, ParenExpr, RangeExpression, QualifiedExpression,
 )
-from rust.modification.ScopeEnvironment import ScopeEnvironment
 
 
-class RandomCandidateReplacementGenerator(RustASTGenerator):
+class RandomCandidateReplacementGenerator(ScopeTrackingGenerator):
 
     # --- operator groups: only swap an operator for another in the same
     # group, since we have no per-type "legal operator" metadata to check
@@ -61,39 +59,9 @@ class RandomCandidateReplacementGenerator(RustASTGenerator):
     _OP_GROUPS = [_ARITHMETIC_OPS, _COMPARISON_OPS, _LOGICAL_OPS]
 
     def __init__(self, selected: MarkedASTNode, rng: random.Random = None):
+        super().__init__()
         self._selected_id = selected.get_id()
         self._rng = rng or random.Random()
-        self._scope = ScopeEnvironment()
-
-    # --- scope threading ---
-
-    def _scope_with_params(self, params) -> ScopeEnvironment:
-        scope = ScopeEnvironment()
-        if isinstance(params, list):
-            for param in params:
-                scope = scope.with_binding(param.name(), param.type())
-        return scope
-
-    def visitFunctionDefinition(self, node: FunctionDefinition):
-        outer_scope = self._scope
-        self._scope = self._scope_with_params(node.params())
-        try:
-            return super().visitFunctionDefinition(node)
-        finally:
-            self._scope = outer_scope
-
-    def visitBlock(self, node: Block):
-        outer_scope = self._scope
-        try:
-            return super().visitBlock(node)
-        finally:
-            self._scope = outer_scope
-
-    def visitLetStmt(self, node: LetStmt):
-        rebuilt = super().visitLetStmt(node)
-        for var_def in node.var_defs():
-            self._scope = self._scope.with_binding(var_def.name(), var_def.type())
-        return rebuilt
 
     # --- dispatch ---
 
