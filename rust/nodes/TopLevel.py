@@ -197,7 +197,7 @@ class InterfaceDef(TopLevel):
         self.functions = newFunctions
 
     def accept(self, visitor):
-        return visitor.visit_InterfaceDef(self)
+        return visitor.visitInterfaceDef(self)
 
 
 class UseDecl(TopLevel):
