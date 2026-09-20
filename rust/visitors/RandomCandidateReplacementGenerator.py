@@ -62,6 +62,11 @@ class RandomCandidateReplacementGenerator(ScopeTrackingGenerator):
         super().__init__()
         self._selected_id = selected.get_id()
         self._rng = rng or random.Random()
+        self._replacement = None
+
+    def replacement(self):
+        """The node that took the selected node's place (None until the visitor has run)."""
+        return self._replacement
 
     # --- dispatch ---
 
@@ -75,9 +80,11 @@ class RandomCandidateReplacementGenerator(ScopeTrackingGenerator):
             # Safe fallback (§17.B): no specialized strategy for this type -
             # rebuild it unchanged rather than risk corrupting an AST shape
             # we don't have a verified mutation for.
-            return inner.accept(self)
+            self._replacement = inner.accept(self)
+        else:
+            self._replacement = handler(self, inner)
 
-        return handler(self, inner)
+        return self._replacement
 
     # --- shared helper ---
 

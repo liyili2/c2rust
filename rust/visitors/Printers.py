@@ -282,7 +282,6 @@ class RustASTPrinter(RustASTVisitor):
             re += f"mut "
         return f"{re}+{node.type().accept(self)}"
 
-
     def visitDereferenceExpr(self, node: DereferenceExpr):
         return f"* +{node.expression().accept(self)}"
 
@@ -297,3 +296,4 @@ class RustASTPrinter(RustASTVisitor):
 
     def visitQualifiedExpression(self, node: QualifiedExpression):
         return f"{node.expression().accept(self)}"
+
