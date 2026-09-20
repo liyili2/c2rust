@@ -1,10 +1,10 @@
 import copy
 from rust.nodes.Statement import *
-from rust.nodes.ProgramVisitor import RustProgramVisitor
+from rust.visitors.Base import RustASTVisitor
 from rust.nodes.Expression import *
 from rust.nodes.Program import *
 from rust.nodes.TopLevel import *
-from rust.nodes.common import *
+# from rust.nodes.common import *
 from rust.nodes import LibFuncs
 
 NoneType = type(None)
@@ -12,7 +12,8 @@ NoneType = type(None)
 # I need to add Box maybe?
 # I also may need to add arrays
 
-class Simulator(RustProgramVisitor):
+
+class Simulator(RustASTVisitor):
     # x, y, z, env : ChainMap{ x: n, y : m, z : v} , n m v are nat numbers 100, 100, 100, eg {x : 128}
     # st state map, {x : v1, y : v2 , z : v3}, eg {x : v1}: v1,
     # st {x : v1} --> Coq_nval case: v1 is a ChainMap of Coq_nval
@@ -25,6 +26,7 @@ class Simulator(RustProgramVisitor):
         # need st --> state we are dealing with
         self.heap = memory
         self.stack = stack
+        self.stack_bools = []
         self.funMap = dict()
         self.libMap = dict()
         self.lib_funcs = ["is_empty", "len", "iter", "push", "pop", "null_mut", "into_raw",
@@ -55,26 +57,27 @@ class Simulator(RustProgramVisitor):
     def visit(self, ctx):
         return ctx.accept(self)
 
-    def visit_Program(self, ctx: Program):
+    def visit_Program(self, node: Program):
         # print(ctx.items)
-        for i in ctx.items:
-            if not isinstance(i, list):
-                if i is not None:
-                    i.accept(self)
+        for i in range(node.length()):
+            program_item = node.exp(i)
+            if not isinstance(program_item, list):
+                if program_item is not None:
+                    program_item.accept(self)
                 else:
                     print("None type detected in program items")
 
-
-    def visit_InterfaceDef(self, node: InterfaceDef):
+    def visitInterfaceDef(self, node: InterfaceDef):
         for fn in node.functions:
             fn.accept(self)
 
-    def visit_LetStmt(self, node: LetStmt):
-        for i in range(0, len(node._var_defs)):
-            arVar = node._var_defs[i].declarationInfo._name()
-            value = node._values[i]
+    def visitLetStmt(self, node: LetStmt):
+        all_var_defs = node.var_defs()
+        for i in range(0, len(all_var_defs)):
+            arVar = all_var_defs[i].name()
+            value = node.values()[i]
             if value is not None:
-                value = node._values[i].accept(self)
+                value = node.values()[i].accept(self)
             self.stack.update({arVar : value})
         return None
 
@@ -82,7 +85,7 @@ class Simulator(RustProgramVisitor):
         if isinstance(target, IdentifierExpression):
             return target.name()
         if isinstance(target.expression(), IdentifierExpression):
-            return target.expression()._name()
+            return target.expression().name()
         if isinstance(target, FieldAccessExpr):
             return self.find_stack_key(target.receiver())
         if isinstance(target, DereferenceExpr):
@@ -92,45 +95,46 @@ class Simulator(RustProgramVisitor):
         if isinstance(target, FunctionCallExpression):
             return self.find_stack_key(target.caller())
 
-    def visit_Assignment(self, node: AssignStmt):
+    def visitAssignment(self, node: AssignStmt):
         newStack = copy.deepcopy(self.stack)
-        value = node._value.accept(self)
+        value = node.value().accept(self)
 
-        if isinstance(node._target, FieldAccessExpr):
-            target = self.find_stack_key(node._target)
+        if isinstance(node.target(), FieldAccessExpr):
+            target = self.find_stack_key(node.target())
             target_original_val = newStack.get(target)
-            if isinstance(target_original_val, StructDef):
-                for field in target_original_val._fields:
-                    if str.__eq__(field.declarationInfo._name, node._target.name._name):
+            if isinstance(target_original_val, StructLiteral):
+                for field in target_original_val.fields():
+                    if str.__eq__(field.name(), node.target().name()):
                         field._value = value
             newStack.update({target : target_original_val})
         else:
-            target = self.find_stack_key(node._target)
+            target = self.find_stack_key(node.target())
             newStack.update({target : value})
 
         self.stack = newStack
         return None
     
-    def visit_StaticVarDecl(self, node: StaticVarDecl):
+    def visitStaticVarDecl(self, node: StaticVarDecl):
         init_val = None
         if node.initial_value is not None:
             init_val = node.initial_value.accept(self)
-        self.stack.update({node.declarationInfo._name : init_val})
+        self.stack.update({node.declarationInfo.name: init_val})
 
-    def visit_FunctionDef(self, node: FunctionDefinition):
-        self.funMap.update({node._identifier : node})
-        if str.__eq__(node._identifier, "main"):
-            node._body.accept(self)
+    def visitFunctionDef(self, node: FunctionDefinition):
+        self.funMap.update({node.identifier() : node})
+        if str.__eq__(node.identifier(), "main"):
+            node.body().accept(self)
         # return_value = node.body.accept(self)
         # if return_value is not None: 
         #     return return_value
 
-    def visit_Block(self, node: Block):
-        try:
-            for stmt in node.stmts:
-                stmt.accept(self)
-        except ReturnSignal as ret:
-            raise ret
+    def visitBlock(self, node: Block):
+        # try:
+        for stmt in node.statements():
+            stmt.accept(self)
+        # except ReturnSignal as ret:
+        #     raise ret
+        # return
 
     def visitFunctionCall(self, node: FunctionCallExpression):
         callee = node.callee()
@@ -150,7 +154,7 @@ class Simulator(RustProgramVisitor):
         if isinstance(callee, IdentifierExpression):
             callee = callee.name()
         elif isinstance(callee, FieldAccessExpr):
-            callee = callee.name._name
+            callee = callee.receiver().name()
 
         if callee in self.lib_funcs:
             func = self.libMap.get(callee)
@@ -164,24 +168,26 @@ class Simulator(RustProgramVisitor):
         # self.stack.update({"self": node.caller})
         newStack = copy.deepcopy(self.stack)
         for i in range(0, len(newNode.params)):
-            arVar = newNode.params._params[i].declarationInfo._name
+            arVar = newNode.params()[i].name() #declarationInfo._name
             value = args[i].accept(self)
             newStack.update({arVar : value})
         oldStack = self.stack
         self.stack = newStack
-        try:
-            newNode.body.accept(self)
-        except ReturnSignal as ret:
+
+        result = newNode.body.accept(self)
+
+        if result is not None:
             self.stack = oldStack
-            if isinstance(ret._value, IdentifierExpression):
-                ret._value = self.stack.get(ret._value.name())
-                self.stack.update({ret._value.name(): ret._value})
-            return ret._value
+            return_val = result
+            if isinstance(result, IdentifierExpression): #
+                result_val = self.stack.get(result.name())
+                self.stack.update({result.name(): result_val})
+            return return_val
 
         self.stack = oldStack
         return None
 
-    def visit_IfStmt(self, node: IfStmt):
+    def visitIfStmt(self, node: IfStmt):
         if_result = node._condition.accept(self)
 
         if if_result:
@@ -190,7 +196,7 @@ class Simulator(RustProgramVisitor):
             if node._else_branch is not None:
                 return node._else_branch.accept(self)
 
-    def visit_MatchStmt(self, node: MatchStmt):
+    def visitMatchStmt(self, node: MatchStmt):
         match_expr = node.expr.accept(self)
         wildcard_arm = None
         for arm in node.arms:
@@ -207,11 +213,11 @@ class Simulator(RustProgramVisitor):
             return wildcard_arm.body.accept(self)
         return
 
-    def visit_MatchArm(self, node: MatchArm):
+    def visitMatchArm(self, node: MatchArm):
         match_pattern = node.patterns
         return match_pattern
 
-    def visit_MatchPattern(self, node: MatchPattern):
+    def visitMatchPattern(self, node: MatchPattern):
         return node.value.accept(self)
 
     def visitBreakStmt(self, node: BreakStmt):
@@ -219,20 +225,20 @@ class Simulator(RustProgramVisitor):
             return node.accept(self) # .vexp()
         return None # maybe this is better to return?
 
-    def visit_ReturnStmt(self, node: ReturnStmt):
+    def visitReturnStmt(self, node: ReturnStmt):
         val = None
         if hasattr(node, "accept") and callable(node.accept):
-            if node._value is not None:
-                val = node._value.accept(self)
-        raise ReturnSignal(val)
+            if node.value() is not None:
+                val = node.value().accept(self)
+        return val
     
-    def visit_TopLevelVarDef(self, node: TopLevelVarDef):
+    def visitTopLevelVarDef(self, node: TopLevelVarDef):
         value = None
         if node.initial_val is not None:
             value = node.initial_val.accept(self)
-        self.stack.update({node.declarationInfo._name : value})
+        self.stack.update({node.declarationInfo.name : value})
 
-    def visit_LoopStmt(self, ctx: LoopStmt):
+    def visitLoopStmt(self, ctx: LoopStmt):
         # This is the loop keyword. For this type of loop, break statement can return a value
         # A loop statement contains a block statement, and if a break appears in the immediate block statement,
         # this loop will end?
@@ -247,124 +253,113 @@ class Simulator(RustProgramVisitor):
             return block_result # this means break statement was called and it is returned back?
         else:
             # call this function again?
-            self.visit_LoopStmt(ctx) # is this correct?
+            self.visitLoopStmt(ctx) # is this correct?
 
         return None
 
-    def visit_ForStmt(self, ctx: ForStmt):
+    def visitForStmt(self, ctx: ForStmt):
         iterations = ctx.iterable.accept(self)
         self.stack.update({ctx.var: 0})
         while self.stack.get(ctx.var) < iterations:
             ctx.body.accept(self)
             self.stack.update({ctx.var: self.stack.get(ctx.var) + 1})
 
-    def visit_WhileStmt(self, node: WhileStmt):
-        condition = node.condition.accept(self)
+    def visitWhileStmt(self, node: WhileStmt):
+        condition = node.condition().accept(self)
         while condition:
-            node.body.accept(self)
-            condition = node.condition.accept(self)
+            node.body().accept(self)
+            condition = node.condition().accept(self)
         return
 
-    def visit_MatchArm(self, node: MatchArm):
-
-        match_pattern = node.patterns
-        # print(match_pattern)
-
-        return match_pattern
-
-    def visit_MatchPattern(self, node: MatchPattern):
-
-        return node.value.accept(self)
-
-    def visit_RangeExpression(self, node: RangeExpression):
-        last = float(node.last.accept(self))
-        first = float(node.initial.accept(self))
+    def visitRangeExpression(self, node: RangeExpression):
+        last = float(node.last().accept(self))
+        first = float(node.initial().accept(self))
         range_len = last - first + 1
         return range_len
 
     # def visitIdexp(self, ctx: XMLExpParser.IdexpContext):
     #     return
 
-    def visit_Expression(self, node: Expression):
+    def visitExpression(self, node: Expression):
         if isinstance(node, BorrowExpression):
-            return node.expr.accept(self)
+            return node.expression().accept(self)
 
-    def visit_FieldAccessExpr(self, node: FieldAccessExpr):
-        struct_value = node.receiver.accept(self)
+    def visitFieldAccessExpr(self, node: FieldAccessExpr):
+        struct_value = node.receiver().accept(self)
 
         if isinstance(struct_value, StructDef):
             for field in struct_value._fields:
-                if node.name._name == field.declarationInfo._name:
+                if node.next()._name == field.declarationInfo._name:
                     if hasattr(field._value, "accept") and callable(field._value.accept):
                         return field._value.accept(self)
                     return field._value
 
         return
 
-    def visit_int(self, node):
+    def visitint(self, node):
         return node
 
     def visitByteLiteralExpression(self, node: ByteLiteralExpression):
-        return node.expression()
+        return node.value()
 
-    def visit_PatternExpr(self, node: PatternExpr):
-        pattern = node.pattern.accept(self)
+    def visitPatternExpr(self, node: PatternExpr):
+        pattern = node.pattern().accept(self)
         if pattern is None:
             return None
-        return node.pattern.accept(self)
+        return node.pattern().accept(self)
 
-    def visit_BorrowExpr(self, node: BorrowExpression):
-        return node.expr.accept(self)
+    def visitBorrowExpr(self, node: BorrowExpression):
+        return node.expression().accept(self)
 
-    def visit_SafeWrapper(self, node: SafeWrapper):
-        return node.expr.accept(self)
+    def visitSafeWrapper(self, node: SafeWrapper):
+        return node.expression().accept(self)
 
-    def visit_StrLiteral(self, ctx: StrLiteral):
+    def visitStrLiteral(self, ctx: StrLiteral):
         return ctx.value
 
-    def visit_IntLiteral(self, ctx: IntLiteral):
+    def visitIntLiteral(self, ctx: IntLiteral):
         return ctx.value
 
-    def visit_BoolLiteral(self, ctx: BooleanLiteral):
+    def visitBoolLiteral(self, ctx: BooleanLiteral):
         return ctx.value
 
-    def visit_ArrayLiteral(self, node: ArrayLiteral):
+    def visitArrayLiteral(self, node: ArrayLiteral):
         return node
     
-    def visit_CharLiteral(self, node: CharLiteral):
+    def visitCharLiteral(self, node: CharLiteral):
         return node.value
 
-    def visit_ArrayAccess(self, node: ArrayAccess):
-        index = node.expression.accept(self)
-        target = node.name.accept(self)
+    def visitArrayAccess(self, node: ArrayAccess):
+        index = node.expression().accept(self)
+        target = node.name().accept(self)
         if isinstance(target, ArrayLiteral):
-            if hasattr(target.elements[index], "accept") and callable(target.elements[index].accept):
-                return (target.elements[index]).accept(self)
+            if hasattr(target.value()[index], "accept") and callable(target.value()[index].accept):
+                return (target.value()[index]).accept(self)
             else:
-                return target.elements[index]
+                return target.value()[index]
             
         if hasattr(target[index], "accept") and callable(target[index].accept):
             return (target[index]).accept(self)
         else:
             return target[index]     
 
-    def visit_Struct(self, node: StructDef):
+    def visitStruct(self, node: StructDef):
         newNode = copy.deepcopy(node)
-        for field in newNode.fields:
+        for field in newNode.fields():
             if isinstance(field, StructLiteralField):
                 if hasattr(field.value, "accept") and callable(field.value.accept):
-                    newNode[field.declarationInfo._name] = field.value.accept(self)
+                    newNode.fields()[field.name()] = field.value.accept(self)
 
-        self.stack
+        # self.stack
         return newNode
 
-    def visit_CompoundAssignment(self, node:CompoundAssignment):
+    def visitCompoundAssignment(self, node:CompoundAssignment):
         operation = node.op[0]
         assign_Stmt = AssignStmt(target=node.target, value=BinaryExpression(left=node.target, op=operation, right=node.value))
         assign_Stmt.accept(self)
 
     def visitBinaryExpression(self, node: BinaryExpression):
-        oper = node.op()
+        operator = node.op()
         # This will be very complicated.
         a = node.left().accept(self)
 
@@ -375,68 +370,68 @@ class Simulator(RustProgramVisitor):
         # range is more complicated due to there being an = operator. I can forget about this case for now.
         # Now, I need to write out the cases for each operator.
 
-        if oper == '+':
+        if operator == '+':
             return a + b
-        elif oper == '-':
+        elif operator == '-':
             return a - b
-        elif oper == '*':
+        elif operator == '*':
             return a * b
-        elif oper == '/':
+        elif operator == '/':
             return a / b
-        elif oper == '%':
+        elif operator == '%':
             return a % b
         # elif operator == 'Exp':
         #     return pow(a, b)
-        elif oper == '&&':
+        elif operator == '&&':
             return a and b
-        elif oper == '||':
+        elif operator == '||':
             return a or b
-        elif oper == '<':
+        elif operator == '<':
             return a < b
-        elif oper == '>':
+        elif operator == '>':
             return a > b
-        elif oper == '<=':
+        elif operator == '<=':
             return a <= b
-        elif oper == '>=':
+        elif operator == '>=':
             return a >= b
-        elif oper == '==':
+        elif operator == '==':
             return a == b
-        elif oper == '!=':
+        elif operator == '!=':
             return a != b
             #return result
         return None
     
-    def visit_UnaryExpr(self, node: UnaryExpr):
-        oper = str(node.op)
-        expr = node.expr.accept(self)
-        if oper == '-':
+    def visitUnaryExpr(self, node: UnaryExpr):
+        operator = str(node.op)
+        expr = node.expression().accept(self)
+        if operator == '-':
             return -expr
-        if oper == '+':
+        if operator == '+':
             return expr
-        if oper == '!':
+        if operator == '!':
             return not expr
         else:
-            raise Exception(f"Unsupported unary operator: {oper}")
+            raise Exception(f"Unsupported unary operator: {operator}")
 
     def visitIdentifierExpression(self, node: IdentifierExpression):
         identifier_val = self.stack.get(node.name())
         return identifier_val
 
     # TODO: Completely ignore this as these does not affect the answer.
-    def visit_CastExpr(self, node: CastExpression):
+    def visitCastExpr(self, node: CastExpression):
         # print(node.expr)
-        cast_result = node.expr.accept(self)
+        cast_result = node.expression().accept(self)
         print(cast_result)
         if isinstance(cast_result, FunctionCallExpression):
             print(cast_result.caller())
 
         return cast_result
 
-    def visit_DereferenceExpr(self, node: DereferenceExpr):
-        return node.expr.accept(self)
+    def visitDereferenceExpr(self, node: DereferenceExpr):
+        return node.expression().accept(self)
     
-    def visit_TypePathExpression(self, node: TypePathExpression):
-        return node.last_type
+    # def visitTypePathExpression(self, node: TypePathExpression):
+    #     return node.last_type
 
     # library functions
 
