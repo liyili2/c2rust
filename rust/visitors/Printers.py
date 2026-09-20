@@ -1,5 +1,6 @@
-from rust.nodes.ASTNode import MarkedASTNode
-from rust.nodes.Expression import BinaryExpression, Expression, FieldAccessExpr, FunctionCallExpression, ArrayLiteral, \
+from rust.nodes.MarkedASTNode import MarkedASTNode
+from rust.nodes.Expression import BinaryExpression, Expression, IdentifierExpression, ParenExpr, \
+    QualifiedExpression, FieldAccessExpr, FunctionCallExpression, ArrayLiteral, \
     BorrowExpression, TypePath, RangeExpression, StructLiteral, CastExpression, TypedName, VarDef, Literal, UnaryExpr, \
     DereferenceExpr, ByteLiteralExpression, ArrayAccess
 from rust.nodes.Func import FunctionParamList, Param
@@ -270,7 +271,7 @@ class RustASTPrinter(RustASTVisitor):
         return f"{node.ptype()}"
 
     def visitMarkedASTNode(self, node: MarkedASTNode):
-        return f"<marked>{node.elem().accept(self)}</marked>"
+        return f"<marked>{node.node.accept(self)}</marked>"
 
     def visitArrayAccess(self, node: ArrayAccess):
         return f"{node.name().accept(self)}+[{node.expression().accept(self)}]"
@@ -281,9 +282,18 @@ class RustASTPrinter(RustASTVisitor):
             re += f"mut "
         return f"{re}+{node.type().accept(self)}"
 
-
     def visitDereferenceExpr(self, node: DereferenceExpr):
         return f"* +{node.expression().accept(self)}"
 
     def visitByteLiteralExpression(self, node: ByteLiteralExpression):
         return f"b\"+{str(node.value())}+\""
+
+    def visitIdentifierExpression(self, node: IdentifierExpression):
+        return f"{node.name()}"
+
+    def visitParenExpr(self, node: ParenExpr):
+        return f"({node.expression().accept(self)})"
+
+    def visitQualifiedExpression(self, node: QualifiedExpression):
+        return f"{node.expression().accept(self)}"
+
