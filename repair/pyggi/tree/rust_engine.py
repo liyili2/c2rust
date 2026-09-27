@@ -5,6 +5,8 @@ from rust.parser.RustParser import RustParser
 from rust.commons.RustASTTransformer import RustASTTransformer
 from repair.pyggi.tree.abstract_engine import AbstractTreeEngine
 from rust.visitors.MarkingVisitor import MarkingVisitor
+from rust.visitors.Printers import RustASTPrinter
+from rust.modification.ModificationPointSelector import ModificationPointSelector
 
 def pretty_print_ast(node, indent=0, visited=None):
     if visited is None:
@@ -36,17 +38,6 @@ def pretty_print_ast(node, indent=0, visited=None):
         lines.append(f"{prefix}{repr(node)}")
 
     return '\n'.join(lines)
-
-import os
-from antlr4 import CommonTokenStream, InputStream
-from rust.parser.RustLexer import RustLexer
-from rust.parser.RustParser import RustParser
-from rust.commons.RustASTTransformer import RustASTTransformer
-from rust.visitors.Printers import RustASTPrinter
-from rust.visitors.MarkingVisitor import MarkingVisitor
-from rust.modification.ModificationPointSelector import ModificationPointSelector
-from repair.pyggi.tree.abstract_engine import AbstractTreeEngine
-
 
 class RustEngine(AbstractTreeEngine):
 
