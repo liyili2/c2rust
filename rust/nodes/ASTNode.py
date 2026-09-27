@@ -42,15 +42,3 @@ class CloneableASTNode(ASTNode):
     def accept(self, visitor):
         pass
 
-
-class MarkedASTNode(CloneableASTNode):
-
-    def __init__(self, elem: CloneableASTNode):
-        super().__init__()
-        self._elem = elem
-
-    def accept(self, visitor):
-        return visitor.visitMarkedASTNode(self)
-
-    def elem(self):
-        return self._elem
