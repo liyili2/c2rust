@@ -1,10 +1,17 @@
-"""test_rust_replacement.py — verifies the AST replacement operator end to end."""
+import os
+import sys
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import random
 
 from repair.pyggi.tree.tree import TreeProgram
 from repair.pyggi.tree.rust_operators import RustReplacementOperator
 
-PROJECT_PATH = "../Benchmarks/avl"  # directory containing avl.rs
+PROJECT_PATH = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    "..", "Benchmarks", "avl"
+)
 
 config = {
     "test_command": "true",   # unused here, but AbstractProgram.load_config needs a key
