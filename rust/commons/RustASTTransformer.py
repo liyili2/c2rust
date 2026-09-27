@@ -662,7 +662,7 @@ class RustASTTransformer(RustVisitor):
             return UnknownType(ctx.getText())
 
     def visitPointerType(self, ctx: RustParser.PointerTypeContext):
-        mutable = ctx.MUT()
+        mutable = ctx.MUT() is not None
         dtype = self.visitTypeExpression(ctx.typeExpression())
         return PointerType(mutable, dtype)
 
