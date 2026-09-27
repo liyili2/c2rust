@@ -9,6 +9,7 @@ from rust.modification.ModificationPointSelector import ModificationPointSelecto
 from rust.modification.Constraint import ConstraintChecker
 from rust.visitors.Printers import RustASTPrinter
 from rust.visitors.RandomCandidateReplacementGenerator import RandomCandidateReplacementGenerator
+from rust.visitors.ast_compare import ast_equal
 
 class RustOperator(TreeEdit):
     """Base for AST-level Rust operators. Mirrors QGenOperator's shape,
@@ -69,29 +70,33 @@ class RustReplacementOperator(RustOperator):
 
     @classmethod
     def create(cls, program, target_file=None,
-               checker=None, scope_checker=None, rng=None, max_attempts=10):
+            checker: ConstraintChecker = None,
+            scope_checker: ConstraintChecker = None,
+            rng=None, max_attempts=10):
         if target_file is None:
             target_file = program.random_file()
         rng = rng or random.Random()
+
         root = program.contents[target_file]
-        printer = RustASTPrinter()
 
         for _ in range(max_attempts):
             marked_root = root.accept(MarkingVisitor())
+
             selector = ModificationPointSelector(checker=checker, scope_checker=scope_checker, rng=rng)
             point = selector.select(marked_root)
             if point is None:
                 return cls(target_file, None, None)
 
+            from rust.visitors.RandomCandidateReplacementGenerator import RandomCandidateReplacementGenerator
             generator = RandomCandidateReplacementGenerator(point, rng=rng)
             marked_root.accept(generator)
             candidate = generator.replacement()
 
-            if candidate.accept(printer) != point.node.accept(printer):
+            if not ast_equal(candidate, point.node):
                 return cls(target_file, point.get_id(), candidate)
-            # else: this point had no legal alternative - try again
+            # else: this point had no legal alternative - try a different point
 
-        return cls(target_file, None, None)  # gave up after max_attempts - treat as no-op edit
+        return cls(target_file, None, None)  # gave up after max_attempts
 
     @staticmethod
     def get_weight_initial():
