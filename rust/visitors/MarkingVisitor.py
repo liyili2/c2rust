@@ -34,7 +34,8 @@ class MarkingVisitor(RustASTGenerator):
 
     def _mark(self, rebuilt):
         """Wraps an already-rebuilt node; the single place where marking happens."""
-        return MarkedASTNode(rebuilt)
+        # return MarkedASTNode(rebuilt)
+        return MarkedASTNode(rebuilt).instance(rebuilt.get_id())
 
     def visitQualifiedExpression(self, node: QualifiedExpression):
         return self._mark(super().visitQualifiedExpression(node))

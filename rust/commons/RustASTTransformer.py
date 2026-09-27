@@ -1,7 +1,7 @@
 from rust.nodes.Expression import StructLiteral, StructLiteralField, VarDef, FunctionCallExpression, BinaryExpression, \
     CastExpression, FieldAccessExpr, Expression, UnaryExpr, RangeExpression, TypedName, PatternExpr, \
     QualifiedExpression, SafeWrapper, ArrayDeclaration, TypePath, DereferenceExpr, BorrowExpression, BooleanLiteral, \
-    IntLiteral, ByteLiteralExpression, StrLiteral, CharLiteral, ArrayLiteral, ArrayAccess
+    IntLiteral, ByteLiteralExpression, StrLiteral, CharLiteral, ArrayLiteral, ArrayAccess, IdentifierExpression
 from rust.nodes.Statement import LetStmt, IfStmt, AssignStmt, ForStmt, Block, Statement, ConditionalAssignmentStmt, \
     LoopStmt, ReturnStmt, BreakStmt, ContinueStmt, WhileStmt, MatchStmt, MatchArm, MatchPattern, CompoundAssignment
 from rust.nodes.TopLevel import *
@@ -541,7 +541,8 @@ class RustASTTransformer(RustVisitor):
         if ctx.literal():
             return self.visit(ctx.literal())
         elif ctx.Identifier():
-            return VarDef(ctx.Identifier().getText())
+            # return VarDef(ctx.Identifier().getText())
+            return IdentifierExpression(ctx.Identifier().getText())
         else:
             raise Exception(f"Unknown primary expression: {ctx.getText()}")
 
@@ -661,7 +662,7 @@ class RustASTTransformer(RustVisitor):
             return UnknownType(ctx.getText())
 
     def visitPointerType(self, ctx: RustParser.PointerTypeContext):
-        mutable = ctx.MUT()
+        mutable = ctx.MUT() is not None
         dtype = self.visitTypeExpression(ctx.typeExpression())
         return PointerType(mutable, dtype)
 
