@@ -1,6 +1,8 @@
 import copy
+import random
 
 from repair.pyggi.tree.tree import TreeEdit
+from rust.visitors.Base import RustASTGenerator
 from rust.visitors.MarkingVisitor import MarkingVisitor
 from rust.visitors.MarkedNodeTargetUpdater import MarkedNodeTargetUpdater
 from rust.visitors.NodeCollector import NodeCollector
@@ -87,7 +89,6 @@ class RustReplacementOperator(RustOperator):
             if point is None:
                 return cls(target_file, None, None)
 
-            from rust.visitors.RandomCandidateReplacementGenerator import RandomCandidateReplacementGenerator
             generator = RandomCandidateReplacementGenerator(point, rng=rng)
             marked_root.accept(generator)
             candidate = generator.replacement()
@@ -101,3 +102,117 @@ class RustReplacementOperator(RustOperator):
     @staticmethod
     def get_weight_initial():
         return 1.0  # your only operator
+
+
+# --------------------------------------------------------------------------
+# Swap operator
+# --------------------------------------------------------------------------
+
+class MarkStripper(RustASTGenerator):
+    """Rebuilds a tree with every MarkedASTNode wrapper removed."""
+
+    def visitMarkedASTNode(self, node: MarkedASTNode):
+        return node.node.accept(self)
+
+
+class MarkedNodeSwapUpdater(RustASTGenerator):
+    """Rebuilds the tree, putting `replacements[id]` (a wrapper) where the wrapper with that id was."""
+
+    def __init__(self, replacements):
+        super().__init__()
+        self._replacements = replacements
+
+    def visitMarkedASTNode(self, node: MarkedASTNode):
+        replacement = self._replacements.get(node.get_id())
+        if replacement is not None:          # `is not None`: never rely on node truthiness
+            return replacement               # not descended into, so nothing is swapped twice
+        return super().visitMarkedASTNode(node)
+
+
+def strip_marks_tree(root):
+    return root.accept(MarkStripper())
+
+
+def _descendant_ids(wrapper):
+    """Ids of all marked nodes strictly inside `wrapper`."""
+    return {n.get_id() for n in NodeCollector(MarkedASTNode, lambda n: True).collect(wrapper.node)}
+
+
+def _nested(a, b):
+    """True if one of the two marked points lies inside the other."""
+    return b.get_id() in _descendant_ids(a) or a.get_id() in _descendant_ids(b)
+
+
+class RustSwapOperator(RustOperator):
+    """Swaps the positions of two marked nodes.
+
+    Only the two point ids are stored; the nodes are looked up in a freshly marked
+    tree at apply time. Ids travel with the content, so no id is duplicated and
+    applying the same swap twice restores the original tree. Nested pairs and
+    structurally equal pairs are rejected. The result is returned without
+    MarkedASTNode wrappers."""
+
+    TYPE = "RustSwap"
+
+    def __init__(self, target_file: str, point_a_id, point_b_id):
+        # base class: modification_point_id = a, target = b, _target = (file, a)
+        super().__init__(self.TYPE, target_file, point_a_id, point_b_id)
+        self.point_a_id = point_a_id
+        self.point_b_id = point_b_id
+
+    def __repr__(self):
+        return f"RustSwapOperator({self.target_file}, {self.point_a_id} <-> {self.point_b_id})"
+
+    @classmethod
+    def create(cls, program, target_file=None,
+            checker: ConstraintChecker = None,
+            scope_checker: ConstraintChecker = None,
+            rng=None, max_attempts=10, pair_checker=None):
+        """pair_checker: optional callable (point_a, point_b) -> bool to reject incompatible
+        pairs (e.g. different node types, or a name not in scope at the other position)."""
+        if target_file is None:
+            target_file = program.random_file()
+        if rng is None:
+            rng = random.Random()
+
+        marked_root = program.contents[target_file].accept(MarkingVisitor())
+        selector = ModificationPointSelector(checker=checker, scope_checker=scope_checker, rng=rng)
+        points = list(selector.eligible_points(marked_root))
+        if len(points) < 2:
+            return cls(target_file, None, None)
+
+        for _ in range(max_attempts):
+            a, b = rng.sample(points, 2)
+            if a.get_id() == b.get_id():
+                continue
+            if _nested(a, b):
+                continue
+            if ast_equal(strip_marks_tree(a.node), strip_marks_tree(b.node)):
+                continue  # swapping structurally equal nodes changes nothing
+            if pair_checker is not None and not pair_checker(a, b):
+                continue
+            return cls(target_file, a.get_id(), b.get_id())
+
+        return cls(target_file, None, None)  # gave up after max_attempts
+
+    def do_apply(self, new_contents):
+        if self.point_a_id is None or self.point_b_id is None:
+            return True  # nothing eligible at create time - no-op edit
+
+        root = strip_marks_tree(new_contents[self.target_file])  # safe for marked or unmarked input
+        marked_root = root.accept(MarkingVisitor())
+
+        a = self._find_by_id(marked_root, self.point_a_id)
+        b = self._find_by_id(marked_root, self.point_b_id)
+        if a is None or b is None:
+            return False  # a point vanished (earlier edit) - fail this edit, don't guess
+        if _nested(a, b):
+            return False  # an earlier edit made one contain the other
+
+        updater = MarkedNodeSwapUpdater({self.point_a_id: b, self.point_b_id: a})
+        new_contents[self.target_file] = strip_marks_tree(marked_root.accept(updater))
+        return True
+
+    @staticmethod
+    def get_weight_initial():
+        return 1.0
