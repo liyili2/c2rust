@@ -101,7 +101,7 @@ class RustReplacementOperator(RustOperator):
 
     @staticmethod
     def get_weight_initial():
-        return 1.0  # your only operator
+        return 0.5  # operator weights sum to 1.0, as in the QGen operators
 
 
 # --------------------------------------------------------------------------
@@ -167,26 +167,37 @@ class RustSwapOperator(RustOperator):
     def create(cls, program, target_file=None,
             checker: ConstraintChecker = None,
             scope_checker: ConstraintChecker = None,
-            rng=None, max_attempts=10, pair_checker=None):
-        """pair_checker: optional callable (point_a, point_b) -> bool to reject incompatible
-        pairs (e.g. different node types, or a name not in scope at the other position)."""
+            rng=None, max_attempts=10, updated_contents=None, pair_checker=None):
+        """Same shape as RustReplacementOperator.create, but selects two points.
+
+        updated_contents: like QGen's create(program, updated_contents, ...), the contents after
+        the earlier edits of the patch. Points are chosen against them when given, otherwise
+        against program.contents.
+        pair_checker: optional callable (point_a, point_b) -> bool to reject incompatible pairs
+        (e.g. different node types, or a name not in scope at the other position)."""
         if target_file is None:
             target_file = program.random_file()
         if rng is None:
             rng = random.Random()
 
-        marked_root = program.contents[target_file].accept(MarkingVisitor())
-        selector = ModificationPointSelector(checker=checker, scope_checker=scope_checker, rng=rng)
-        points = list(selector.eligible_points(marked_root))
-        if len(points) < 2:
-            return cls(target_file, None, None)
+        contents = updated_contents if updated_contents is not None else program.contents
+        root = strip_marks_tree(contents[target_file])  # safe if an earlier edit left wrappers
 
         for _ in range(max_attempts):
-            a, b = rng.sample(points, 2)
+            marked_root = root.accept(MarkingVisitor())
+
+            selector = ModificationPointSelector(checker=checker, scope_checker=scope_checker, rng=rng)
+            a = selector.select(marked_root)
+            if a is None:
+                return cls(target_file, None, None)
+            b = selector.select(marked_root)
+            if b is None:
+                return cls(target_file, None, None)
+
             if a.get_id() == b.get_id():
-                continue
+                continue  # picked the same point twice - try again
             if _nested(a, b):
-                continue
+                continue  # one point inside the other cannot be swapped
             if ast_equal(strip_marks_tree(a.node), strip_marks_tree(b.node)):
                 continue  # swapping structurally equal nodes changes nothing
             if pair_checker is not None and not pair_checker(a, b):
@@ -215,4 +226,4 @@ class RustSwapOperator(RustOperator):
 
     @staticmethod
     def get_weight_initial():
-        return 1.0
+        return 0.5
