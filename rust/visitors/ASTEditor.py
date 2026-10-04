@@ -1,55 +1,46 @@
 """
 ASTEditor
 
-A RustASTGenerator: given an AST, produces a brand-new AST equivalent to
-the input, except that every function matching the eligibility constraints
-has its modification points (MarkedASTNode positions) shuffled in the
-generated copy. The original AST passed in is never mutated.
+A RustASTGenerator: given an AST and ONE already-selected modification
+point (a MarkedASTNode), produces a brand-new AST identical to the input
+except that the selected point is replaced with a generated candidate.
+The original AST passed in is never mutated.
 
-Single responsibility of the one override below: for the FunctionDefinition
-currently being rebuilt, decide whether it's eligible, and if so, shuffle
-it. Everything else is handled by inherited default behavior:
-
-  - RustASTGenerator's own default traversal rebuilds the rest of the AST
-    unchanged - this class does not reimplement walking the tree.
-  - ConstraintChecker (rust.constraints.Constraints) answers "is this
-    function eligible?" against the node already in hand - no traversal
-    needed for that, so NodeCollector is not used here; using it just to
-    re-find functions the generator is already visiting would be a
-    redundant second traversal.
-  - NodeCollector(MarkedASTNode) IS used, but for a different job: once a
-    function is confirmed eligible, gathering the flat list of marked
-    positions inside its freshly-rebuilt body, since shuffling is a
-    whole-list operation a single-node visit method can't do alone.
-  - MarkedNodeShuffler performs the actual edit on that freshly-rebuilt
-    (and therefore already-independent-of-the-original) body.
+This replaces the earlier "shuffle every marked node inside every eligible
+function" design with QGen's select-one-point / generate-a-candidate
+model. Selection (ModificationPointSelector) and candidate generation
+(CandidateGenerator) both happen elsewhere and are just handed to this
+class - ASTEditor's only job is the one override below: walk the tree as
+RustASTGenerator normally would, and when the node currently being
+rebuilt is the one selected point, substitute in whatever the candidate
+generator produces instead of regenerating it normally. Every other
+MarkedASTNode - eligible or not, just not the one selected this run -
+falls through to RustASTGenerator's own default visitMarkedASTNode, which
+rebuilds it and re-wraps it in a fresh MarkedASTNode. That matters: it
+keeps every other modification point marked and available, so a later
+selection run over the same base AST can pick a different point without
+needing to re-run the marking pass.
 
 Usage:
-    editor = ASTEditor()
-    new_ast = ast.accept(editor)   # `ast` itself is left untouched
+    checker = ConstraintChecker()
+    selected = ModificationPointSelector(checker).select(ast)
+    if selected is not None:
+        new_ast = ast.accept(ASTEditor(selected, candidate_generator))
 """
 
 from rust.visitors.Base import RustASTGenerator
-from rust.visitors.NodeCollector import NodeCollector
 from rust.nodes.MarkedASTNode import MarkedASTNode
-from rust.nodes.TopLevel import FunctionDefinition
-from rust.modification.Constraint import ConstraintChecker
-from rust.modification.MarkedNodeShuffler import MarkedNodeShuffler
+from rust.modification.CandidateGenerator import CandidateGenerator
+
 
 class ASTEditor(RustASTGenerator):
 
-    def __init__(self,
-                 checker: ConstraintChecker = None,
-                 shuffler: MarkedNodeShuffler = None):
-        self._checker = checker or ConstraintChecker()
-        self._marked_collector = NodeCollector(MarkedASTNode)
-        self._shuffler = shuffler or MarkedNodeShuffler()
+    def __init__(self, selected: MarkedASTNode, candidate_generator: CandidateGenerator):
+        self._selected_id = selected.get_id()
+        self._candidate_generator = candidate_generator
 
-    def visitFunctionDefinition(self, node: FunctionDefinition):
-        rebuilt = super().visitFunctionDefinition(node)
+    def visitMarkedASTNode(self, node: MarkedASTNode):
+        if node.get_id() == self._selected_id:
+            return self._candidate_generator.generate(node.node)
 
-        if self._checker.satisfies_any(node):
-            marked_nodes = self._marked_collector.collect(rebuilt.body())
-            self._shuffler.shuffle(marked_nodes)
-
-        return rebuilt
+        return super().visitMarkedASTNode(node)
