@@ -26,11 +26,14 @@ from rust.nodes.MarkedASTNode import MarkedASTNode
 from rust.nodes.Expression import (
     QualifiedExpression, IdentifierExpression, BinaryExpression,
     FunctionCallExpression, BorrowExpression, CastExpression, UnaryExpr,
-    DereferenceExpr, ParenExpr, RangeExpression,
+    DereferenceExpr, ParenExpr, RangeExpression, FieldAccessExpr
 )
 
 
 class MarkingVisitor(RustASTGenerator):
+    def __init__(self):
+        super().__init__()
+        self._plain = RustASTGenerator()
 
     def _mark(self, rebuilt):
         """Wraps an already-rebuilt node; the single place where marking happens."""
@@ -46,8 +49,18 @@ class MarkingVisitor(RustASTGenerator):
     def visitBinaryExpression(self, node: BinaryExpression):
         return self._mark(super().visitBinaryExpression(node))
 
+    # def visitFunctionCallExpression(self, node: FunctionCallExpression):
+    #     return self._mark(super().visitFunctionCallExpression(node))
+
     def visitFunctionCallExpression(self, node: FunctionCallExpression):
-        return self._mark(super().visitFunctionCallExpression(node))
+        if node.callee() is None:
+            caller = node.caller().accept(self._plain)
+            callee = None
+        else:
+            caller = node.caller().accept(self)
+            callee = node.callee().accept(self._plain)
+        args = [a.accept(self) for a in node.args()]
+        return self._mark(FunctionCallExpression(caller, args, callee).instance(node.get_id()))
 
     def visitBorrowExpression(self, node: BorrowExpression):
         return self._mark(super().visitBorrowExpression(node))
@@ -66,3 +79,8 @@ class MarkingVisitor(RustASTGenerator):
 
     def visitRangeExpression(self, node: RangeExpression):
         return self._mark(super().visitRangeExpression(node))
+
+    def visitFieldAccessExpr(self, node: FieldAccessExpr):
+        receiver = node.receiver().accept(self)     # a value: stays a modification point
+        nxt = node.next().accept(self._plain)       # the field name: never mutated
+        return FieldAccessExpr(receiver, nxt).instance(node.get_id())
