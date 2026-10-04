@@ -1,3 +1,4 @@
+import copy
 from types import NoneType
 from rust.parser.RustVisitor import RustVisitor
 # from rust.nodes.Block import *
@@ -13,14 +14,62 @@ from rust.commons.DeclarationInfo import *
 
 
 class TypeEnv:
-    pass
+    def __init__(self):
+        self.builtin_function_names = ["as_ref", "unwrap"]
+        self.scopes = [{}]
+        self.function_env = {}
+        for f in self.builtin_function_names:
+            self.function_env[f] = {
+            "kind": "function",
+            "param_types": [],
+            "return_type": None
+        }
+
+    def enter_scope(self):
+        self.scopes.append({})
+
+    def exit_scope(self):
+        self.scopes.pop()
+
+    def declare(self, name, typ, mutable=False, isSafelyWrapped=False):
+        self.scopes[-1][name] = {
+            "type": typ,
+            "owned": True,
+            "borrowed": False,
+            "mutable": mutable,
+            "isSafelyWrapped": isSafelyWrapped,
+        }
+
+    def wrapSafe(self, name, isSafelyWrapped):
+        self.scopes[-1][name]["isSafelyWrapped"] = isSafelyWrapped
+
+    def lookup(self, name):
+        for scope in reversed(self.scopes):
+            if name in scope:
+                return scope[name]
+        raise Exception(f"Undefined variable '{name}'")
+
+    def declare_function(self, name, param_types, return_type):
+        self.function_env[name] = {
+            "kind": "function",
+            "param_types": param_types,
+            "return_type": return_type
+        }
+
+    def lookup_function(self, name):
+        if name in self.function_env:
+            return self.function_env[name]
+        raise Exception(f"Undefined function '{name}'")
+
+    def top(self):
+        return self.scopes[-1]
 
 
 class TypeChecker(RustVisitor):
-    def __init__(self):
-        self.env = TypeEnv()
+    def __init__(self, type_environment: dict):
+        self.env = TypeEnv() # copy.deepcopy(type_environment) # treat it as just a dictionary
         self.symbol_table = {}
-        self.error_count = 0
+        self.error_count = 0 # error counts serve as the score? won't increase if an error does not occur
         self.errors = []
         self.reports = []
         self.root = None
@@ -70,8 +119,8 @@ class TypeChecker(RustVisitor):
         pass
 
     def visitFunctionDef(self, node: FunctionDefinition):
-        if node._is_unsafe:
-            self.error(node, "unsafe function definition", error_weight=len(node._body.stmts) / 10)
+        if node.is_unsafe():
+            self.error(node, "unsafe function definition", error_weight=int(len(node.body().stmts) / 10))
 
         fn_name = node._identifier
         param_types = [param.declarationInfo._dtype for param in node._params]
@@ -179,20 +228,20 @@ class TypeChecker(RustVisitor):
             return node.accept(self)
         return node
 
-    def visitProgram(self, node):
-        for item in node.items:
-            self.visit(item)
+    def visitProgram(self, node: Program):
+        for i in range(node.length()):
+            self.visit(node.exp(i))
 
-    def visitWhileStmt(self, node):
-        cond_type = self.visit(node._condition)
+    def visitWhileStmt(self, node: WhileStmt):
+        cond_type = self.visit(node.condition())
         # self.visit(node.condition)
-        self.visit(node._body)
+        self.visit(node.body())
 
     def visitCastExpr(self, node: CastExpression):
-        if isinstance(node.expr, DereferenceExpr):
+        if isinstance(node.expression(), DereferenceExpr):
             self.error(node, "raw pointer dereference in a cast expression")
-        expr_type = self.visit(node.expr)
-        target_type = self.visit(node._type)
+        expr_type = self.visit(node.expression())
+        target_type = self.visit(node.type())
         if expr_type == target_type:
             return target_type
 
@@ -211,23 +260,23 @@ class TypeChecker(RustVisitor):
             return None
 
     def visitStructDef(self, node):
-        if isinstance(node._fields[0], StructLiteralField):
-            struct_type = self.visit(node._name)
+        if isinstance(node.fields()[0], StructLiteralField):
+            struct_type = self.visit(node.name())
             info = self.env.lookup(struct_type)
             if not isinstance(info['type'], StructType):
                 self.error(node, f"{struct_type} is not a valid struct type")
                 return
 
-            field_types = info['type']._fields
+            field_types = info['type'].fields
             used_fields = set()
-            for field in node._fields:
-                field_name = field.declarationInfo._name
+            for field in node.fields():
+                field_name = field.name()
                 if field_name not in field_types:
                     # self.error(field, f"Field '{field_name}' is not defined in struct")
                     continue
 
                 expected_type = field_types[field_name]
-                actual_type = self.visit(field._value)
+                actual_type = self.visit(field.value())
                 if not self.is_type_compatible(expected_type, actual_type) and expected_type is not None:
                     pass
                     # self.error(field, f"Type mismatch for field '{field_name}': expected {expected_type}, got {actual_type}")
@@ -235,9 +284,9 @@ class TypeChecker(RustVisitor):
         
         else:
             field_dict = {}
-            for field in node._fields:
+            for field in node.fields():
                 field_type = self.visit(field)
-                field_name = field.declarationInfo._name
+                field_name = field.name()
                 field_dict[field_name] = field_type
 
             self.env.declare(name=node._name, typ=StructType(name=node._name, fields=field_dict))
