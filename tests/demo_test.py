@@ -17,8 +17,6 @@ from rust.modification.Constraint import Constraint, ConstraintChecker
 from rust.modification.ModificationPointSelector import ModificationPointSelector
 
 
-# Usage:  python demo_operators.py path/to/file.rs [seed]
-# No seed -> a random one (printed, so any run can be reproduced).
 if len(sys.argv) < 2:
     sys.exit("Usage: python demo_operators.py path/to/file.rs [seed]")
 rust_file = os.path.abspath(sys.argv[1])
