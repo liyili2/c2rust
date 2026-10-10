@@ -15,6 +15,8 @@ from rust.visitors.MarkingVisitor import MarkingVisitor
 from rust.nodes.TopLevel import FunctionDefinition
 from rust.modification.Constraint import Constraint, ConstraintChecker
 from rust.modification.ModificationPointSelector import ModificationPointSelector
+from rust.modification.ProgramInventory import ProgramInventory
+from rust.visitors.RandomCandidateReplacementGenerator import RandomCandidateReplacementGenerator
 
 
 if len(sys.argv) < 2:
@@ -88,3 +90,36 @@ for operator in (RustReplacementOperator, RustSwapOperator):
     for line in difflib.unified_diff(before_text.splitlines(), after_text.splitlines(),
                                      "before", "after", lineterm="", n=0):
         print(line)
+
+
+# ---------------------------------------------------------------------------
+# Direct check of the replacement generator (uses ProgramInventory):
+# shows the selected node and the candidate chosen for it.
+# Independent of RustReplacementOperator, so it works before rust_operators.py passes `inventory=`.
+# ---------------------------------------------------------------------------
+print("\n" + "=" * 50)
+print("RandomCandidateReplacementGenerator (direct)")
+print("=" * 50)
+
+inventory = ProgramInventory(original)
+print("Program inventory:", inventory.summary())
+
+selected = ModificationPointSelector(scope_checker=unsafe_functions, rng=random.Random(seed)).select(marked)
+generator = RandomCandidateReplacementGenerator(selected, rng=random.Random(seed), inventory=inventory)
+new_marked = marked.accept(generator)
+
+selected_text = strip_marks_tree(selected.node).accept(printer)
+candidate_text = strip_marks_tree(generator.replacement()).accept(printer)
+
+print("Selected node :", type(selected.node).__name__)
+print("To replace    :", selected_text)
+print("Candidate     :", type(generator.replacement()).__name__)
+print("Replacement   :", candidate_text)
+if candidate_text == selected_text:
+    print("(no visible change: no-op for this node/seed, e.g. a function call or a single-name scope)")
+
+direct_after = strip_marks_tree(new_marked).accept(printer)
+for line in difflib.unified_diff(before_text.splitlines(), direct_after.splitlines(),
+                                 "before", "after", lineterm="", n=0):
+    print(line)
+

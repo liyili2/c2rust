@@ -35,6 +35,9 @@ Pipeline:
 
 Every other MarkedASTNode falls through to RustASTGenerator's own default
 visitMarkedASTNode (rebuilt + re-marked), same as ASTEditor.
+
+Function calls have NO handler on purpose: a call selected as the modification
+point is rebuilt unchanged (its arguments are separate points of their own).
 """
 
 import random
@@ -42,10 +45,11 @@ import random
 from rust.visitors.ScopeTrackingGenerator import ScopeTrackingGenerator
 from rust.nodes.MarkedASTNode import MarkedASTNode
 from rust.nodes.Expression import (
-    IdentifierExpression, BinaryExpression, FunctionCallExpression,
+    IdentifierExpression, BinaryExpression,
     BorrowExpression, ArrayLiteral, CastExpression, UnaryExpr,
     DereferenceExpr, ParenExpr, RangeExpression, QualifiedExpression,
 )
+from rust.modification.ProgramInventory import ProgramInventory
 
 
 class RandomCandidateReplacementGenerator(ScopeTrackingGenerator):
@@ -58,10 +62,12 @@ class RandomCandidateReplacementGenerator(ScopeTrackingGenerator):
     _LOGICAL_OPS = ["&&", "||"]
     _OP_GROUPS = [_ARITHMETIC_OPS, _COMPARISON_OPS, _LOGICAL_OPS]
 
-    def __init__(self, selected: MarkedASTNode, rng: random.Random = None):
+    def __init__(self, selected: MarkedASTNode, rng: random.Random = None,
+                 inventory: ProgramInventory = None):
         super().__init__()
         self._selected_id = selected.get_id()
         self._rng = rng or random.Random()
+        self._inventory = inventory   # program-wide operators/numbers; None = static op groups
         self._replacement = None
 
     def replacement(self):
@@ -86,13 +92,37 @@ class RandomCandidateReplacementGenerator(ScopeTrackingGenerator):
 
         return self._replacement
 
-    # --- shared helper ---
+    # --- shared helpers ---
 
     def _operator_group(self, op):
         for group in self._OP_GROUPS:
             if op in group:
                 return group
         return [op]
+
+    def _operator_pool(self, op):
+        """Operators `op` may be swapped for: same group, and (when an inventory is
+        given) only operators the program itself already uses."""
+        group = self._operator_group(op)
+        if self._inventory is not None:
+            group = self._inventory.operators_in_group(group)
+        return [o for o in group if o != op]
+
+    @staticmethod
+    def _unwrap(expr):
+        """Children of a marked node are MarkedASTNode wrappers; isinstance() needs the inner node."""
+        return expr.node if isinstance(expr, MarkedASTNode) else expr
+
+    def _replace_expression_with_identifier(self, current):
+        """Swap `current` for a DIFFERENT in-scope identifier (excluding its own name
+        when it already is a bare identifier). No-op if nothing else is visible."""
+        inner = self._unwrap(current)
+        excluded = inner.name() if isinstance(inner, IdentifierExpression) else None
+        names = self._scope.names_excluding(excluded)
+        if not names:
+            return current
+        chosen = self._rng.choice(names)
+        return IdentifierExpression(chosen, self._scope.type_of(chosen))
 
     # --- node-specific candidate helpers ---
     # Each one enumerates legal candidates, then picks one at random.
@@ -109,8 +139,7 @@ class RandomCandidateReplacementGenerator(ScopeTrackingGenerator):
     def _candidates_for_binary(self, node: BinaryExpression):
         strategies = []
 
-        group = self._operator_group(node.op())
-        other_ops = [op for op in group if op != node.op()]
+        other_ops = self._operator_pool(node.op())
         if other_ops:
             strategies.append(BinaryExpression(node.left(), self._rng.choice(other_ops), node.right()))
 
@@ -126,25 +155,8 @@ class RandomCandidateReplacementGenerator(ScopeTrackingGenerator):
 
         return self._rng.choice(strategies) if strategies else node
 
-    def _candidates_for_function_call(self, node: FunctionCallExpression):
-        # Mutating the callee itself is NOT implemented: this repo has no
-        # function-signature/arity registry to validate against (§8, §26).
-        # Argument replacement is implemented since args()+scope are both
-        # reliably available.
-        if not node.args():
-            return node
-        names = self._scope.names()
-        if not names:
-            return node
-
-        index = self._rng.randrange(len(node.args()))
-        new_args = list(node.args())
-        new_args[index] = IdentifierExpression(self._rng.choice(names))
-        return FunctionCallExpression(node.caller(), new_args, node.callee())
-
     def _candidates_for_borrow(self, node: BorrowExpression):
-        # The only reliably safe, structural mutation available: &T <-> &mut T.
-        return BorrowExpression(node.expression(), not node.is_mutable())
+        return BorrowExpression(self._replace_expression_with_identifier(node.expression()), node.is_mutable())
 
     def _candidates_for_array_literal(self, node: ArrayLiteral):
         # Swap two elements already in the SAME array - always type-safe
@@ -180,10 +192,7 @@ class RandomCandidateReplacementGenerator(ScopeTrackingGenerator):
         return DereferenceExpr(IdentifierExpression(self._rng.choice(names)))
 
     def _candidates_for_paren(self, node: ParenExpr):
-        names = self._scope.names()
-        if not names:
-            return node
-        return ParenExpr(IdentifierExpression(self._rng.choice(names)))
+        return ParenExpr(self._replace_expression_with_identifier(node.expression()))
 
     def _candidates_for_range(self, node: RangeExpression):
         names = self._scope.names()
@@ -194,19 +203,13 @@ class RandomCandidateReplacementGenerator(ScopeTrackingGenerator):
         return RangeExpression(node.initial(), IdentifierExpression(self._rng.choice(names)))
 
     def _candidates_for_qualified(self, node: QualifiedExpression):
-        # QualifiedExpression has no fields/usage beyond wrapping one
-        # expression anywhere in the repo (§9) - treated as a generic
-        # single-child wrapper, same treatment as ParenExpr/Dereference.
-        names = self._scope.names()
-        if not names:
-            return node
-        return QualifiedExpression(IdentifierExpression(self._rng.choice(names)))
+        # Single-child wrapper: same treatment as Borrow/Paren.
+        return QualifiedExpression(self._replace_expression_with_identifier(node.expression()))
 
 
 RandomCandidateReplacementGenerator._DISPATCH = {
     IdentifierExpression: RandomCandidateReplacementGenerator._candidates_for_identifier,
     BinaryExpression: RandomCandidateReplacementGenerator._candidates_for_binary,
-    FunctionCallExpression: RandomCandidateReplacementGenerator._candidates_for_function_call,
     BorrowExpression: RandomCandidateReplacementGenerator._candidates_for_borrow,
     ArrayLiteral: RandomCandidateReplacementGenerator._candidates_for_array_literal,
     CastExpression: RandomCandidateReplacementGenerator._candidates_for_cast,
