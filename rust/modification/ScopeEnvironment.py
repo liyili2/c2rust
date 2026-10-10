@@ -56,3 +56,6 @@ class ScopeEnvironment:
                 continue
             result.append(name)
         return result
+
+    def has(self, name: str) -> bool:
+        return name in self._bindings

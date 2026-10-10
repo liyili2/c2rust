@@ -190,7 +190,7 @@ class ArrayLiteral(Literal):
         return len(self.value())
     def __len__(self):
         return len(self.value())
-    
+
 class ArrayDeclaration(Expression):
     def __init__(self, identifier, size, force, value):
         super().__init__()

@@ -41,13 +41,13 @@ point is rebuilt unchanged (its arguments are separate points of their own).
 """
 
 import random
-
+import copy
 from rust.visitors.ScopeTrackingGenerator import ScopeTrackingGenerator
 from rust.nodes.MarkedASTNode import MarkedASTNode
 from rust.nodes.Expression import (
     IdentifierExpression, BinaryExpression,
     BorrowExpression, ArrayLiteral, CastExpression, UnaryExpr,
-    DereferenceExpr, ParenExpr, RangeExpression, QualifiedExpression,
+    DereferenceExpr, ParenExpr, RangeExpression, QualifiedExpression, FieldAccessExpr,
 )
 from rust.modification.ProgramInventory import ProgramInventory
 
@@ -137,23 +137,27 @@ class RandomCandidateReplacementGenerator(ScopeTrackingGenerator):
         return IdentifierExpression(chosen, self._scope.type_of(chosen))
 
     def _candidates_for_binary(self, node: BinaryExpression):
-        strategies = []
+        group = self._operator_group(node.op())
+        if self._inventory is not None:
+            group = self._inventory.operators_in_group(group)
+        ops = group or [node.op()]
 
-        other_ops = self._operator_pool(node.op())
-        if other_ops:
-            strategies.append(BinaryExpression(node.left(), self._rng.choice(other_ops), node.right()))
+        names = self._scope.names()
+        if not names:
+            return node
 
-        left_name = getattr(node.left(), "name", lambda: None)()
-        left_candidates = self._scope.names_excluding(left_name)
-        if left_candidates:
-            strategies.append(BinaryExpression(IdentifierExpression(self._rng.choice(left_candidates)), node.op(), node.right()))
+        left_name = self._rng.choice(names)
+        # prefer a type-compatible right operand; fall back to any in-scope name
+        right_pool = self._scope.names_matching_type(self._scope.type_of(left_name)) or names
 
-        right_name = getattr(node.right(), "name", lambda: None)()
-        right_candidates = self._scope.names_excluding(right_name)
-        if right_candidates:
-            strategies.append(BinaryExpression(node.left(), node.op(), IdentifierExpression(self._rng.choice(right_candidates))))
-
-        return self._rng.choice(strategies) if strategies else node
+        return BinaryExpression(
+            IdentifierExpression(left_name, self._scope.type_of(left_name)),
+            self._rng.choice(ops),
+            IdentifierExpression(
+                (right_name := self._rng.choice(right_pool)),
+                self._scope.type_of(right_name),
+            ),
+        )
 
     def _candidates_for_borrow(self, node: BorrowExpression):
         return BorrowExpression(self._replace_expression_with_identifier(node.expression()), node.is_mutable())
@@ -206,6 +210,13 @@ class RandomCandidateReplacementGenerator(ScopeTrackingGenerator):
         # Single-child wrapper: same treatment as Borrow/Paren.
         return QualifiedExpression(self._replace_expression_with_identifier(node.expression()))
 
+    def _candidates_for_field_access(self, node: FieldAccessExpr):
+        if self._inventory is None:
+            return node
+        pool = self._inventory.field_accesses_in_scope(self._scope, exclude_key=str(node))
+        if not pool:
+            return node
+        return copy.deepcopy(self._rng.choice(pool))
 
 RandomCandidateReplacementGenerator._DISPATCH = {
     IdentifierExpression: RandomCandidateReplacementGenerator._candidates_for_identifier,
@@ -218,4 +229,5 @@ RandomCandidateReplacementGenerator._DISPATCH = {
     ParenExpr: RandomCandidateReplacementGenerator._candidates_for_paren,
     RangeExpression: RandomCandidateReplacementGenerator._candidates_for_range,
     QualifiedExpression: RandomCandidateReplacementGenerator._candidates_for_qualified,
+    FieldAccessExpr: RandomCandidateReplacementGenerator._candidates_for_field_access,
 }
