@@ -81,6 +81,14 @@ class MarkingVisitor(RustASTGenerator):
         return self._mark(super().visitRangeExpression(node))
 
     def visitFieldAccessExpr(self, node: FieldAccessExpr):
-        receiver = node.receiver().accept(self)     # a value: stays a modification point
-        nxt = node.next().accept(self._plain)       # the field name: never mutated
-        return FieldAccessExpr(receiver, nxt).instance(node.get_id())
+        # `(*x).right` is ONE value. The whole access must be the modification point,
+        # otherwise a swap/replacement moves only the receiver `*x` and leaves `.right` behind.
+        receiver = node.receiver()
+        if isinstance(receiver, DereferenceExpr):
+            # `*x` alone is not a value (it is the struct place), so it is not a point itself;
+            # the pointee `x` stays a point (it can be replaced by another pointer variable).
+            rebuilt_receiver = DereferenceExpr(receiver.expression().accept(self)).instance(receiver.get_id())
+        else:
+            rebuilt_receiver = receiver.accept(self)    # e.g. a nested field access: its own point
+        nxt = node.next().accept(self._plain)           # the field name: never a point
+        return self._mark(FieldAccessExpr(rebuilt_receiver, nxt).instance(node.get_id()))
