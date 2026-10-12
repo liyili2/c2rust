@@ -63,167 +63,167 @@ class RustOperator(TreeEdit):
         pass
 
 
-class RustReplacementOperator(RustOperator):
+# class RustReplacementOperator(RustOperator):
 
-    TYPE = "RustReplacement"
+#     TYPE = "RustReplacement"
 
-    def __init__(self, target_file: str, modification_point_id, target):
-        super().__init__(self.TYPE, target_file, modification_point_id, target)
+#     def __init__(self, target_file: str, modification_point_id, target):
+#         super().__init__(self.TYPE, target_file, modification_point_id, target)
 
-    @classmethod
-    def create(cls, program, target_file=None,
-            checker: ConstraintChecker = None,
-            scope_checker: ConstraintChecker = None,
-            rng=None, max_attempts=10):
-        if target_file is None:
-            target_file = program.random_file()
-        rng = rng or random.Random()
+#     @classmethod
+#     def create(cls, program, target_file=None,
+#             checker: ConstraintChecker = None,
+#             scope_checker: ConstraintChecker = None,
+#             rng=None, max_attempts=10):
+#         if target_file is None:
+#             target_file = program.random_file()
+#         rng = rng or random.Random()
 
-        root = program.contents[target_file]
+#         root = program.contents[target_file]
 
-        for _ in range(max_attempts):
-            marked_root = root.accept(MarkingVisitor())
+#         for _ in range(max_attempts):
+#             marked_root = root.accept(MarkingVisitor())
 
-            selector = ModificationPointSelector(checker=checker, scope_checker=scope_checker, rng=rng)
-            point = selector.select(marked_root)
-            if point is None:
-                return cls(target_file, None, None)
+#             selector = ModificationPointSelector(checker=checker, scope_checker=scope_checker, rng=rng)
+#             point = selector.select(marked_root)
+#             if point is None:
+#                 return cls(target_file, None, None)
 
-            generator = RandomCandidateReplacementGenerator(point, rng=rng)
-            marked_root.accept(generator)
-            candidate = generator.replacement()
+#             generator = RandomCandidateReplacementGenerator(point, rng=rng)
+#             marked_root.accept(generator)
+#             candidate = generator.replacement()
 
-            if not ast_equal(candidate, point.node):
-                return cls(target_file, point.get_id(), candidate)
-            # else: this point had no legal alternative - try a different point
+#             if not ast_equal(candidate, point.node):
+#                 return cls(target_file, point.get_id(), candidate)
+#             # else: this point had no legal alternative - try a different point
 
-        return cls(target_file, None, None)  # gave up after max_attempts
+#         return cls(target_file, None, None)  # gave up after max_attempts
 
-    @staticmethod
-    def get_weight_initial():
-        return 0.5  # operator weights sum to 1.0, as in the QGen operators
-
-
-# --------------------------------------------------------------------------
-# Swap operator
-# --------------------------------------------------------------------------
-
-class MarkStripper(RustASTGenerator):
-    """Rebuilds a tree with every MarkedASTNode wrapper removed."""
-
-    def visitMarkedASTNode(self, node: MarkedASTNode):
-        return node.node.accept(self)
+#     @staticmethod
+#     def get_weight_initial():
+#         return 0.5  # operator weights sum to 1.0, as in the QGen operators
 
 
-class MarkedNodeSwapUpdater(RustASTGenerator):
-    """Rebuilds the tree, putting `replacements[id]` (a wrapper) where the wrapper with that id was."""
+# # --------------------------------------------------------------------------
+# # Swap operator
+# # --------------------------------------------------------------------------
 
-    def __init__(self, replacements):
-        super().__init__()
-        self._replacements = replacements
+# class MarkStripper(RustASTGenerator):
+#     """Rebuilds a tree with every MarkedASTNode wrapper removed."""
 
-    def visitMarkedASTNode(self, node: MarkedASTNode):
-        replacement = self._replacements.get(node.get_id())
-        if replacement is not None:          # `is not None`: never rely on node truthiness
-            return replacement               # not descended into, so nothing is swapped twice
-        return super().visitMarkedASTNode(node)
+#     def visitMarkedASTNode(self, node: MarkedASTNode):
+#         return node.node.accept(self)
 
 
-def strip_marks_tree(root):
-    return root.accept(MarkStripper())
+# class MarkedNodeSwapUpdater(RustASTGenerator):
+#     """Rebuilds the tree, putting `replacements[id]` (a wrapper) where the wrapper with that id was."""
+
+#     def __init__(self, replacements):
+#         super().__init__()
+#         self._replacements = replacements
+
+#     def visitMarkedASTNode(self, node: MarkedASTNode):
+#         replacement = self._replacements.get(node.get_id())
+#         if replacement is not None:          # `is not None`: never rely on node truthiness
+#             return replacement               # not descended into, so nothing is swapped twice
+#         return super().visitMarkedASTNode(node)
 
 
-def _descendant_ids(wrapper):
-    """Ids of all marked nodes strictly inside `wrapper`."""
-    return {n.get_id() for n in NodeCollector(MarkedASTNode, lambda n: True).collect(wrapper.node)}
+# def strip_marks_tree(root):
+#     return root.accept(MarkStripper())
 
 
-def _nested(a, b):
-    """True if one of the two marked points lies inside the other."""
-    return b.get_id() in _descendant_ids(a) or a.get_id() in _descendant_ids(b)
+# def _descendant_ids(wrapper):
+#     """Ids of all marked nodes strictly inside `wrapper`."""
+#     return {n.get_id() for n in NodeCollector(MarkedASTNode, lambda n: True).collect(wrapper.node)}
 
 
-class RustSwapOperator(RustOperator):
-    """Swaps the positions of two marked nodes.
+# def _nested(a, b):
+#     """True if one of the two marked points lies inside the other."""
+#     return b.get_id() in _descendant_ids(a) or a.get_id() in _descendant_ids(b)
 
-    Only the two point ids are stored; the nodes are looked up in a freshly marked
-    tree at apply time. Ids travel with the content, so no id is duplicated and
-    applying the same swap twice restores the original tree. Nested pairs and
-    structurally equal pairs are rejected. The result is returned without
-    MarkedASTNode wrappers."""
 
-    TYPE = "RustSwap"
+# class RustSwapOperator(RustOperator):
+#     """Swaps the positions of two marked nodes.
 
-    def __init__(self, target_file: str, point_a_id, point_b_id):
-        # base class: modification_point_id = a, target = b, _target = (file, a)
-        super().__init__(self.TYPE, target_file, point_a_id, point_b_id)
-        self.point_a_id = point_a_id
-        self.point_b_id = point_b_id
+#     Only the two point ids are stored; the nodes are looked up in a freshly marked
+#     tree at apply time. Ids travel with the content, so no id is duplicated and
+#     applying the same swap twice restores the original tree. Nested pairs and
+#     structurally equal pairs are rejected. The result is returned without
+#     MarkedASTNode wrappers."""
 
-    def __repr__(self):
-        return f"RustSwapOperator({self.target_file}, {self.point_a_id} <-> {self.point_b_id})"
+#     TYPE = "RustSwap"
 
-    @classmethod
-    def create(cls, program, target_file=None,
-            checker: ConstraintChecker = None,
-            scope_checker: ConstraintChecker = None,
-            rng=None, max_attempts=10, updated_contents=None, pair_checker=None):
-        """Same shape as RustReplacementOperator.create, but selects two points.
+#     def __init__(self, target_file: str, point_a_id, point_b_id):
+#         # base class: modification_point_id = a, target = b, _target = (file, a)
+#         super().__init__(self.TYPE, target_file, point_a_id, point_b_id)
+#         self.point_a_id = point_a_id
+#         self.point_b_id = point_b_id
 
-        updated_contents: like QGen's create(program, updated_contents, ...), the contents after
-        the earlier edits of the patch. Points are chosen against them when given, otherwise
-        against program.contents.
-        pair_checker: optional callable (point_a, point_b) -> bool to reject incompatible pairs
-        (e.g. different node types, or a name not in scope at the other position)."""
-        if target_file is None:
-            target_file = program.random_file()
-        if rng is None:
-            rng = random.Random()
+#     def __repr__(self):
+#         return f"RustSwapOperator({self.target_file}, {self.point_a_id} <-> {self.point_b_id})"
 
-        contents = updated_contents if updated_contents is not None else program.contents
-        root = strip_marks_tree(contents[target_file])  # safe if an earlier edit left wrappers
+#     @classmethod
+#     def create(cls, program, target_file=None,
+#             checker: ConstraintChecker = None,
+#             scope_checker: ConstraintChecker = None,
+#             rng=None, max_attempts=10, updated_contents=None, pair_checker=None):
+#         """Same shape as RustReplacementOperator.create, but selects two points.
 
-        for _ in range(max_attempts):
-            marked_root = root.accept(MarkingVisitor())
+#         updated_contents: like QGen's create(program, updated_contents, ...), the contents after
+#         the earlier edits of the patch. Points are chosen against them when given, otherwise
+#         against program.contents.
+#         pair_checker: optional callable (point_a, point_b) -> bool to reject incompatible pairs
+#         (e.g. different node types, or a name not in scope at the other position)."""
+#         if target_file is None:
+#             target_file = program.random_file()
+#         if rng is None:
+#             rng = random.Random()
 
-            selector = ModificationPointSelector(checker=checker, scope_checker=scope_checker, rng=rng)
-            a = selector.select(marked_root)
-            if a is None:
-                return cls(target_file, None, None)
-            b = selector.select(marked_root)
-            if b is None:
-                return cls(target_file, None, None)
+#         contents = updated_contents if updated_contents is not None else program.contents
+#         root = strip_marks_tree(contents[target_file])  # safe if an earlier edit left wrappers
 
-            if a.get_id() == b.get_id():
-                continue  # picked the same point twice - try again
-            if _nested(a, b):
-                continue  # one point inside the other cannot be swapped
-            if ast_equal(strip_marks_tree(a.node), strip_marks_tree(b.node)):
-                continue  # swapping structurally equal nodes changes nothing
-            if pair_checker is not None and not pair_checker(a, b):
-                continue
-            return cls(target_file, a.get_id(), b.get_id())
+#         for _ in range(max_attempts):
+#             marked_root = root.accept(MarkingVisitor())
 
-        return cls(target_file, None, None)  # gave up after max_attempts
+#             selector = ModificationPointSelector(checker=checker, scope_checker=scope_checker, rng=rng)
+#             a = selector.select(marked_root)
+#             if a is None:
+#                 return cls(target_file, None, None)
+#             b = selector.select(marked_root)
+#             if b is None:
+#                 return cls(target_file, None, None)
 
-    def do_apply(self, new_contents):
-        if self.point_a_id is None or self.point_b_id is None:
-            return True  # nothing eligible at create time - no-op edit
+#             if a.get_id() == b.get_id():
+#                 continue  # picked the same point twice - try again
+#             if _nested(a, b):
+#                 continue  # one point inside the other cannot be swapped
+#             if ast_equal(strip_marks_tree(a.node), strip_marks_tree(b.node)):
+#                 continue  # swapping structurally equal nodes changes nothing
+#             if pair_checker is not None and not pair_checker(a, b):
+#                 continue
+#             return cls(target_file, a.get_id(), b.get_id())
 
-        root = strip_marks_tree(new_contents[self.target_file])  # safe for marked or unmarked input
-        marked_root = root.accept(MarkingVisitor())
+#         return cls(target_file, None, None)  # gave up after max_attempts
 
-        a = self._find_by_id(marked_root, self.point_a_id)
-        b = self._find_by_id(marked_root, self.point_b_id)
-        if a is None or b is None:
-            return False  # a point vanished (earlier edit) - fail this edit, don't guess
-        if _nested(a, b):
-            return False  # an earlier edit made one contain the other
+#     def do_apply(self, new_contents):
+#         if self.point_a_id is None or self.point_b_id is None:
+#             return True  # nothing eligible at create time - no-op edit
 
-        updater = MarkedNodeSwapUpdater({self.point_a_id: b, self.point_b_id: a})
-        new_contents[self.target_file] = strip_marks_tree(marked_root.accept(updater))
-        return True
+#         root = strip_marks_tree(new_contents[self.target_file])  # safe for marked or unmarked input
+#         marked_root = root.accept(MarkingVisitor())
 
-    @staticmethod
-    def get_weight_initial():
-        return 0.5
+#         a = self._find_by_id(marked_root, self.point_a_id)
+#         b = self._find_by_id(marked_root, self.point_b_id)
+#         if a is None or b is None:
+#             return False  # a point vanished (earlier edit) - fail this edit, don't guess
+#         if _nested(a, b):
+#             return False  # an earlier edit made one contain the other
+
+#         updater = MarkedNodeSwapUpdater({self.point_a_id: b, self.point_b_id: a})
+#         new_contents[self.target_file] = strip_marks_tree(marked_root.accept(updater))
+#         return True
+
+#     @staticmethod
+#     def get_weight_initial():
+#         return 0.5
