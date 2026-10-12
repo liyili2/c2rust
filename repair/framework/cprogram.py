@@ -1,5 +1,5 @@
 import random
-from repair.pyggi.tree import TreeProgram
+from repair.pyggi.tree.tree import TreeProgram
 from .cresult import CResult
 import xml.etree.ElementTree as ET
 import re
@@ -11,11 +11,18 @@ class CProgram(TreeProgram):
     A Program 
     """
 
-    def __init__(self, project_path):
+    def __init__(self, project_path, config=None):
         """
-        :param number_of_variables: Number of decision variables of the problem.
-        :param prg: Program object from pyggi
+        :param project_path: project folder (or XML file in the legacy XML mode)
+        :param config: PyGGI config dict (test_command, target_files, ...). When given,
+                       the program is set up as a plain TreeProgram (Rust/AST mode) and the
+                       XML loading below is skipped.
         """
+        if config is not None:
+            TreeProgram.__init__(self, project_path, config)
+            self.path = project_path
+            self.operators = []
+            return
         super(TreeProgram, self).__init__(project_path)
         self.path = project_path
         self.operators = []
@@ -108,6 +115,86 @@ class CProgram(TreeProgram):
 
         if method == 'random' or target_file not in self.modification_weights:
             return (target_file, random.choice(valid_indices))
+
+    # ------------------------------------------------------------------
+    # Rust AST target selection (the Rust counterpart of app_target).
+    # app_target picks XML xpath points via a regex; here points are marked
+    # AST nodes picked by ModificationPointSelector and are identified by
+    # id, so they stay valid when earlier edits of a patch rebuild the tree.
+    # ------------------------------------------------------------------
+
+    def _marked_root(self, target_file, updated_contents=None):
+        from .operators import strip_marks_tree
+        from rust.visitors.MarkingVisitor import MarkingVisitor
+        contents = updated_contents if updated_contents is not None else self.contents
+        # strip first: safe if an earlier edit left MarkedASTNode wrappers behind
+        return strip_marks_tree(contents[target_file]).accept(MarkingVisitor())
+
+    def replace_target(self, target_file=None, checker=None, scope_checker=None,
+                       rng=None, max_attempts=10, updated_contents=None):
+        """Pick one point and a replacement candidate for it.
+        Returns (target_file, point_id, candidate); (target_file, None, None) if nothing fits."""
+        from rust.modification.ModificationPointSelector import ModificationPointSelector
+        from rust.visitors.RandomCandidateReplacementGenerator import RandomCandidateReplacementGenerator
+        from rust.visitors.ast_compare import ast_equal
+
+        if target_file is None:
+            target_file = self.random_file()
+        rng = rng or random.Random()
+
+        for _ in range(max_attempts):
+            marked_root = self._marked_root(target_file, updated_contents)
+            selector = ModificationPointSelector(checker=checker, scope_checker=scope_checker, rng=rng)
+            point = selector.select(marked_root)
+            if point is None:
+                return (target_file, None, None)
+
+            generator = RandomCandidateReplacementGenerator(point, rng=rng)
+            marked_root.accept(generator)
+            candidate = generator.replacement()
+
+            if not ast_equal(candidate, point.node):
+                return (target_file, point.get_id(), candidate)
+            # else: this point had no legal alternative - try a different point
+
+        return (target_file, None, None)  # gave up after max_attempts
+
+    def swap_target(self, target_file=None, checker=None, scope_checker=None,
+                    rng=None, max_attempts=10, updated_contents=None, pair_checker=None):
+        """Pick two distinct, non-nested, structurally different points to swap.
+        Returns (target_file, id_a, id_b); (target_file, None, None) if nothing fits.
+
+        updated_contents: contents after the earlier edits of the patch (else self.contents).
+        pair_checker: optional (point_a, point_b) -> bool to reject incompatible pairs."""
+        from .operators import strip_marks_tree, _nested
+        from rust.modification.ModificationPointSelector import ModificationPointSelector
+        from rust.visitors.ast_compare import ast_equal
+
+        if target_file is None:
+            target_file = self.random_file()
+        rng = rng or random.Random()
+
+        for _ in range(max_attempts):
+            marked_root = self._marked_root(target_file, updated_contents)
+            selector = ModificationPointSelector(checker=checker, scope_checker=scope_checker, rng=rng)
+            a = selector.select(marked_root)
+            if a is None:
+                return (target_file, None, None)
+            b = selector.select(marked_root)
+            if b is None:
+                return (target_file, None, None)
+
+            if a.get_id() == b.get_id():
+                continue  # same point twice
+            if _nested(a, b):
+                continue  # one inside the other cannot be swapped
+            if ast_equal(strip_marks_tree(a.node), strip_marks_tree(b.node)):
+                continue  # swapping equal nodes changes nothing
+            if pair_checker is not None and not pair_checker(a, b):
+                continue
+            return (target_file, a.get_id(), b.get_id())
+
+        return (target_file, None, None)  # gave up after max_attempts
 
     # jMetal required functions
 

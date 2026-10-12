@@ -7,8 +7,8 @@ import difflib
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from repair.pyggi.tree.tree import TreeProgram
-from repair.pyggi.tree.rust_operators import (
+from repair.framework.cprogram import CProgram
+from repair.framework.operators import (
     RustOperator, RustReplacementOperator, RustSwapOperator, strip_marks_tree)
 from rust.visitors.Printers import RustASTPrinter
 from rust.visitors.MarkingVisitor import MarkingVisitor
@@ -20,7 +20,7 @@ from rust.visitors.RandomCandidateReplacementGenerator import RandomCandidateRep
 
 
 if len(sys.argv) < 2:
-    sys.exit("Usage: python demo_operators.py path/to/file.rs [seed]")
+    sys.exit("Usage: python demo_test.py path/to/file.rs [seed]")
 rust_file = os.path.abspath(sys.argv[1])
 if not os.path.isfile(rust_file):
     sys.exit(f"File not found: {rust_file}")
@@ -28,10 +28,10 @@ seed = int(sys.argv[2]) if len(sys.argv) > 2 else random.randrange(2 ** 32)
 print(f"file = {rust_file}")
 print(f"seed = {seed}")
 
-# TreeProgram takes the project folder plus the file name (like Benchmarks/avl + avl.rs)
+# CProgram (config given -> Rust/AST mode) takes the project folder plus the file name
 PROJECT_PATH = os.path.dirname(rust_file)
 FILE = os.path.basename(rust_file)
-program = TreeProgram(PROJECT_PATH, config={"test_command": "true", "target_files": [FILE]})
+program = CProgram(PROJECT_PATH, config={"test_command": "true", "target_files": [FILE]})
 
 printer = RustASTPrinter()
 original = program.contents[FILE]
@@ -55,6 +55,16 @@ if not points:
     print("Nothing eligible - nothing to edit.")
     sys.exit(1)
 
+# Target selection now lives on the program (the Rust counterpart of app_target)
+print("\n" + "=" * 50)
+print("CProgram.swap_target / replace_target")
+print("=" * 50)
+_, a_id, b_id = program.swap_target(FILE, scope_checker=unsafe_functions, rng=random.Random(seed))
+print("swap_target    :", a_id, "<->", b_id)
+_, r_id, cand = program.replace_target(FILE, scope_checker=unsafe_functions, rng=random.Random(seed))
+print("replace_target :", r_id, "->", None if cand is None else strip_marks_tree(cand).accept(printer))
+
+# The operators' create() call those same program methods.
 for operator in (RustReplacementOperator, RustSwapOperator):
     print("\n" + "=" * 50)
     print(operator.__name__)
@@ -122,4 +132,3 @@ direct_after = strip_marks_tree(new_marked).accept(printer)
 for line in difflib.unified_diff(before_text.splitlines(), direct_after.splitlines(),
                                  "before", "after", lineterm="", n=0):
     print(line)
-
