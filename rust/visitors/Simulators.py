@@ -1,6 +1,7 @@
 import copy
 from rust.nodes.Statement import *
 from rust.visitors.Base import RustASTVisitor
+from rust.parser.RustVisitor import RustVisitor
 from rust.nodes.Expression import *
 from rust.nodes.Program import *
 from rust.nodes.TopLevel import *
@@ -13,7 +14,7 @@ NoneType = type(None)
 # I also may need to add arrays
 
 
-class Simulator(RustASTVisitor):
+class Simulator(RustVisitor):
     # x, y, z, env : ChainMap{ x: n, y : m, z : v} , n m v are nat numbers 100, 100, 100, eg {x : 128}
     # st state map, {x : v1, y : v2 , z : v3}, eg {x : v1}: v1,
     # st {x : v1} --> Coq_nval case: v1 is a ChainMap of Coq_nval
@@ -57,7 +58,7 @@ class Simulator(RustASTVisitor):
     def visit(self, ctx):
         return ctx.accept(self)
 
-    def visit_Program(self, node: Program):
+    def visitProgram(self, node: Program):
         # print(ctx.items)
         for i in range(node.length()):
             program_item = node.exp(i)

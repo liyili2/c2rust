@@ -1,3 +1,4 @@
+import copy
 from abc import ABC, abstractmethod
 from rust.nodes.Expression import FunctionCallExpression, TypedName, VarDef, Literal, FieldAccessExpr, RangeExpression, \
     BorrowExpression, TypePath, CastExpression, BinaryExpression, StructLiteral, UnaryExpr, \
@@ -748,6 +749,19 @@ class RustASTGenerator(AbstractASTVisitor):
 
         return LetStmt(var_defs, values).instance(node.get_id())
 
+    # def visitLiteral(self, node: Literal):
+    #     ntype = node.type().accept(self)
+
+    #     raw_value = node.value()
+    #     if isinstance(raw_value, list):
+    #         value = [element.accept(self) for element in raw_value]
+    #     elif hasattr(raw_value, "accept"):
+    #         value = raw_value.accept(self)
+    #     else:
+    #         value = raw_value  # raw scalar (int/bool/str/char) - nothing to rebuild
+
+    #     # return Literal(value, ntype).instance(node.get_id())
+    #     return type(node)(value, ntype).instance(node.get_id())
     def visitLiteral(self, node: Literal):
         ntype = node.type().accept(self)
 
@@ -759,7 +773,10 @@ class RustASTGenerator(AbstractASTVisitor):
         else:
             value = raw_value  # raw scalar (int/bool/str/char) - nothing to rebuild
 
-        return Literal(value, ntype).instance(node.get_id())
+        new = copy.copy(node)      # keeps IntLiteral / ArrayLiteral / ...
+        new._value = value
+        new._dtype = ntype 
+        return new.instance(node.get_id())
 
     def visitAssignStmt(self, node: AssignStmt):
         target = node.target().accept(self)

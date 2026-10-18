@@ -12,6 +12,7 @@ from rust.nodes.Type import UnknownType, PointerType, SignedIntType, UnsignedInt
 from rust.parser.RustParser import RustParser
 from rust.parser.RustVisitor import RustVisitor
 
+
 class RustASTTransformer(RustVisitor):
 
     def __init__(self):
