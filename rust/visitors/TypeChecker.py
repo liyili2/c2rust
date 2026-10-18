@@ -298,9 +298,9 @@ class TypeChecker(RustVisitor):
             self.error(node, f"{struct_type} is not a valid struct type")
             return
 
-        field_types = info['type']._fields
+        field_types = info['type'].fields
         used_fields = set()
-        for field in node._fields:
+        for field in node.fields():
             field_name = field._name
             if field_name not in field_types:
                 # self.error(field, f"Field '{field_name}' is not defined in struct")
@@ -390,9 +390,6 @@ class TypeChecker(RustVisitor):
     def visitArrayAccess(self, node):
         return node
     
-    def visitTopLevelVarDef(self, node):
-        return node
-    
     def visitBreakStmt(self, node):
         pass
 
@@ -415,10 +412,11 @@ class TypeChecker(RustVisitor):
 
         if op in ['+', '-', '*', '/', '>>', '<<']:
             if isinstance(left, SignedIntType) and isinstance(right, SignedIntType):
-                return SignedIntType()
+
+                return SignedIntType(ptype="N/A")
             else:
                 # self.error(node, f"binary expression target and value type mismatch #1: {left} {op} {right}")
-                return SignedIntType()
+                return SignedIntType(ptype="N/A")
 
         elif op in ['==', '!=', '<', '>', '<=', '>=']:
             if type(left) == type(right) or isinstance(right, NoneType) or isinstance(left, NoneType):
