@@ -133,6 +133,7 @@ else:
     points = {pt.get_id(): pt for pt in ModificationPointSelector(
         scope_checker=unsafe_functions, rng=random.Random(0)).eligible_points(marked)}
     print("Operator    :", type(edit).__name__)
+    print("Selection   :", " -> ".join(mutation.last_trace))
 
     if hasattr(edit, "point_a_id"):                       # swap: two nodes trade places
         pa, pb = points.get(edit.point_a_id), points.get(edit.point_b_id)
