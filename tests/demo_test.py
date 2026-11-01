@@ -55,23 +55,38 @@ if not points:
     print("Nothing eligible - nothing to edit.")
     sys.exit(1)
 
-# Target selection now lives on the program (the Rust counterpart of app_target)
-print("\n" + "=" * 50)
-print("CProgram.swap_target / replace_target")
-print("=" * 50)
-_, a_id, b_id = program.swap_target(FILE, scope_checker=unsafe_functions, rng=random.Random(seed))
-print("swap_target    :", a_id, "<->", b_id)
-_, r_id, cand = program.replace_target(FILE, scope_checker=unsafe_functions, rng=random.Random(seed))
-print("replace_target :", r_id, "->", None if cand is None else strip_marks_tree(cand).accept(printer))
 
-# The operators' create() call those same program methods.
-for operator in (RustReplacementOperator, RustSwapOperator):
+# ---------------------------------------------------------------------------
+# Operator usage is wrapped in the CProgram target-selection methods:
+#   RustSwapOperator        <- program.swap_target
+#   RustReplacementOperator <- program.replace_target
+# Each method is called exactly once; the operator is built from what it returns.
+# ---------------------------------------------------------------------------
+def make_swap_edit():
+    _, a_id, b_id = program.swap_target(
+        FILE, scope_checker=unsafe_functions, rng=random.Random(seed))
+    print("swap_target    :", a_id, "<->", b_id)
+    return RustSwapOperator(FILE, a_id, b_id)
+
+
+def make_replacement_edit():
+    _, r_id, cand = program.replace_target(
+        FILE, scope_checker=unsafe_functions, rng=random.Random(seed))
+    print("replace_target :", r_id, "->", None if cand is None else strip_marks_tree(cand).accept(printer))
+    return RustReplacementOperator(FILE, r_id, cand)
+
+
+EDIT_BUILDERS = {
+    RustReplacementOperator: ("CProgram.replace_target", make_replacement_edit),
+    RustSwapOperator: ("CProgram.swap_target", make_swap_edit),
+}
+
+for operator, (via, build_edit) in EDIT_BUILDERS.items():
     print("\n" + "=" * 50)
-    print(operator.__name__)
+    print(operator.__name__, f"(via {via})")
     print("=" * 50)
 
-    edit = operator.create(program, target_file=FILE,
-                           scope_checker=unsafe_functions, rng=random.Random(seed))
+    edit = build_edit()
     if edit.modification_point_id is None:
         print("No mutation created.")
         continue
