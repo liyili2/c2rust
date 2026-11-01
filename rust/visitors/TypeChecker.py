@@ -376,7 +376,7 @@ class TypeChecker(RustVisitor):
     def visitPointerType(self, node):
         return self.visit(node.pointee_type)
 
-    def visitDereferenceExpr(self, node):
+    def visitDereferenceExpression(self, node):
         self.error(node, f"unsafe pointer dereferencing {node.expression}", 2)
         return self.visit(node.expression)
 
@@ -743,19 +743,19 @@ class TypeChecker(RustVisitor):
         inner_type = self.visit(node.expression)
         return inner_type
 
-    def visitBorrowExpr(self, node):
+    def visitBorrowExpression(self, node):
         info = self.env.lookup(self.get_expr_identifier(node.expression))
         if not info["owned"]:
             self.error(node, "cannot borrow a variable which ownership already moved")
 
         if node._is_mutable:
             if not info["mutable"]:
-                if isinstance(node, FieldAccessExpr) and not node.receiver._is_mutable:
+                if isinstance(node, FieldAccessExpr) and not node.receiver.is_mutable():
                     self.error(node, "cannot mutably borrow an immutable variable")
                 elif not isinstance(node, FieldAccessExpr):
                     self.error(node, "cannot mutably borrow an immutable variable")
             if info["borrowed"]:
-                if isinstance(node, FieldAccessExpr) and not node.receiver._is_mutable:
+                if isinstance(node, FieldAccessExpr) and not node.receiver.is_mutable():
                     self.error(node, "cannot mutably borrow a variable that's already borrowed", 2)
                 elif not isinstance(node, FieldAccessExpr):
                     self.error(node, "cannot mutably borrow a variable that's already borrowed", 2)
@@ -768,10 +768,10 @@ class TypeChecker(RustVisitor):
             info["borrowed"] = True
         return ReferenceType(info["type"])
 
-    def visitPatternExpr(self, node):
+    def visitPattern(self, node):
         pass
     
-    def visitFunctionCallExpression(self, node):
+    def visitFunctionCall(self, node):
         pass
 
     def visitArrayLiteral(self, node):
@@ -787,22 +787,22 @@ class TypeChecker(RustVisitor):
 
         return ArrayType(first_type)
 
-    def visitcallExpressionPostFix(self, node, func_expr):
+    def visitCallExpressionPostFix(self, node):
         for arg in node._args:
             if isinstance(arg, IdentifierExpression):
                 try:
-                    info = self.env.lookup(arg._name())
+                    info = self.env.lookup(arg.name())
                 except Exception:
                     # self.error(node, f"undefined argument {arg.name}")
                     continue
                 if not info["owned"] or info["borrowed"]:
-                    self.error(node, f"no owners found for the argument {arg._name()}")
+                    self.error(node, f"no owners found for the argument {arg.name()}")
                 info["borrowed"] = True
 
         for arg in node._args:
             if isinstance(arg, IdentifierExpression):
                 try:
-                    info = self.env.lookup(arg._name())
+                    info = self.env.lookup(arg.name())
                     info["borrowed"] = False
                 except Exception:
                     # self.error(node, f"undefined argument {arg.name}")
