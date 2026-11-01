@@ -8,7 +8,6 @@ from rust.nodes.Struct import *
 from rust.nodes.Func import *
 from rust.nodes.Statement import *
 from rust.nodes.Type import *
-from rust.commons.DeclarationInfo import *
 # from rust.nodes.utils import *
 # Focus on fixing/rewriting the type check for now, and making it into a visitor pattern as well.
 
@@ -122,9 +121,9 @@ class TypeChecker(RustVisitor):
         if node.is_unsafe():
             self.error(node, "unsafe function definition", error_weight=int(len(node.body().stmts) / 10))
 
-        fn_name = node._identifier
-        param_types = [param.declarationInfo._dtype for param in node._params]
-        return_type = node._return_type or UnitType()
+        fn_name = node.identifier()
+        param_types = [param.type() for param in node.params()]
+        return_type = node.return_type() or UnitType()
 
         if self.env.top().get(fn_name) is None:
             self.env.top()[fn_name] = {
@@ -136,10 +135,10 @@ class TypeChecker(RustVisitor):
             self.error(node, f"redefinition of function '{fn_name}'")
 
         self.env.enter_scope()
-        for i, param in enumerate(node._params):
-            param_name = param.declarationInfo._name
-            param_type = self.visit(param.declarationInfo._dtype)
-            is_mut = param._is_mutable
+        for i, param in enumerate(node.params()):
+            param_name = param.name()
+            param_type = self.visit(param.type())
+            is_mut = param.is_mutable()
             self.visit(param)
 
             if i == 0 and param_name == "self":
@@ -148,8 +147,8 @@ class TypeChecker(RustVisitor):
 
                 if is_mut and not getattr(param_type, "mutable", False):
                     self.error(param, "`self` is marked mutable, but its type is not a mutable reference")
-                if is_mut and isinstance (param.declarationInfo._dtype, PointerType):
-                    self.error(node, f"raw pointer passed as argument to function {node.name}")
+                if is_mut and isinstance (param.type(), PointerType):
+                    self.error(node, f"raw pointer passed as argument to function {node.identifier()}")
 
             self.env.top()[param_name] = {
                 "type": param_type,
@@ -161,7 +160,7 @@ class TypeChecker(RustVisitor):
         saved_return = getattr(self, "current_function_return", None)
         self.current_function_return = return_type
 
-        for stmt in node._body.getChildren():
+        for stmt in node.body().getChildren():
             self.visit(stmt)
 
         # if not isinstance(return_type, VoidType) and not self.body_has_terminating_return(node.body.getChildren()):
@@ -324,51 +323,51 @@ class TypeChecker(RustVisitor):
 
     def visitLetStmt(self, node):
         expr_types = []
-        for expr in node._values:
+        for expr in node.values():
             expr_types.append(self.visit(expr))
 
-        if node.is_destructuring():
-            if len(node._var_defs) != len(expr_types):
-                self.error(node, "number of group-let of values and targets do not match")
-                return
+        # if node.is_destructuring():
+        #     if len(node.var_defs()) != len(expr_types):
+        #         self.error(node, "number of group-let of values and targets do not match")
+        #         return
+        #
+        #     for var_def, expr_type in zip(node.var_defs(), expr_types):
+        #         declared_type = self.visit(var_def.type()) if var_def.type() else expr_type
+        #
+        #         self.env.declare(var_def.name(), declared_type)
+        #         self.symbol_table[var_def.name()] = declared_type
+        #         self._handle_borrowing(var_def, node.values()[0])
+        #
+        # else:
+        var_def = node.var_defs()[0]
+        expr_type = self.visit(expr_types[0])
 
-            for var_def, expr_type in zip(node._var_defs, expr_types):
-                declared_type = self.visit(var_def.declarationInfo._dtype) if var_def.declarationInfo._dtype else expr_type
-
-                self.env.declare(var_def.declarationInfo._name, declared_type)
-                self.symbol_table[var_def.declarationInfo._name] = declared_type
-                self._handle_borrowing(var_def, node._values[0])
-
+        if isinstance(var_def.type(), str):
+            var_def_type = self.visitType(var_def.type())
         else:
-            var_def = node._var_defs[0]
-            expr_type = self.visit(expr_types[0])
+            var_def_type = self.visit(var_def.type())
 
-            if isinstance(var_def.declarationInfo._dtype, str):
-                var_def_type = self.visitType(var_def.declarationInfo._dtype)
-            else:
-                var_def_type = self.visit(var_def.declarationInfo._dtype)
+        if var_def_type is None:
+            var_def_type = expr_type
 
-            if var_def_type is None:
-                var_def_type = expr_type
+        if isinstance(var_def_type, NoneType):
+            var_def_type = expr_type
+        self.detect_raw_pointer_definition(var_def.name(), var_def.type(), var_def.is_mutable())
 
-            if isinstance(var_def_type, NoneType):
-                var_def_type = expr_type
-            self.detect_raw_pointer_definition(var_def.declarationInfo._name, var_def.declarationInfo._dtype, var_def._is_mutable)
+        if isinstance(expr_type, NoneType):
+            expr_type = var_def_type
 
-            if isinstance(expr_type, NoneType):
-                expr_type = var_def_type
+        if (
+            node.values()[0] is not None and
+            not isinstance(expr_type, var_def_type.__class__) and
+            not isinstance(var_def_type, SafeNonNullWrapper) and
+            not node.values()[0].is_unsafe == True
+        ):
+            self.error(node, f"type of the value and target do not match: {(var_def_type.__class__)} and {(expr_type.__class__)}")
 
-            if (
-                node._values[0] is not None and
-                not isinstance(expr_type, var_def_type.__class__) and
-                not isinstance(var_def_type, SafeNonNullWrapper) and
-                not node._values[0].is_unsafe == True
-            ):
-                self.error(node, f"type of the value and target do not match: {(var_def_type.__class__)} and {(expr_type.__class__)}")
-
-            self.env.declare(var_def.declarationInfo._name, var_def_type, mutable=var_def._is_mutable)
-            self.symbol_table[var_def.declarationInfo._name] = var_def_type
-            self._handle_borrowing(var_def, node._values[0])
+        self.env.declare(var_def.name(), var_def_type, mutable=var_def.is_mutable())
+        self.symbol_table[var_def.name()] = var_def_type
+        self._handle_borrowing(var_def, node.values()[0])
 
     def detect_raw_pointer_definition(self, name, type, isMutable):
         if isinstance(type, PointerType) and isMutable:
@@ -620,49 +619,49 @@ class TypeChecker(RustVisitor):
         return return_type
 
     def visitFunctionCall(self, node):
-        if isinstance(node, Expression):
-            func_info = self.env.lookup_function(node.callee)
+        if isinstance(node, FunctionCallExpression):
+            func_info = self.env.lookup_function(node.callee())
             if not func_info or func_info["kind"] != "function":
                 # self.error(node.func, f"calling an undefined function")
                 return None
 
-            for arg in node._args:
+            for arg in node.args():
                 if isinstance(arg, IdentifierExpression):
                     try:
-                        info = self.env.lookup(arg._name())
+                        info = self.env.lookup(arg.name())
                     except Exception:
                         # self.error(arg.name, f"undefined arg in {node.func}")
                         continue
 
                     if not info["owned"] or info["borrowed"]:
-                        self.error(arg._name(), f"no owners found for the argument {arg._name()} in {node.callee}")
+                        self.error(arg.name(), f"no owners found for the argument {arg.name()} in {node.callee()}")
 
                     info["borrowed"] = True
 
-            arg_types = [self.visit(arg) for arg in node._args]
+            arg_types = [self.visit(arg) for arg in node.args()]
             expected_types = func_info["param_types"]
-            arg_types = [self.visit(arg) for arg in node._args]
+            arg_types = [self.visit(arg) for arg in node.args()]
             expected_types = func_info["param_types"]
 
             if len(arg_types) != len(expected_types):
-                self.error(node.callee, f"wrong number of arguments")
+                self.error(node.callee(), f"wrong number of arguments")
             else:
                 for actual, expected in zip(arg_types, expected_types):
                     if type(actual) != type(expected):
-                        self.error(node.callee, f"wrong number of arguments")
+                        self.error(node.callee(), f"wrong number of arguments")
 
-            for arg in node._args:
+            for arg in node.args():
                 if isinstance(arg, IdentifierExpression):
-                    info = self.env.lookup(arg._name())
+                    info = self.env.lookup(arg.name())
                     info["borrowed"] = False
                     info["owned"] = False
 
             return func_info["return_type"]
 
-    def visitVarDef(self, ctx):
-        name = ctx._name
-        typ = self.visit(ctx._dtype)
-        return (name, typ)
+    def visitVarDef(self, node):
+        name = node.name()
+        typ = self.visit(node.type())
+        return name, typ
 
     def visitParamNode(self, node):
         name = node.declarationInfo._name
@@ -672,10 +671,10 @@ class TypeChecker(RustVisitor):
         self.env.declare(name, node.declarationInfo._dtype, isMutable)
         return (name, node.declarationInfo._dtype, isMutable)
 
-    def visitFunctionParamList(self, ctx):
+    def visitFunctionParamList(self, node):
         params = []
-        for param_ctx in ctx._params:
-            name, typ, mutable = self.visit(param_ctx)
+        for param in node.params():
+            name, typ, mutable = self.visit(param)
             params.append((name, typ, mutable))
         return params
 
@@ -686,7 +685,7 @@ class TypeChecker(RustVisitor):
         return BoolType()
 
     def visitArrayType(self, node: ArrayType):
-        elem_type = self.visit(node._dtype)
+        elem_type = self.visit(node.type())
 
         if node.size is not None:
             size_type = self.visit(node.size)
@@ -704,25 +703,29 @@ class TypeChecker(RustVisitor):
         return False
 
     def visitMatchPattern(self, node):
-        pattern_type = self.visit(node._value)
+        pattern_type = self.visit(node.value())
         if pattern_type not in ["i32", "bool", "char", "String", "enum_variant"]:
             self.error(f"Unsupported match pattern type: {pattern_type}")
 
         return pattern_type
 
-    def visitLiteralExpr(self, node):
-        if isinstance(node.expression, int):
-            return SignedIntType()
-        if isinstance(node.expression, str):
+    def visitLiteral(self, node):
+        if isinstance(node.value(), int):
+            if node.value() > 0:
+                sign = "+"
+            else:
+                sign = "-"
+            return SignedIntType(ptype=sign)
+        if isinstance(node.value(), str):
             return StringType()
-        if isinstance(node.expression, bool):
+        if isinstance(node.value(), bool):
             return BoolType()
-        if isinstance(node.expression, NoneType):
+        if isinstance(node.value(), NoneType):
             return NoneType()
         else:
-            self.error(node, f"unknown literal type for {node.expression}")
+            self.error(node, f"unknown literal type for {node.value()}")
 
-    def visitIdentifierExpr(self, node):
+    def visitIdentifierExpression(self, node):
         info = None
         try:
             info = self.env.lookup(node._name)
