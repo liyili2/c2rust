@@ -94,6 +94,7 @@ with quiet():
     program = RProgram(project_dir, config=config)
     program.operators = [RustSwapOperator, RustReplacementOperator]
     problem = RProblem(program, scope_checker=unsafe_functions, rng=rng)
+    # TODO: discuss the mutation probability
     mutation = RustMutation(probability=1.0, operators=program.operators,
                             scope_checker=unsafe_functions, rng=rng)
     crossover = RustSubtreeCrossover(probability=1.0, scope_checker=unsafe_functions, rng=rng)
