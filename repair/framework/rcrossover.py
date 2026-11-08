@@ -53,7 +53,7 @@ class RustSubtreeCrossover(Crossover[RPatch, RPatch]):
 
         marked_a = strip_marks_tree(child_a.ast[target_file]).accept(MarkingVisitor())
         marked_b = strip_marks_tree(child_b.ast[target_file]).accept(MarkingVisitor())
-        selector = ModificationPointSelector(checker=self.checker, scope_checker=self.scope_checker, rng=self.rng)
+        selector = ModificationPointSelector(scope_checker=self.scope_checker, rng=self.rng)
         points_a = selector.eligible_points(marked_a)
         points_b = selector.eligible_points(marked_b)
         if not points_a or not points_b:
