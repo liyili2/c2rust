@@ -165,8 +165,10 @@ class CProgram(TreeProgram):
         Returns (target_file, id_a, id_b); (target_file, None, None) if nothing fits.
 
         updated_contents: contents after the earlier edits of the patch (else self.contents).
-        pair_checker: optional (point_a, point_b) -> bool to reject incompatible pairs."""
+        pair_checker: optional callable (see pairchecker.py) deciding which points may be
+        swapped with each other; it is also given the marked tree."""
         from .operators import strip_marks_tree, _nested
+        from .pairchecker import call_pair_checker
         from rust.modification.ModificationPointSelector import ModificationPointSelector
         from rust.visitors.ast_compare import ast_equal
 
@@ -180,7 +182,17 @@ class CProgram(TreeProgram):
             a = selector.select(marked_root)
             if a is None:
                 return (target_file, None, None)
-            b = selector.select(marked_root)
+            if pair_checker is None:
+                b = selector.select(marked_root)
+            else:
+                # choose b only among the points the pair checker accepts together with a
+                # (picking a random b and rejecting it would fail most of the time)
+                compatible = [p for p in selector.eligible_points(marked_root)
+                              if p.get_id() != a.get_id()
+                              and call_pair_checker(pair_checker, a, p, marked_root)]
+                if not compatible:
+                    continue  # nothing fits a: try another a
+                b = rng.choice(compatible)
             if b is None:
                 return (target_file, None, None)
 
@@ -190,8 +202,6 @@ class CProgram(TreeProgram):
                 continue  # one inside the other cannot be swapped
             if ast_equal(strip_marks_tree(a.node), strip_marks_tree(b.node)):
                 continue  # swapping equal nodes changes nothing
-            if pair_checker is not None and not pair_checker(a, b):
-                continue
             return (target_file, a.get_id(), b.get_id())
 
         return (target_file, None, None)  # gave up after max_attempts

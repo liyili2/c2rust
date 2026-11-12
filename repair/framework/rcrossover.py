@@ -8,6 +8,7 @@ from rust.visitors.ast_compare import ast_equal
 from rust.modification.ModificationPointSelector import ModificationPointSelector
 
 from .operators import RustReplacementOperator, strip_marks_tree
+from .pairchecker import call_pair_checker
 from .rpatch import RPatch
 
 """
@@ -25,7 +26,9 @@ class RustSubtreeCrossover(Crossover[RPatch, RPatch]):
     RustReplacementOperator putting a copy of B's subtree at A's node; child B is the
     mirror image. The replacement goes through RPatch.add, so each child's AST changes
     and the exchange is recorded as an ordinary edit (children stay valid PyGGI patches).
-    If no compatible pair is found the children are plain copies of the parents.
+    The pair must also be accepted by `pair_checker` (see pair_checkers.py), which is
+    given both marked trees. If no compatible pair is found the children are plain copies
+    of the parents.
     """
 
     def __init__(self, probability: float, scope_checker=None,
@@ -62,11 +65,12 @@ class RustSubtreeCrossover(Crossover[RPatch, RPatch]):
         for _ in range(self.max_attempts):
             pa = self.rng.choice(points_a)
             compatible = [pb for pb in points_b if type(pb.node) is type(pa.node)]
+            if self.pair_checker is not None:
+                compatible = [pb for pb in compatible
+                              if call_pair_checker(self.pair_checker, pa, pb, marked_a, marked_b)]
             if not compatible:
                 continue
             pb = self.rng.choice(compatible)
-            if self.pair_checker is not None and not self.pair_checker(pa, pb):
-                continue
 
             subtree_a = strip_marks_tree(pa.node)
             subtree_b = strip_marks_tree(pb.node)
