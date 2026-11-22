@@ -14,8 +14,7 @@ from jmetal.core.solution import Solution
 from repair.pyggi.base import Patch
 from repair.pyggi.base.edit import AbstractEdit
 
-from .operators import strip_marks_tree
-
+from rust.visitors.Base import strip_marks_tree
 
 def strip_marks(ast):
     """Remove MarkedASTNode wrappers from every file's tree (in place on the dict)."""

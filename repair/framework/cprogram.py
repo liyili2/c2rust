@@ -124,7 +124,7 @@ class CProgram(TreeProgram):
     # ------------------------------------------------------------------
 
     def _marked_root(self, target_file, updated_contents=None):
-        from .operators import strip_marks_tree
+        from rust.visitors.Base import strip_marks_tree
         from rust.visitors.MarkingVisitor import MarkingVisitor
         contents = updated_contents if updated_contents is not None else self.contents
         # strip first: safe if an earlier edit left MarkedASTNode wrappers behind
@@ -167,7 +167,8 @@ class CProgram(TreeProgram):
         updated_contents: contents after the earlier edits of the patch (else self.contents).
         pair_checker: optional callable (see pairchecker.py) deciding which points may be
         swapped with each other; it is also given the marked tree."""
-        from .operators import strip_marks_tree, _nested
+        from rust.visitors.Base import strip_marks_tree
+        from .operators import RustOperator
         from .pairchecker import call_pair_checker
         from rust.modification.ModificationPointSelector import ModificationPointSelector
         from rust.visitors.ast_compare import ast_equal
@@ -198,7 +199,8 @@ class CProgram(TreeProgram):
 
             if a.get_id() == b.get_id():
                 continue  # same point twice
-            if _nested(a, b):
+            if RustOperator._find_by_id(a.node, b.get_id()) is not None \
+                    or RustOperator._find_by_id(b.node, a.get_id()) is not None:
                 continue  # one inside the other cannot be swapped
             if ast_equal(strip_marks_tree(a.node), strip_marks_tree(b.node)):
                 continue  # swapping equal nodes changes nothing

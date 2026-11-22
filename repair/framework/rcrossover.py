@@ -7,7 +7,8 @@ from rust.visitors.MarkingVisitor import MarkingVisitor
 from rust.visitors.ast_compare import ast_equal
 from rust.modification.ModificationPointSelector import ModificationPointSelector
 
-from .operators import RustReplacementOperator, strip_marks_tree
+from .operators import RustReplacementOperator
+from rust.visitors.Base import strip_marks_tree
 from .pairchecker import call_pair_checker
 from .rpatch import RPatch
 
