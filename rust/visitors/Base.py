@@ -1009,3 +1009,38 @@ class RustASTGenerator(AbstractASTVisitor):
         callee = node.callee.accept(self) if hasattr(node.callee, "accept") else node.callee
         args = [arg.accept(self) for arg in node.args] if node.args else node.args
         return FunctionCall(callee, args, caller).instance(node.get_id())
+
+# ==========================================================================
+# Tree-rewriting helpers built on RustASTGenerator.
+# They live here so that no other module defines a visitor.
+# ==========================================================================
+
+class MarkStripper(RustASTGenerator):
+    """Rebuilds a tree with every MarkedASTNode wrapper removed."""
+
+    def visitMarkedASTNode(self, node: MarkedASTNode):
+        return node.node.accept(self)
+
+
+class MarkedNodeSwapUpdater(RustASTGenerator):
+    """Rebuilds the tree, putting `replacements[id]` (a wrapper) where the wrapper with that id was."""
+
+    def __init__(self, replacements):
+        super().__init__()
+        self._replacements = replacements
+
+    def visitMarkedASTNode(self, node: MarkedASTNode):
+        replacement = self._replacements.get(node.get_id())
+        if replacement is not None:          # `is not None`: never rely on node truthiness
+            return replacement               # not descended into, so nothing is swapped twice
+        return super().visitMarkedASTNode(node)
+
+
+def strip_marks_tree(root):
+    return root.accept(MarkStripper())
+
+
+def swap_marked_nodes(marked_root, id_a, id_b, node_a, node_b):
+    """Returns a new tree where the wrapper `id_a` is replaced by `node_b`
+    and the wrapper `id_b` by `node_a`."""
+    return marked_root.accept(MarkedNodeSwapUpdater({id_a: node_b, id_b: node_a}))

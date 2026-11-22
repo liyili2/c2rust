@@ -7,7 +7,9 @@ from rust.visitors.MarkingVisitor import MarkingVisitor
 from rust.visitors.ast_compare import ast_equal
 from rust.modification.ModificationPointSelector import ModificationPointSelector
 
-from .operators import RustReplacementOperator, strip_marks_tree
+from .operators import RustReplacementOperator
+from rust.visitors.Base import strip_marks_tree
+from .pairchecker import call_pair_checker
 from .rpatch import RPatch
 
 """
@@ -25,13 +27,14 @@ class RustSubtreeCrossover(Crossover[RPatch, RPatch]):
     RustReplacementOperator putting a copy of B's subtree at A's node; child B is the
     mirror image. The replacement goes through RPatch.add, so each child's AST changes
     and the exchange is recorded as an ordinary edit (children stay valid PyGGI patches).
-    If no compatible pair is found the children are plain copies of the parents.
+    The pair must also be accepted by `pair_checker` (see pair_checkers.py), which is
+    given both marked trees. If no compatible pair is found the children are plain copies
+    of the parents.
     """
 
-    def __init__(self, probability: float, checker=None, scope_checker=None,
+    def __init__(self, probability: float, scope_checker=None,
                  pair_checker=None, max_attempts: int = 10, rng: random.Random = None):
         super(RustSubtreeCrossover, self).__init__(probability=probability)
-        self.checker = checker
         self.scope_checker = scope_checker
         self.pair_checker = pair_checker    # optional (point_a, point_b) -> bool
         self.max_attempts = max_attempts
@@ -54,8 +57,7 @@ class RustSubtreeCrossover(Crossover[RPatch, RPatch]):
 
         marked_a = strip_marks_tree(child_a.ast[target_file]).accept(MarkingVisitor())
         marked_b = strip_marks_tree(child_b.ast[target_file]).accept(MarkingVisitor())
-        selector = ModificationPointSelector(checker=self.checker,
-                                             scope_checker=self.scope_checker, rng=self.rng)
+        selector = ModificationPointSelector(scope_checker=self.scope_checker, rng=self.rng)
         points_a = selector.eligible_points(marked_a)
         points_b = selector.eligible_points(marked_b)
         if not points_a or not points_b:
@@ -64,11 +66,12 @@ class RustSubtreeCrossover(Crossover[RPatch, RPatch]):
         for _ in range(self.max_attempts):
             pa = self.rng.choice(points_a)
             compatible = [pb for pb in points_b if type(pb.node) is type(pa.node)]
+            if self.pair_checker is not None:
+                compatible = [pb for pb in compatible
+                              if call_pair_checker(self.pair_checker, pa, pb, marked_a, marked_b)]
             if not compatible:
                 continue
             pb = self.rng.choice(compatible)
-            if self.pair_checker is not None and not self.pair_checker(pa, pb):
-                continue
 
             subtree_a = strip_marks_tree(pa.node)
             subtree_b = strip_marks_tree(pb.node)

@@ -1,0 +1,488 @@
+===== ORIGINAL AST (after transformation) =====
+::libc;
+
+fn printf(_* +libc + :: + c_char,_...) -> libc + :: + c_int ; ;extern "Cfn malloc(_libc + :: + c_ulong) -> * mut +libc + :: + c_void ; ;extern "Cfn free(_* mut +libc + :: + c_void) ;
+
+#[derive]
+
+#[repr]
+
+struct Node {keylibc + :: + c_int, left* mut +Node, right* mut +Node, heightlibc + :: + c_int,  }
+
+#[no_mangle]
+
+unsafe fn height(mut N: * mut +Node) -> libc + :: + c_int {
+    if (N.is_null()) {
+    return libc + :: + c_int,;
+}
+    return * +N.height;
+}
+
+#[no_mangle]
+
+unsafe fn max(mut a: libc + :: + c_int,mut b: libc + :: + c_int) -> libc + :: + c_int {
+    return if ((a > b)) {
+    a: None
+} else {
+    b: None
+};
+}
+
+#[no_mangle]
+
+unsafe fn newNode(mut key: libc + :: + c_int) -> * mut +Node {
+    let node: None = * mut +Node,;
+    * +node.key = key;
+    let fresh0: None = * +node.left;
+    * +fresh0 = * mut +Node,;
+    let fresh1: None = * +node.right;
+    * +fresh1 = * mut +Node,;
+    * +node.height = libc + :: + c_int,;
+    return node;
+}
+
+#[no_mangle]
+
+unsafe fn rightRotate(mut y: * mut +Node) -> * mut +Node {
+    let x: None = * +y.left;
+    let T2: None = * +x.right;
+    let fresh2: None = * +y.left;
+    * +fresh2 = T2;
+    * +y.height = libc + :: + c_int,;
+    let fresh3: None = * +x.right;
+    * +fresh3 = y;
+    * +x.height = libc + :: + c_int,;
+    return x;
+}
+
+#[no_mangle]
+
+unsafe fn leftRotate(mut x: * mut +Node) -> * mut +Node {
+    let y: None = * +x.right;
+    let T2: None = * +y.left;
+    let fresh4: None = * +x.right;
+    * +fresh4 = T2;
+    * +x.height = libc + :: + c_int,;
+    let fresh5: None = * +y.left;
+    * +fresh5 = x;
+    * +y.height = libc + :: + c_int,;
+    return y;
+}
+
+#[no_mangle]
+
+unsafe fn getBalance(mut N: * mut +Node) -> libc + :: + c_int {
+    if (N.is_null()) {
+    return libc + :: + c_int,;
+}
+    return (height(* +N.left) - height(* +N.right));
+}
+
+#[no_mangle]
+
+unsafe fn insert(mut node: * mut +Node,mut key: libc + :: + c_int) -> * mut +Node {
+    if (node.is_null()) {
+    return newNode(key);
+}
+    if ((key < * +node.key)) {
+    let fresh6: None = * +node.left;
+    * +fresh6 = insert(* +node.left,key);
+} else if ((key > * +node.key)) {
+    let fresh7: None = * +node.right;
+    * +fresh7 = insert(* +node.right,key);
+} else {
+    return node;
+}
+    * +node.height = (libc + :: + c_int, + max(height(* +node.left),height(* +node.right)));
+    let balance: None = getBalance(node);
+    if (((libc + :: + c_int, && key) < * +* +node.left.key)) {
+    return rightRotate(node);
+}
+    if ((balance < -((libc + :: + c_int, && key) > * +* +node.right.key))) {
+    return leftRotate(node);
+}
+    if (((libc + :: + c_int, && key) > * +* +node.left.key)) {
+    let fresh8: None = * +node.left;
+    * +fresh8 = leftRotate(* +node.left);
+    return rightRotate(node);
+}
+    if ((balance < -((libc + :: + c_int, && key) < * +* +node.right.key))) {
+    let fresh9: None = * +node.right;
+    * +fresh9 = rightRotate(* +node.right);
+    return leftRotate(node);
+}
+    return node;
+}
+
+#[no_mangle]
+
+unsafe fn minValueNode(mut node: * mut +Node) -> * mut +Node {
+    let current: None = node;
+    while (!* +current.left.is_null()) {
+    current = * +current.left;
+}
+    return current;
+}
+
+#[no_mangle]
+
+unsafe fn preOrder(mut root: * mut +Node) {
+    if (!root.is_null()) {
+    printf(* +libc + :: + c_char,,* +root.key)
+    preOrder(* +root.left)
+    preOrder(* +root.right)
+}
+}
+
+===== PIPELINE =====
+GA class           : TopKSelectorGeneticAlgorithm -> LoggingGeneticAlgorithm -> RepairedGeneticAlgorithm -> GeneticAlgorithm
+mutation operators : RustSwapOperator (50%), RustReplacementOperator (50%)
+crossover          : RustSubtreeCrossover (subtree exchange)
+population 4, offspring 4, top-k 2, generations 2  [fake fitness: --dry-run]
+
+===== INITIAL POPULATION (the original AST + one random edit each) =====
+  P0      edits=1 [Swap]
+      @@ -23 +23 @@
+      -    return if ((a > b)) {
+      +    return if ((a > rightRotate(node))) {
+      @@ -106 +106 @@
+      -    return rightRotate(node);
+      +    return b;
+  P1      edits=1 [Replacement]
+      @@ -54 +54 @@
+      -    return x;
+      +    return T2;
+  P2      edits=1 [Swap]
+      @@ -46 +46 @@
+      -    let x: None = * +y.left;
+      +    let x: None = node;
+      @@ -105 +105 @@
+      -    * +fresh8 = leftRotate(* +node.left);
+      +    * +fresh8 = leftRotate(* +* +y.left.left);
+  P3      edits=1 [Swap]
+      @@ -77 +77 @@
+      -    return (height(* +N.left) - height(* +N.right));
+      +    return (height(* +N.left) - height(* +(libc + :: + c_int, && key).right));
+      @@ -97 +97 @@
+      -    if (((libc + :: + c_int, && key) < * +* +node.left.key)) {
+      +    if ((N < * +* +node.left.key)) {
+
+--- initial population evaluated ---
+  P0     fitness=4  edits=1 [Swap]
+  P1     fitness=2  edits=1 [Replacement]
+  P2     fitness=4  edits=1 [Swap]
+  P3     fitness=4  edits=1 [Swap]
+
+===== GENERATION 1 =====
+--- 1. selection: parents picked from a copy of the population ---
+  P0     fitness=4  edits=1 [Swap]
+  P1     fitness=2  edits=1 [Replacement]
+  P3     fitness=4  edits=1 [Swap]
+  P1     fitness=2  edits=1 [Replacement]
+
+--- 2. crossover: a subtree is exchanged between two parents (changes vs. the original) ---
+  G1.0   from P0 + P1    edits=2 [Swap, Replacement]
+      @@ -23 +23 @@
+      -    return if ((a > b)) {
+      +    return if ((a > rightRotate(node))) {
+      @@ -106 +106 @@
+      -    return rightRotate(node);
+      +    return b;
+  G1.1   from P0 + P1    edits=2 [Replacement, Replacement]
+      @@ -54 +54 @@
+      -    return x;
+      +    return T2;
+      @@ -89 +89 @@
+      -} else if ((key > * +node.key)) {
+      +} else if ((max(height(* +x.left),height(* +x.right)) + 1)) {
+  G1.2   from P3 + P1    edits=2 [Swap, Replacement]
+      @@ -77 +77 @@
+      -    return (height(* +N.left) - height(* +N.right));
+      +    return (height(* +N.left) - height(* +(libc + :: + c_int, && key).right));
+      @@ -97 +97 @@
+      -    if (((libc + :: + c_int, && key) < * +* +node.left.key)) {
+      +    if ((N < * +* +node.left.key)) {
+      ... (3 more changed lines)
+  G1.3   from P3 + P1    edits=2 [Replacement, Replacement]
+      @@ -54 +54 @@
+      -    return x;
+      +    return T2;
+      @@ -91 +91 @@
+      -    * +fresh7 = insert(* +node.right,key);
+      +    * +fresh7 = insert(* +key.right,key);
+
+--- 3. mutation (repair via the operators): one swap or replacement edit is added ---
+  G1.0   from P0 + P1    edits=3 [Swap, Replacement, Swap]  mutation: +RustSwapOperator
+      @@ -23 +23 @@
+      -    return if ((a > b)) {
+      +    return if ((a > rightRotate(node))) {
+      @@ -52 +52 @@
+      -    * +fresh3 = y;
+      +    * +leftRotate(* +node.left) = y;
+      ... (5 more changed lines)
+  G1.1   from P0 + P1    edits=3 [Replacement, Replacement, Replacement]  mutation: +RustReplacementOperator
+      @@ -54 +54 @@
+      -    return x;
+      +    return T2;
+      @@ -63 +63 @@
+      -    * +fresh4 = T2;
+      +    * +fresh4 = x;
+      ... (3 more changed lines)
+  G1.2   from P3 + P1    edits=3 [Swap, Replacement, Swap]  mutation: +RustSwapOperator
+      @@ -66 +66 @@
+      -    * +fresh5 = x;
+      +    * +(libc + :: + c_int, && key) = x;
+      @@ -77 +77 @@
+      -    return (height(* +N.left) - height(* +N.right));
+      +    return (height(* +N.left) - height(* +(libc + :: + c_int, && key).right));
+      ... (9 more changed lines)
+  G1.3   from P3 + P1    edits=3 [Replacement, Replacement, Swap]  mutation: +RustSwapOperator
+      @@ -54 +54 @@
+      -    return x;
+      +    return T2;
+      @@ -91 +91 @@
+      -    * +fresh7 = insert(* +node.right,key);
+      +    * +fresh7 = insert(* +key.right,key);
+      ... (3 more changed lines)
+
+--- 4. evaluation: fitness of the 4 offspring ---
+  G1.0   from P0 + P1   fitness=8  edits=3 [Swap, Replacement, Swap]
+  G1.1   from P0 + P1   fitness=6  edits=3 [Replacement, Replacement, Replacement]
+  G1.2   from P3 + P1   fitness=10  edits=3 [Swap, Replacement, Swap]
+  G1.3   from P3 + P1   fitness=6  edits=3 [Replacement, Replacement, Swap]
+
+--- 5a. survival: only the top 2 of the old population enter the competition ---
+  P1     fitness=2  edits=1 [Replacement]
+  P0     fitness=4  edits=1 [Swap]
+
+--- 5. survival: the best 4 of (kept + offspring) are the new population ---
+  P1     fitness=2  edits=1 [Replacement]
+  P0     fitness=4  edits=1 [Swap]
+  G1.1   from P0 + P1   fitness=6  edits=3 [Replacement, Replacement, Replacement]
+  G1.3   from P3 + P1   fitness=6  edits=3 [Replacement, Replacement, Swap]
+
+===== GENERATION 2 =====
+--- 1. selection: parents picked from a copy of the population ---
+  P1     fitness=2  edits=1 [Replacement]
+  P1     fitness=2  edits=1 [Replacement]
+  P0     fitness=4  edits=1 [Swap]
+  G1.3   from P3 + P1   fitness=6  edits=3 [Replacement, Replacement, Swap]
+
+--- 2. crossover: a subtree is exchanged between two parents (changes vs. the original) ---
+  G2.0   from P1 + P1    edits=2 [Replacement, Replacement]
+      @@ -54 +54 @@
+      -    return x;
+      +    return T2;
+      @@ -110 +110 @@
+      -    * +fresh9 = rightRotate(* +node.right);
+      +    * +fresh9 = rightRotate(* +node.left);
+  G2.1   from P1 + P1    edits=2 [Replacement, Replacement]
+      @@ -35 +35 @@
+      -    let fresh0: None = * +node.left;
+      +    let fresh0: None = * +node.right;
+      @@ -54 +54 @@
+      -    return x;
+      +    return T2;
+  G2.2   from P0 + G1.3  edits=2 [Swap, Replacement]
+      @@ -23 +23 @@
+      -    return if ((a > b)) {
+      +    return if ((a > rightRotate(node))) {
+      @@ -100 +100 @@
+      -    if ((balance < -((libc + :: + c_int, && key) > * +* +node.right.key))) {
+      +    if ((balance < -((libc + :: + c_int, && key) > * +x.right))) {
+      ... (3 more changed lines)
+  G2.3   from P0 + G1.3  edits=4 [Replacement, Replacement, Swap, Replacement]
+      @@ -54 +54 @@
+      -    return x;
+      +    return T2;
+      @@ -91 +91 @@
+      -    * +fresh7 = insert(* +node.right,key);
+      +    * +fresh7 = insert(* +key.right,key);
+      ... (3 more changed lines)
+
+--- 3. mutation (repair via the operators): one swap or replacement edit is added ---
+  G2.0   from P1 + P1    edits=3 [Replacement, Replacement, Replacement]  mutation: +RustReplacementOperator
+      @@ -38 +38 @@
+      -    * +fresh1 = * mut +Node,;
+      +    * +fresh0 = * mut +Node,;
+      @@ -54 +54 @@
+      -    return x;
+      +    return T2;
+      ... (3 more changed lines)
+  G2.1   from P1 + P1    edits=3 [Replacement, Replacement, Replacement]  mutation: +RustReplacementOperator
+      @@ -35 +35 @@
+      -    let fresh0: None = * +node.left;
+      +    let fresh0: None = * +node.right;
+      @@ -54 +54 @@
+      -    return x;
+      +    return T2;
+      ... (3 more changed lines)
+  G2.2   from P0 + G1.3  edits=3 [Swap, Replacement, Replacement]  mutation: +RustReplacementOperator
+      @@ -23 +23 @@
+      -    return if ((a > b)) {
+      +    return if ((a > rightRotate(node))) {
+      @@ -100 +100 @@
+      -    if ((balance < -((libc + :: + c_int, && key) > * +* +node.right.key))) {
+      +    if ((balance < -((libc + :: + c_int, && key) > * +x.right))) {
+      ... (3 more changed lines)
+  G2.3   from P0 + G1.3  edits=5 [Replacement, Replacement, Swap, Replacement, Swap]  mutation: +RustSwapOperator
+      @@ -54 +54 @@
+      -    return x;
+      +    return T2;
+      @@ -68 +68 @@
+      -    return y;
+      +    return * +y.left;
+      ... (6 more changed lines)
+
+--- 4. evaluation: fitness of the 4 offspring ---
+  G2.0   from P1 + P1   fitness=6  edits=3 [Replacement, Replacement, Replacement]
+  G2.1   from P1 + P1   fitness=6  edits=3 [Replacement, Replacement, Replacement]
+  G2.2   from P0 + G1.3 fitness=6  edits=3 [Swap, Replacement, Replacement]
+  G2.3   from P0 + G1.3 fitness=8  edits=5 [Replacement, Replacement, Swap, Replacement, Swap]
+
+--- 5a. survival: only the top 2 of the old population enter the competition ---
+  P1     fitness=2  edits=1 [Replacement]
+  P0     fitness=4  edits=1 [Swap]
+
+--- 5. survival: the best 4 of (kept + offspring) are the new population ---
+  P1     fitness=2  edits=1 [Replacement]
+  P0     fitness=4  edits=1 [Swap]
+  G2.0   from P1 + P1   fitness=6  edits=3 [Replacement, Replacement, Replacement]
+  G2.1   from P1 + P1   fitness=6  edits=3 [Replacement, Replacement, Replacement]
+
+===== GA BEST =====
+P1  fitness: 2
+::libc;
+
+fn printf(_* +libc + :: + c_char,_...) -> libc + :: + c_int ; ;extern "Cfn malloc(_libc + :: + c_ulong) -> * mut +libc + :: + c_void ; ;extern "Cfn free(_* mut +libc + :: + c_void) ;
+
+#[derive]
+
+#[repr]
+
+struct Node {keylibc + :: + c_int, left* mut +Node, right* mut +Node, heightlibc + :: + c_int,  }
+
+#[no_mangle]
+
+unsafe fn height(mut N: * mut +Node) -> libc + :: + c_int {
+    if (N.is_null()) {
+    return libc + :: + c_int,;
+}
+    return * +N.height;
+}
+
+#[no_mangle]
+
+unsafe fn max(mut a: libc + :: + c_int,mut b: libc + :: + c_int) -> libc + :: + c_int {
+    return if ((a > b)) {
+    a: None
+} else {
+    b: None
+};
+}
+
+#[no_mangle]
+
+unsafe fn newNode(mut key: libc + :: + c_int) -> * mut +Node {
+    let node: None = * mut +Node,;
+    * +node.key = key;
+    let fresh0: None = * +node.left;
+    * +fresh0 = * mut +Node,;
+    let fresh1: None = * +node.right;
+    * +fresh1 = * mut +Node,;
+    * +node.height = libc + :: + c_int,;
+    return node;
+}
+
+#[no_mangle]
+
+unsafe fn rightRotate(mut y: * mut +Node) -> * mut +Node {
+    let x: None = * +y.left;
+    let T2: None = * +x.right;
+    let fresh2: None = * +y.left;
+    * +fresh2 = T2;
+    * +y.height = libc + :: + c_int,;
+    let fresh3: None = * +x.right;
+    * +fresh3 = y;
+    * +x.height = libc + :: + c_int,;
+    return T2;
+}
+
+#[no_mangle]
+
+unsafe fn leftRotate(mut x: * mut +Node) -> * mut +Node {
+    let y: None = * +x.right;
+    let T2: None = * +y.left;
+    let fresh4: None = * +x.right;
+    * +fresh4 = T2;
+    * +x.height = libc + :: + c_int,;
+    let fresh5: None = * +y.left;
+    * +fresh5 = x;
+    * +y.height = libc + :: + c_int,;
+    return y;
+}
+
+#[no_mangle]
+
+unsafe fn getBalance(mut N: * mut +Node) -> libc + :: + c_int {
+    if (N.is_null()) {
+    return libc + :: + c_int,;
+}
+    return (height(* +N.left) - height(* +N.right));
+}
+
+#[no_mangle]
+
+unsafe fn insert(mut node: * mut +Node,mut key: libc + :: + c_int) -> * mut +Node {
+    if (node.is_null()) {
+    return newNode(key);
+}
+    if ((key < * +node.key)) {
+    let fresh6: None = * +node.left;
+    * +fresh6 = insert(* +node.left,key);
+} else if ((key > * +node.key)) {
+    let fresh7: None = * +node.right;
+    * +fresh7 = insert(* +node.right,key);
+} else {
+    return node;
+}
+    * +node.height = (libc + :: + c_int, + max(height(* +node.left),height(* +node.right)));
+    let balance: None = getBalance(node);
+    if (((libc + :: + c_int, && key) < * +* +node.left.key)) {
+    return rightRotate(node);
+}
+    if ((balance < -((libc + :: + c_int, && key) > * +* +node.right.key))) {
+    return leftRotate(node);
+}
+    if (((libc + :: + c_int, && key) > * +* +node.left.key)) {
+    let fresh8: None = * +node.left;
+    * +fresh8 = leftRotate(* +node.left);
+    return rightRotate(node);
+}
+    if ((balance < -((libc + :: + c_int, && key) < * +* +node.right.key))) {
+    let fresh9: None = * +node.right;
+    * +fresh9 = rightRotate(* +node.right);
+    return leftRotate(node);
+}
+    return node;
+}
+
+#[no_mangle]
+
+unsafe fn minValueNode(mut node: * mut +Node) -> * mut +Node {
+    let current: None = node;
+    while (!* +current.left.is_null()) {
+    current = * +current.left;
+}
+    return current;
+}
+
+#[no_mangle]
+
+unsafe fn preOrder(mut root: * mut +Node) {
+    if (!root.is_null()) {
+    printf(* +libc + :: + c_char,,* +root.key)
+    preOrder(* +root.left)
+    preOrder(* +root.right)
+}
+}

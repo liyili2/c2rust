@@ -124,7 +124,7 @@ class CProgram(TreeProgram):
     # ------------------------------------------------------------------
 
     def _marked_root(self, target_file, updated_contents=None):
-        from .operators import strip_marks_tree
+        from rust.visitors.Base import strip_marks_tree
         from rust.visitors.MarkingVisitor import MarkingVisitor
         contents = updated_contents if updated_contents is not None else self.contents
         # strip first: safe if an earlier edit left MarkedASTNode wrappers behind
@@ -165,8 +165,11 @@ class CProgram(TreeProgram):
         Returns (target_file, id_a, id_b); (target_file, None, None) if nothing fits.
 
         updated_contents: contents after the earlier edits of the patch (else self.contents).
-        pair_checker: optional (point_a, point_b) -> bool to reject incompatible pairs."""
-        from .operators import strip_marks_tree, _nested
+        pair_checker: optional callable (see pairchecker.py) deciding which points may be
+        swapped with each other; it is also given the marked tree."""
+        from rust.visitors.Base import strip_marks_tree
+        from .operators import RustOperator
+        from .pairchecker import call_pair_checker
         from rust.modification.ModificationPointSelector import ModificationPointSelector
         from rust.visitors.ast_compare import ast_equal
 
@@ -180,18 +183,27 @@ class CProgram(TreeProgram):
             a = selector.select(marked_root)
             if a is None:
                 return (target_file, None, None)
-            b = selector.select(marked_root)
+            if pair_checker is None:
+                b = selector.select(marked_root)
+            else:
+                # choose b only among the points the pair checker accepts together with a
+                # (picking a random b and rejecting it would fail most of the time)
+                compatible = [p for p in selector.eligible_points(marked_root)
+                              if p.get_id() != a.get_id()
+                              and call_pair_checker(pair_checker, a, p, marked_root)]
+                if not compatible:
+                    continue  # nothing fits a: try another a
+                b = rng.choice(compatible)
             if b is None:
                 return (target_file, None, None)
 
             if a.get_id() == b.get_id():
                 continue  # same point twice
-            if _nested(a, b):
+            if RustOperator._find_by_id(a.node, b.get_id()) is not None \
+                    or RustOperator._find_by_id(b.node, a.get_id()) is not None:
                 continue  # one inside the other cannot be swapped
             if ast_equal(strip_marks_tree(a.node), strip_marks_tree(b.node)):
                 continue  # swapping equal nodes changes nothing
-            if pair_checker is not None and not pair_checker(a, b):
-                continue
             return (target_file, a.get_id(), b.get_id())
 
         return (target_file, None, None)  # gave up after max_attempts

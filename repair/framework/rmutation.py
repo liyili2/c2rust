@@ -39,12 +39,11 @@ class RustMutation(Mutation[RPatch]):
                       'fell back to RustReplacementOperator', 'applied']
     """
 
-    def __init__(self, probability: float, operators=None, checker=None, scope_checker=None,
+    def __init__(self, probability: float, operators=None, scope_checker=None,
                  pair_checker=None, max_attempts: int = 10, rng: random.Random = None):
         super(RustMutation, self).__init__(probability=probability)
         self.operators = list(operators) if operators else [RustSwapOperator,
                                                             RustReplacementOperator]
-        self.checker = checker
         self.scope_checker = scope_checker  # e.g. only inside unsafe functions
         self.pair_checker = pair_checker    # only passed to operators whose create() accepts it
         self.max_attempts = max_attempts
@@ -68,7 +67,7 @@ class RustMutation(Mutation[RPatch]):
         return chosen, percent
 
     def _create_edit(self, operator, solution: RPatch):
-        kwargs = dict(checker=self.checker, scope_checker=self.scope_checker,
+        kwargs = dict(scope_checker=self.scope_checker,
                       rng=self.rng, max_attempts=self.max_attempts,
                       updated_contents=solution.ast)
         if self.pair_checker is not None and \
@@ -76,7 +75,8 @@ class RustMutation(Mutation[RPatch]):
             kwargs['pair_checker'] = self.pair_checker
         return operator.create(solution.program, **kwargs)
 
-    def execute(self, solution: RPatch) -> RPatch:
+    def execute(self, solution: RPatch, threshold_fitness=None) -> RPatch:
+        """threshold_fitness: accepted because TypeConsistentGeneticAlgorithm passes it; unused."""
         Check.that(isinstance(solution, RPatch), "Solution type invalid")
 
         self.last_operator, self.last_edit, self.last_trace = None, None, []
