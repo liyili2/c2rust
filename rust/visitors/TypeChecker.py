@@ -10,7 +10,7 @@ from rust.nodes.Statement import *
 from rust.nodes.Type import *
 # from rust.nodes.utils import *
 # Focus on fixing/rewriting the type check for now, and making it into a visitor pattern as well.
-
+# do full pipeline testing
 
 class TypeEnv:
     def __init__(self):
@@ -470,7 +470,7 @@ class TypeChecker(RustVisitor):
         # Check mutability
         if isinstance(node._target, IdentifierExpression):
             try:
-                target_info = self.env.lookup(node._target._name())
+                target_info = self.env.lookup(node._target.name())
             except Exception:
                 # self.error(node, "usage of undefined variable in compound assignment")
                 return
@@ -493,14 +493,14 @@ class TypeChecker(RustVisitor):
     def _handle_borrowing(self, var_def, value_expr):
         if isinstance(value_expr, IdentifierExpression):
             try:
-                value_info = self.env.lookup(value_expr._name())
+                value_info = self.env.lookup(value_expr.name())
             except Exception:
                 # self.error(self, f"undefined variable: {value_expr.name}")
                 return
 
             if value_info:
                 if value_info["borrowed"]:
-                    self.error(self, f"usage of a borrowed variable {value_expr._name}")
+                    self.error(self, f"usage of a borrowed variable {value_expr.name()}")
                 # if not value_info["owned"]:
                 #     self.error(self, f"usage of a variable which ownership was moved: {value_expr.name}", 2)
                 value_info["owned"] = False
@@ -521,16 +521,16 @@ class TypeChecker(RustVisitor):
 
     def get_expr_identifier(self,expr):
         if isinstance(expr, IdentifierExpression):
-            return expr._name()
+            return expr.name()
         elif isinstance(expr, DereferenceExpr):
-            return self.get_expr_identifier(expr.expr)
+            return self.get_expr_identifier(expr.expression())
         elif isinstance(expr, FieldAccessExpr):
-            receiver = expr.receiver
+            receiver = expr.receiver()
             return self.get_expr_identifier(receiver)
         elif isinstance(expr, Expression):
-            return self.get_expr_identifier(expr.expression)
+            return self.get_expr_identifier(expr)
 
-    def visitAssignment(self, node):
+    def visitAssignStmt(self, node):
         try:
             if self.get_expr_identifier(node._target) is not None:
                 info = self.env.lookup(self.get_expr_identifier(node._target))
@@ -557,7 +557,7 @@ class TypeChecker(RustVisitor):
 
         if isinstance(node._value, IdentifierExpression):
             try:
-                value_info = self.env.lookup(node._value._name())
+                value_info = self.env.lookup(node._value.name())
             except Exception:
                 # self.error(node, f"undefined variable in assignment value : {self.get_expr_identifier(node.target)} = {self.get_expr_identifier(node.value)}")
                 value_info = None
@@ -769,9 +769,6 @@ class TypeChecker(RustVisitor):
         return ReferenceType(info["type"])
 
     def visitPattern(self, node):
-        pass
-    
-    def visitFunctionCall(self, node):
         pass
 
     def visitArrayLiteral(self, node):
